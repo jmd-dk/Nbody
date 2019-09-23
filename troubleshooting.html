@@ -1,0 +1,395 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Troubleshooting &mdash; CONCEPT Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://jmd-dk.github.io/concept/index.htmltroubleshooting.html"/>
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Publications" href="publications.html" />
+    <link rel="prev" title="The watch utility" href="utilities/watch.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: darkorange" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CO<em>N</em>CEPT
+          
+
+          
+            
+            <img src="_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/installation.html">1. Effortless installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/first_simulations.html">2. Your first simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/first_simulations.html#the-concept-script">2.1. The <code class="docutils literal notranslate"><span class="pre">concept</span></code> script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/first_simulations.html#don-t-forget-about-gravity">2.2. Don’t forget about gravity</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/parameter_files.html">3. Working with parameter files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/output_types.html">4. Other kinds of output</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/output_types.html#d-renders">4.1. 3D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/output_types.html#id1">4.2. 2D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/output_types.html#snapshots">4.3. Snapshots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/working_remotely.html">5. Working on remote clusters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/working_remotely.html#submitting-jobs">5.1. Submitting jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/working_remotely.html#using-pre-installed-mpi-library">5.2. Using pre-installed MPI library</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/beyond_matter_only.html">6. Beyond matter-only simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/beyond_matter_only.html#adding-linear-speciess">6.1. Adding linear speciess</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/beyond_matter_only.html#massive-neutrinos">6.1.1. Massive neutrinos</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tutorial/beyond_matter_only.html#dynamical-dark-energy">6.1.2. Dynamical dark energy</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/beyond_matter_only.html#decaying-cold-dark-matter">6.2. Decaying cold dark matter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/beyond_matter_only.html#non-linear-massive-neutrinos">6.3. Non-linear massive neutrinos</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/utilities.html">7. Using utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-powerspec-and-render-utilities">7.1. The powerspec and render utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-class-utility">7.2. The CLASS utility</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-update-utility">7.3. The update utility</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities/utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utilities/class.html">The CLASS utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/convert.html">The convert utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/info.html">The info utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/play.html">The play utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/powerspec.html">The powerspec utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/render2D.html">The render2D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/render3D.html">The render3D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/update.html">The update utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/watch.html">The watch utility</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation-failed">Installation failed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-terminal-color-output-looks-weird">The terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#problems-when-running-on-multiple-nodes">Problems when running on multiple nodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="publications.html">Publications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="publications.html#theses">Theses</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CO<em>N</em>CEPT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Troubleshooting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/jmd-dk/concept" class="fa fa-github"> Code Repository</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+
+      
+      
+
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="troubleshooting">
+<h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
+<p>This page contains solutions to and helpful information about possible issues
+encountered when running CO<em>N</em>CEPT. Should you encounter a problem not
+listed, do not hesitate to contact the author at <a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a>.</p>
+<div class="section" id="installation-failed">
+<h2>Installation failed<a class="headerlink" href="#installation-failed" title="Permalink to this headline">¶</a></h2>
+<p>We strive for a trivial installation process on as many Linux systems as
+possible. If the <a class="reference internal" href="tutorial/installation.html"><span class="doc">simple installation process</span></a>
+(with every dependency allowed to be installed from scratch) keeps failing,
+please send an e-mail to <a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a> stating the details of your system,
+including compiler brand + version. Do not forget to attach the
+<code class="docutils literal notranslate"><span class="pre">install_log</span></code> and <code class="docutils literal notranslate"><span class="pre">install_log_err</span></code> files produced during the attempted
+installation.</p>
+</div>
+<div class="section" id="the-terminal-color-output-looks-weird">
+<h2>The terminal color output looks weird<a class="headerlink" href="#the-terminal-color-output-looks-weird" title="Permalink to this headline">¶</a></h2>
+<p>CO<em>N</em>CEPT includes a lot of color and other formatting in its terminal
+output. While all modern terminal emulators on Linux fully support this, the
+story is different on other platforms. If you run CO<em>N</em>CEPT from macOS
+(via ssh into a cluster) and the colors appear all wrong, try installing
+the superior <a class="reference external" href="https://www.iterm2.com/">iTerm2</a> terminal emulator. If you
+are running CO<em>N</em>CEPT from Windows (through e.g. putty), no proper
+solution is known.</p>
+<p>If you want to disable color and other formatted output alltogether, set</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">enable_terminal_formatting</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+<p>in your parameter files. Note that though this eliminates most formatting,
+a few elements are still formatted.</p>
+</div>
+<div class="section" id="problems-when-running-remotely">
+<span id="mpi-executor"></span><h2>Problems when running remotely<a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
+<p>If your remote jobs behave weirdly or doesn’t run at all, while local jobs run
+as expected, it may help to manually choose a different remote <em>MPI executor</em>.
+This is the term used for e.g. <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> in CO<em>N</em>CEPT, i.e.
+the executable used to launch MPI programs.</p>
+<p>To see which MPI executor is used when running remotely, check out the
+<code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> variable in the produced <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> file. To manually set
+the MPI executor, overwrite the dedicated <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> varaible in the
+<code class="docutils literal notranslate"><span class="pre">.env</span></code> file (located one directory level above the <code class="docutils literal notranslate"><span class="pre">concept</span></code> directory,
+i.e. at <code class="docutils literal notranslate"><span class="pre">/path/to/concept_installation/.env</span></code>). Helpful suggestions for the
+choice of MPI executor depends on the job schedular in use.</p>
+<div class="topic">
+<p class="topic-title first">Using Slurm</p>
+<p>If Slurm is used as the job schedular, the MPI executor will be set to
+<code class="docutils literal notranslate"><span class="pre">srun</span> <span class="pre">--cpu_bind=none</span></code> by default. The first thing to try is to leave
+out the <code class="docutils literal notranslate"><span class="pre">--cpu_bind=none</span></code>, i.e. setting</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;srun&quot;</span>
+</pre></div>
+</div>
+<p>in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file. Submit a new job, and you should see the manually chosen MPI
+executor being respected by the <code class="docutils literal notranslate"><span class="pre">jobscript</span></code>.</p>
+<p>If that did not fix the issue, try specyfing the MPI implementation in use,
+using the <code class="docutils literal notranslate"><span class="pre">--mpi</span></code> option to <code class="docutils literal notranslate"><span class="pre">srun</span></code>. E.g. for OpenMPI, set</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;srun --mpi=openmpi&quot;</span>
+</pre></div>
+</div>
+<p>in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file. To see which MPI implementations <code class="docutils literal notranslate"><span class="pre">srun</span></code> supports,
+run</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun --mpi<span class="o">=</span>list
+</pre></div>
+</div>
+<p>You may wish to try your luck on all supported MPI implementations. If you
+find one that works, do remember to test if it also works with the added
+<code class="docutils literal notranslate"><span class="pre">--cpu_bind=none</span></code> option, as this is preferred.</p>
+<p>If you are still unable to run remotely, you can try using <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code> or
+<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> for the MPI executor, as one would do when using TORQUE/PBS.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Using TORQUE/PBS</p>
+<p>When TORQUE or PBS is used as the job schedular, the MPI executor will be
+set to one of <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code> or <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> by default, possibly with
+additional options. The first thing to try is to leave out these options,
+i.e. setting</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;mpiexec&quot;</span>  <span class="c1"># or &quot;mpirun&quot;</span>
+</pre></div>
+</div>
+<p>in the <code class="docutils literal notranslate"><span class="pre">.env``file.</span> <span class="pre">Note</span> <span class="pre">that</span> <span class="pre">CO\</span> <span class="pre">*N*\</span> <span class="pre">CEPT</span> <span class="pre">sets</span> <span class="pre">the</span> <span class="pre">``PATH</span></code> so that
+<code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> are guaranteed to be those belonging to the MPI
+correct MPI implementation (that specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file). You
+are however welcome to specify absolute paths as well.</p>
+<p>If remote jobs still fail, you may look for other possible MPI executors,
+by running</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> ls <span class="s2">&quot;</span><span class="si">${</span><span class="nv">mpi_bindir</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>(other possible MPI executors include <code class="docutils literal notranslate"><span class="pre">mpiexec.hydra</span></code> and <code class="docutils literal notranslate"><span class="pre">orterun</span></code>).</p>
+</div>
+<p>If you are still struggling, it is possible that the cluster configuration
+just do not play nicely with the current MPI implementation in use. If you
+installed CO<em>N</em>CEPT using one of the MPI implementations present on the
+cluter, try again, using another preinstalled MPI library. If you let
+CO<em>N</em>CEPT install its own MPI, try switching from MPICH to OpenMPI or
+vice versa (i.e. set <code class="docutils literal notranslate"><span class="pre">mpi=openmpi</span></code> or <code class="docutils literal notranslate"><span class="pre">mpi=mpich</span></code> when installing
+CO<em>N</em>CEPT, as described under <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a>).</p>
+<p>When installing CO<em>N</em>CEPT, try having as few modules loaded as possible,
+to minimize the possibilities of wrong MPI identification and linking.</p>
+</div>
+<div class="section" id="problems-when-running-on-multiple-nodes">
+<h2>Problems when running on multiple nodes<a class="headerlink" href="#problems-when-running-on-multiple-nodes" title="Permalink to this headline">¶</a></h2>
+<p>If you are able to run single-node CO<em>N</em>CEPT jobs remotely, but encounter
+problems as soon as you request multiple nodes, it may be a permission
+problem. For example, OpenMPI uses ssh to establish the connection between the
+nodes, and so your local <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code> directory need to be configured properly.
+Note that when using an MPI implementation preinstalled on the cluster, such
+additional configuration from the user ought not to be necessary.</p>
+<p>CO<em>N</em>CEPT comes with the ability to set up the <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code> as needed for
+multi-node communication. Currently this feature resides as part of the
+<code class="docutils literal notranslate"><span class="pre">installer</span></code> script. To apply it, from the <code class="docutils literal notranslate"><span class="pre">concept</span></code> directory, execute</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>../installer --fix-ssh
+</pre></div>
+</div>
+<p>Note that this will move all existing content of <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code> to
+<code class="docutils literal notranslate"><span class="pre">~/.ssh_backup</span></code>. Also, any configuration you might have done will not be
+reflected in the new content of <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code>. If this indeed fixes the
+multi-node problem and you want to preserve your original ssh configuration,
+you must properly merge the original content of <code class="docutils literal notranslate"><span class="pre">~/.ssh_backup</span></code> back in with
+the new content of <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code>.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+
+      
+      
+
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

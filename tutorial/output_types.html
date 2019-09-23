@@ -1,0 +1,484 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>4. Other kinds of output &mdash; CONCEPT Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://jmd-dk.github.io/concept/index.htmltutorial/output_types.html"/>
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. Working on remote clusters" href="working_remotely.html" />
+    <link rel="prev" title="3. Working with parameter files" href="parameter_files.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: darkorange" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CO<em>N</em>CEPT
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">1. Effortless installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#the-concept-script">2.1. The <code class="docutils literal notranslate"><span class="pre">concept</span></code> script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#don-t-forget-about-gravity">2.2. Don’t forget about gravity</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parameter_files.html">3. Working with parameter files</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">4. Other kinds of output</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#d-renders">4.1. 3D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">4.2. 2D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#snapshots">4.3. Snapshots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="working_remotely.html">5. Working on remote clusters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="working_remotely.html#submitting-jobs">5.1. Submitting jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="working_remotely.html#using-pre-installed-mpi-library">5.2. Using pre-installed MPI library</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="beyond_matter_only.html">6. Beyond matter-only simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#adding-linear-speciess">6.1. Adding linear speciess</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="beyond_matter_only.html#massive-neutrinos">6.1.1. Massive neutrinos</a></li>
+<li class="toctree-l4"><a class="reference internal" href="beyond_matter_only.html#dynamical-dark-energy">6.1.2. Dynamical dark energy</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#decaying-cold-dark-matter">6.2. Decaying cold dark matter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">6.3. Non-linear massive neutrinos</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html">7. Using utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-powerspec-and-render-utilities">7.1. The powerspec and render utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-class-utility">7.2. The CLASS utility</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-update-utility">7.3. The update utility</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utilities/utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/class.html">The CLASS utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/convert.html">The convert utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/info.html">The info utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/play.html">The play utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/powerspec.html">The powerspec utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/render2D.html">The render2D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/render3D.html">The render3D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/update.html">The update utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/watch.html">The watch utility</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-terminal-color-output-looks-weird">The terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-on-multiple-nodes">Problems when running on multiple nodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../publications.html#theses">Theses</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CO<em>N</em>CEPT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
+        
+      <li>4. Other kinds of output</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/jmd-dk/concept" class="fa fa-github"> Code Repository</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="working_remotely.html" class="btn btn-neutral float-right" title="5. Working on remote clusters" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="parameter_files.html" class="btn btn-neutral float-left" title="3. Working with parameter files" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="other-kinds-of-output">
+<h1>4. Other kinds of output<a class="headerlink" href="#other-kinds-of-output" title="Permalink to this headline">¶</a></h1>
+<p>So far, the result of any simulation has been power spectra, though several
+other types of output are available, as examplified by the below parameter
+file:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter variable used to control the size of the simulation</span>
+<span class="n">_size</span> <span class="o">=</span> <span class="mi">64</span>
+
+<span class="c1"># Input/output</span>
+<span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter component&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+    <span class="s1">&#39;render2D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+    <span class="s1">&#39;render3D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">a_begin</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+    <span class="s1">&#39;render3D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+    <span class="s1">&#39;render2D&#39;</span> <span class="p">:</span> <span class="n">logspace</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">a_begin</span><span class="p">),</span> <span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">15</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="n">powerspec_select</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;matter component&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+<span class="p">}</span>
+<span class="n">render2D_select</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;matter component&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="s1">&#39;terminal image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="c1"># Numerical parameters</span>
+<span class="n">boxsize</span> <span class="o">=</span> <span class="mi">128</span><span class="o">*</span><span class="n">Mpc</span>
+<span class="n">φ_gridsize</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span>
+
+<span class="c1"># Cosmology</span>
+<span class="n">H0</span>      <span class="o">=</span> <span class="mi">67</span><span class="o">*</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">Mpc</span><span class="p">)</span>
+<span class="n">Ωcdm</span>    <span class="o">=</span> <span class="mf">0.27</span>
+<span class="n">Ωb</span>      <span class="o">=</span> <span class="mf">0.049</span>
+<span class="n">a_begin</span> <span class="o">=</span> <span class="mf">0.02</span>
+
+<span class="c1"># Physics</span>
+<span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;p3m&#39;</span><span class="p">}}</span>
+
+<span class="c1"># Graphics</span>
+<span class="n">render2D_options</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;terminal resolution&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;matter component&#39;</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">φ_gridsize</span><span class="p">,</span> <span class="mi">80</span><span class="p">),</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;matter component&#39;</span><span class="p">:</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+<span class="n">render3D_colors</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;matter component&#39;</span><span class="p">:</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">render3D_bgcolor</span>    <span class="o">=</span> <span class="s1">&#39;black&#39;</span>
+<span class="n">render3D_resolution</span> <span class="o">=</span> <span class="mi">640</span>
+</pre></div>
+</div>
+<p>Run a simulation using these parameters, e.g. by saving them to
+<code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> and execute</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">4</span>
+</pre></div>
+</div>
+<p>This will take a few minutes. You may read along in the meantime.</p>
+<p>We see that besides power spectra, we have <em>snapshots</em> and <em>renders</em>, the
+latter of which comes in a 2D and a 3D version. The ellipses (<code class="docutils literal notranslate"><span class="pre">...</span></code>) used
+above in <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code> indicates that we want all kinds of output to go to
+the same directory.</p>
+<p>For the <code class="docutils literal notranslate"><span class="pre">output_times</span></code>, different values are given for three of the output
+types, while <code class="docutils literal notranslate"><span class="pre">'render3D'</span></code> is set to use the same times as the output just
+above it, i.e. that of <code class="docutils literal notranslate"><span class="pre">'powerspec'</span></code>. For <code class="docutils literal notranslate"><span class="pre">'render2D'</span></code>, we’ve specified 15
+outputs logarithmically spaced between <span class="math notranslate nohighlight">\(a=a_{\mathrm{begin}}=0.02\)</span> and
+<span class="math notranslate nohighlight">\(a=1\)</span>.</p>
+<p>Among the new parameters introduced are <code class="docutils literal notranslate"><span class="pre">powerspec_select</span></code>, in which we have
+specified that we only want the data files as output, not a plot of this data.</p>
+<div class="section" id="d-renders">
+<h2>4.1. 3D renders<a class="headerlink" href="#d-renders" title="Permalink to this headline">¶</a></h2>
+<p>Looking in the output directory, among other things you’ll find image files
+with names starting with <code class="docutils literal notranslate"><span class="pre">render3D</span></code>. These are — unsurprisingly — the 3D
+renders. The colors are controlled through the <code class="docutils literal notranslate"><span class="pre">render3D_colors</span></code> and
+<code class="docutils literal notranslate"><span class="pre">render3D_bgcolor</span></code> parameters, while the (square) size (in pixels) is set by
+<code class="docutils literal notranslate"><span class="pre">render3D_resolution</span></code>. All particles of a given component gets the same
+color, though different colors may be used for different components when
+running such simulations. The brightness of each pixel indicate the local
+energy density.</p>
+<p>The colors used (here <code class="docutils literal notranslate"><span class="pre">'lime'</span></code> and <code class="docutils literal notranslate"><span class="pre">'black'</span></code>) may be any color recognized
+by <a class="reference external" href="https://matplotlib.org/">matplotlib</a>. A list of named colors is available
+<a class="reference external" href="https://matplotlib.org/3.1.1/gallery/color/named_colors.html">here</a>.
+Alternatively, you may pass a 3-tuple, e.g. <code class="docutils literal notranslate"><span class="pre">render3D_bgcolor</span> <span class="pre">=</span> <span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></code>
+makes the background red.</p>
+</div>
+<div class="section" id="id1">
+<h2>4.2. 2D renders<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>The 2D renders show the particle configuration projected along one of the axes
+of the box. These can often be prettier than their 3D counterparts, as a
+colormap is used to visualise the density field, rather than just a single
+color combined with alpha compositing.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">render2D_select</span></code> parameter we’ve specified that we want images as
+well as terminal images, but no data. Here, <em>images</em> refer to the 2D render
+image files you see in the output directory. <em>Terminal images</em> are rendered in
+the terminal as part of the printed output, as you probably noticed when
+running the simulation. If the colors in the terminal renders does not look
+like those in the image files, refer to the first note on
+<a class="reference internal" href="first_simulations.html"><span class="doc">this</span></a> page. If you turn on the <em>data</em> output, the 2D
+render data will be stored in a HDF5 file, handy for further processing (e.g.
+for making a small animation).</p>
+<p>The options for the 2D renders are collected in the <code class="docutils literal notranslate"><span class="pre">render2D_options</span></code>
+parameter. The resolution (width in characters) of the terminal images is set
+to be the smallest of <code class="docutils literal notranslate"><span class="pre">φ_gridsize</span></code> and <code class="docutils literal notranslate"><span class="pre">80</span></code>. This is a reasonable choice,
+as the <span class="math notranslate nohighlight">\(\varphi\)</span> grid is reused to do the particle projection, and so
+the actual resolution is set by <code class="docutils literal notranslate"><span class="pre">φ_gridsize</span></code>. At the same time however, we
+don’t want the terminal image to be larger than our (terminal emulator) screen,
+which is almost always at least 80 characters in width. The resolution of the
+image files are always equal to <code class="docutils literal notranslate"><span class="pre">φ_gridsize</span></code>.</p>
+<p>Also available through <code class="docutils literal notranslate"><span class="pre">render2D_options</span></code> is the colormap to use. Check out
+<a class="reference external" href="https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html">this</a>
+for a list of available colormaps.</p>
+<div class="topic">
+<p class="topic-title first">The play utility</p>
+<p>For this next trick, the simulation need to have finished, and we need to
+know its job ID.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can get the job ID from the header of any of the produced
+power spectra, e.g.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>grep -o <span class="s1">&#39;job [^ ]*&#39;</span> output/tutorial/powerspec_a<span class="o">=</span><span class="m">0</span>.02
+</pre></div>
+</div>
+</div>
+<p>With the job ID at hand, try the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -u play &lt;ID&gt;  <span class="c1"># replace &lt;ID&gt; with job ID number</span>
+</pre></div>
+</div>
+<p>You should see a nice animation of the evolution of the large-scale
+structure, playing out right in the terminal (does it get any better?). The
+animation is produced from the terminal images stored in the log file
+<code class="docutils literal notranslate"><span class="pre">logs/&lt;ID&gt;</span></code>. The <code class="docutils literal notranslate"><span class="pre">-u</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script signals
+CO<em>N</em>CEPT to start up a <em>utility</em> rather than running a simulation.
+These utilities are handy (or perhaps goofy) side programs baked into
+CO<em>N</em>CEPT.</p>
+</div>
+</div>
+<div class="section" id="snapshots">
+<h2>4.3. Snapshots<a class="headerlink" href="#snapshots" title="Permalink to this headline">¶</a></h2>
+<p>Snapshots are raw dumps of the total system, in this case the position and
+momenta of all <span class="math notranslate nohighlight">\(64^3\)</span> particles. CO<em>N</em>CEPT uses its own snapshot
+format, which is simply a well-structured HDF5 file.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For a great graphical tool to explore HDF5 files in general, check out
+<a class="reference external" href="http://vitables.org/">ViTables</a>. If you encounter problems viewing HDF5
+files produced by CO<em>N</em>CEPT, try upgrading to ViTables 3.</p>
+</div>
+<p>Such snapshots are useful if you want to process the raw data using some
+external program. You can also initialize a simulation from a snapshot, instead
+of generating initial conditions from scratch. To try this, redefine the
+initial conditions to simply be the path to the produced snapshot:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="s1">&#39;output/tutorial/snapshot_a=0.50.hdf5&#39;</span>
+</pre></div>
+</div>
+<p>Also, you should change <code class="docutils literal notranslate"><span class="pre">a_begin</span></code> to be <code class="docutils literal notranslate"><span class="pre">0.5</span></code> as to comply with the time at
+which the snapshot was dumped. Finally, before rerunning the simulation
+starting from the snapshot, you should probably comment out at least the
+<code class="docutils literal notranslate"><span class="pre">'render2D'</span></code> <code class="docutils literal notranslate"><span class="pre">output_times</span></code>, as to not clutter up the output directory too
+heavily.</p>
+<p>If you forget to correct <code class="docutils literal notranslate"><span class="pre">a_begin</span></code>, a warning will be emitted. The same goes
+for other obvious inconsistencies between the parameter file and the snapshot,
+like if <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> or <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> is wrong. To be able to do this, some meta data
+about the cosmology and numerical setup is stored in the snapshot as well.</p>
+<p>If you intend to run many simulations using the same initial conditions, it’s
+worthwhile to initialize these from a common snapshot, as it saves computation
+time in the beginning of the simulation, and also takes up less memory. To
+produce such an initial snapshot, simply set
+<code class="docutils literal notranslate"><span class="pre">output_times</span> <span class="pre">=</span> <span class="pre">{'snapshot':</span> <span class="pre">a_begin}</span></code>, in which case CO<em>N</em>CEPT will
+exit right after the snapshot has been dumped at the initial time, without
+doing any simulation. Also, the whole purpose of having the <code class="docutils literal notranslate"><span class="pre">ICs</span></code> directory
+is to hold such initial condition snapshots. To dump snapshots to this
+directory, use <code class="docutils literal notranslate"><span class="pre">output_dirs</span> <span class="pre">=</span> <span class="pre">{'snapshot':</span> <span class="pre">paths['ics_dir']}</span></code>.</p>
+<p>You may also want to use CO<em>N</em>CEPT purely as an initial condition
+generator, and perform the actual simulation using some other code. If so, the
+standard CO<em>N</em>CEPT snapshot format is of little use. To this end,
+CO<em>N</em>CEPT also supports the binary Fortran format of
+<a class="reference external" href="https://wwwmpa.mpa-garching.mpg.de/gadget/">GADGET-2</a>, specifically the
+<em>second</em> type (<code class="docutils literal notranslate"><span class="pre">SnapFormat</span> <span class="pre">=</span> <span class="pre">2</span></code> in GADGET-2), which is arguably harder to
+read but understood by several other simulation codes and tools. To use this
+snapshot format in place of the standard one, add
+<code class="docutils literal notranslate"><span class="pre">snapshot_type</span> <span class="pre">=</span> <span class="pre">'gadget2'</span></code> to your parameter file.</p>
+<div class="topic">
+<p class="topic-title first">The info utility</p>
+<p>We mentioned <a class="reference external" href="http://vitables.org/">ViTables</a> as a great way to peek
+inside the default CO<em>N</em>CEPT (HDF5) snapshots. It would be nice to have
+a general tool which worked for the supported GADGET-2 snapshots as well.
+Luckily, CO<em>N</em>CEPT comes with just such a tool: the <em>info utility</em>.
+To try it out, simply do</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -u info output/tutorial
+</pre></div>
+</div>
+<p>The content of all snapshots — standard (HDF5) or GADGET-2 format — in
+the <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code> directory will now be printed to the screen. Should
+you want information about just a specific snapshot, simply provide its
+entire path.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="working_remotely.html" class="btn btn-neutral float-right" title="5. Working on remote clusters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="parameter_files.html" class="btn btn-neutral float-left" title="3. Working with parameter files" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,435 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>3. Working with parameter files &mdash; CONCEPT Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://jmd-dk.github.io/concept/index.htmltutorial/parameter_files.html"/>
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. Other kinds of output" href="output_types.html" />
+    <link rel="prev" title="2. Your first simulations" href="first_simulations.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: darkorange" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CO<em>N</em>CEPT
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorial</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="installation.html">1. Effortless installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#the-concept-script">2.1. The <code class="docutils literal notranslate"><span class="pre">concept</span></code> script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#don-t-forget-about-gravity">2.2. Don’t forget about gravity</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">3. Working with parameter files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="output_types.html">4. Other kinds of output</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="output_types.html#d-renders">4.1. 3D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_types.html#id1">4.2. 2D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="output_types.html#snapshots">4.3. Snapshots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="working_remotely.html">5. Working on remote clusters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="working_remotely.html#submitting-jobs">5.1. Submitting jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="working_remotely.html#using-pre-installed-mpi-library">5.2. Using pre-installed MPI library</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="beyond_matter_only.html">6. Beyond matter-only simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#adding-linear-speciess">6.1. Adding linear speciess</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="beyond_matter_only.html#massive-neutrinos">6.1.1. Massive neutrinos</a></li>
+<li class="toctree-l4"><a class="reference internal" href="beyond_matter_only.html#dynamical-dark-energy">6.1.2. Dynamical dark energy</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#decaying-cold-dark-matter">6.2. Decaying cold dark matter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">6.3. Non-linear massive neutrinos</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html">7. Using utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-powerspec-and-render-utilities">7.1. The powerspec and render utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-class-utility">7.2. The CLASS utility</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-update-utility">7.3. The update utility</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utilities/utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/class.html">The CLASS utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/convert.html">The convert utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/info.html">The info utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/play.html">The play utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/powerspec.html">The powerspec utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/render2D.html">The render2D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/render3D.html">The render3D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/update.html">The update utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/watch.html">The watch utility</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-terminal-color-output-looks-weird">The terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-on-multiple-nodes">Problems when running on multiple nodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../publications.html#theses">Theses</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CO<em>N</em>CEPT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
+        
+      <li>3. Working with parameter files</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/jmd-dk/concept" class="fa fa-github"> Code Repository</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="output_types.html" class="btn btn-neutral float-right" title="4. Other kinds of output" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="first_simulations.html" class="btn btn-neutral float-left" title="2. Your first simulations" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="working-with-parameter-files">
+<h1>3. Working with parameter files<a class="headerlink" href="#working-with-parameter-files" title="Permalink to this headline">¶</a></h1>
+<p>Specifying the many parameters to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script via the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option
+quickly becomes tiresome. A better solution is to write all parameters in a
+file, say <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> (the <code class="docutils literal notranslate"><span class="pre">params</span></code> directory already exists).
+Copy the content below to such a file:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter variable used to control the size of the simulation</span>
+<span class="n">_size</span> <span class="o">=</span> <span class="mi">64</span>
+
+<span class="c1"># Input/output</span>
+<span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter component&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
+<span class="p">}</span>
+<span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">a_begin</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="c1"># Numerical parameters</span>
+<span class="n">boxsize</span> <span class="o">=</span> <span class="mi">256</span><span class="o">*</span><span class="n">Mpc</span><span class="o">/</span><span class="n">h</span>
+<span class="n">φ_gridsize</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span>
+
+<span class="c1"># Cosmology</span>
+<span class="n">H0</span>      <span class="o">=</span> <span class="mi">67</span><span class="o">*</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">Mpc</span><span class="p">)</span>
+<span class="n">Ωb</span>      <span class="o">=</span> <span class="mf">0.049</span>
+<span class="n">Ωcdm</span>    <span class="o">=</span> <span class="mf">0.27</span>
+<span class="n">a_begin</span> <span class="o">=</span> <span class="mf">0.02</span>
+
+<span class="c1"># Physics</span>
+<span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;p3m&#39;</span><span class="p">}}</span>
+</pre></div>
+</div>
+<p>To run CO<em>N</em>CEPT using these parameters, do</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">4</span>
+</pre></div>
+</div>
+<p>The simulation specified by the above parameters is quite similar to the
+simulations of the previous section, though we’ve now been more explicit about
+the cosmology and also refined the output specifications. Doing so, we’ve made
+use of several helpful tricks:</p>
+<ul>
+<li><p>The comments / section headings are there for organisational purposes only.
+These may be omitted, and the order in which the parameters are specified
+does not matter.</p></li>
+<li><p>Parameter files are glorified Python scripts, and so we may utilize the full
+Python (3) language when defining the parameters. We can also define
+helper variables that are <em>not</em> parameters, like <code class="docutils literal notranslate"><span class="pre">_size</span></code> above, from which
+we can simultaneously adjust <code class="docutils literal notranslate"><span class="pre">'N'</span></code> and <code class="docutils literal notranslate"><span class="pre">φ_gridsize</span></code>.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Though not stricly necessary, the leading underscore in <code class="docutils literal notranslate"><span class="pre">_size</span></code> signals
+to CO<em>N</em>CEPT that this is not an actual parameter. If we were to use
+just <code class="docutils literal notranslate"><span class="pre">size</span></code> (or any other unrecognized parameter name without a leading
+underscore), a warning would be emitted.</p>
+</div>
+</li>
+<li><p>We have explicitly specified the directory for power spectra output
+(<code class="docutils literal notranslate"><span class="pre">output_dirs</span></code>). The value is constructed using the <code class="docutils literal notranslate"><span class="pre">paths</span></code> variable,
+which holds absolute paths specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file.
+If you want to take a look at this <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file, use e.g.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>less ../.paths
+</pre></div>
+</div>
+<p>Looking up <code class="docutils literal notranslate"><span class="pre">paths['params']</span></code> is somewhat different, as <code class="docutils literal notranslate"><span class="pre">'params'</span></code> is not
+in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file. Instead, this dynamically maps to the full path of
+the parameter file itself. To get the filename only (i.e. <code class="docutils literal notranslate"><span class="pre">'tutorial'</span></code>),
+we use the <code class="docutils literal notranslate"><span class="pre">basename</span></code> function. In total, the power spectrum output
+directory is set to
+<code class="docutils literal notranslate"><span class="pre">'/path/to/concept_installation/concept/output/tutorial'</span></code>. We could have
+gotten away with just writing <code class="docutils literal notranslate"><span class="pre">'output/tutorial'</span></code> out statically. When
+specifying relative paths, these are always with respect to the
+<code class="docutils literal notranslate"><span class="pre">concept</span></code> directory.</p>
+</li>
+<li><p>We’ve specified multiple times at which to dump power spectra
+(<code class="docutils literal notranslate"><span class="pre">output_times</span></code>). The exact data type used is of no importance, i.e.
+using <code class="docutils literal notranslate"><span class="pre">()</span></code> or <code class="docutils literal notranslate"><span class="pre">{}</span></code> rather than <code class="docutils literal notranslate"><span class="pre">[]</span></code> is fine. Also, note that we use
+the parameter <code class="docutils literal notranslate"><span class="pre">a_begin</span></code> (creating a power spectrum of the initial
+conditions), the value of which isn’t set before furhter down. Generally,
+the order of variable definitions inside parameter files is of no importance.</p></li>
+<li><p>The simulation takes place in a cubic box, the side length of which is set
+by <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>. No default set of units are ever assumed by CO<em>N</em>CEPT,
+and so it’s critical that you explicitly tack on units on all parameters that
+are not unitless. For the <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>, the extra fancy unit of
+<span class="math notranslate nohighlight">\(\mathrm{Mpc}/h\)</span> is used, with
+<span class="math notranslate nohighlight">\(h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})\)</span>
+determined from the Hubble constant <code class="docutils literal notranslate"><span class="pre">H0</span></code> set further down.</p></li>
+<li><p>The parameters <code class="docutils literal notranslate"><span class="pre">Ωb</span></code> and <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> of course set the amount of baryons and
+cold dark matter, respectively. Together, these otherwise distinct species
+are collectively referred to as just <em>matter</em>. Thus, declaring the species
+to be <code class="docutils literal notranslate"><span class="pre">'matter</span> <span class="pre">particles'</span></code> in the <code class="docutils literal notranslate"><span class="pre">initial_conditions</span></code> implies that
+these particles will represent both the cold dark and the bayonic matter.
+Though rarely preferred, we <em>can</em> choose to treat the two matter species as
+seperate components;</p>
+<div class="highlight-Python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;dark matter component&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;dark matter particles&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;baryonic component&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;baryons&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>doubling the total number of particles.</p>
+<p>In such a case we of course would like gravity to apply to both components,
+and so both component names need to be registered with <code class="docutils literal notranslate"><span class="pre">select_forces</span></code>.
+A shortcut is used in the paramater file above, where we simply declare that
+<em>all</em> components interact under gravity, and uses the same method
+(here <code class="docutils literal notranslate"><span class="pre">'p3m'</span></code>). Note that you’re free to mix and match, so that e.g. the
+<code class="docutils literal notranslate"><span class="pre">'baryon</span> <span class="pre">component'</span></code> uses <code class="docutils literal notranslate"><span class="pre">'pm'</span></code> while the <code class="docutils literal notranslate"><span class="pre">'dark</span> <span class="pre">matter</span> <span class="pre">component'</span></code>
+uses <code class="docutils literal notranslate"><span class="pre">'p3m'</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While you have completely free choice in picking the value to supply to
+the <code class="docutils literal notranslate"><span class="pre">'name'</span></code> field when specifying components in <code class="docutils literal notranslate"><span class="pre">initial_conditions</span></code>,
+the legal values to supply to <code class="docutils literal notranslate"><span class="pre">'species'</span></code> are particular. For <em>particle
+components</em>, the difference between species lie purely in their initial
+conditions, while <em>fluid components</em> (e.g. neutrinos) may have distinct
+traits like specific time-varying equation of state. We shall delve into
+fluid components later, when discussing
+<a class="reference internal" href="beyond_matter_only.html"><span class="doc">beyond matter-only simulations</span></a>.</p>
+</div>
+</li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">-p</span></code> parameter file option can be mixed with the <code class="docutils literal notranslate"><span class="pre">-c</span></code> command line
+parameter option. As an example, consider leaving out <code class="docutils literal notranslate"><span class="pre">_size</span></code> from the
+parameter file, and instead supplying it when running the code:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_size = 64&#39;</span> -n <span class="m">4</span>
+</pre></div>
+</div>
+<p>If you forget to specify <code class="docutils literal notranslate"><span class="pre">_size</span></code> — or any other variable used in the
+parameter file — CO<em>N</em>CEPT will exit with an error, letting you know.</p>
+<div class="topic">
+<p class="topic-title first">Checking previously used parameters</p>
+<p>Among the first lines of output of any CO<em>N</em>CEPT run is the path to the
+parameter file in use. As this is included in the log file, you can always go
+back and check the parameters used by a given run. However, this information
+isn’t reliable, as we may have modified the parameter file since its original
+use. To this end, a complete copy of the parameter file is made upon every
+invocation of CO<em>N</em>CEPT, and stored in the <code class="docutils literal notranslate"><span class="pre">params</span></code> directory. The
+name of this copy is written together with the original parameter file when
+CO<em>N</em>CEPT starts.</p>
+<p>When mixing <code class="docutils literal notranslate"><span class="pre">-p</span></code> and <code class="docutils literal notranslate"><span class="pre">-c</span></code>, the combined parameters are what’s stored in
+the copied parameter file.</p>
+</div>
+<p>So far we’ve introduced only the most essential parameters. The remaining
+sections of this tutorial will introduce more as needed, but the full parameter
+scope will not be shown. If you’re on the lookout for something particular or
+just curious about what’s possible, study the <code class="docutils literal notranslate"><span class="pre">params/example_params</span></code>
+parameter file.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="output_types.html" class="btn btn-neutral float-right" title="4. Other kinds of output" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="first_simulations.html" class="btn btn-neutral float-left" title="2. Your first simulations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

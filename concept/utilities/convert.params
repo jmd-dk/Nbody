@@ -1,4 +1,0 @@
-# This is the default parameter file used by the convert utility
-
-# Input/output
-snapshot_type = 'standard'
