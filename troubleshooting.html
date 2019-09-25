@@ -124,7 +124,24 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_options.html">Command-line options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="command_line_options.html#basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_options.html#remote-job-submission">Remote job submission</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_options.html#other-modes-of-building-running">Other modes of building/running</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command_line_options.html#specials">Specials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters/parameters.html">Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameters/input_output.html">Input/output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters/numerical_parameters.html">Numerical parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters/cosmology.html">Cosmology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters/physics.html">Physics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters/simulation_options.html">Simulation options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters/graphics.html">Graphics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters/system_of_units.html">System of units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters/debugging_options.html">Debugging options</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utilities/utilities.html">Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utilities/class.html">The CLASS utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/convert.html">The convert utility</a></li>
@@ -139,9 +156,10 @@
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation-failed">Installation failed</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#the-terminal-color-output-looks-weird">The terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#problems-when-running-remotely">Problems when running remotely</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#problems-when-running-on-multiple-nodes">Problems when running on multiple nodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="publications.html">Publications</a><ul>
@@ -226,20 +244,36 @@
   <div class="section" id="troubleshooting">
 <h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
 <p>This page contains solutions to and helpful information about possible issues
-encountered when running CO<em>N</em>CEPT. Should you encounter a problem not
-listed, do not hesitate to contact the author at <a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a>.</p>
+encountered when running CO<em>N</em>CEPT. If help from this page is insufficient
+to solve your problem, do not hesitate to
+<a class="reference external" href="https://github.com/jmd-dk/concept/issues">open an issue</a> or contact the
+author at <a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a>.</p>
+<p>Entries on this page:</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#installation-failed" id="id2">Installation failed</a></p></li>
+<li><p><a class="reference internal" href="#terminal-color-output-looks-weird" id="id3">Terminal color output looks weird</a></p></li>
+<li><p><a class="reference internal" href="#crashes-or-other-bad-behavior" id="id4">Crashes or other bad behavior</a></p></li>
+<li><p><a class="reference internal" href="#problems-when-running-remotely" id="id5">Problems when running remotely</a></p></li>
+<li><p><a class="reference internal" href="#problems-when-using-multiple-nodes" id="id6">Problems when using multiple nodes</a></p></li>
+</ul>
+</div>
 <div class="section" id="installation-failed">
-<h2>Installation failed<a class="headerlink" href="#installation-failed" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id2">Installation failed</a><a class="headerlink" href="#installation-failed" title="Permalink to this headline">¶</a></h2>
 <p>We strive for a trivial installation process on as many Linux systems as
 possible. If the <a class="reference internal" href="tutorial/installation.html"><span class="doc">simple installation process</span></a>
-(with every dependency allowed to be installed from scratch) keeps failing,
-please send an e-mail to <a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a> stating the details of your system,
-including compiler brand + version. Do not forget to attach the
-<code class="docutils literal notranslate"><span class="pre">install_log</span></code> and <code class="docutils literal notranslate"><span class="pre">install_log_err</span></code> files produced during the attempted
-installation.</p>
+(with every dependency allowed to be installed from scratch) keeps failing
+for some inexplicable reason, you may try looking for a clue in the logged
+installation output (of which there are a lot), in the <code class="docutils literal notranslate"><span class="pre">install_log</span></code> and
+<code class="docutils literal notranslate"><span class="pre">install_log_err</span></code> files.</p>
+<p>It may happen that some dependency program fails to install due to some other
+dependency not working correctly. You may try adding the <code class="docutils literal notranslate"><span class="pre">--test</span></code> option
+when invoking the <code class="docutils literal notranslate"><span class="pre">installer</span></code>, which test most of the dependency programs
+after/during their individual installation. Carefully looking through the
+installation log files for failed tests may then reveal something.</p>
 </div>
-<div class="section" id="the-terminal-color-output-looks-weird">
-<h2>The terminal color output looks weird<a class="headerlink" href="#the-terminal-color-output-looks-weird" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="terminal-color-output-looks-weird">
+<h2><a class="toc-backref" href="#id3">Terminal color output looks weird</a><a class="headerlink" href="#terminal-color-output-looks-weird" title="Permalink to this headline">¶</a></h2>
 <p>CO<em>N</em>CEPT includes a lot of color and other formatting in its terminal
 output. While all modern terminal emulators on Linux fully support this, the
 story is different on other platforms. If you run CO<em>N</em>CEPT from macOS
@@ -254,12 +288,121 @@ solution is known.</p>
 <p>in your parameter files. Note that though this eliminates most formatting,
 a few elements are still formatted.</p>
 </div>
+<div class="section" id="crashes-or-other-bad-behavior">
+<h2><a class="toc-backref" href="#id4">Crashes or other bad behavior</a><a class="headerlink" href="#crashes-or-other-bad-behavior" title="Permalink to this headline">¶</a></h2>
+<p>This entry is concerned with problems encountered when using CO<em>N</em>CEPT
+<em>locally</em>. If your problem occurs only for remote jobs, please see the
+‘<a class="reference internal" href="#id1">Problems when running remotely</a>’ entry instead.</p>
+<p>If you are unable to run or even compile CO<em>N</em>CEPT, try running in pure
+Python mode by supplying the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code> flag to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script.
+If this works, you are probably dealing with an erroneous compilation. Next,
+remove the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code> flag and instead use <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code>. This
+runs CO<em>N</em>CEPT in compiled mode, but without any optimizations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To force a recompilation, you must first clean the code directory. You can
+do this by</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> make clean<span class="o">)</span>
+</pre></div>
+</div>
+</div>
+<p>If CO<em>N</em>CEPT is able to run without optimizations, it might be worth to
+manually edit the <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> and remove/alter the exact optimization(s) that
+leads to trouble, allowing for successful runs without necessarily disabling
+<em>all</em> optimizations with the <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code> option.</p>
+<p>If you are able to start CO<em>N</em>CEPT runs, but they crash, hang, yields
+obviously wrong results, or exhibit other bad behavior, it may be due to
+improper installation or a code bug. To inspect the extent of the erroneous
+behavior, try running the full CO<em>N</em>CEPT test suite via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -t all
+</pre></div>
+</div>
+<p>If any test is unsuccessful and you are running a stable version of
+CO<em>N</em>CEPT (i.e. any release version, not ‘master’), there is most probably
+a problem with your installation. You can try reinstalling CO<em>N</em>CEPT along
+with all of its dependencies, perhaps using compilers different from the ones
+used the first time around.</p>
+<p>If all tests passes despite the observed (and reproducible!) bad behavior,
+you may have found a bug. Please report this.</p>
+</div>
 <div class="section" id="problems-when-running-remotely">
-<span id="mpi-executor"></span><h2>Problems when running remotely<a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
-<p>If your remote jobs behave weirdly or doesn’t run at all, while local jobs run
-as expected, it may help to manually choose a different remote <em>MPI executor</em>.
-This is the term used for e.g. <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> in CO<em>N</em>CEPT, i.e.
-the executable used to launch MPI programs.</p>
+<span id="id1"></span><h2><a class="toc-backref" href="#id5">Problems when running remotely</a><a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
+<p>This entry is concerned with problems encountered specifically with remote
+CO<em>N</em>CEPT jobs. If you have not tried out CO<em>N</em>CEPT locally, please do
+this first. If you encounter problems here as well, please see the
+‘<a class="reference internal" href="#crashes-or-other-bad-behavior">Crashes or other bad behavior</a>’ entry.</p>
+<p>Even if CO<em>N</em>CEPT runs fine on the frontend of a cluster (i.e. when
+supplying the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script), you may
+experience weird behavior or crashes when submitting remote jobs. Typically,
+this is either due to the remote nodes having different hardware architecture
+from the frontend, or an improper choice of the MPI executor. Possible
+solutions to both of these problems are provided below.</p>
+<h4>Different hardware architecture on frontend and remote node</h4><p>If CO<em>N</em>CEPT and its dependencies have been installed from the frontend,
+these have been tailored to the architecture of the frontend. If the remote
+node to which you are submitting the CO<em>N</em>CEPT job has a different
+architecture, things may go wrong. The easy solution is then of course to
+switch to using a different remote queue/partition with nodes that have
+similar architecture to the one on the frontend.</p>
+<p>One might think that disabling architecture-specific compiler optimizations in
+the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> (like <code class="docutils literal notranslate"><span class="pre">-march=native</span></code>) would help, but since
+many of the dependency programs are compiled with architecture-specific flags
+as well, this rarely helps. That said, it is worth submitting a remote
+CO<em>N</em>CEPT job without <em>any</em> optimizations via the <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code>
+option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script, just to see what happens. Remember to clean
+the code directory before running with <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code>, to force
+recompilation.</p>
+<p>To really ensure compatibility with the architecture of a given node,
+reinstall CO<em>N</em>CEPT — including all of its dependencies — from that
+node. You may either do this by ssh’ing into the node and run the installation
+manually, or you may submit the installation as a remote job. Below you will
+find examples of Slurm and TORQUE/PBS job scripts for installing CO<em>N</em>CEPT.
+In both cases, you may wish to add loading of modules or other environment
+changes.</p>
+<div class="topic">
+<p class="topic-title first">Slurm</p>
+<p>To submit a remote Slurm job for installing CO<em>N</em>CEPT, save the code
+below to e.g. <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> (replacing <code class="docutils literal notranslate"><span class="pre">&lt;queue&gt;</span></code> with the partition in
+question) and execute <code class="docutils literal notranslate"><span class="pre">sbatch</span> <span class="pre">jobscript</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1">#SBATCH --job-name=install_concept</span>
+<span class="c1">#SBATCH --partition=&lt;queue&gt;</span>
+<span class="c1">#SBATCH --nodes=1</span>
+<span class="c1">#SBATCH --tasks-per-node=8</span>
+<span class="c1">#SBATCH --mem-per-cpu=5000M</span>
+<span class="c1">#SBATCH --time=24:00:00</span>
+<span class="c1">#SBATCH --output=/dev/null</span>
+<span class="c1">#SBATCH --error=/dev/null</span>
+
+<span class="nv">concept_version</span><span class="o">=</span>master
+<span class="nv">install_path</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/concept&quot;</span>
+
+<span class="nv">make_jobs</span><span class="o">=</span><span class="s2">&quot;-j&quot;</span> bash &lt;<span class="o">(</span>wget -O- https://raw.githubusercontent.com/jmd-dk/concept/<span class="si">${</span><span class="nv">concept_version</span><span class="si">}</span>/installer<span class="o">)</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">install_path</span><span class="si">}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="topic">
+<p class="topic-title first">TORQUE/PBS</p>
+<p>To submit a remote TORQUE/PBS job for installing CO<em>N</em>CEPT, save the
+code below to e.g. <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> (replacing <code class="docutils literal notranslate"><span class="pre">&lt;queue&gt;</span></code> with the queue in
+question) and execute <code class="docutils literal notranslate"><span class="pre">qsub</span> <span class="pre">jobscript</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env bash</span>
+<span class="c1">#PBS -N install_concept</span>
+<span class="c1">#PBS -q &lt;queue&gt;</span>
+<span class="c1">#PBS -l nodes=1:ppn=8</span>
+<span class="c1">#PBS -l walltime=24:00:00</span>
+<span class="c1">#PBS -o /dev/null</span>
+<span class="c1">#PBS -e /dev/null</span>
+
+<span class="nv">concept_version</span><span class="o">=</span>master
+<span class="nv">install_path</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span><span class="s2">/concept&quot;</span>
+
+<span class="nv">make_jobs</span><span class="o">=</span><span class="s2">&quot;-j&quot;</span> bash &lt;<span class="o">(</span>wget -O- https://raw.githubusercontent.com/jmd-dk/concept/<span class="si">${</span><span class="nv">concept_version</span><span class="si">}</span>/installer<span class="o">)</span> <span class="s2">&quot;</span><span class="si">${</span><span class="nv">install_path</span><span class="si">}</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</div>
+<h4>Choosing an MPI executor</h4><p>It may help to manually choose a different remote <em>MPI executor</em>. This is the
+term used for e.g. <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> in CO<em>N</em>CEPT, i.e. the
+executable used to launch MPI programs.</p>
 <p>To see which MPI executor is used when running remotely, check out the
 <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> variable in the produced <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> file. To manually set
 the MPI executor, overwrite the dedicated <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> varaible in the
@@ -301,10 +444,10 @@ i.e. setting</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;mpiexec&quot;</span>  <span class="c1"># or &quot;mpirun&quot;</span>
 </pre></div>
 </div>
-<p>in the <code class="docutils literal notranslate"><span class="pre">.env``file.</span> <span class="pre">Note</span> <span class="pre">that</span> <span class="pre">CO\</span> <span class="pre">*N*\</span> <span class="pre">CEPT</span> <span class="pre">sets</span> <span class="pre">the</span> <span class="pre">``PATH</span></code> so that
-<code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> are guaranteed to be those belonging to the MPI
-correct MPI implementation (that specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file). You
-are however welcome to specify absolute paths as well.</p>
+<p>in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file. Note that CO<em>N</em>CEPT sets the <code class="docutils literal notranslate"><span class="pre">PATH</span></code> so that
+<code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> are guaranteed to be those belonging to the correct
+MPI implementation (that specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file). You are however
+welcome to specify absolute paths as well.</p>
 <p>If remote jobs still fail, you may look for other possible MPI executors,
 by running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> ls <span class="s2">&quot;</span><span class="si">${</span><span class="nv">mpi_bindir</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">)</span>
@@ -312,7 +455,7 @@ by running</p>
 </div>
 <p>(other possible MPI executors include <code class="docutils literal notranslate"><span class="pre">mpiexec.hydra</span></code> and <code class="docutils literal notranslate"><span class="pre">orterun</span></code>).</p>
 </div>
-<p>If you are still struggling, it is possible that the cluster configuration
+<h4>It <em>still</em> does not work!</h4><p>If you are still struggling, it is possible that the cluster configuration
 just do not play nicely with the current MPI implementation in use. If you
 installed CO<em>N</em>CEPT using one of the MPI implementations present on the
 cluter, try again, using another preinstalled MPI library. If you let
@@ -322,8 +465,8 @@ CO<em>N</em>CEPT, as described under <a class="reference internal" href="install
 <p>When installing CO<em>N</em>CEPT, try having as few modules loaded as possible,
 to minimize the possibilities of wrong MPI identification and linking.</p>
 </div>
-<div class="section" id="problems-when-running-on-multiple-nodes">
-<h2>Problems when running on multiple nodes<a class="headerlink" href="#problems-when-running-on-multiple-nodes" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="problems-when-using-multiple-nodes">
+<h2><a class="toc-backref" href="#id6">Problems when using multiple nodes</a><a class="headerlink" href="#problems-when-using-multiple-nodes" title="Permalink to this headline">¶</a></h2>
 <p>If you are able to run single-node CO<em>N</em>CEPT jobs remotely, but encounter
 problems as soon as you request multiple nodes, it may be a permission
 problem. For example, OpenMPI uses ssh to establish the connection between the

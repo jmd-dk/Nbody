@@ -42,8 +42,8 @@ each with 2 cores.
 
 .. note::
 
-   If remote CO\ *N*\ CEPT jobs mysteriously fail, check out
-   :ref:`this troubleshooting entry<mpi-executor>`.
+   If remote CO\ *N*\ CEPT jobs mysteriously fail, check out the
+   ':ref:`problems_when_running_remotely`' troubleshooting entry.
 
 To specify a memory requirement, further supply ``--memory <memory>``, where
 ``<memory>`` is the *total* memory required collectively by all cores on all

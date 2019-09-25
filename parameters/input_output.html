@@ -1,0 +1,433 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Input/output &mdash; CONCEPT Documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://jmd-dk.github.io/concept/index.htmlparameters/input_output.html"/>
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Numerical parameters" href="numerical_parameters.html" />
+    <link rel="prev" title="Parameters" href="parameters.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: darkorange" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CO<em>N</em>CEPT
+          
+
+          
+            
+            <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../tutorial/tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/installation.html">1. Effortless installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/first_simulations.html">2. Your first simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/first_simulations.html#the-concept-script">2.1. The <code class="docutils literal notranslate"><span class="pre">concept</span></code> script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/first_simulations.html#don-t-forget-about-gravity">2.2. Don’t forget about gravity</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/parameter_files.html">3. Working with parameter files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/output_types.html">4. Other kinds of output</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/output_types.html#d-renders">4.1. 3D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/output_types.html#id1">4.2. 2D renders</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/output_types.html#snapshots">4.3. Snapshots</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/working_remotely.html">5. Working on remote clusters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/working_remotely.html#submitting-jobs">5.1. Submitting jobs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/working_remotely.html#using-pre-installed-mpi-library">5.2. Using pre-installed MPI library</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/beyond_matter_only.html">6. Beyond matter-only simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/beyond_matter_only.html#adding-linear-speciess">6.1. Adding linear speciess</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../tutorial/beyond_matter_only.html#massive-neutrinos">6.1.1. Massive neutrinos</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../tutorial/beyond_matter_only.html#dynamical-dark-energy">6.1.2. Dynamical dark energy</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/beyond_matter_only.html#decaying-cold-dark-matter">6.2. Decaying cold dark matter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/beyond_matter_only.html#non-linear-massive-neutrinos">6.3. Non-linear massive neutrinos</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/utilities.html">7. Using utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/utilities.html#the-powerspec-and-render-utilities">7.1. The powerspec and render utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/utilities.html#the-class-utility">7.2. The CLASS utility</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../tutorial/utilities.html#the-update-utility">7.3. The update utility</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_options.html">Command-line options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#remote-job-submission">Remote job submission</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#other-modes-of-building-running">Other modes of building/running</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#specials">Specials</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="parameters.html">Parameters</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Input/output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numerical_parameters.html">Numerical parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cosmology.html">Cosmology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="physics.html">Physics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="simulation_options.html">Simulation options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="graphics.html">Graphics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="system_of_units.html">System of units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debugging_options.html">Debugging options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../utilities/utilities.html">Utilities</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/class.html">The CLASS utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/convert.html">The convert utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/info.html">The info utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/play.html">The play utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/powerspec.html">The powerspec utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/render2D.html">The render2D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/render3D.html">The render3D utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/update.html">The update utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../utilities/watch.html">The watch utility</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../publications.html#theses">Theses</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">CO<em>N</em>CEPT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="parameters.html">Parameters</a> &raquo;</li>
+        
+      <li>Input/output</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/jmd-dk/concept" class="fa fa-github"> Code Repository</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <div class="rst-breadcrumbs-buttons" role="navigation" aria-label="breadcrumb navigation">
+      
+        <a href="numerical_parameters.html" class="btn btn-neutral float-right" title="Numerical parameters" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="parameters.html" class="btn btn-neutral float-left" title="Parameters" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+  </div>
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="input-output">
+<h1>Input/output<a class="headerlink" href="#input-output" title="Permalink to this headline">¶</a></h1>
+<h3>
+  <code class="docutils literal notranslate"><span class="pre">
+    initial_conditions
+  </span></code>
+</h3><table>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 19%" />
+<col style="width: 77%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p></p></td>
+<td><p><strong>Type</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">dict</span></code>’s <span class="math notranslate nohighlight">\(\ |\ \)</span> <code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p><strong>Default</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">''</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p></p></td>
+<td><p><strong>Description</strong></p></td>
+<td><p>Specifies the initial conditions of the simulation, either
+as a <code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">dict</span></code>’s — each specifying a
+component to generate initial conditions for — or
+alternatively as a <code class="docutils literal notranslate"><span class="pre">str</span></code> specifying the path to an
+existing snapshot.</p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p><strong>Examples</strong></p></td>
+<td><p>Generate initial conditions consisting of a single
+component comprised of <span class="math notranslate nohighlight">\(128^3\)</span> matter particles. The
+particle positions and momenta will be set according to the
+combined baryonic and cold dark matter transfer functions:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[{</span>
+   <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter component&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="mi">128</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+<span class="p">}]</span>
+</pre></div>
+</div>
+<p>Generate initial conditions where baryonic and cold dark
+matter particles are realized separately as individual
+components, each comprised of <span class="math notranslate nohighlight">\(64^3\)</span> particles:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;dark matter component&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;dark matter particles&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="mi">64</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;baryonic component&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;baryons&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="mi">64</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Generate initial conditions consisting of a combined matter
+component with <span class="math notranslate nohighlight">\(64^3\)</span> particles, as well as a fluid
+component containing the combined linear energy density
+perturbations of the photons, the (massless) neutrinos and
+the metric, having a linear grid size of <span class="math notranslate nohighlight">\(64\)</span> (and
+thus <span class="math notranslate nohighlight">\(64^3\)</span> fluid elements):</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter component&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="mi">64</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span>           <span class="p">:</span> <span class="s1">&#39;linear component&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span>        <span class="p">:</span> <span class="s1">&#39;fluid&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;gridsize&#39;</span>       <span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+        <span class="s1">&#39;boltzmann_order&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;class_species&#39;</span>  <span class="p">:</span> <span class="s1">&#39;g+ur+metric&#39;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>In all of the above, the <code class="docutils literal notranslate"><span class="pre">'name'</span></code> given to each component
+does not matter. It is needed in order for other parameters
+to refer to a given component. For further details on the
+possible component specifications, check out the
+‘<a class="reference internal" href="../tutorial/beyond_matter_only.html"><span class="doc">beyond matter-only</span></a>’
+part of the tutorial.</p>
+<p>Load initial conditions from an existng snapshot:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="s1">&#39;/path/to/snapshot&#39;</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>
+  <code class="docutils literal notranslate"><span class="pre">
+    snapshot_type
+  </span></code>
+</h3><table>
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 19%" />
+<col style="width: 77%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p></p></td>
+<td><p><strong>Type</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p><strong>Default</strong></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">'standard'</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p></p></td>
+<td><p><strong>Description</strong></p></td>
+<td><p>Specifies the snapshot format to use when dumping snapshots.
+CO<em>N</em>CEPT currently understands two snapshot formats;
+<code class="docutils literal notranslate"><span class="pre">'standard'</span></code>, which is its own, well-structured
+<a class="reference external" href="https://www.hdfgroup.org/">HDF5</a> format, and
+<code class="docutils literal notranslate"><span class="pre">'gadget2'</span></code>, which is the binary Fortran format of
+<a class="reference external" href="https://wwwmpa.mpa-garching.mpg.de/gadget/">GADGET-2</a>,
+specifically the <em>second</em> type (<code class="docutils literal notranslate"><span class="pre">SnapFormat</span> <span class="pre">=</span> <span class="pre">2</span></code> in
+GADGET-2). Note that the value of <code class="docutils literal notranslate"><span class="pre">snapshot_type</span></code> does
+not affect which snapshots may be <em>read</em>, e.g. used as
+<code class="docutils literal notranslate"><span class="pre">initial_conditions</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p><strong>Example</strong></p></td>
+<td><p>Dump output snapshots in GADGET-2 format:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">snapshot_type</span> <span class="o">=</span> <span class="s1">&#39;gadget2&#39;</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p><em>Under construction!</em></p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="numerical_parameters.html" class="btn btn-neutral float-right" title="Numerical parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="parameters.html" class="btn btn-neutral float-left" title="Parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

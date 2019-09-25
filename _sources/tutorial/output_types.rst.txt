@@ -79,8 +79,8 @@ the same directory.
 For the ``output_times``, different values are given for three of the output
 types, while ``'render3D'`` is set to use the same times as the output just
 above it, i.e. that of ``'powerspec'``. For ``'render2D'``, we've specified 15
-outputs logarithmically spaced between :math:`a=a_{\mathrm{begin}}=0.02` and
-:math:`a=1`.
+outputs spaced logarithmically equidistant between
+:math:`a=a_{\mathrm{begin}}=0.02` and :math:`a=1`.
 
 Among the new parameters introduced are ``powerspec_select``, in which we have
 specified that we only want the data files as output, not a plot of this data.

@@ -124,7 +124,24 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../parameters.html">Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_options.html">Command-line options</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#basics">Basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#remote-job-submission">Remote job submission</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#other-modes-of-building-running">Other modes of building/running</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#specials">Specials</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../parameters/parameters.html">Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/input_output.html">Input/output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/numerical_parameters.html">Numerical parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/cosmology.html">Cosmology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/physics.html">Physics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/simulation_options.html">Simulation options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/graphics.html">Graphics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/system_of_units.html">System of units</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../parameters/debugging_options.html">Debugging options</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../utilities/utilities.html">Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../utilities/class.html">The CLASS utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../utilities/convert.html">The convert utility</a></li>
@@ -139,9 +156,10 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-terminal-color-output-looks-weird">The terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-on-multiple-nodes">Problems when running on multiple nodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../publications.html">Publications</a><ul>
@@ -314,7 +332,7 @@ and so it’s critical that you explicitly tack on units on all parameters that
 are not unitless. For the <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>, the extra fancy unit of
 <span class="math notranslate nohighlight">\(\mathrm{Mpc}/h\)</span> is used, with
 <span class="math notranslate nohighlight">\(h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})\)</span>
-determined from the Hubble constant <code class="docutils literal notranslate"><span class="pre">H0</span></code> set further down.</p></li>
+determined dynamically from the Hubble constant <code class="docutils literal notranslate"><span class="pre">H0</span></code> set further down.</p></li>
 <li><p>The parameters <code class="docutils literal notranslate"><span class="pre">Ωb</span></code> and <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> of course set the amount of baryons and
 cold dark matter, respectively. Together, these otherwise distinct species
 are collectively referred to as just <em>matter</em>. Thus, declaring the species

@@ -94,7 +94,7 @@ use of several helpful tricks:
   are not unitless. For the ``boxsize``, the extra fancy unit of
   :math:`\mathrm{Mpc}/h` is used, with
   :math:`h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})`
-  determined from the Hubble constant ``H0`` set further down.
+  determined dynamically from the Hubble constant ``H0`` set further down.
 
 * The parameters ``Ωb`` and ``Ωcdm`` of course set the amount of baryons and
   cold dark matter, respectively. Together, these otherwise distinct species

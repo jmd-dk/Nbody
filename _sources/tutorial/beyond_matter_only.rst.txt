@@ -8,22 +8,22 @@ If you're not interested in this, you may skip this section.
 
 
 Adding linear speciess
-~~~~~~~~~~~~~~~~~~~~~~
+......................
 *Under construction!*
 
 Massive neutrinos
-^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~
 *Under construction!*
 
 Dynamical dark energy
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 *Under construction!*
 
 Decaying cold dark matter
-~~~~~~~~~~~~~~~~~~~~~~~~~
+.........................
 *Under construction!*
 
 Non-linear massive neutrinos
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+............................
 *Under construction!*
 

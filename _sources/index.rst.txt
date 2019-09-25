@@ -63,9 +63,9 @@ This is the documentation for CO\ *N*\ CEPT, the **CO**\ smological
 
 
 
-Content
--------
-Below you will find the complete contents list.
+Contents
+--------
+Below you will find the complete talbe of contents.
 If you're new to CO\ *N*\ CEPT, start with the
 :doc:`tutorial <tutorial/tutorial>`, which briefly covers installation before
 taking you on a guided tour through the CO\ *N*\ CEPT universe.
@@ -76,7 +76,8 @@ taking you on a guided tour through the CO\ *N*\ CEPT universe.
 
    tutorial/tutorial
    installation
-   parameters
+   command_line_options
+   parameters/parameters
    utilities/utilities
    troubleshooting
    publications
