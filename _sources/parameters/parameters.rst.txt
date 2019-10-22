@@ -60,7 +60,7 @@ A vast set of units are understood, like ``km``, ``pc``, ``kpc``, ``Mpc``,
    :doc:`parameters<system_of_units>`. Though the vast majority of users
    have no need to manually specify the internal unit system, it is useful
    for e.g. testing against other simulation codes that use some other,
-   fixed system of unit.
+   fixed system of units.
 
 
 
@@ -94,7 +94,7 @@ unique location is then to use
 which directs CO\ *N*\ CEPT to dump power spectra in a subdirectory with the
 same name as the parameter file, within the dedicated ``output`` directory as
 specified in the ``.paths`` file. Here, ``basename`` is really
-``os.basename``, which again is made available without the need for an
+``os.path.basename``, which again is made available without the need for an
 explicit ``import``.
 
 
@@ -146,7 +146,7 @@ regular Python scripts. The additional super powers are described below.
    Several of the parameters are ``dict``'s with which one often want the
    values to be identical for multiple keys. Instead of typing out the same
    value multiple times, this may be inferred dynamically from the placement
-   of ellipses (``...``), like so:
+   of ellipses '``...``' like so:
 
    .. code-block:: python3
 

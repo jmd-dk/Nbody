@@ -1,10 +1,16 @@
+.. role:: raw-html(raw)
+   :format: html
+
+
+
 Troubleshooting
 ===============
 This page contains solutions to and helpful information about possible issues
-encountered when running CO\ *N*\ CEPT. If help from this page is insufficient
+encountered when using CO\ *N*\ CEPT. If help from this page is insufficient
 to solve your problem, do not hesitate to
 `open an issue <https://github.com/jmd-dk/concept/issues>`_ or contact the
-author at dakin@phys.au.dk.
+author at
+:raw-html:`<td class="field-body"><a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a></td>`.
 
 Entries on this page:
 
@@ -62,7 +68,7 @@ If this works, you are probably dealing with an erroneous compilation. Next,
 remove the ``--pure-python`` flag and instead use ``--no-optimization``. This
 runs CO\ *N*\ CEPT in compiled mode, but without any optimizations.
 
-.. note::
+.. tip::
    To force a recompilation, you must first clean the code directory. You can
    do this by
 
@@ -75,7 +81,7 @@ manually edit the ``Makefile`` and remove/alter the exact optimization(s) that
 leads to trouble, allowing for successful runs without necessarily disabling
 *all* optimizations with the ``--no-optimization`` option.
 
-If you are able to start CO\ *N*\ CEPT runs, but they crash, hang, yields
+If you are able to start CO\ *N*\ CEPT runs, but they crash, hang, yield
 obviously wrong results, or exhibit other bad behavior, it may be due to
 improper installation or a code bug. To inspect the extent of the erroneous
 behavior, try running the full CO\ *N*\ CEPT test suite via
@@ -253,7 +259,7 @@ choice of MPI executor depends on the job schedular in use.
    welcome to specify absolute paths as well.
 
    If remote jobs still fail, you may look for other possible MPI executors,
-   by running
+   e.g. by running
 
    .. code-block:: bash
 

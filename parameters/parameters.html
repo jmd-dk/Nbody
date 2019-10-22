@@ -17,7 +17,7 @@
   
   
   
-    <link rel="canonical" href="https://jmd-dk.github.io/concept/index.htmlparameters/parameters.html"/>
+    <link rel="canonical" href="https://jmd-dk.github.io/concept/parameters/parameters.html"/>
   
 
   
@@ -290,7 +290,7 @@ not statically defined, but specified on a per-simulation basis via
 <a class="reference internal" href="system_of_units.html"><span class="doc">parameters</span></a>. Though the vast majority of users
 have no need to manually specify the internal unit system, it is useful
 for e.g. testing against other simulation codes that use some other,
-fixed system of unit.</p>
+fixed system of units.</p>
 </div>
 <h4>Parameter files as Python scripts</h4><p>You may think of parameter files as Python scripts, and use any valid Python 3
 statements to formulate or compute your parameters. Even without any explicit
@@ -314,7 +314,7 @@ unique location is then to use</p>
 <p>which directs CO<em>N</em>CEPT to dump power spectra in a subdirectory with the
 same name as the parameter file, within the dedicated <code class="docutils literal notranslate"><span class="pre">output</span></code> directory as
 specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file. Here, <code class="docutils literal notranslate"><span class="pre">basename</span></code> is really
-<code class="docutils literal notranslate"><span class="pre">os.basename</span></code>, which again is made available without the need for an
+<code class="docutils literal notranslate"><span class="pre">os.path.basename</span></code>, which again is made available without the need for an
 explicit <code class="docutils literal notranslate"><span class="pre">import</span></code>.</p>
 <h4>Parameter files as <em>glorified</em> Python scripts</h4><p>The parameter files of CO<em>N</em>CEPT are in fact even more powerful than
 regular Python scripts. The additional super powers are described below.</p>
@@ -354,7 +354,7 @@ name that does not match any of the recognized parameters; hence
 <p>Several of the parameters are <code class="docutils literal notranslate"><span class="pre">dict</span></code>’s with which one often want the
 values to be identical for multiple keys. Instead of typing out the same
 value multiple times, this may be inferred dynamically from the placement
-of ellipses (<code class="docutils literal notranslate"><span class="pre">...</span></code>), like so:</p>
+of ellipses ‘<code class="docutils literal notranslate"><span class="pre">...</span></code>’ like so:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]),</span>
     <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>

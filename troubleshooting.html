@@ -17,7 +17,7 @@
   
   
   
-    <link rel="canonical" href="https://jmd-dk.github.io/concept/index.htmltroubleshooting.html"/>
+    <link rel="canonical" href="https://jmd-dk.github.io/concept/troubleshooting.html"/>
   
 
   
@@ -244,10 +244,11 @@
   <div class="section" id="troubleshooting">
 <h1>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this headline">¶</a></h1>
 <p>This page contains solutions to and helpful information about possible issues
-encountered when running CO<em>N</em>CEPT. If help from this page is insufficient
+encountered when using CO<em>N</em>CEPT. If help from this page is insufficient
 to solve your problem, do not hesitate to
 <a class="reference external" href="https://github.com/jmd-dk/concept/issues">open an issue</a> or contact the
-author at <a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a>.</p>
+author at
+<span class="raw-html"><td class="field-body"><a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a></td></span>.</p>
 <p>Entries on this page:</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
@@ -298,8 +299,8 @@ Python mode by supplying the <code class="docutils literal notranslate"><span cl
 If this works, you are probably dealing with an erroneous compilation. Next,
 remove the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code> flag and instead use <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code>. This
 runs CO<em>N</em>CEPT in compiled mode, but without any optimizations.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
 <p>To force a recompilation, you must first clean the code directory. You can
 do this by</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> make clean<span class="o">)</span>
@@ -310,7 +311,7 @@ do this by</p>
 manually edit the <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> and remove/alter the exact optimization(s) that
 leads to trouble, allowing for successful runs without necessarily disabling
 <em>all</em> optimizations with the <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code> option.</p>
-<p>If you are able to start CO<em>N</em>CEPT runs, but they crash, hang, yields
+<p>If you are able to start CO<em>N</em>CEPT runs, but they crash, hang, yield
 obviously wrong results, or exhibit other bad behavior, it may be due to
 improper installation or a code bug. To inspect the extent of the erroneous
 behavior, try running the full CO<em>N</em>CEPT test suite via</p>
@@ -449,7 +450,7 @@ i.e. setting</p>
 MPI implementation (that specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file). You are however
 welcome to specify absolute paths as well.</p>
 <p>If remote jobs still fail, you may look for other possible MPI executors,
-by running</p>
+e.g. by running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> ls <span class="s2">&quot;</span><span class="si">${</span><span class="nv">mpi_bindir</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">)</span>
 </pre></div>
 </div>
