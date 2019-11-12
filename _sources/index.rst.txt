@@ -25,7 +25,7 @@ CONCEPT documentation
    </tr>
    <tr class="field-even field"><th class="field-name">Contact:</th><td class="field-body"><a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a></td>
    </tr>
-   <tr class="field-odd field"><th class="field-name">Web Site:</th><td class="field-body"><a class="reference external" href="https://github.com/jmd-dk/concept">https://github.com/jmd-dk/concept</a></td>
+   <tr class="field-odd field"><th class="field-name">Web Site:</th><td class="field-body"><a class="reference external" href="https://github.com/jmd-dk/concept/">https://github.com/jmd-dk/concept/</a></td>
    </tr>
    <tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">|today|</td>
    </tr>
@@ -65,7 +65,7 @@ This is the documentation for CO\ *N*\ CEPT, the **CO**\ smological
 
 Contents
 --------
-Below you will find the complete talbe of contents.
+Below you will find the complete table of contents.
 If you're new to CO\ *N*\ CEPT, start with the
 :doc:`tutorial <tutorial/tutorial>`, which briefly covers installation before
 taking you on a guided tour through the CO\ *N*\ CEPT universe.

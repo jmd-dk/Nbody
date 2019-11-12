@@ -85,7 +85,7 @@ use of several helpful tricks:
   (``output_times``). The exact data type used is of no importance, i.e.
   using ``()`` or ``{}`` rather than ``[]`` is fine. Also, note that we use
   the parameter ``a_begin`` (creating a power spectrum of the initial
-  conditions), the value of which isn't set before furhter down. Generally,
+  conditions), the value of which isn't set before further down. Generally,
   the order of variable definitions inside parameter files is of no importance.
 
 * The simulation takes place in a cubic box, the side length of which is set

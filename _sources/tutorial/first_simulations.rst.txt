@@ -18,24 +18,16 @@ Try invoking the script using
    ./concept --pure-python --local
 
 This will fire up CO\ *N*\ CEPT, which should display a few lines of colorful
-text before shutting back down.
+text before shutting back down. The ``--local`` option specifies that we wish
+to run CO\ *N*\ CEPT on the local machine, as opposed to submitting the
+simulation as a job on a remote cluster. If you *are* working locally, you may
+omit the ``--local`` option, just as this tutorial will do from now on. If you
+are working remotely, please add the ``--local`` option yourself to all future
+invocations of the ``concept`` script. Later this tutorial covers how to submit
+CO\ *N*\ CEPT jobs when :doc:`working on a cluster <working_remotely>`.
 
-.. note::
-   If the color output looks hideous, chances are that you're running
-   CO\ *N*\ CEPT through ssh on macOS or putty on Windows. In the case of
-   macOS, switching to a terminal emulator with better color support
-   --- such as `iTerm2 <https://www.iterm2.com/>`_ --- fixes the issue.
-
-The ``--local`` option specifies that we wish to run CO\ *N*\ CEPT on the local
-machine, as opposed to submitting the simulation as a job on a remote cluster.
-If you *are* working locally, you may omit the ``--local`` option, just as this
-tutorial will do from now on. If you are working remotely, please add the
-``--local`` option yourself to all future invocations of the ``concept``
-script. Later this tutorial covers how to submit CO\ *N*\ CEPT jobs when
-:doc:`working on a cluster <working_remotely>`.
-
-As we did not provide any parameters to CO\ *N*\ CEPT, it shut down emmideately.
-We can add parameters using the ``-c`` option, like so:
+As we did not provide any parameters to CO\ *N*\ CEPT, it shut down
+immediately. We can add parameters using the ``-c`` option, like so:
 
 .. code-block:: bash
 

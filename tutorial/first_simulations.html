@@ -123,7 +123,18 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#standard-installation">Standard installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#programs-installed">Programs installed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#command-line-options">Command-line options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../command_line_options.html">Command-line options</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#basics">Basics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#remote-job-submission">Remote job submission</a></li>
@@ -220,7 +231,7 @@
         
             
             
-              <a href="https://github.com/jmd-dk/concept" class="fa fa-github"> Code Repository</a>
+              <a href="https://github.com/jmd-dk/concept/" class="fa fa-github"> Code Repository</a>
             
           
         
@@ -258,23 +269,15 @@ used to launch the code.</p>
 </pre></div>
 </div>
 <p>This will fire up CO<em>N</em>CEPT, which should display a few lines of colorful
-text before shutting back down.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>If the color output looks hideous, chances are that you’re running
-CO<em>N</em>CEPT through ssh on macOS or putty on Windows. In the case of
-macOS, switching to a terminal emulator with better color support
-— such as <a class="reference external" href="https://www.iterm2.com/">iTerm2</a> — fixes the issue.</p>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">--local</span></code> option specifies that we wish to run CO<em>N</em>CEPT on the local
-machine, as opposed to submitting the simulation as a job on a remote cluster.
-If you <em>are</em> working locally, you may omit the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option, just as this
-tutorial will do from now on. If you are working remotely, please add the
-<code class="docutils literal notranslate"><span class="pre">--local</span></code> option yourself to all future invocations of the <code class="docutils literal notranslate"><span class="pre">concept</span></code>
-script. Later this tutorial covers how to submit CO<em>N</em>CEPT jobs when
-<a class="reference internal" href="working_remotely.html"><span class="doc">working on a cluster</span></a>.</p>
-<p>As we did not provide any parameters to CO<em>N</em>CEPT, it shut down emmideately.
-We can add parameters using the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option, like so:</p>
+text before shutting back down. The <code class="docutils literal notranslate"><span class="pre">--local</span></code> option specifies that we wish
+to run CO<em>N</em>CEPT on the local machine, as opposed to submitting the
+simulation as a job on a remote cluster. If you <em>are</em> working locally, you may
+omit the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option, just as this tutorial will do from now on. If you
+are working remotely, please add the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option yourself to all future
+invocations of the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script. Later this tutorial covers how to submit
+CO<em>N</em>CEPT jobs when <a class="reference internal" href="working_remotely.html"><span class="doc">working on a cluster</span></a>.</p>
+<p>As we did not provide any parameters to CO<em>N</em>CEPT, it shut down
+immediately. We can add parameters using the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option, like so:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
     -c <span class="s1">&#39;initial_conditions = {&quot;name&quot;: &quot;matter&quot;, &quot;species&quot;: &quot;matter particles&quot;, &quot;N&quot;: 32**3}&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;a_begin = 0.02&#39;</span> <span class="se">\</span>

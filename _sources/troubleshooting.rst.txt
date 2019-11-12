@@ -144,7 +144,14 @@ node. You may either do this by ssh'ing into the node and run the installation
 manually, or you may submit the installation as a remote job. Below you will
 find examples of Slurm and TORQUE/PBS job scripts for installing CO\ *N*\ CEPT.
 In both cases, you may wish to add loading of modules or other environment
-changes.
+changes, and/or make use of a preinstalled MPI library as described under
+:doc:`installation`. Once a CO\ *N*\ CEPT installation job has begun, you
+can follow the installation process by executing
+
+.. code-block:: bash
+
+   tail -f <install_path>/install_log
+
 
 .. topic:: Slurm
 
@@ -159,8 +166,8 @@ changes.
       #SBATCH --partition=<queue>
       #SBATCH --nodes=1
       #SBATCH --tasks-per-node=8
-      #SBATCH --mem-per-cpu=5000M
-      #SBATCH --time=24:00:00
+      #SBATCH --mem-per-cpu=2000M
+      #SBATCH --time=12:00:00
       #SBATCH --output=/dev/null
       #SBATCH --error=/dev/null
 
@@ -181,7 +188,7 @@ changes.
       #PBS -N install_concept
       #PBS -q <queue>
       #PBS -l nodes=1:ppn=8
-      #PBS -l walltime=24:00:00
+      #PBS -l walltime=12:00:00
       #PBS -o /dev/null
       #PBS -e /dev/null
 
@@ -275,7 +282,7 @@ choice of MPI executor depends on the job schedular in use.
 If you are still struggling, it is possible that the cluster configuration
 just do not play nicely with the current MPI implementation in use. If you
 installed CO\ *N*\ CEPT using one of the MPI implementations present on the
-cluter, try again, using another preinstalled MPI library. If you let
+cluster, try again, using another preinstalled MPI library. If you let
 CO\ *N*\ CEPT install its own MPI, try switching from MPICH to OpenMPI or
 vice versa (i.e. set ``mpi=openmpi`` or ``mpi=mpich`` when installing
 CO\ *N*\ CEPT, as described under :doc:`installation`).
@@ -284,6 +291,8 @@ When installing CO\ *N*\ CEPT, try having as few modules loaded as possible,
 to minimize the possibilities of wrong MPI identification and linking.
 
 
+
+.. _problems_when_using_multiple_nodes:
 
 Problems when using multiple nodes
 ----------------------------------

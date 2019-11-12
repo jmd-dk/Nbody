@@ -1,8 +1,10 @@
 Effortless installation
 -----------------------
+If this is your first time trying out CO\ *N*\ CEPT, it is advised to do the
+installation on your local machine, not on a remote cluster.
 
 .. note::
-   Don't bother trying this on anything but a Linux system
+   Don't bother attempting the installation on anything but a Linux system
 
 To install the newest version of CO\ *N*\ CEPT along with all of its
 dependencies, open a terminal and invoke
@@ -20,7 +22,4 @@ You will be prompted for an installation directory.
 The installation will take an hour or two. You can kill the installation at
 any time --- it will pick up from where it left off if you reenter the
 installation command.
-
-
-
 

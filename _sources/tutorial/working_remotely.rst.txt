@@ -83,8 +83,8 @@ A complete CO\ *N*\ CEPT job submission could then look like
    close to real time.
 
    If you don't want to watch the job after submission, you may supply the
-   ``--no-watch`` option to ``concept`` instead of having to kill the process
-   after submission.
+   ``--no-watching`` option to ``concept`` instead of having to kill the
+   process after submission.
 
    You may manually run the watch utility at any later time, like so:
 

@@ -123,7 +123,18 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#standard-installation">Standard installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#programs-installed">Programs installed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#command-line-options">Command-line options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#influential-environment-variables">Influential environment variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Command-line options</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basics">Basics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#remote-job-submission">Remote job submission</a></li>
@@ -218,7 +229,7 @@
         
             
             
-              <a href="https://github.com/jmd-dk/concept" class="fa fa-github"> Code Repository</a>
+              <a href="https://github.com/jmd-dk/concept/" class="fa fa-github"> Code Repository</a>
             
           
         
@@ -254,14 +265,14 @@ CO<em>N</em>CEPT), you are advised to take the
 <p>The command-line options are grouped into the following categories:</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#basics" id="id3">Basics</a></p></li>
-<li><p><a class="reference internal" href="#remote-job-submission" id="id4">Remote job submission</a></p></li>
-<li><p><a class="reference internal" href="#other-modes-of-building-running" id="id5">Other modes of building/running</a></p></li>
-<li><p><a class="reference internal" href="#specials" id="id6">Specials</a></p></li>
+<li><p><a class="reference internal" href="#basics" id="id4">Basics</a></p></li>
+<li><p><a class="reference internal" href="#remote-job-submission" id="id5">Remote job submission</a></p></li>
+<li><p><a class="reference internal" href="#other-modes-of-building-running" id="id6">Other modes of building/running</a></p></li>
+<li><p><a class="reference internal" href="#specials" id="id7">Specials</a></p></li>
 </ul>
 </div>
 <div class="section" id="basics">
-<span id="id1"></span><h2><a class="toc-backref" href="#id3">Basics</a><a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id4">Basics</a><a class="headerlink" href="#basics" title="Permalink to this headline">¶</a></h2>
 <p>The following basic command-line options are all you need to know in order for
 running CO<em>N</em>CEPT simulations locally.</p>
 <h4>
@@ -273,7 +284,7 @@ running CO<em>N</em>CEPT simulations locally.</p>
   <code class="docutils literal notranslate"><span class="pre">
     --help
   </span></code>
-</h4><p>Displays a short description of each command-line option and exit. This is
+</h4><p>Displays a short description of each command-line option and exits. This is
 helpful if you forget the exact syntax. For learning about the usage of a
 given option, this page is much preferable.</p>
 <h4>
@@ -340,7 +351,7 @@ then specified.</p>
 </h4><p><em>Under construction!</em></p>
 </div>
 <div class="section" id="remote-job-submission">
-<span id="id2"></span><h2><a class="toc-backref" href="#id4">Remote job submission</a><a class="headerlink" href="#remote-job-submission" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2><a class="toc-backref" href="#id5">Remote job submission</a><a class="headerlink" href="#remote-job-submission" title="Permalink to this headline">¶</a></h2>
 <p>In addition to the <a class="reference internal" href="#basics"><span class="std std-ref">basic</span></a> options, the options below are used
 for additional resource specification when submitting remote jobs. Note that
 for remote jobs, additional possibilities for the <code class="docutils literal notranslate"><span class="pre">-n</span></code> option arise, as
@@ -384,12 +395,12 @@ documented above.</p>
 <h4>
   No watching:
   <code class="docutils literal notranslate"><span class="pre">
-    --no-watch
+    --no-watching
   </span></code>
 </h4><p><em>Under construction!</em></p>
 </div>
 <div class="section" id="other-modes-of-building-running">
-<h2><a class="toc-backref" href="#id5">Other modes of building/running</a><a class="headerlink" href="#other-modes-of-building-running" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Other modes of building/running</a><a class="headerlink" href="#other-modes-of-building-running" title="Permalink to this headline">¶</a></h2>
 <p>The following options change the mode in which CO<em>N</em>CEPT is built and run.
 When invoking the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script, the default behavior is to check for
 changes in the source code since the last build, in which case the code is
@@ -411,6 +422,12 @@ remote job (which fails if you have not specified the <code class="docutils lite
   </span></code>
 </h4><p><em>Under construction!</em></p>
 <h4>
+  No recompilation:
+  <code class="docutils literal notranslate"><span class="pre">
+    --no-recompilation
+  </span></code>
+</h4><p><em>Under construction!</em></p>
+<h4>
   No optimization:
   <code class="docutils literal notranslate"><span class="pre">
     --no-optimization
@@ -424,7 +441,7 @@ remote job (which fails if you have not specified the <code class="docutils lite
 </h4><p><em>Under construction!</em></p>
 </div>
 <div class="section" id="specials">
-<h2><a class="toc-backref" href="#id6">Specials</a><a class="headerlink" href="#specials" title="Permalink to this headline">¶</a></h2>
+<span id="id3"></span><h2><a class="toc-backref" href="#id7">Specials</a><a class="headerlink" href="#specials" title="Permalink to this headline">¶</a></h2>
 <p>The following special options are rarely used outside of development, though
 knowledge about them may come in handy as they are very powerful.</p>
 <h4>
