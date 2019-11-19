@@ -101,7 +101,23 @@ you may have found a bug. Please report this.
 
 
 
+Bad performance when using multiple processes/nodes
+---------------------------------------------------
+If you are running CO\ *N*\ CEPT on a cluster and experiences a significant
+drop in performance as you increase the number of processes from e.g. 1 to 2
+or 2 to 4, or when using 2 nodes instead of 1 with the same total number of
+processes, the problem is likely that the MPI library used is not configured
+to handle the network optimally.
+
+Be sure to install CO\ *N*\ CEPT with
+:ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`.
+If you are observing bad network behavior even so, you should try changing the
+MPI executor, as described in :ref:`this<problems_when_running_remotely>`
+entry.
+
+
 .. _problems_when_running_remotely:
+
 
 Problems when running remotely
 ------------------------------
@@ -207,6 +223,8 @@ It may help to manually choose a different remote *MPI executor*. This is the
 term used for e.g. ``mpiexec``/``mpirun`` in CO\ *N*\ CEPT, i.e. the
 executable used to launch MPI programs.
 
+
+
 To see which MPI executor is used when running remotely, check out the
 ``mpi_executor`` variable in the produced ``jobscript`` file. To manually set
 the MPI executor, overwrite the dedicated ``mpi_executor`` varaible in the
@@ -215,6 +233,15 @@ i.e. at ``/path/to/concept_installation/.env``). Helpful suggestions for the
 choice of MPI executor depends on the job schedular in use.
 
 .. topic:: Using Slurm
+
+   .. note::
+
+      Even if you are using Slurm, it may be that your MPI library is not
+      configured appropriately for ``srun`` to be able to correctly launch
+      CO\ *N*\ CEPT jobs. In particular, if you are using an MPI library that
+      was installed by the ``installer`` script, as opposed to an MPI library
+      configured and installed by the system administrator of the cluster,
+      ``mpiexec`` is probably your best choice.
 
    If Slurm is used as the job schedular, the MPI executor will be set to
    ``srun --cpu_bind=none`` by default. The first thing to try is to leave
@@ -285,7 +312,7 @@ installed CO\ *N*\ CEPT using one of the MPI implementations present on the
 cluster, try again, using another preinstalled MPI library. If you let
 CO\ *N*\ CEPT install its own MPI, try switching from MPICH to OpenMPI or
 vice versa (i.e. set ``mpi=openmpi`` or ``mpi=mpich`` when installing
-CO\ *N*\ CEPT, as described under :doc:`installation`).
+CO\ *N*\ CEPT, as described :ref:`here<influential_environment_variables>`).
 
 When installing CO\ *N*\ CEPT, try having as few modules loaded as possible,
 to minimize the possibilities of wrong MPI identification and linking.
@@ -296,6 +323,12 @@ to minimize the possibilities of wrong MPI identification and linking.
 
 Problems when using multiple nodes
 ----------------------------------
+If you observe a wrong process binding (i.e. it appears as though several
+copies of CO\ *N*\ CEPT are running on top of each other, rather than all of
+the MPI processes working together as a collective) when running CO\ *N*\ CEPT
+across multiple nodes, you should try changing the MPI executor. See "choosing
+an MPI executor" under :ref:`this<problems_when_running_remotely>` entry.
+
 If you are able to run single-node CO\ *N*\ CEPT jobs remotely, but encounter
 problems as soon as you request multiple nodes, it may be a permission
 problem. For example, OpenMPI uses ssh to establish the connection between the

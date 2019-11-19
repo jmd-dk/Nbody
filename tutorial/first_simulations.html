@@ -124,7 +124,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#standard-installation">Standard installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#standard-installation">Standard installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#optimal-network-performance-on-clusters">Optimal network performance on clusters</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#command-line-options">Command-line options</a></li>
@@ -132,7 +135,11 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../command_line_options.html">Command-line options</a><ul>
@@ -169,6 +176,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
@@ -290,13 +298,24 @@ conditions generated at a scale factor of <span class="math notranslate nohighli
 spectrum produced at <span class="math notranslate nohighlight">\(a = 1\)</span>. Once completed, check the <code class="docutils literal notranslate"><span class="pre">output</span></code>
 directory, where you’ll find the power spectrum data and plot.</p>
 <p>The above simulation should take a couple of minutes. Now rerun the simulation,
-this time without the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code> option. If the CO<em>N</em>CEPT code has
-yet to be compiled, this will now be done. This process takes a few minutes.
-Once done, the simulation will be run in <em>compiled</em> mode, as opposed to <em>pure
-Python</em> mode. You should see a dramatic performance enhancement, in particular
-for the actual time stepping. For each time step, the computation time is
-written in parentheses to the right. Also, the last printed line of a
-simulation contains the total execution time.</p>
+this time without the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code> option. The simulation will be run in
+<em>compiled</em> mode, as opposed to <em>pure Python</em> mode. You should see a dramatic
+performance enhancement, in particular for the actual time stepping. For each
+time step, the computation time is written in parentheses to the right. Also,
+the last printed line of a simulation contains the total execution time.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When running CO<em>N</em>CEPT in compiled mode, the code base is first checked
+for edits since last compilation. If any edits are  detected, the necessary
+parts of the code will automatically be re-compiled before the simulation
+starts. You may try this out by updating the modification timestamp of e.g.
+the <code class="docutils literal notranslate"><span class="pre">main</span></code> module;</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>touch main.py
+</pre></div>
+</div>
+<p>and then invoking <code class="docutils literal notranslate"><span class="pre">concept</span></code> in compiled mode. Compilation takes a few
+minutes.</p>
+</div>
 <div class="topic">
 <p class="topic-title first">Log files</p>
 <p>The printed output of all CO<em>N</em>CEPT runs gets logged in the <code class="docutils literal notranslate"><span class="pre">logs</span></code>

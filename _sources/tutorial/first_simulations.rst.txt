@@ -43,13 +43,28 @@ spectrum produced at :math:`a = 1`. Once completed, check the ``output``
 directory, where you'll find the power spectrum data and plot.
 
 The above simulation should take a couple of minutes. Now rerun the simulation,
-this time without the ``--pure-python`` option. If the CO\ *N*\CEPT code has
-yet to be compiled, this will now be done. This process takes a few minutes.
-Once done, the simulation will be run in *compiled* mode, as opposed to *pure
-Python* mode. You should see a dramatic performance enhancement, in particular
-for the actual time stepping. For each time step, the computation time is
-written in parentheses to the right. Also, the last printed line of a
-simulation contains the total execution time.
+this time without the ``--pure-python`` option. The simulation will be run in
+*compiled* mode, as opposed to *pure Python* mode. You should see a dramatic
+performance enhancement, in particular for the actual time stepping. For each
+time step, the computation time is written in parentheses to the right. Also,
+the last printed line of a simulation contains the total execution time.
+
+.. note::
+
+   When running CO\ *N*\ CEPT in compiled mode, the code base is first checked
+   for edits since last compilation. If any edits are  detected, the necessary
+   parts of the code will automatically be re-compiled before the simulation
+   starts. You may try this out by updating the modification timestamp of e.g.
+   the ``main`` module;
+
+   .. code-block:: bash
+
+      touch main.py
+
+   and then invoking ``concept`` in compiled mode. Compilation takes a few
+   minutes.
+
+
 
 
 .. topic:: Log files
