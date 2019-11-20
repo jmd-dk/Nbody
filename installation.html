@@ -284,34 +284,37 @@ the <code class="docutils literal notranslate"><span class="pre">.paths</span></
 <p>Entries on this page:</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#standard-installation" id="id7">Standard installation</a></p>
+<li><p><a class="reference internal" href="#standard-installation" id="id8">Standard installation</a></p>
 <ul>
-<li><p><a class="reference internal" href="#optimal-network-performance-on-clusters" id="id8">Optimal network performance on clusters</a></p></li>
+<li><p><a class="reference internal" href="#optimal-network-performance-on-clusters" id="id9">Optimal network performance on clusters</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#the-installer-script-in-depth" id="id9">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a></p>
+<li><p><a class="reference internal" href="#the-installer-script-in-depth" id="id10">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a></p>
 <ul>
-<li><p><a class="reference internal" href="#programs-installed" id="id10">Programs installed</a></p></li>
-<li><p><a class="reference internal" href="#command-line-options" id="id11">Command-line options</a></p></li>
-<li><p><a class="reference internal" href="#influential-environment-variables" id="id12">Influential environment variables</a></p></li>
+<li><p><a class="reference internal" href="#programs-installed" id="id11">Programs installed</a></p></li>
+<li><p><a class="reference internal" href="#command-line-options" id="id12">Command-line options</a></p></li>
+<li><p><a class="reference internal" href="#influential-environment-variables" id="id13">Influential environment variables</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#dependencies" id="id13">Dependencies</a></p></li>
-<li><p><a class="reference internal" href="#the-paths-and-env-files" id="id14">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></p>
+<li><p><a class="reference internal" href="#dependencies" id="id14">Dependencies</a></p></li>
+<li><p><a class="reference internal" href="#the-paths-and-env-files" id="id15">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></p>
 <ul>
-<li><p><a class="reference internal" href="#the-paths-file" id="id15">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></p></li>
-<li><p><a class="reference internal" href="#the-env-file" id="id16">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></p></li>
+<li><p><a class="reference internal" href="#the-paths-file" id="id16">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></p></li>
+<li><p><a class="reference internal" href="#the-env-file" id="id17">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section" id="standard-installation">
-<span id="id1"></span><h2><a class="toc-backref" href="#id7">Standard installation</a><a class="headerlink" href="#standard-installation" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id8">Standard installation</a><a class="headerlink" href="#standard-installation" title="Permalink to this headline">¶</a></h2>
 <p>The easiest way to install CO<em>N</em>CEPT along with all of its dependencies is
-to use the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">installer</span></code> script. This script is part of the
+to use the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">installer</span></code> bash script. This script is part of the
 CO<em>N</em>CEPT source code, and so if you have CO<em>N</em>CEPT already downloaded,
-you may find and run this script. However, the simplest way to run the script
-is to just execute</p>
+you may find and run this script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash installer
+</pre></div>
+</div>
+<p>However, the simplest way to run the script is to just execute</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">concept_version</span><span class="o">=</span>master
 bash &lt;<span class="o">(</span>wget -O- https://raw.githubusercontent.com/jmd-dk/concept/<span class="si">${</span><span class="nv">concept_version</span><span class="si">}</span>/installer<span class="o">)</span>
 </pre></div>
@@ -325,8 +328,14 @@ release versions, or use <code class="docutils literal notranslate"><span class=
 (and unstable!) version.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The initial <code class="docutils literal notranslate"><span class="pre">bash</span></code> in the above command is required regardless of your
+<p>The initial <code class="docutils literal notranslate"><span class="pre">bash</span></code> in the above commands is required regardless of your
 shell</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the remainder of this page, we shall make us of the shorter
+<code class="docutils literal notranslate"><span class="pre">bash</span> <span class="pre">installer</span></code> syntax, but here the local file “<code class="docutils literal notranslate"><span class="pre">installer</span></code>” may
+always be substituted with the online “<code class="docutils literal notranslate"><span class="pre">&lt;(wget</span> <span class="pre">...)</span></code>” version.</p>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> will prompt you for an installation directory, as well as
 for permission to install each <a class="reference internal" href="#system-dependencies"><span class="std std-ref">system dependency</span></a>,
@@ -335,11 +344,12 @@ software to be installed will be shown.</p>
 <p>CO<em>N</em>CEPT along with all of the libraries it needs will be installed into
 the chosen installation directory. To completely remove the CO<em>N</em>CEPT
 installation, simply remove this directory.</p>
-<p>The installation will take an hour or two on modern hardware. Should the
-installation process end prematurely (e.g. if you kill it yourself), simply
-rerun the installation command and it will pick up from where it was.</p>
+<p>The installation will take an hour or two on modern hardware and take up
+about 1.5 GB of storage. Should the installation process end prematurely
+(e.g. if you kill it yourself), simply rerun the installation command and it
+will pick up from where it was.</p>
 <div class="section" id="optimal-network-performance-on-clusters">
-<span id="id2"></span><h3><a class="toc-backref" href="#id8">Optimal network performance on clusters</a><a class="headerlink" href="#optimal-network-performance-on-clusters" title="Permalink to this headline">¶</a></h3>
+<span id="id2"></span><h3><a class="toc-backref" href="#id9">Optimal network performance on clusters</a><a class="headerlink" href="#optimal-network-performance-on-clusters" title="Permalink to this headline">¶</a></h3>
 <p>To install CO<em>N</em>CEPT on a cluster, the standard installation procedure
 above may be used. However, the performance of simulations running on multiple
 processors may be very poor, as the MPI library installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code>
@@ -357,8 +367,7 @@ CO<em>N</em>CEPT using an MPI library already present on the cluster, presumably
 configured optimally by the system administrator. To do this, simply set the
 <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code> variable to the directory containing this MPI library when
 invoking the <code class="docutils literal notranslate"><span class="pre">installer</span></code>, e.g.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">concept_version</span><span class="o">=</span>master
-<span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi bash &lt;<span class="o">(</span>wget -O- https://raw.githubusercontent.com/jmd-dk/concept/<span class="si">${</span><span class="nv">concept_version</span><span class="si">}</span>/installer<span class="o">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi bash installer
 </pre></div>
 </div>
 <p>Note that you <em>will</em> have to reinstall CO<em>N</em>CEPT and its dependencies in
@@ -366,14 +375,21 @@ their entirety, if you want to swap out the MPI library.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>If you have <code class="docutils literal notranslate"><span class="pre">/path/to/mpi/bin</span></code> already in your <code class="docutils literal notranslate"><span class="pre">PATH</span></code> you may use
-simply <code class="docutils literal notranslate"><span class="pre">mpi_dir=$(which</span> <span class="pre">mpicc)</span></code> (though <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">mpicc</span></code> does not
-evaluate exactly to <code class="docutils literal notranslate"><span class="pre">/path/to/mpi</span></code>, it is close enough so that the
-<code class="docutils literal notranslate"><span class="pre">installer</span></code> understands it).</p>
+simply</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_dir</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>which mpicc<span class="k">)</span><span class="s2">&quot;</span> bash installer
+</pre></div>
 </div>
+<p>Though <code class="docutils literal notranslate"><span class="pre">which</span> <span class="pre">mpicc</span></code> does not evaluate exactly to <code class="docutils literal notranslate"><span class="pre">/path/to/mpi</span></code>, it
+is close enough that the <code class="docutils literal notranslate"><span class="pre">installer</span></code> understands it.</p>
+</div>
+<p>For the MPI implementation, CO<em>N</em>CEPT officially supports MPICH and
+OpenMPI, though it should not matter much (a CO<em>N</em>CEPT installation
+using MVAPICH has been successful at least once). What it important is that
+the MPI library used supports the MPI-3 standard.</p>
 </div>
 </div>
 <div class="section" id="the-installer-script-in-depth">
-<span id="id3"></span><h2><a class="toc-backref" href="#id9">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><a class="headerlink" href="#the-installer-script-in-depth" title="Permalink to this headline">¶</a></h2>
+<span id="id3"></span><h2><a class="toc-backref" href="#id10">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><a class="headerlink" href="#the-installer-script-in-depth" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script may be run with additional options or influential
 environment variables, which can be used to e.g. request for a specific
 version of a dependency to be installed, or to skip the installation of a
@@ -381,7 +397,7 @@ particular dependency and instead make use of a preinstalled version of the
 same library. Before discussing such features, it is good to know exactly
 what dependencies are installed.</p>
 <div class="section" id="programs-installed">
-<h3><a class="toc-backref" href="#id10">Programs installed</a><a class="headerlink" href="#programs-installed" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id11">Programs installed</a><a class="headerlink" href="#programs-installed" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> partitions all dependencies into <em>library</em> and <em>system</em>
 dependencies. Unless explicitly specified, the <code class="docutils literal notranslate"><span class="pre">installer</span></code> installs all
 library dependencies regardless of whether these already exist on the system.
@@ -406,7 +422,6 @@ is:</p>
 installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code> is given below:</p>
 <ul class="simple">
 <li><p><strong>zlib</strong></p></li>
-<li><p><strong>libpng</strong></p></li>
 <li><p><strong>FreeType</strong></p></li>
 <li><p><strong>BLAS</strong> and <strong>LAPACK</strong></p></li>
 <li><p><strong>MPI</strong></p></li>
@@ -416,20 +431,20 @@ installed by the <code class="docutils literal notranslate"><span class="pre">in
 <li><p><strong>libffi</strong></p></li>
 <li><p><strong>Perl</strong></p></li>
 <li><p><strong>OpenSSL</strong> (depends on Perl)</p></li>
+<li><p><strong>libpng</strong> (depends on zlib)</p></li>
 <li><p><strong>GSL</strong> (depends on BLAS)</p></li>
 <li><p><strong>HDF5</strong> (depends on zlib)</p></li>
 <li><p><strong>GADGET</strong> (depends on MPI, GSL, FFTW 2)</p></li>
 <li><p><strong>Python 3</strong> (depends on zlib)</p>
 <ul>
 <li><p><strong>pip</strong> (depends on OpenSSL, libffi), <strong>setuptools</strong> and <strong>wheel</strong>;
-needed to install the packages below.</p>
+needed to install the packages below:</p>
 <ul>
 <li><p><strong>Blessings</strong> (depends on ncurses)</p></li>
 <li><p><strong>Cython</strong></p></li>
 <li><p><strong>CythonGSL</strong> (depends on Cython, GSL)</p></li>
-<li><p><strong>pytest</strong></p></li>
-<li><p><strong>NumPy</strong> (depends on BLAS, LAPACK, pytest)</p></li>
-<li><p><strong>SciPy</strong> (depends on BLAS, LAPACK, pytest)</p></li>
+<li><p><strong>NumPy</strong> (depends on BLAS, LAPACK)</p></li>
+<li><p><strong>SciPy</strong> (depends on BLAS, LAPACK)</p></li>
 <li><p><strong>matplotlib</strong> (depends on libpng, FreeType)</p></li>
 <li><p><strong>MPI4Py</strong> (depends on MPI, Cython)</p></li>
 <li><p><strong>H5Py</strong> (depends on HDF5 and MPI)</p></li>
@@ -441,26 +456,26 @@ needed to install the packages below.</p>
 </li>
 <li><p><strong>CLASS</strong> + <strong>classy</strong> (depends on Cython, NumPy)</p></li>
 </ul>
-<p>Finally, CO<em>N</em>CEPT itself depends on MPI, FFTW, GADGET, Python, Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy, Sphinx, sphinx_rtd_theme.</p>
+<p>Finally, CO<em>N</em>CEPT itself depends on MPI, FFTW (3), GADGET, Python,
+Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy,
+Sphinx, sphinx_rtd_theme.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> installs the <a class="reference external" href="https://github.com/xianyi/OpenBLAS">OpenBLAS</a>
 library in order to provide both BLAS and LAPACK. For MPI, MPICH (default) or
-OpenMPI is installed.</p>
+OpenMPI is installed. If tests are to be performed during the installation
+(see the <code class="docutils literal notranslate"><span class="pre">--test</span></code> <a class="reference internal" href="#command-line-options"><span class="std std-ref">command-line option</span></a>), the
+pytest Python package will be installed as well (needed for testing NumPy and
+SciPy).</p>
 </div>
 <div class="section" id="command-line-options">
-<h3><a class="toc-backref" href="#id11">Command-line options</a><a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h3>
+<span id="id4"></span><h3><a class="toc-backref" href="#id12">Command-line options</a><a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h3>
 <p>When invoking the <code class="docutils literal notranslate"><span class="pre">installer</span></code> — whether a local copy or directly off of
 GitHub — you may supply optional command-line arguments, the most useful of
 which is probably the installation path. That is,</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./installer /path/to/concept
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash installer /path/to/concept
 </pre></div>
 </div>
-<p>(when running a local copy of the <code class="docutils literal notranslate"><span class="pre">installer</span></code>) or something like</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">concept_version</span><span class="o">=</span>master
-bash &lt;<span class="o">(</span>wget -O- https://raw.githubusercontent.com/jmd-dk/concept/<span class="si">${</span><span class="nv">concept_version</span><span class="si">}</span>/installer<span class="o">)</span> /path/to/concept
-</pre></div>
-</div>
-<p>(when running directly off of GitHub) will not prompt you for an installation
-directory but instead use the supplied <code class="docutils literal notranslate"><span class="pre">/path/to/concept</span></code>.</p>
+<p>will not prompt you for an installation directory but instead use the supplied
+<code class="docutils literal notranslate"><span class="pre">/path/to/concept</span></code>.</p>
 <p>Other command-line options to <code class="docutils literal notranslate"><span class="pre">installer</span></code> are listed below.</p>
 <h6>
   Help:
@@ -496,7 +511,7 @@ is not recommended as it increases the installation time by a couple of hours.</
 </pre></div>
 </div>
 <p>and so may also be run at any time after the installation, whether or not the
-<code class="docutils literal notranslate"><span class="pre">-t</span></code> option was used for th installation. See the <code class="docutils literal notranslate"><span class="pre">concept</span></code>
+<code class="docutils literal notranslate"><span class="pre">--test</span></code> option was used for th installation. See the <code class="docutils literal notranslate"><span class="pre">concept</span></code>
 <a class="reference internal" href="command_line_options.html#specials"><span class="std std-ref">test</span></a> option for further details.</p>
 <h6>
   Yes:
@@ -525,12 +540,143 @@ use with remote jobs running on multiple nodes, as described
 <a class="reference internal" href="troubleshooting.html#problems-when-using-multiple-nodes"><span class="std std-ref">here</span></a>.</p>
 </div>
 <div class="section" id="influential-environment-variables">
-<span id="id4"></span><h3><a class="toc-backref" href="#id12">Influential environment variables</a><a class="headerlink" href="#influential-environment-variables" title="Permalink to this headline">¶</a></h3>
-<p><em>Under construction!</em></p>
+<span id="id5"></span><h3><a class="toc-backref" href="#id13">Influential environment variables</a><a class="headerlink" href="#influential-environment-variables" title="Permalink to this headline">¶</a></h3>
+<p>The behavior of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> is governed by a large set of environment
+variables. An example is the <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code> variable described in
+‘<a class="reference internal" href="#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance on clusters</span></a>’,
+through which we can let the <code class="docutils literal notranslate"><span class="pre">installer</span></code> make use of a preinstalled MPI
+library, rather than letting it install one itself. We can specify <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code>
+either directly in the invocation of <code class="docutils literal notranslate"><span class="pre">installler</span></code>;</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi bash installer
+</pre></div>
+</div>
+<p>or defining it as an environmet variable prior to the invocation;</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi  <span class="c1"># Assuming bash-like shell</span>
+bash installer
+</pre></div>
+</div>
+<p>All other influential environment variables may be set in similar ways.</p>
+<div class="topic">
+<p class="topic-title first">Making use of preinstalled libraries</p>
+<p>To make the <code class="docutils literal notranslate"><span class="pre">installer</span></code> make use of a preinstalled library rather than
+installing it itself, you must set the corresponding <code class="docutils literal notranslate"><span class="pre">*_dir</span></code> variable.
+The complete list of such variables is: <code class="docutils literal notranslate"><span class="pre">blas_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">class_dir</span></code>,
+<code class="docutils literal notranslate"><span class="pre">concept_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_for_gadget_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">freetype_dir</span></code>,
+<code class="docutils literal notranslate"><span class="pre">gadget_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">gsl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">libffi_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">libpng_dir</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">ncurses_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">openssl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">perl_dir</span></code>,
+<code class="docutils literal notranslate"><span class="pre">python_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">zlib_dir</span></code>.</p>
+<p>Note that if using a preinstalled Python distribution —
+<code class="docutils literal notranslate"><span class="pre">python_dir=/path/to/python</span></code> — OpenSSL, libffi and ncurses are assumed
+to be already installed and build into the Python distribution, as these
+cannot be tacked on after Python is build. Also, Python should come with at
+least pip built in. The <code class="docutils literal notranslate"><span class="pre">installer</span></code> will install any other missing Python
+packages.</p>
+<p>If e.g. <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code> is set, the value of <code class="docutils literal notranslate"><span class="pre">mpi_version</span></code> is not used.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Specifying dependency versions</p>
+<p>The version of each dependency (and CO<em>N</em>CEPT itself) to install is
+specified near the top of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script (look for ‘Specification
+of software versions’). You may direct the <code class="docutils literal notranslate"><span class="pre">installer</span></code> to use other
+versions through the <code class="docutils literal notranslate"><span class="pre">*_version</span></code> variables. As with the <code class="docutils literal notranslate"><span class="pre">*_dir</span></code>
+variables, these include <code class="docutils literal notranslate"><span class="pre">blas_version</span></code>, <code class="docutils literal notranslate"><span class="pre">class_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">concept_version</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_version</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_for_gadget_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">freetype_version</span></code>, <code class="docutils literal notranslate"><span class="pre">gadget_version</span></code>, <code class="docutils literal notranslate"><span class="pre">gsl_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">hdf5_version</span></code>, <code class="docutils literal notranslate"><span class="pre">libffi_version</span></code>, <code class="docutils literal notranslate"><span class="pre">libpng_version</span></code>, <code class="docutils literal notranslate"><span class="pre">mpi_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ncurses_version</span></code>, <code class="docutils literal notranslate"><span class="pre">openssl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">perl_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">python_version</span></code>, <code class="docutils literal notranslate"><span class="pre">zlib_version</span></code>. Furthermore, each Python package also
+has a version, speficied by <code class="docutils literal notranslate"><span class="pre">blessings_version</span></code>, <code class="docutils literal notranslate"><span class="pre">cython_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cythongsl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">h5py_version</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mpi4py_version</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy_version</span></code>, <code class="docutils literal notranslate"><span class="pre">pip_version</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">scipy_version</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sphinx_rtd_theme_version</span></code>, <code class="docutils literal notranslate"><span class="pre">wheel_version</span></code>.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Choosing compiler precedence</p>
+<p>At the beginning of the installation, the <code class="docutils literal notranslate"><span class="pre">installer</span></code> will locate the
+various compilers on the system. Its findings are presented under the
+‘Compiler precedence’ heading. If the installation of a given program
+fails, the <code class="docutils literal notranslate"><span class="pre">installer</span></code> moves on to the next compiler and tries again,
+and so on. This is part of the overall philosophy of the <code class="docutils literal notranslate"><span class="pre">installer</span></code>
+to “try, try again” if a particular choice of compiler/flags/etc. does not
+succeed. This is one reason why the installation can be so time consuming.
+It does however make the installation process very robust.</p>
+<p>If you wish to have a say in the order in which the compilers are tried
+out, you may define the <code class="docutils literal notranslate"><span class="pre">compiler_precedence</span></code> variable. To prefer e.g.
+Intel compilers and then GNU compilers, set
+<code class="docutils literal notranslate"><span class="pre">compiler_precedence=&quot;intel</span> <span class="pre">gnu&quot;</span></code>. Only compilers found on the system
+will be taken into account. Also, say the system further has e.g. the
+Clang compiler, this will be tried out also, but after any compilers
+specified in <code class="docutils literal notranslate"><span class="pre">compiler_precedence</span></code>.</p>
+<p>The supported compilers — written in order of default precedence — are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">specified_mpi</span></code>: Use the compilers included in the MPI library
+specified by <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">default</span></code>: Run as is, without altering the environment. If e.g. the
+<code class="docutils literal notranslate"><span class="pre">CC</span></code> environment variable is set, this will probably be picked up by
+the installation of the program.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gnu</span></code>: The GNU compilers (gcc, g++, gfortran).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">clang</span></code>: The Clang compilers (clang, clang++).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mpi</span></code>: MPI compilers found on the system (mpicc, mpicxx, mpifort, …).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">intel</span></code>:  The Intel compilers (icc, icpc, ifort).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cray</span></code>: The Cray compilers (craycc, crayCC, crayftn).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">portland</span></code>: The Portland compilers (pgcc, pgCC, pgf77, pgf90).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generic</span></code>: Non-specific compilers found on the system (cc, c++,
+fortran).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">unset</span></code>: Explicitly unset environment variables such as <code class="docutils literal notranslate"><span class="pre">CC</span></code>,
+<code class="docutils literal notranslate"><span class="pre">CXX</span></code>, <code class="docutils literal notranslate"><span class="pre">FC</span></code>.</p></li>
+</ul>
+<p>Many of the dependency programs do some compiler discovery of their own,
+and so no guarantee of what compiler is actually used can be given.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Installing MPICH or OpenMPI</p>
+<p>If you let the <code class="docutils literal notranslate"><span class="pre">installer</span></code> install its own MPI library (i.e. leave
+<code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code> unspecified), you may choose between MPICH and OpenMPI by
+setting either <code class="docutils literal notranslate"><span class="pre">mpi=mpich</span></code> or <code class="docutils literal notranslate"><span class="pre">mpi=openmpi</span></code>. If <code class="docutils literal notranslate"><span class="pre">mpi</span></code> is left unset,
+MPICH is installed. Note that the same variable <code class="docutils literal notranslate"><span class="pre">mpi_version</span></code> thus refer
+to both the version of MPICH and of OpenMPI.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Parallel builds</p>
+<p>Much of the installation process can be sped up if we allow the make
+utility to build in parallel. This is controlled through the <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code>
+variable. To enforce serial builds, set <code class="docutils literal notranslate"><span class="pre">make_jobs=&quot;-j</span> <span class="pre">1&quot;</span></code>. To enforce
+parallel builds using e.g. 2 processors, specify <code class="docutils literal notranslate"><span class="pre">make_jobs=&quot;-j</span> <span class="pre">2&quot;</span></code>.
+You can also specify an unlimited amount of available parallel processors
+using just <code class="docutils literal notranslate"><span class="pre">make_jobs=&quot;-j&quot;</span></code>.</p>
+<p>By default, when <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> is not specified, unlimited parallel builds
+are used if installing locally, while serial builds are used if working
+remotely.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> to install specific libraries but not CO<em>N</em>CEPT itself</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script may be used outside the context of CO<em>N</em>CEPT,
+should you be in need of any of the dependencies for some other purpose.
+Which programs to install is governed by <code class="docutils literal notranslate"><span class="pre">*_install</span></code> variables. By
+default, <code class="docutils literal notranslate"><span class="pre">concept_install=True</span></code>, which in turn sets <code class="docutils literal notranslate"><span class="pre">*_install=True</span></code>
+for its immidiate dependencies, which in turn sets <code class="docutils literal notranslate"><span class="pre">*_install=True</span></code> for
+their dependencies, and so on. If you run the <code class="docutils literal notranslate"><span class="pre">installer</span></code> with
+<code class="docutils literal notranslate"><span class="pre">concept_install=False</span></code>, nothing will be installed.</p>
+<p>To install e.g. just FFTW, use</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">concept_install</span><span class="o">=</span>False <span class="nv">fftw_install</span><span class="o">=</span>True bash installer
+</pre></div>
+</div>
+<p>possibly adding in a specific version (<code class="docutils literal notranslate"><span class="pre">fftw_version=...</span></code>) and an MPI
+library (<code class="docutils literal notranslate"><span class="pre">mpi_dir=...</span></code> or <code class="docutils literal notranslate"><span class="pre">mpi_install=True</span></code>) to link against. As FFTW
+does not absolutely need MPI, <code class="docutils literal notranslate"><span class="pre">mpi_install</span></code> is not set by having
+<code class="docutils literal notranslate"><span class="pre">fftw_install=True</span></code>.</p>
+<p>To install GADGET, use</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">concept_install</span><span class="o">=</span>False <span class="nv">gadget_install</span><span class="o">=</span>True bash installer
+</pre></div>
+</div>
+<p>This time, MPI, GSL and FFTW (2) will be installed as well, as these are hard
+dependencies.</p>
+</div>
 </div>
 </div>
 <div class="section" id="dependencies">
-<span id="id5"></span><h2><a class="toc-backref" href="#id13">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<span id="id6"></span><h2><a class="toc-backref" href="#id14">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
 <p>This entry lists the dependency stack of CO<em>N</em>CEPT. Knowledge about this
 stack is not needed if using the installation script (<em>highly</em> recommended!),
 but it is important if for some reason you want to build (parts of) this stack
@@ -638,7 +784,7 @@ library used. The GNU make utility is also needed.</p>
 </div>
 </div>
 <div class="section" id="the-paths-and-env-files">
-<span id="id6"></span><h2><a class="toc-backref" href="#id14">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><a class="headerlink" href="#the-paths-and-env-files" title="Permalink to this headline">¶</a></h2>
+<span id="id7"></span><h2><a class="toc-backref" href="#id15">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><a class="headerlink" href="#the-paths-and-env-files" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file and the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file are special files storing
 static information about the CO<em>N</em>CEPT installation. The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file
 store absolute paths to various files and directories, while the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file
@@ -648,7 +794,7 @@ Should you wish to not use the <code class="docutils literal notranslate"><span 
 <code class="docutils literal notranslate"><span class="pre">.env</span></code> from the <a class="reference external" href="https://github.com/jmd-dk/concept">online repository</a> and
 edit them manually.</p>
 <div class="section" id="the-paths-file">
-<h3><a class="toc-backref" href="#id15">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a><a class="headerlink" href="#the-paths-file" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id16">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a><a class="headerlink" href="#the-paths-file" title="Permalink to this headline">¶</a></h3>
 <p>This is simply a bash script of variable declarations, each variable storing
 the absolute path to some file or directory. To install CO<em>N</em>CEPT without
 the use of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script, you must manually set these paths.</p>
@@ -683,7 +829,7 @@ absoute path to the the <code class="docutils literal notranslate"><span class="
 via the <code class="docutils literal notranslate"><span class="pre">paths</span></code> <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
 </div>
 <div class="section" id="the-env-file">
-<h3><a class="toc-backref" href="#id16">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><a class="headerlink" href="#the-env-file" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id17">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><a class="headerlink" href="#the-env-file" title="Permalink to this headline">¶</a></h3>
 <p>This file is meant to set up the needed environment variables needed for
 building and running CO<em>N</em>CEPT. It is sourced by the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script
 before building and running the code.</p>

@@ -496,6 +496,15 @@ i.e. setting</p>
 <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> are guaranteed to be those belonging to the correct
 MPI implementation (that specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file). You are however
 welcome to specify absolute paths as well.</p>
+<p>Options to try out with <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code>/<code class="docutils literal notranslate"><span class="pre">mpirun</span></code> include</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;mpiexec --bind-to none&quot;</span>  <span class="c1"># or &quot;mpirun --bind-to none&quot;</span>
+</pre></div>
+</div>
+<p>and</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;mpiexec -bind-to none&quot;</span>  <span class="c1"># or &quot;mpirun -bind-to none&quot;</span>
+</pre></div>
+</div>
+<p>(the difference being one or two dashes before <code class="docutils literal notranslate"><span class="pre">bind</span></code>).</p>
 <p>If remote jobs still fail, you may look for other possible MPI executors,
 e.g. by running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> ls <span class="s2">&quot;</span><span class="si">${</span><span class="nv">mpi_bindir</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">)</span>
@@ -503,15 +512,21 @@ e.g. by running</p>
 </div>
 <p>(other possible MPI executors include <code class="docutils literal notranslate"><span class="pre">mpiexec.hydra</span></code> and <code class="docutils literal notranslate"><span class="pre">orterun</span></code>).</p>
 </div>
-<h4>It <em>still</em> does not work!</h4><p>If you are still struggling, it is possible that the cluster configuration
-just do not play nicely with the current MPI implementation in use. If you
-installed CO<em>N</em>CEPT using one of the MPI implementations present on the
-cluster, try again, using another preinstalled MPI library. If you let
-CO<em>N</em>CEPT install its own MPI, try switching from MPICH to OpenMPI or
+<h4>It <em>still</em> does not work!</h4><p>If you are still struggling, in particular if CO<em>N</em>CEPT does launch but
+the MPI process binding/affinity is wrong, try removing some of the added
+environment variables that gets set in the <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> (under the
+‘Environment variables’ heading). After altering the jobscript, submit it
+manually using <code class="docutils literal notranslate"><span class="pre">sbatch</span> <span class="pre">jobscript</span></code> (Slurm) or <code class="docutils literal notranslate"><span class="pre">qsub</span> <span class="pre">jobscript</span></code>
+(TORQUE/PBS).</p>
+<p>It is also possible that the cluster configuration just do not play nicely
+with the current MPI implementation in use. If you installed CO<em>N</em>CEPT
+using one of the MPI implementations present on the cluster, try again, using
+another preinstalled MPI library. If you let CO<em>N</em>CEPT install its own
+MPI, try switching from MPICH to OpenMPI or
 vice versa (i.e. set <code class="docutils literal notranslate"><span class="pre">mpi=openmpi</span></code> or <code class="docutils literal notranslate"><span class="pre">mpi=mpich</span></code> when installing
 CO<em>N</em>CEPT, as described <a class="reference internal" href="installation.html#influential-environment-variables"><span class="std std-ref">here</span></a>).</p>
 <p>When installing CO<em>N</em>CEPT, try having as few modules loaded as possible,
-to minimize the possibilities of wrong MPI identification and linking.</p>
+in order to minimize the possibility of wrong MPI identification and linking.</p>
 </div>
 <div class="section" id="problems-when-using-multiple-nodes">
 <span id="id2"></span><h2><a class="toc-backref" href="#id8">Problems when using multiple nodes</a><a class="headerlink" href="#problems-when-using-multiple-nodes" title="Permalink to this headline">¶</a></h2>

@@ -34,10 +34,15 @@ Entries on this page:
 Standard installation
 ---------------------
 The easiest way to install CO\ *N*\ CEPT along with all of its dependencies is
-to use the CO\ *N*\ CEPT ``installer`` script. This script is part of the
+to use the CO\ *N*\ CEPT ``installer`` bash script. This script is part of the
 CO\ *N*\ CEPT source code, and so if you have CO\ *N*\ CEPT already downloaded,
-you may find and run this script. However, the simplest way to run the script
-is to just execute
+you may find and run this script:
+
+.. code-block:: bash
+
+   bash installer
+
+However, the simplest way to run the script is to just execute
 
 .. code-block:: bash
 
@@ -53,8 +58,13 @@ release versions, or use ``concept_version=master`` for the absolute newest
 (and unstable!) version.
 
 .. note::
-   The initial ``bash`` in the above command is required regardless of your
+   The initial ``bash`` in the above commands is required regardless of your
    shell
+
+.. note::
+   For the remainder of this page, we shall make us of the shorter
+   ``bash installer`` syntax, but here the local file "``installer``" may
+   always be substituted with the online "``<(wget ...)``" version.
 
 The ``installer`` will prompt you for an installation directory, as well as
 for permission to install each :ref:`system dependency<system_dependencies>`,
@@ -65,9 +75,10 @@ CO\ *N*\ CEPT along with all of the libraries it needs will be installed into
 the chosen installation directory. To completely remove the CO\ *N*\ CEPT
 installation, simply remove this directory.
 
-The installation will take an hour or two on modern hardware. Should the
-installation process end prematurely (e.g. if you kill it yourself), simply
-rerun the installation command and it will pick up from where it was.
+The installation will take an hour or two on modern hardware and take up
+about 1.5 GB of storage. Should the installation process end prematurely
+(e.g. if you kill it yourself), simply rerun the installation command and it
+will pick up from where it was.
 
 
 .. _optimal_network_performance_on_clusters:
@@ -96,8 +107,7 @@ invoking the ``installer``, e.g.
 
 .. code-block:: bash
 
-   concept_version=master
-   mpi_dir=/path/to/mpi bash <(wget -O- https://raw.githubusercontent.com/jmd-dk/concept/${concept_version}/installer)
+   mpi_dir=/path/to/mpi bash installer
 
 Note that you *will* have to reinstall CO\ *N*\ CEPT and its dependencies in
 their entirety, if you want to swap out the MPI library.
@@ -105,10 +115,19 @@ their entirety, if you want to swap out the MPI library.
 .. tip::
 
    If you have ``/path/to/mpi/bin`` already in your ``PATH`` you may use
-   simply ``mpi_dir=$(which mpicc)`` (though ``which mpicc`` does not
-   evaluate exactly to ``/path/to/mpi``, it is close enough so that the
-   ``installer`` understands it).
+   simply
 
+   .. code-block:: bash
+
+      mpi_dir="$(which mpicc)" bash installer
+
+   Though ``which mpicc`` does not evaluate exactly to ``/path/to/mpi``, it
+   is close enough that the ``installer`` understands it.
+
+For the MPI implementation, CO\ *N*\ CEPT officially supports MPICH and
+OpenMPI, though it should not matter much (a CO\ *N*\ CEPT installation
+using MVAPICH has been successful at least once). What it important is that
+the MPI library used supports the MPI-3 standard.
 
 
 
@@ -152,7 +171,6 @@ The complete list of all library dependencies (and their dependency relations)
 installed by the ``installer`` is given below:
 
 * **zlib**
-* **libpng**
 * **FreeType**
 * **BLAS** and **LAPACK**
 * **MPI**
@@ -162,20 +180,20 @@ installed by the ``installer`` is given below:
 * **libffi**
 * **Perl**
 * **OpenSSL** (depends on Perl)
+* **libpng** (depends on zlib)
 * **GSL** (depends on BLAS)
 * **HDF5** (depends on zlib)
 * **GADGET** (depends on MPI, GSL, FFTW 2)
 * **Python 3** (depends on zlib)
 
   - **pip** (depends on OpenSSL, libffi), **setuptools** and **wheel**;
-    needed to install the packages below.
+    needed to install the packages below:
 
     - **Blessings** (depends on ncurses)
     - **Cython**
     - **CythonGSL** (depends on Cython, GSL)
-    - **pytest**
-    - **NumPy** (depends on BLAS, LAPACK, pytest)
-    - **SciPy** (depends on BLAS, LAPACK, pytest)
+    - **NumPy** (depends on BLAS, LAPACK)
+    - **SciPy** (depends on BLAS, LAPACK)
     - **matplotlib** (depends on libpng, FreeType)
     - **MPI4Py** (depends on MPI, Cython)
     - **H5Py** (depends on HDF5 and MPI)
@@ -184,12 +202,19 @@ installed by the ``installer`` is given below:
 
 * **CLASS** + **classy** (depends on Cython, NumPy)
 
-Finally, CO\ *N*\ CEPT itself depends on MPI, FFTW, GADGET, Python, Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy, Sphinx, sphinx_rtd_theme.
+Finally, CO\ *N*\ CEPT itself depends on MPI, FFTW (3), GADGET, Python,
+Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy,
+Sphinx, sphinx_rtd_theme.
 
 The ``installer`` installs the `OpenBLAS <https://github.com/xianyi/OpenBLAS>`_
 library in order to provide both BLAS and LAPACK. For MPI, MPICH (default) or
-OpenMPI is installed.
+OpenMPI is installed. If tests are to be performed during the installation
+(see the ``--test`` :ref:`command-line option<command_line_options>`), the
+pytest Python package will be installed as well (needed for testing NumPy and
+SciPy).
 
+
+.. _command_line_options:
 
 Command-line options
 ....................
@@ -199,18 +224,10 @@ which is probably the installation path. That is,
 
 .. code-block:: bash
 
-   ./installer /path/to/concept
+   bash installer /path/to/concept
 
-(when running a local copy of the ``installer``) or something like
-
-.. code-block:: bash
-
-   concept_version=master
-   bash <(wget -O- https://raw.githubusercontent.com/jmd-dk/concept/${concept_version}/installer) /path/to/concept
-
-(when running directly off of GitHub) will not prompt you for an installation
-directory but instead use the supplied ``/path/to/concept``.
-
+will not prompt you for an installation directory but instead use the supplied
+``/path/to/concept``.
 
 Other command-line options to ``installer`` are listed below.
 
@@ -263,7 +280,7 @@ The tests performed on the CO\ *N*\ CEPT code itself are those of
    ./concept -t all
 
 and so may also be run at any time after the installation, whether or not the
-``-t`` option was used for th installation. See the ``concept``
+``--test`` option was used for th installation. See the ``concept``
 :ref:`test<specials>` option for further details.
 
 
@@ -306,8 +323,167 @@ use with remote jobs running on multiple nodes, as described
 
 Influential environment variables
 .................................
-*Under construction!*
+The behavior of the ``installer`` is governed by a large set of environment
+variables. An example is the ``mpi_dir`` variable described in
+':ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`',
+through which we can let the ``installer`` make use of a preinstalled MPI
+library, rather than letting it install one itself. We can specify ``mpi_dir``
+either directly in the invocation of ``installler``;
 
+.. code-block:: bash
+
+   mpi_dir=/path/to/mpi bash installer
+
+or defining it as an environmet variable prior to the invocation;
+
+.. code-block:: bash
+
+   export mpi_dir=/path/to/mpi  # Assuming bash-like shell
+   bash installer
+
+All other influential environment variables may be set in similar ways.
+
+
+.. topic:: Making use of preinstalled libraries
+
+   To make the ``installer`` make use of a preinstalled library rather than
+   installing it itself, you must set the corresponding ``*_dir`` variable.
+   The complete list of such variables is: ``blas_dir``, ``class_dir``,
+   ``concept_dir``, ``fftw_dir``, ``fftw_for_gadget_dir``, ``freetype_dir``,
+   ``gadget_dir``, ``gsl_dir``, ``hdf5_dir``, ``libffi_dir``, ``libpng_dir``,
+   ``mpi_dir``, ``ncurses_dir``, ``openssl_dir``, ``perl_dir``,
+   ``python_dir``, ``zlib_dir``.
+
+   Note that if using a preinstalled Python distribution ---
+   ``python_dir=/path/to/python`` --- OpenSSL, libffi and ncurses are assumed
+   to be already installed and build into the Python distribution, as these
+   cannot be tacked on after Python is build. Also, Python should come with at
+   least pip built in. The ``installer`` will install any other missing Python
+   packages.
+
+   If e.g. ``mpi_dir`` is set, the value of ``mpi_version`` is not used.
+
+
+.. topic:: Specifying dependency versions
+
+   The version of each dependency (and CO\ *N*\ CEPT itself) to install is
+   specified near the top of the ``installer`` script (look for 'Specification
+   of software versions'). You may direct the ``installer`` to use other
+   versions through the ``*_version`` variables. As with the ``*_dir``
+   variables, these include ``blas_version``, ``class_version``,
+   ``concept_version``, ``fftw_version``, ``fftw_for_gadget_version``,
+   ``freetype_version``, ``gadget_version``, ``gsl_version``,
+   ``hdf5_version``, ``libffi_version``, ``libpng_version``, ``mpi_version``,
+   ``ncurses_version``, ``openssl_version``, ``perl_version``,
+   ``python_version``, ``zlib_version``. Furthermore, each Python package also
+   has a version, speficied by ``blessings_version``, ``cython_version``,
+   ``cythongsl_version``, ``h5py_version``, ``matplotlib_version``,
+   ``mpi4py_version``, ``numpy_version``, ``pip_version``, ``pytest_version``,
+   ``scipy_version``, ``setuptools_version``, ``sphinx_version``,
+   ``sphinx_rtd_theme_version``, ``wheel_version``.
+
+
+.. topic:: Choosing compiler precedence
+
+   At the beginning of the installation, the ``installer`` will locate the
+   various compilers on the system. Its findings are presented under the
+   'Compiler precedence' heading. If the installation of a given program
+   fails, the ``installer`` moves on to the next compiler and tries again,
+   and so on. This is part of the overall philosophy of the ``installer``
+   to "try, try again" if a particular choice of compiler/flags/etc. does not
+   succeed. This is one reason why the installation can be so time consuming.
+   It does however make the installation process very robust.
+
+   If you wish to have a say in the order in which the compilers are tried
+   out, you may define the ``compiler_precedence`` variable. To prefer e.g.
+   Intel compilers and then GNU compilers, set
+   ``compiler_precedence="intel gnu"``. Only compilers found on the system
+   will be taken into account. Also, say the system further has e.g. the
+   Clang compiler, this will be tried out also, but after any compilers
+   specified in ``compiler_precedence``.
+
+   The supported compilers --- written in order of default precedence --- are:
+
+   - ``specified_mpi``: Use the compilers included in the MPI library
+     specified by ``mpi_dir``.
+
+   - ``default``: Run as is, without altering the environment. If e.g. the
+     ``CC`` environment variable is set, this will probably be picked up by
+     the installation of the program.
+
+   - ``gnu``: The GNU compilers (gcc, g++, gfortran).
+
+   - ``clang``: The Clang compilers (clang, clang++).
+
+   - ``mpi``: MPI compilers found on the system (mpicc, mpicxx, mpifort, ...).
+
+   - ``intel``:  The Intel compilers (icc, icpc, ifort).
+
+   - ``cray``: The Cray compilers (craycc, crayCC, crayftn).
+
+   -  ``portland``: The Portland compilers (pgcc, pgCC, pgf77, pgf90).
+
+   - ``generic``: Non-specific compilers found on the system (cc, c++,
+     fortran).
+
+   - ``unset``: Explicitly unset environment variables such as ``CC``,
+     ``CXX``, ``FC``.
+
+   Many of the dependency programs do some compiler discovery of their own,
+   and so no guarantee of what compiler is actually used can be given.
+
+
+.. topic:: Installing MPICH or OpenMPI
+
+   If you let the ``installer`` install its own MPI library (i.e. leave
+   ``mpi_dir`` unspecified), you may choose between MPICH and OpenMPI by
+   setting either ``mpi=mpich`` or ``mpi=openmpi``. If ``mpi`` is left unset,
+   MPICH is installed. Note that the same variable ``mpi_version`` thus refer
+   to both the version of MPICH and of OpenMPI.
+
+
+.. topic:: Parallel builds
+
+   Much of the installation process can be sped up if we allow the make
+   utility to build in parallel. This is controlled through the ``make_jobs``
+   variable. To enforce serial builds, set ``make_jobs="-j 1"``. To enforce
+   parallel builds using e.g. 2 processors, specify ``make_jobs="-j 2"``.
+   You can also specify an unlimited amount of available parallel processors
+   using just ``make_jobs="-j"``.
+
+   By default, when ``make_jobs`` is not specified, unlimited parallel builds
+   are used if installing locally, while serial builds are used if working
+   remotely.
+
+.. topic:: Using the ``installer`` to install specific libraries but not CO\ *N*\ CEPT itself
+
+   The ``installer`` script may be used outside the context of CO\ *N*\ CEPT,
+   should you be in need of any of the dependencies for some other purpose.
+   Which programs to install is governed by ``*_install`` variables. By
+   default, ``concept_install=True``, which in turn sets ``*_install=True``
+   for its immidiate dependencies, which in turn sets ``*_install=True`` for
+   their dependencies, and so on. If you run the ``installer`` with
+   ``concept_install=False``, nothing will be installed.
+
+   To install e.g. just FFTW, use
+
+   .. code-block:: bash
+
+      concept_install=False fftw_install=True bash installer
+
+   possibly adding in a specific version (``fftw_version=...``) and an MPI
+   library (``mpi_dir=...`` or ``mpi_install=True``) to link against. As FFTW
+   does not absolutely need MPI, ``mpi_install`` is not set by having
+   ``fftw_install=True``.
+
+   To install GADGET, use
+
+   .. code-block:: bash
+
+      concept_install=False gadget_install=True bash installer
+
+   This time, MPI, GSL and FFTW (2) will be installed as well, as these are hard
+   dependencies.
 
 
 

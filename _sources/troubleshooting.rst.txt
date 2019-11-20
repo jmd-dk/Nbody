@@ -292,6 +292,21 @@ choice of MPI executor depends on the job schedular in use.
    MPI implementation (that specified in the ``.paths`` file). You are however
    welcome to specify absolute paths as well.
 
+   Options to try out with ``mpiexec``/``mpirun`` include
+
+   .. code-block:: bash
+
+      mpi_executor="mpiexec --bind-to none"  # or "mpirun --bind-to none"
+
+   and
+
+   .. code-block:: bash
+
+      mpi_executor="mpiexec -bind-to none"  # or "mpirun -bind-to none"
+
+   (the difference being one or two dashes before ``bind``).
+
+
    If remote jobs still fail, you may look for other possible MPI executors,
    e.g. by running
 
@@ -306,16 +321,23 @@ choice of MPI executor depends on the job schedular in use.
 
    <h4>It <em>still</em> does not work!</h4>
 
-If you are still struggling, it is possible that the cluster configuration
-just do not play nicely with the current MPI implementation in use. If you
-installed CO\ *N*\ CEPT using one of the MPI implementations present on the
-cluster, try again, using another preinstalled MPI library. If you let
-CO\ *N*\ CEPT install its own MPI, try switching from MPICH to OpenMPI or
+If you are still struggling, in particular if CO\ *N*\ CEPT does launch but
+the MPI process binding/affinity is wrong, try removing some of the added
+environment variables that gets set in the ``jobscript`` (under the
+'Environment variables' heading). After altering the jobscript, submit it
+manually using ``sbatch jobscript`` (Slurm) or ``qsub jobscript``
+(TORQUE/PBS).
+
+It is also possible that the cluster configuration just do not play nicely
+with the current MPI implementation in use. If you installed CO\ *N*\ CEPT
+using one of the MPI implementations present on the cluster, try again, using
+another preinstalled MPI library. If you let CO\ *N*\ CEPT install its own
+MPI, try switching from MPICH to OpenMPI or
 vice versa (i.e. set ``mpi=openmpi`` or ``mpi=mpich`` when installing
 CO\ *N*\ CEPT, as described :ref:`here<influential_environment_variables>`).
 
 When installing CO\ *N*\ CEPT, try having as few modules loaded as possible,
-to minimize the possibilities of wrong MPI identification and linking.
+in order to minimize the possibility of wrong MPI identification and linking.
 
 
 
