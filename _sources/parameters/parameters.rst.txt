@@ -117,28 +117,27 @@ regular Python scripts. The additional super powers are described below.
 
    Using additional, non-parameter variables in parameter files can help
    provide better organisation. For example, you may want to define both the
-   ``boxsize`` and the resolution of the gravitational potential grid,
-   ``φ_gridsize``, in terms of a new variable:
+   ``boxsize`` and the resolution of the gravitational potential grid in terms
+   of a common variable:
 
    .. code-block:: python3
 
       # Conveniently placed at the top
       _size = 256
 
-      # Parameters defined below
-      ...
-
       # Numerical parameters
       boxsize = _size*Mpc
-      φ_gridsize = _size
 
-   Both the ``boxsize`` and ``φ_gridsize`` parameter can now be updated
-   through the newly introduced ``_size`` variable, which itself is not a
-   parameter. When defined in a parameter file, CO\ *N*\ CEPT treats any
-   variable whose name does not begin with an underscore '``_``' as a
-   parameter, and will complain if it encounters any such variable with a
-   name that does not match any of the recognized parameters; hence
-   '``_size``' and not '``size``'.
+      # Physics
+      select_forces = {
+          'all': {'gravity': ('p3m', 2*_size)},
+      }
+
+   Both the ``boxsize`` and the P³M grid size within ``select_forces`` can
+   now be simultaneously updated through the newly introduced ``_size``
+   variable, which itself is not a parameter. When defined in a parameter
+   file, CO\ *N*\ CEPT treats any variable whose name does not begin with an
+   underscore '``_``' as a parameter; hence '``_size``' and not '``size``'.
 
 
 .. topic:: Dynamic value insertion using ellipses

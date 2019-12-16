@@ -21,7 +21,8 @@ Entries on this page:
 Installation failed
 -------------------
 We strive for a trivial installation process on as many Linux systems as
-possible. If the :doc:`simple installation process</tutorial/installation>`
+possible. If the
+:ref:`standard installation process<standard_installation>`
 (with every dependency allowed to be installed from scratch) keeps failing
 for some inexplicable reason, you may try looking for a clue in the logged
 installation output (of which there are a lot), in the ``install_log`` and
@@ -118,7 +119,6 @@ entry.
 
 .. _problems_when_running_remotely:
 
-
 Problems when running remotely
 ------------------------------
 This entry is concerned with problems encountered specifically with remote
@@ -126,24 +126,28 @@ CO\ *N*\ CEPT jobs. If you have not tried out CO\ *N*\ CEPT locally, please do
 this first. If you encounter problems here as well, please see the
 '`Crashes or other bad behavior`_' entry.
 
-Even if CO\ *N*\ CEPT runs fine on the frontend of a cluster (i.e. when
+Even if CO\ *N*\ CEPT runs fine on the front-end of a cluster (i.e. when
 supplying the ``--local`` option to the ``concept`` script), you may
-experience weird behavior or crashes when submitting remote jobs. Typically,
-this is either due to the remote nodes having different hardware architecture
-from the frontend, or an improper choice of the MPI executor. Possible
-solutions to both of these problems are provided below.
+experience weird behavior or crashes when running remote jobs. Typically this
+is either due to the remote nodes having different hardware architecture from
+the front-end, or an improper choice of the MPI executor. Possible solutions to
+both of these problems are provided below.
+
+If your remote jobs run seemingly successfully for the first many time steps
+but eventually crashes at some nondeterministic step, you should definately
+try changing the MPI executor.
 
 
 .. raw:: html
 
-   <h4>Different hardware architecture on frontend and remote node</h4>
+   <h4>Different hardware architecture on front-end and remote node</h4>
 
-If CO\ *N*\ CEPT and its dependencies have been installed from the frontend,
-these have been tailored to the architecture of the frontend. If the remote
+If CO\ *N*\ CEPT and its dependencies have been installed from the front-end,
+these have been tailored to the architecture of the front-end. If the remote
 node to which you are submitting the CO\ *N*\ CEPT job has a different
 architecture, things may go wrong. The easy solution is then of course to
 switch to using a different remote queue/partition with nodes that have
-similar architecture to the one on the frontend.
+similar architecture to the one on the front-end.
 
 One might think that disabling architecture-specific compiler optimizations in
 the CO\ *N*\ CEPT ``Makefile`` (like ``-march=native``) would help, but since
@@ -243,16 +247,19 @@ choice of MPI executor depends on the job schedular in use.
       configured and installed by the system administrator of the cluster,
       ``mpiexec`` is probably your best choice.
 
-   If Slurm is used as the job schedular, the MPI executor will be set to
-   ``srun --cpu_bind=none`` by default. The first thing to try is to leave
-   out the ``--cpu_bind=none``, i.e. setting
+   If Slurm is used as the job schedular and the MPI library used was not
+   installed by the ``installer`` script as part of the CO\ *N*\ CEPT
+   installation, the MPI executor will be set to ``srun --cpu_bind=none`` in
+   jobscripts by default (or possibly ``srun --cpu_bind=none --mpi=openmpi``
+   if OpenMPI is used). The first thing to try is to leave out
+   ``--cpu_bind=none``, i.e. setting
 
    .. code-block:: bash
 
       mpi_executor="srun"
 
-   in the ``.env`` file. Submit a new job, and you should see the manually chosen MPI
-   executor being respected by the ``jobscript``.
+   in the ``.env`` file. Submit a new job, and you should see the manually
+   chosen MPI executor being respected by the ``jobscript``.
 
    If that did not fix the issue, try specyfing the MPI implementation in use,
    using the ``--mpi`` option to ``srun``. E.g. for OpenMPI, set
@@ -268,9 +275,9 @@ choice of MPI executor depends on the job schedular in use.
 
       srun --mpi=list
 
-   You may wish to try your luck on all supported MPI implementations. If you
-   find one that works, do remember to test if it also works with the added
-   ``--cpu_bind=none`` option, as this is preferred.
+   directly on the front-end. You may wish to try your luck on all supported
+   MPI implementations. If you find one that works, do remember to test if it
+   also works with the added ``--cpu_bind=none`` option, as this is preferred.
 
    If you are still unable to run remotely, you can try using ``mpiexec`` or
    ``mpirun`` for the MPI executor, as one would do when using TORQUE/PBS.

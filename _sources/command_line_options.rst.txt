@@ -1,6 +1,6 @@
 Command-line options
 ====================
-This page elaborates on the many optional options to the ``concept`` script, a
+This page elaborates on the many options to the ``concept`` script, a
 short description of which gets printed by invoking
 
 .. code-block:: bash

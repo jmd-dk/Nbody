@@ -7,12 +7,12 @@ Copy the content below to such a file:
 
 .. code-block:: python3
 
-   # Non-parameter variable used to control the size of the simulation
+   # Non-parameter helper variable used to control the size of the simulation
    _size = 64
 
    # Input/output
    initial_conditions = {
-       'name'   : 'matter component',
+       'name'   : 'matter',
        'species': 'matter particles',
        'N'      : _size**3,
    }
@@ -24,8 +24,7 @@ Copy the content below to such a file:
    }
 
    # Numerical parameters
-   boxsize = 256*Mpc/h
-   φ_gridsize = 2*_size
+   boxsize = 4*_size*Mpc/h
 
    # Cosmology
    H0      = 67*km/(s*Mpc)
@@ -34,7 +33,9 @@ Copy the content below to such a file:
    a_begin = 0.02
 
    # Physics
-   select_forces = {'all': {'gravity': 'p3m'}}
+   select_forces = {
+       'all': 'gravity',
+   }
 
 To run CO\ *N*\ CEPT using these parameters, do
 
@@ -44,8 +45,8 @@ To run CO\ *N*\ CEPT using these parameters, do
 
 The simulation specified by the above parameters is quite similar to the
 simulations of the previous section, though we've now been more explicit about
-the cosmology and also refined the output specifications. Doing so, we've made
-use of several helpful tricks:
+the cosmology and the size of the simulation box, and also refined the output
+specifications. In doing so, we've made use of several helpful tricks:
 
 * The comments / section headings are there for organisational purposes only.
   These may be omitted, and the order in which the parameters are specified
@@ -53,46 +54,52 @@ use of several helpful tricks:
 
 * Parameter files are glorified Python scripts, and so we may utilize the full
   Python (3) language when defining the parameters. We can also define
-  helper variables that are *not* parameters, like ``_size`` above, from which
-  we can simultaneously adjust ``'N'`` and ``φ_gridsize``.
+  helper variables that are not themselves parameters, like ``_size`` above,
+  which is used to simultaneously adjust the number of particles ``'N'`` and
+  the side length of the simulation box ``boxsize``. Though not stricly
+  necessary, it is preferable for such helper variables to be named with a
+  leading underscore ``_``, to separate them from actual parameters.
 
-  .. caution::
-     Though not stricly necessary, the leading underscore in ``_size`` signals
-     to CO\ *N*\ CEPT that this is not an actual parameter. If we were to use
-     just ``size`` (or any other unrecognized parameter name without a leading
-     underscore), a warning would be emitted.
-
-* We have explicitly specified the directory for power spectra output
-  (``output_dirs``). The value is constructed using the ``paths`` variable,
-  which holds absolute paths specified in the ``.paths`` file.
-  If you want to take a look at this ``.paths`` file, use e.g.
+* We have explicitly specified the directory for power spectra output in the
+  ``output_dirs`` parameter. The value is constructed using the ``paths``
+  variable, which holds absolute paths specified in the ``.paths`` file.
+  If you want to take a look at this ``.paths`` file, do e.g.
 
   .. code-block:: bash
 
-     less ../.paths
+     cat ../.paths
 
-  Looking up ``paths['params']`` is somewhat different, as ``'params'`` is not
-  in the ``.paths`` file. Instead, this dynamically maps to the full path of
-  the parameter file itself. To get the filename only (i.e. ``'tutorial'``),
+  Writing ``paths['output_dir']`` then maps to whatever value is specified for
+  ``output_dir`` in the ``.paths`` file, which will be
+  ``'/path/to/concept_installation/concept/output'``. Looking up
+  ``paths['params']`` is somewhat different, as ``params`` is not in the
+  ``.paths`` file. Instead, this dynamically maps to the full path of the
+  parameter file itself. To get the filename only (i.e. ``'tutorial'``),
   we use the ``basename`` function. In total, the power spectrum output
-  directory is set to
+  directory gets set to
   ``'/path/to/concept_installation/concept/output/tutorial'``. We could have
   gotten away with just writing ``'output/tutorial'`` out statically. When
   specifying relative paths, these are always with respect to the
   ``concept`` directory.
 
-* We've specified multiple times at which to dump power spectra
-  (``output_times``). The exact data type used is of no importance, i.e.
-  using ``()`` or ``{}`` rather than ``[]`` is fine. Also, note that we use
-  the parameter ``a_begin`` (creating a power spectrum of the initial
-  conditions), the value of which isn't set before further down. Generally,
-  the order of variable definitions inside parameter files is of no importance.
+* We've specified multiple times at which to dump power spectra in
+  ``output_times``. Note that we use the parameter ``a_begin`` (creating a
+  power spectrum of the initial conditions), the value of which isn't set
+  before further down. Generally, the order of variable definitions inside
+  parameter files is of no importance.
 
 * The simulation takes place in a cubic box, the side length of which is set
-  by ``boxsize``. No default set of units are ever assumed by CO\ *N*\ CEPT,
-  and so it's critical that you explicitly tack on units on all parameters that
-  are not unitless. For the ``boxsize``, the extra fancy unit of
-  :math:`\mathrm{Mpc}/h` is used, with
+  by ``boxsize``. In the parameter specification above, we've let ``boxsize``
+  be proportional to ``_size``, which has the effect of keeping the particle
+  density constant when varying ``_size``: If e.g. ``_size`` is increased by
+  a factor of 2, ``boxsize`` increases by a factor of 2 as well, meaning that
+  the simulation volume goes up by a factor of 8, which is compensated by a
+  similar increase in the number of particles by a factor :math:`2^3 = 8`.
+
+  No default units are ever assumed by CO\ *N*\ CEPT when it reads parameters,
+  and so it's critical that you explicitly tack on units on all parameters
+  that are not unitless. For ``boxsize``, the extra fancy unit of
+  :math:`\mathrm{Mpc}/h` is used above, with
   :math:`h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})`
   determined dynamically from the Hubble constant ``H0`` set further down.
 
@@ -101,48 +108,17 @@ use of several helpful tricks:
   are collectively referred to as just *matter*. Thus, declaring the species
   to be ``'matter particles'`` in the ``initial_conditions`` implies that
   these particles will represent both the cold dark and the bayonic matter.
-  Though rarely preferred, we *can* choose to treat the two matter species as
-  seperate components;
 
-  .. code-block:: Python3
-
-     initial_conditions = [
-         {
-             'name'   : 'dark matter component',
-             'species': 'dark matter particles',
-             'N'      : _size**3,
-         },
-         {
-             'name'   : 'baryonic component',
-             'species': 'baryons',
-             'N'      : _size**3,
-         },
-     ]
-
-  doubling the total number of particles.
-
-  In such a case we of course would like gravity to apply to both components,
-  and so both component names need to be registered with ``select_forces``.
-  A shortcut is used in the paramater file above, where we simply declare that
-  *all* components interact under gravity, and uses the same method
-  (here ``'p3m'``). Note that you're free to mix and match, so that e.g. the
-  ``'baryon component'`` uses ``'pm'`` while the ``'dark matter component'``
-  uses ``'p3m'``.
-
-  .. note::
-     While you have completely free choice in picking the value to supply to
-     the ``'name'`` field when specifying components in ``initial_conditions``,
-     the legal values to supply to ``'species'`` are particular. For *particle
-     components*, the difference between species lie purely in their initial
-     conditions, while *fluid components* (e.g. neutrinos) may have distinct
-     traits like specific time-varying equation of state. We shall delve into
-     fluid components later, when discussing
-     :doc:`beyond matter-only simulations<beyond_matter_only>`.
-
+* When assigning gravity using the ``select_forces`` parameter, we have
+  specified that every component should interact under gravity using the
+  special ``'all'`` key, instead of assigning gravity to our ``'matter'``
+  component specifically, as we did earlier. Since we only have this single
+  component, these are equivalent.
 
 The ``-p`` parameter file option can be mixed with the ``-c`` command line
-parameter option. As an example, consider leaving out ``_size`` from the
-parameter file, and instead supplying it when running the code:
+parameter option. As an example, consider leaving out the definition of
+``_size`` from the parameter file and instead supplying it when running the
+code:
 
 .. code-block:: bash
 
@@ -152,24 +128,42 @@ If you forget to specify ``_size`` --- or any other variable used in the
 parameter file --- CO\ *N*\ CEPT will exit with an error, letting you know.
 
 
+
+.. topic:: Log files
+
+   The printed output of all CO\ *N*\ CEPT runs gets logged in the ``logs``
+   directory. Each run (or *job*) gets a unique integer ID, which is also used
+   as the filename for the logged output. The log filename of any CO\ *N*\ CEPT
+   run is stated when the program starts, and the job ID is written again at
+   the end. Also, the job ID is included in the header of the power spectrum
+   data files.
+
+   .. tip::
+      To view the logged output of e.g. CO\ *N*\ CEPT run 1 with proper
+      coloring, use ``less -r logs/1``. Arrow keys to navigate, ``q`` to quit.
+
+
+
 .. topic:: Checking previously used parameters
 
    Among the first lines of output of any CO\ *N*\ CEPT run is the path to the
-   parameter file in use. As this is included in the log file, you can always go
-   back and check the parameters used by a given run. However, this information
-   isn't reliable, as we may have modified the parameter file since its original
-   use. To this end, a complete copy of the parameter file is made upon every
-   invocation of CO\ *N*\ CEPT, and stored in the ``params`` directory. The
-   name of this copy is written together with the original parameter file when
-   CO\ *N*\ CEPT starts.
+   parameter file in use. As this is included in the log file, you can always
+   go back and check the parameters used by a given run. However, this
+   information isn't reliable, as we may have modified the parameter file
+   since its original use. To this end, a complete copy of the parameter file
+   is made upon every invocation of CO\ *N*\ CEPT, and stored in the ``params``
+   directory. The name of this copy is written together with the name of the
+   original parameter file when CO\ *N*\ CEPT starts.
 
    When mixing ``-p`` and ``-c``, the combined parameters are what's stored in
    the copied parameter file.
 
+As an exercise, get the job ID of the latest simulation from the header of one
+of the power spectrum data files (e.g. ``output/tutorial/powerspec_a=1.00``),
+find the filename of the parameter file copy from the corresponding log file,
+and check that the parameters specified are as you expect. Any command-line
+parameters will be placed at the bottom.
 
 So far we've introduced only the most essential parameters. The remaining
-sections of this tutorial will introduce more as needed, but the full parameter
-scope will not be shown. If you're on the lookout for something particular or
-just curious about what's possible, study the ``params/example_params``
-parameter file.
+sections of this tutorial will introduce more as needed.
 
