@@ -176,6 +176,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
@@ -273,8 +274,7 @@ file:</p>
 
 <span class="c1"># Input/output</span>
 <span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
     <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
@@ -290,10 +290,10 @@ file:</p>
     <span class="s1">&#39;render2D&#39;</span> <span class="p">:</span> <span class="n">logspace</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">a_begin</span><span class="p">),</span> <span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">15</span><span class="p">),</span>
 <span class="p">}</span>
 <span class="n">powerspec_select</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
 <span class="p">}</span>
 <span class="n">render2D_select</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="s1">&#39;terminal image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="s1">&#39;terminal image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
 <span class="p">}</span>
 
 <span class="c1"># Numerical parameters</span>
@@ -307,23 +307,23 @@ file:</p>
 
 <span class="c1"># Physics</span>
 <span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
 <span class="p">}</span>
 
 <span class="c1"># Graphics</span>
 <span class="n">render2D_options</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;gridsize&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">_size</span><span class="p">,</span>
+        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="n">_size</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s1">&#39;terminal resolution&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 <span class="n">render3D_colors</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="n">render3D_bgcolor</span>    <span class="o">=</span> <span class="s1">&#39;black&#39;</span>
 <span class="n">render3D_resolution</span> <span class="o">=</span> <span class="mi">640</span>
@@ -370,10 +370,10 @@ colormap is used to visualise the density field, rather than just a single
 color combined with alpha compositing.</p>
 <p>In the <code class="docutils literal notranslate"><span class="pre">render2D_select</span></code> parameter we’ve specified that we want images as
 well as terminal images, but no data. Here, <em>images</em> refer to the 2D render
-image files you see in the output directory. <em>Terminal images</em> are rendered in
-the terminal as part of the printed output, as you probably noticed when
-running the simulation. If you turn on the <em>data</em> output, the 2D render data
-will be stored in a HDF5 file.</p>
+image files you see in the output directory. <em>Terminal images</em> are rendered
+directly in the terminal as part of the printed output, as you have probably
+noticed. If you turn on the <em>data</em> output, the 2D render data will be stored
+in an HDF5 file.</p>
 <p>The options for the 2D renders are collected in the <code class="docutils literal notranslate"><span class="pre">render2D_options</span></code>
 parameter. Here <code class="docutils literal notranslate"><span class="pre">gridsize</span></code> sets the resolution of the grid onto which the
 particles are interpolated in order to produce the render. The height and
@@ -408,7 +408,9 @@ animation is produced from the terminal images stored in the log file
 <code class="docutils literal notranslate"><span class="pre">logs/&lt;ID&gt;</span></code>. The <code class="docutils literal notranslate"><span class="pre">-u</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script signals
 CO<em>N</em>CEPT to start up a <em>utility</em> rather than running a simulation.
 These utilities are handy (or sometimes goofy) side programs baked into
-CO<em>N</em>CEPT.</p>
+CO<em>N</em>CEPT. Another such utility, the <em>info utility</em>, is encountered
+just below, while a <a class="reference internal" href="utilities.html"><span class="doc">complete section</span></a> of this
+tutorial is dedicated to other utilities.</p>
 </div>
 </div>
 <div class="section" id="snapshots">
@@ -425,7 +427,8 @@ files produced by CO<em>N</em>CEPT, try upgrading to ViTables 3.</p>
 <p>Such snapshots are useful if you want to process the raw data using some
 external program. You can also initialize a simulation from a snapshot, instead
 of generating initial conditions from scratch. To try this, redefine the
-initial conditions to simply be the path to the produced snapshot:</p>
+initial conditions to simply be the path to the snapshot produced by the
+simulation you just ran:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="s1">&#39;output/tutorial/snapshot_a=0.10.hdf5&#39;</span>
 </pre></div>
 </div>
@@ -445,12 +448,12 @@ output text. As warnings (as opposed to errors) results from non-fatal
 issues, CO<em>N</em>CEPT will continue running. A warning emitted during the
 simulation may hint that someting has gone wrong, meaning that the results
 perhaps should not be trusted. To make sure that no warnings go unnoticed,
-CO<em>N</em>CEPT will notie you at the end of the simulation. A separate error
+CO<em>N</em>CEPT will notify you at the end of the simulation. A separate error
 log, <code class="docutils literal notranslate"><span class="pre">logs/&lt;ID&gt;_err</span></code>, containing just warning and error messages, will
 also be present.</p>
 </div>
-<p>To generate a warning and error log file, try wrongly specifying
-<code class="docutils literal notranslate"><span class="pre">a_begin</span> <span class="pre">=</span> <span class="pre">0.5</span></code>, while still initializing the simulation from the snapshot.
+<p>To generate a warning and error log file, try wrongly leaving <code class="docutils literal notranslate"><span class="pre">a_begin</span></code> as
+<code class="docutils literal notranslate"><span class="pre">0.02</span></code>, while still initializing the simulation from the snapshot.
 Once the simulation has completed, check out the error log file.</p>
 <p>If you intend to run many simulations using the same initial conditions, it’s
 worthwhile to initialize these from a common snapshot, as it saves computation
@@ -460,7 +463,7 @@ produce such an initial snapshot, simply set
 exit right after the snapshot has been dumped at the initial time, without
 doing any simulation. Also, the whole purpose of having the <code class="docutils literal notranslate"><span class="pre">ICs</span></code> directory
 is to hold such initial condition snapshots. To dump snapshots to this
-directory, use <code class="docutils literal notranslate"><span class="pre">output_dirs</span> <span class="pre">=</span> <span class="pre">{'snapshot':</span> <span class="pre">paths['ics_dir']}</span></code>.</p>
+directory, set the <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code> entry in <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code> to <code class="docutils literal notranslate"><span class="pre">paths['ics_dir']</span></code>.</p>
 <p>You may also want to use CO<em>N</em>CEPT purely as an initial condition
 generator, and perform the actual simulation using some other code. If so, the
 standard CO<em>N</em>CEPT snapshot format is of little use. To this end,

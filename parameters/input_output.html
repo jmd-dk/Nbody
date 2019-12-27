@@ -176,6 +176,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
@@ -300,7 +301,7 @@ particle positions and momenta will be set according to the
 combined baryonic and cold dark matter transfer functions:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[{</span>
    <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter component&#39;</span><span class="p">,</span>
-   <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+   <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
    <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="mi">128</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">}]</span>
 </pre></div>
@@ -311,7 +312,7 @@ components, each comprised of <span class="math notranslate nohighlight">\(64^3\
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">{</span>
         <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;dark matter component&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;dark matter particles&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;cold dark matter&#39;</span><span class="p">,</span>
         <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="mi">64</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="p">{</span>
@@ -322,31 +323,30 @@ components, each comprised of <span class="math notranslate nohighlight">\(64^3\
 <span class="p">]</span>
 </pre></div>
 </div>
-<p>Generate initial conditions consisting of a combined matter
-component with <span class="math notranslate nohighlight">\(64^3\)</span> particles, as well as a fluid
-component containing the combined linear energy density
-perturbations of the photons, the (massless) neutrinos and
+<p>Generate initial conditions consisting of a combined
+matter component with <span class="math notranslate nohighlight">\(64^3\)</span> particles, as well as a
+fluid component containing the combined linear energy
+density perturbations of the photons, the neutrinos and
 the metric, having a linear grid size of <span class="math notranslate nohighlight">\(64\)</span> (and
 thus <span class="math notranslate nohighlight">\(64^3\)</span> fluid elements):</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">{</span>
         <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter component&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
         <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="mi">64</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="p">{</span>
         <span class="s1">&#39;name&#39;</span>           <span class="p">:</span> <span class="s1">&#39;linear component&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;species&#39;</span>        <span class="p">:</span> <span class="s1">&#39;fluid&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;species&#39;</span>        <span class="p">:</span> <span class="s1">&#39;photons + neutrinos + metric&#39;</span><span class="p">,</span>
         <span class="s1">&#39;gridsize&#39;</span>       <span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
-        <span class="s1">&#39;boltzmann_order&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
-        <span class="s1">&#39;class_species&#39;</span>  <span class="p">:</span> <span class="s1">&#39;g+ur+metric&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;boltzmann order&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># Completely linear</span>
     <span class="p">},</span>
 <span class="p">]</span>
 </pre></div>
 </div>
 <p>In all of the above, the <code class="docutils literal notranslate"><span class="pre">'name'</span></code> given to each component
-does not matter. It is needed in order for other parameters
-to refer to a given component. For further details on the
+is used only for referencing by other parameters, and may
+be omitted. For further examples on the
 possible component specifications, check out the
 ‘<a class="reference internal" href="../tutorial/beyond_matter_only.html"><span class="doc">beyond matter-only</span></a>’
 part of the tutorial.</p>

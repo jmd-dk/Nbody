@@ -11,8 +11,7 @@ file:
 
    # Input/output
    initial_conditions = {
-       'name'   : 'matter',
-       'species': 'matter particles',
+       'species': 'matter',
        'N'      : _size**3,
    }
    output_dirs = {
@@ -28,10 +27,10 @@ file:
        'render2D' : logspace(log10(a_begin), log10(1), 15),
    }
    powerspec_select = {
-       'all': {'data': True, 'plot': False},
+       'matter': {'data': True, 'plot': False},
    }
    render2D_select = {
-       'all': {'data': False, 'image': True,  'terminal image': True},
+       'matter': {'data': False, 'image': True,  'terminal image': True},
    }
 
    # Numerical parameters
@@ -45,23 +44,23 @@ file:
 
    # Physics
    select_forces = {
-       'all': {'gravity': ('p3m', 2*_size)},
+       'matter': {'gravity': ('p3m', 2*_size)},
    }
 
    # Graphics
    render2D_options = {
        'gridsize': {
-           'all': _size,
+           'matter': _size,
        },
        'terminal resolution': {
-           'all': 80,
+           'matter': 80,
        },
        'colormap': {
-           'all': 'inferno',
+           'matter': 'inferno',
        },
    }
    render3D_colors = {
-       'all': 'lime',
+       'matter': 'lime',
    }
    render3D_bgcolor    = 'black'
    render3D_resolution = 640
@@ -119,10 +118,10 @@ color combined with alpha compositing.
 
 In the ``render2D_select`` parameter we've specified that we want images as
 well as terminal images, but no data. Here, *images* refer to the 2D render
-image files you see in the output directory. *Terminal images* are rendered in
-the terminal as part of the printed output, as you probably noticed when
-running the simulation. If you turn on the *data* output, the 2D render data
-will be stored in a HDF5 file.
+image files you see in the output directory. *Terminal images* are rendered
+directly in the terminal as part of the printed output, as you have probably
+noticed. If you turn on the *data* output, the 2D render data will be stored
+in an HDF5 file.
 
 The options for the 2D renders are collected in the ``render2D_options``
 parameter. Here ``gridsize`` sets the resolution of the grid onto which the
@@ -165,7 +164,9 @@ for a list of available colormaps.
    ``logs/<ID>``. The ``-u`` option to the ``concept`` script signals
    CO\ *N*\ CEPT to start up a *utility* rather than running a simulation.
    These utilities are handy (or sometimes goofy) side programs baked into
-   CO\ *N*\ CEPT.
+   CO\ *N*\ CEPT. Another such utility, the *info utility*, is encountered
+   just below, while a :doc:`complete section </tutorial/utilities>` of this
+   tutorial is dedicated to other utilities.
 
 
 
@@ -183,7 +184,8 @@ format, which is simply a well-structured HDF5 file.
 Such snapshots are useful if you want to process the raw data using some
 external program. You can also initialize a simulation from a snapshot, instead
 of generating initial conditions from scratch. To try this, redefine the
-initial conditions to simply be the path to the produced snapshot:
+initial conditions to simply be the path to the snapshot produced by the
+simulation you just ran:
 
 .. code-block:: python3
 
@@ -206,12 +208,12 @@ about the cosmology and numerical setup is stored in the snapshot as well.
    issues, CO\ *N*\ CEPT will continue running. A warning emitted during the
    simulation may hint that someting has gone wrong, meaning that the results
    perhaps should not be trusted. To make sure that no warnings go unnoticed,
-   CO\ *N*\ CEPT will notie you at the end of the simulation. A separate error
+   CO\ *N*\ CEPT will notify you at the end of the simulation. A separate error
    log, ``logs/<ID>_err``, containing just warning and error messages, will
    also be present.
 
-To generate a warning and error log file, try wrongly specifying
-``a_begin = 0.5``, while still initializing the simulation from the snapshot.
+To generate a warning and error log file, try wrongly leaving ``a_begin`` as
+``0.02``, while still initializing the simulation from the snapshot.
 Once the simulation has completed, check out the error log file.
 
 If you intend to run many simulations using the same initial conditions, it's
@@ -222,7 +224,7 @@ produce such an initial snapshot, simply set
 exit right after the snapshot has been dumped at the initial time, without
 doing any simulation. Also, the whole purpose of having the ``ICs`` directory
 is to hold such initial condition snapshots. To dump snapshots to this
-directory, use ``output_dirs = {'snapshot': paths['ics_dir']}``.
+directory, set the ``'snapshot'`` entry in ``output_dirs`` to ``paths['ics_dir']``.
 
 You may also want to use CO\ *N*\ CEPT purely as an initial condition
 generator, and perform the actual simulation using some other code. If so, the
@@ -250,9 +252,6 @@ standard one, add ``snapshot_type = 'gadget2'`` to your parameter file.
    the ``output/tutorial`` directory will now be printed to the screen. Should
    you want information about just a specific snapshot, simply provide its
    entire path.
-
-
-
 
 
 

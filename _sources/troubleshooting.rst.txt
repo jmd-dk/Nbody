@@ -57,6 +57,20 @@ a few elements are still formatted.
 
 
 
+The simulation hangs when calling CLASS
+---------------------------------------
+If the simulation hangs right at the beginning of the simulation, at the
+
+   Calling CLASS in order to set the cosmic clock ...
+
+step, it is probably because you have specified a cosmology that CLASS cannot
+handle. When running CO\ *N*\ CEPT in compiled mode, CLASS hangs rather than
+exiting with an error message. To see the CLASS error message, run
+CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
+:ref:`command-line option<other_modes_of_building_running>`.
+
+
+
 Crashes or other bad behavior
 -----------------------------
 This entry is concerned with problems encountered when using CO\ *N*\ CEPT

@@ -220,6 +220,8 @@ documented above.
 
 
 
+.. _other_modes_of_building_running:
+
 Other modes of building/running
 -------------------------------
 The following options change the mode in which CO\ *N*\ CEPT is built and run.

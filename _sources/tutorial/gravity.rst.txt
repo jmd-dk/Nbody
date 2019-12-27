@@ -21,8 +21,7 @@ to the ones encountered in the previous section. Save these in
 
    # Input/output
    initial_conditions = {
-       'name'   : 'matter',
-       'species': 'matter particles',
+       'species': 'matter',
        'N'      : _size**3,
    }
    output_dirs = {
@@ -46,7 +45,7 @@ to the ones encountered in the previous section. Save these in
 
    # Physics
    select_forces = {
-       'all': 'gravity',
+       'matter': 'gravity',
    }
 
 Now run a simulation using these parameters, by executing
@@ -61,7 +60,7 @@ and optionally specifying whatever number of CPU cores you'd like with the
 .. note::
 
    Note that a choice of e.g. ``-n 3`` is illegal as
-   :math:`N^{\frac{1}{3}}=64` is not divisible by :math:`3`. More of such
+   :math:`N=64^3` is not divisible by :math:`3`. More of such
    restrictions exist. If an illegal number of processes is chosen, this will
    be detected and a helpful error message is shown.
 
@@ -86,7 +85,7 @@ particle-mesh (PM) method. We may also specify this choice explicitly using
 .. code-block:: python3
 
    select_forces = {
-       'all': {'gravity': 'pm'},
+       'matter': {'gravity': 'pm'},
    }
 
 The PM method works by solving for the gravitational potential on a grid. By
@@ -96,7 +95,7 @@ Again, we may specify this choice explicitly using
 .. code-block:: python3
 
    select_forces = {
-       'all': {'gravity': ('pm', _size)},
+       'matter': {'gravity': ('pm', _size)},
    }
 
 The potential grid is then a cubic
@@ -122,7 +121,7 @@ by doubling the size (resolution) of the potential grid (in each direction):
 .. code-block:: python3
 
    select_forces = {
-       'all': {'gravity': ('pm', 2*_size)},
+       'matter': {'gravity': ('pm', 2*_size)},
    }
 
 Try this out, using ``_sim = "C"``.
@@ -140,7 +139,7 @@ used only to get the gravitational force between particles separated by a
 distance much greater than the potential cell size, minimizing discretization
 errors. The remaning --- so-called short-range --- component of gravity
 between nearby particles is then computed separately, by directly pairing up
-particles (no potential grid required).
+particles and computing the force between them (no potential grid required).
 
 To switch out PM for P³M, simply replace ``'pm'`` in the ``select_forces``
 parameter with ``'p3m'``. Let's run a simulation D using
@@ -148,7 +147,7 @@ parameter with ``'p3m'``. Let's run a simulation D using
 .. code-block:: python3
 
    select_forces = {
-       'all': {'gravity': ('p3m', _size)},
+       'matter': {'gravity': ('p3m', _size)},
    }
 
 You will notice that this time, the simulation takes several times longer to
@@ -165,7 +164,7 @@ As before, let's now double the grid size, and perform a final simulation, E:
 .. code-block:: python3
 
    select_forces = {
-       'all': {'gravity': ('p3m', 2*_size)},
+       'matter': {'gravity': ('p3m', 2*_size)},
    }
 
 You will find that this time, the P³M simulation isn't nearly as slow, as
@@ -189,8 +188,10 @@ script below:
    this_dir = os.path.dirname(os.path.realpath(__file__))
    fig, ax = plt.subplots()
    for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
-       if filename.endswith('.png'):
+       match = re.search(r'powerspec_(.+)_a=[\d.]+$', filename)
+       if not match:
            continue
+       sim = match.group(1)
        k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
        sim = re.search('powerspec_(.+)_', filename).group(1)
        linetype = '--' if sim in {'B', 'E'} else '-'
@@ -216,16 +217,16 @@ directory, say ``output/tutorial/plot.py``, then do
    directly, but using ``./concept -m`` we are guarenteed that the environment
    is set up correctly, according to the CO\ *N*\ CEPT installation.
 
-The script will produce the output ``output/tutorial/plot.py``.
+The script will produce the output ``output/tutorial/plot.png``.
 
 Studying the collective plot containing all our simulation power spectra, it
 is indeed clear that the P³M simulations agree far better with each other than
 do the PM simulations. We should thus set our trust in the P³M power spectra,
 not the PM ones. Generally, though much slower, the P³M method is then the
-preferable gravitational method to use in CO\ *N*\ CEPT. As we saw, increasing
+preferred gravitational method to use in CO\ *N*\ CEPT. As we saw, increasing
 the size of the potential grid used can dramatically cut down the computation
 time. In fact, it may well be worth it to increase it even further than what
-was done here.
+was done here, though at the cost of increased memory consumption.
 
 It is remarkable that not only is the PM force not invariant under a change in
 grid size, but the smaller of the two grids actually produced the better
@@ -234,12 +235,12 @@ be essentially exact).
 
 Though inadequate for precise particle simulations, the PM method is still a
 valuable tool, as sometimes the benefits of rapid simulations outweigh the
-drawbacks of loss of precision. Also, as we shall
+drawbacks from loss of precision. Also, as we shall
 :doc:`delve into later<beyond_matter_only>`, PM gravity is as accurate as
 can be for fluid (i.e. non-particle) components, used to model species
 different from matter. Finally --- though sticking to default values are
-recommended --- you should be aware that the details about the PM and P³M
-methods can be further specified using
+generally recommended --- you should be aware that the details about the PM
+and P³M methods can be further specified using
 :doc:`various parameters</parameters/numerical_parameters>`, affecting the
 performance and accuracy.
 
@@ -253,12 +254,12 @@ performance and accuracy.
    "short"-range forces as in the P³M method, but now across the entire
    simulation box.
 
-   As expected, the PP method may be specified using e.g.
+   As expected, the PP method may be specified using
 
    .. code-block:: python3
 
       select_forces = {
-          'all': {'gravity': 'pp'},
+          'matter': {'gravity': 'pp'},
       }
 
    If you actually try this out, reduce ``_size`` to *at most* 32, as running

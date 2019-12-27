@@ -12,8 +12,7 @@ Copy the content below to such a file:
 
    # Input/output
    initial_conditions = {
-       'name'   : 'matter',
-       'species': 'matter particles',
+       'species': 'matter',
        'N'      : _size**3,
    }
    output_dirs = {
@@ -34,7 +33,7 @@ Copy the content below to such a file:
 
    # Physics
    select_forces = {
-       'all': 'gravity',
+       'matter': 'gravity',
    }
 
 To run CO\ *N*\ CEPT using these parameters, do
@@ -56,7 +55,7 @@ specifications. In doing so, we've made use of several helpful tricks:
   Python (3) language when defining the parameters. We can also define
   helper variables that are not themselves parameters, like ``_size`` above,
   which is used to simultaneously adjust the number of particles ``'N'`` and
-  the side length of the simulation box ``boxsize``. Though not stricly
+  the side length of the simulation box ``boxsize``. Though not strictly
   necessary, it is preferable for such helper variables to be named with a
   leading underscore ``_``, to separate them from actual parameters.
 
@@ -106,14 +105,8 @@ specifications. In doing so, we've made use of several helpful tricks:
 * The parameters ``Ωb`` and ``Ωcdm`` of course set the amount of baryons and
   cold dark matter, respectively. Together, these otherwise distinct species
   are collectively referred to as just *matter*. Thus, declaring the species
-  to be ``'matter particles'`` in the ``initial_conditions`` implies that
-  these particles will represent both the cold dark and the bayonic matter.
-
-* When assigning gravity using the ``select_forces`` parameter, we have
-  specified that every component should interact under gravity using the
-  special ``'all'`` key, instead of assigning gravity to our ``'matter'``
-  component specifically, as we did earlier. Since we only have this single
-  component, these are equivalent.
+  to be ``'matter'`` in the ``initial_conditions`` implies that these
+  particles will represent both the cold dark and the bayonic matter.
 
 The ``-p`` parameter file option can be mixed with the ``-c`` command line
 parameter option. As an example, consider leaving out the definition of

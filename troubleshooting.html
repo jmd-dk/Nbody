@@ -176,6 +176,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#problems-when-running-remotely">Problems when running remotely</a></li>
@@ -274,10 +275,11 @@ author at
 <ul class="simple">
 <li><p><a class="reference internal" href="#installation-failed" id="id3">Installation failed</a></p></li>
 <li><p><a class="reference internal" href="#terminal-color-output-looks-weird" id="id4">Terminal color output looks weird</a></p></li>
-<li><p><a class="reference internal" href="#crashes-or-other-bad-behavior" id="id5">Crashes or other bad behavior</a></p></li>
-<li><p><a class="reference internal" href="#bad-performance-when-using-multiple-processes-nodes" id="id6">Bad performance when using multiple processes/nodes</a></p></li>
-<li><p><a class="reference internal" href="#problems-when-running-remotely" id="id7">Problems when running remotely</a></p></li>
-<li><p><a class="reference internal" href="#problems-when-using-multiple-nodes" id="id8">Problems when using multiple nodes</a></p></li>
+<li><p><a class="reference internal" href="#the-simulation-hangs-when-calling-class" id="id5">The simulation hangs when calling CLASS</a></p></li>
+<li><p><a class="reference internal" href="#crashes-or-other-bad-behavior" id="id6">Crashes or other bad behavior</a></p></li>
+<li><p><a class="reference internal" href="#bad-performance-when-using-multiple-processes-nodes" id="id7">Bad performance when using multiple processes/nodes</a></p></li>
+<li><p><a class="reference internal" href="#problems-when-running-remotely" id="id8">Problems when running remotely</a></p></li>
+<li><p><a class="reference internal" href="#problems-when-using-multiple-nodes" id="id9">Problems when using multiple nodes</a></p></li>
 </ul>
 </div>
 <div class="section" id="installation-failed">
@@ -311,8 +313,20 @@ solution is known.</p>
 <p>in your parameter files. Note that though this eliminates most formatting,
 a few elements are still formatted.</p>
 </div>
+<div class="section" id="the-simulation-hangs-when-calling-class">
+<h2><a class="toc-backref" href="#id5">The simulation hangs when calling CLASS</a><a class="headerlink" href="#the-simulation-hangs-when-calling-class" title="Permalink to this headline">¶</a></h2>
+<p>If the simulation hangs right at the beginning of the simulation, at the</p>
+<blockquote>
+<div><p>Calling CLASS in order to set the cosmic clock …</p>
+</div></blockquote>
+<p>step, it is probably because you have specified a cosmology that CLASS cannot
+handle. When running CO<em>N</em>CEPT in compiled mode, CLASS hangs rather than
+exiting with an error message. To see the CLASS error message, run
+CO<em>N</em>CEPT in pure Python mode using the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code>
+<a class="reference internal" href="command_line_options.html#other-modes-of-building-running"><span class="std std-ref">command-line option</span></a>.</p>
+</div>
 <div class="section" id="crashes-or-other-bad-behavior">
-<h2><a class="toc-backref" href="#id5">Crashes or other bad behavior</a><a class="headerlink" href="#crashes-or-other-bad-behavior" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">Crashes or other bad behavior</a><a class="headerlink" href="#crashes-or-other-bad-behavior" title="Permalink to this headline">¶</a></h2>
 <p>This entry is concerned with problems encountered when using CO<em>N</em>CEPT
 <em>locally</em>. If your problem occurs only for remote jobs, please see the
 ‘<a class="reference internal" href="#id1">Problems when running remotely</a>’ entry instead.</p>
@@ -349,7 +363,7 @@ used the first time around.</p>
 you may have found a bug. Please report this.</p>
 </div>
 <div class="section" id="bad-performance-when-using-multiple-processes-nodes">
-<h2><a class="toc-backref" href="#id6">Bad performance when using multiple processes/nodes</a><a class="headerlink" href="#bad-performance-when-using-multiple-processes-nodes" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Bad performance when using multiple processes/nodes</a><a class="headerlink" href="#bad-performance-when-using-multiple-processes-nodes" title="Permalink to this headline">¶</a></h2>
 <p>If you are running CO<em>N</em>CEPT on a cluster and experiences a significant
 drop in performance as you increase the number of processes from e.g. 1 to 2
 or 2 to 4, or when using 2 nodes instead of 1 with the same total number of
@@ -362,7 +376,7 @@ MPI executor, as described in <a class="reference internal" href="#problems-when
 entry.</p>
 </div>
 <div class="section" id="problems-when-running-remotely">
-<span id="id1"></span><h2><a class="toc-backref" href="#id7">Problems when running remotely</a><a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id8">Problems when running remotely</a><a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
 <p>This entry is concerned with problems encountered specifically with remote
 CO<em>N</em>CEPT jobs. If you have not tried out CO<em>N</em>CEPT locally, please do
 this first. If you encounter problems here as well, please see the
@@ -537,7 +551,7 @@ CO<em>N</em>CEPT, as described <a class="reference internal" href="installation.
 in order to minimize the possibility of wrong MPI identification and linking.</p>
 </div>
 <div class="section" id="problems-when-using-multiple-nodes">
-<span id="id2"></span><h2><a class="toc-backref" href="#id8">Problems when using multiple nodes</a><a class="headerlink" href="#problems-when-using-multiple-nodes" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2><a class="toc-backref" href="#id9">Problems when using multiple nodes</a><a class="headerlink" href="#problems-when-using-multiple-nodes" title="Permalink to this headline">¶</a></h2>
 <p>If you observe a wrong process binding (i.e. it appears as though several
 copies of CO<em>N</em>CEPT are running on top of each other, rather than all of
 the MPI processes working together as a collective) when running CO<em>N</em>CEPT

@@ -176,6 +176,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
@@ -274,8 +275,7 @@ Copy the content below to such a file:</p>
 
 <span class="c1"># Input/output</span>
 <span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
     <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
@@ -296,7 +296,7 @@ Copy the content below to such a file:</p>
 
 <span class="c1"># Physics</span>
 <span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -316,7 +316,7 @@ does not matter.</p></li>
 Python (3) language when defining the parameters. We can also define
 helper variables that are not themselves parameters, like <code class="docutils literal notranslate"><span class="pre">_size</span></code> above,
 which is used to simultaneously adjust the number of particles <code class="docutils literal notranslate"><span class="pre">'N'</span></code> and
-the side length of the simulation box <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>. Though not stricly
+the side length of the simulation box <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>. Though not strictly
 necessary, it is preferable for such helper variables to be named with a
 leading underscore <code class="docutils literal notranslate"><span class="pre">_</span></code>, to separate them from actual parameters.</p></li>
 <li><p>We have explicitly specified the directory for power spectra output in the
@@ -361,13 +361,8 @@ determined dynamically from the Hubble constant <code class="docutils literal no
 <li><p>The parameters <code class="docutils literal notranslate"><span class="pre">Ωb</span></code> and <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> of course set the amount of baryons and
 cold dark matter, respectively. Together, these otherwise distinct species
 are collectively referred to as just <em>matter</em>. Thus, declaring the species
-to be <code class="docutils literal notranslate"><span class="pre">'matter</span> <span class="pre">particles'</span></code> in the <code class="docutils literal notranslate"><span class="pre">initial_conditions</span></code> implies that
-these particles will represent both the cold dark and the bayonic matter.</p></li>
-<li><p>When assigning gravity using the <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> parameter, we have
-specified that every component should interact under gravity using the
-special <code class="docutils literal notranslate"><span class="pre">'all'</span></code> key, instead of assigning gravity to our <code class="docutils literal notranslate"><span class="pre">'matter'</span></code>
-component specifically, as we did earlier. Since we only have this single
-component, these are equivalent.</p></li>
+to be <code class="docutils literal notranslate"><span class="pre">'matter'</span></code> in the <code class="docutils literal notranslate"><span class="pre">initial_conditions</span></code> implies that these
+particles will represent both the cold dark and the bayonic matter.</p></li>
 </ul>
 <p>The <code class="docutils literal notranslate"><span class="pre">-p</span></code> parameter file option can be mixed with the <code class="docutils literal notranslate"><span class="pre">-c</span></code> command line
 parameter option. As an example, consider leaving out the definition of

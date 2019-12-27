@@ -176,6 +176,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
@@ -272,7 +273,7 @@ various <code class="docutils literal notranslate"><span class="pre">*.py</span>
 most important of which is a script similarly named <code class="docutils literal notranslate"><span class="pre">concept</span></code>,
 used to launch the code.</p>
 <p>Try invoking the script using</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept --pure-python --local
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept --local
 </pre></div>
 </div>
 <p>This will fire up CO<em>N</em>CEPT, which should display a few lines of colorful
@@ -286,7 +287,7 @@ CO<em>N</em>CEPT jobs when <a class="reference internal" href="working_remotely.
 <p>As we did not provide any parameters to CO<em>N</em>CEPT, it shut down
 immediately. We can add parameters using the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option, like so:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
-    -c <span class="s1">&#39;initial_conditions = {&quot;name&quot;: &quot;matter&quot;, &quot;species&quot;: &quot;matter particles&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
+    -c <span class="s1">&#39;initial_conditions = {&quot;species&quot;: &quot;matter&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;a_begin = 0.02&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;output_times = {&quot;powerspec&quot;: 1}&#39;</span>
 </pre></div>
@@ -295,21 +296,25 @@ immediately. We can add parameters using the <code class="docutils literal notra
 initial conditions generated at a scale factor of <span class="math notranslate nohighlight">\(a = 0.02\)</span> and a power
 spectrum produced at <span class="math notranslate nohighlight">\(a = 1\)</span>. Once completed, check the <code class="docutils literal notranslate"><span class="pre">output</span></code>
 directory, where you’ll find the power spectrum data and plot.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Once a simulation is complete, its total computation time is shown in the
+last line of output</p>
+</div>
 <div class="section" id="don-t-forget-about-gravity">
 <h2>2.1. Don’t forget about gravity<a class="headerlink" href="#don-t-forget-about-gravity" title="Permalink to this headline">¶</a></h2>
-<p>The above simulation should take about a minute or two to complete, with
-almost all of the time spent setting up the initial conditions, rather than on
-the time stepping. The reason for this rapid time stepping is that
-CO<em>N</em>CEPT does not assign forces implicitly, meaning that no gravitational
-forces were applied during the simulation. This also explains the low power of
-the simulation power spetrum compared to the linear power spectrum (which do
-include the effects of gravity), both of which are shown in
+<p>The above simulation should take about a minute to complete, with almost none
+of the time spent on the actual simulation (time stepping), but rather on the
+generation of initial conditions. The reason for this rapid time stepping is
+that CO<em>N</em>CEPT does not assign interactions implicitly, meaning that no
+gravitational forces were applied during the simulation. This also explains
+the low simulation power spetrum compared to the linear power spectrum (which
+do include the effects of gravity), both of which are shown in
 <code class="docutils literal notranslate"><span class="pre">output/powerspec_a=1.00.png</span></code>.</p>
-<p>Let’s try again, this time explicitly stating that the <code class="docutils literal notranslate"><span class="pre">&quot;matter&quot;</span></code> component
-is under the influence of gravity, where <code class="docutils literal notranslate"><span class="pre">&quot;matter&quot;</span></code> is the arbitrary name
-we give to our matter particles:</p>
+<p>Let’s try again, this time explicitly stating that the <code class="docutils literal notranslate"><span class="pre">&quot;matter&quot;</span></code> species
+is under the influence of gravity:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
-    -c <span class="s1">&#39;initial_conditions = {&quot;name&quot;: &quot;matter&quot;, &quot;species&quot;: &quot;matter particles&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
+    -c <span class="s1">&#39;initial_conditions = {&quot;species&quot;: &quot;matter&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;a_begin = 0.02&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;output_times = {&quot;powerspec&quot;: 1}&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;select_forces = {&quot;matter&quot;: &quot;gravity&quot;}&#39;</span>
@@ -318,10 +323,10 @@ we give to our matter particles:</p>
 <p>The simulation time will increase somewhat. Once done, take a look at the
 output <code class="docutils literal notranslate"><span class="pre">output/powerspec_a=1.00.png</span></code> again, and you should see that the
 simulated power spectrum has catched up to the linear one.</p>
-<p>To cut down the simulation time we may make use of multiple CPU cores. To run
-with e.g. 4 cores, execute</p>
+<p>To cut down on the computation time we may make use of multiple CPU cores. To
+run with e.g. 4 CPU cores, execute</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
-    -c <span class="s1">&#39;initial_conditions = {&quot;name&quot;: &quot;matter&quot;, &quot;species&quot;: &quot;matter particles&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
+    -c <span class="s1">&#39;initial_conditions = {&quot;species&quot;: &quot;matter&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;a_begin = 0.02&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;output_times = {&quot;powerspec&quot;: 1}&#39;</span> <span class="se">\</span>
     -c <span class="s1">&#39;select_forces = {&quot;matter&quot;: &quot;gravity&quot;}&#39;</span> <span class="se">\</span>

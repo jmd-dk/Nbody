@@ -29,7 +29,7 @@ Input/output
 
                        initial_conditions = [{
                           'name'   : 'matter component',
-                          'species': 'matter particles',
+                          'species': 'matter',
                           'N'      : 128**3,
                        }]
 
@@ -42,7 +42,7 @@ Input/output
                        initial_conditions = [
                            {
                                'name'   : 'dark matter component',
-                               'species': 'dark matter particles',
+                               'species': 'cold dark matter',
                                'N'      : 64**3,
                            },
                            {
@@ -52,10 +52,10 @@ Input/output
                            },
                        ]
 
-                    Generate initial conditions consisting of a combined matter
-                    component with :math:`64^3` particles, as well as a fluid
-                    component containing the combined linear energy density
-                    perturbations of the photons, the (massless) neutrinos and
+                    Generate initial conditions consisting of a combined
+                    matter component with :math:`64^3` particles, as well as a
+                    fluid component containing the combined linear energy
+                    density perturbations of the photons, the neutrinos and
                     the metric, having a linear grid size of :math:`64` (and
                     thus :math:`64^3` fluid elements):
 
@@ -64,21 +64,20 @@ Input/output
                        initial_conditions = [
                            {
                                'name'   : 'matter component',
-                               'species': 'matter particles',
+                               'species': 'matter',
                                'N'      : 64**3,
                            },
                            {
                                'name'           : 'linear component',
-                               'species'        : 'fluid',
+                               'species'        : 'photons + neutrinos + metric',
                                'gridsize'       : 64,
-                               'boltzmann_order': -1,
-                               'class_species'  : 'g+ur+metric',
+                               'boltzmann order': -1,  # Completely linear
                            },
                        ]
 
                     In all of the above, the ``'name'`` given to each component
-                    does not matter. It is needed in order for other parameters
-                    to refer to a given component. For further details on the
+                    is used only for referencing by other parameters, and may
+                    be omitted. For further examples on the
                     possible component specifications, check out the
                     ':doc:`beyond matter-only </tutorial/beyond_matter_only>`'
                     part of the tutorial.

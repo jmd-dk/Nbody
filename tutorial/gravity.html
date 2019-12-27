@@ -176,6 +176,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
@@ -281,8 +282,7 @@ to the ones encountered in the previous section. Save these in
 
 <span class="c1"># Input/output</span>
 <span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;name&#39;</span>   <span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter particles&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
     <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
@@ -306,7 +306,7 @@ to the ones encountered in the previous section. Save these in
 
 <span class="c1"># Physics</span>
 <span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -319,7 +319,7 @@ to the ones encountered in the previous section. Save these in
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Note that a choice of e.g. <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">3</span></code> is illegal as
-<span class="math notranslate nohighlight">\(N^{\frac{1}{3}}=64\)</span> is not divisible by <span class="math notranslate nohighlight">\(3\)</span>. More of such
+<span class="math notranslate nohighlight">\(N=64^3\)</span> is not divisible by <span class="math notranslate nohighlight">\(3\)</span>. More of such
 restrictions exist. If an illegal number of processes is chosen, this will
 be detected and a helpful error message is shown.</p>
 </div>
@@ -337,7 +337,7 @@ different value of <code class="docutils literal notranslate"><span class="pre">
 <p>Without further specification, CO<em>N</em>CEPT solves gravity using the
 particle-mesh (PM) method. We may also specify this choice explicitly using</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;pm&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;pm&#39;</span><span class="p">},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -345,7 +345,7 @@ particle-mesh (PM) method. We may also specify this choice explicitly using</p>
 default, the resolution of this grid is set to match the number of particles.
 Again, we may specify this choice explicitly using</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pm&#39;</span><span class="p">,</span> <span class="n">_size</span><span class="p">)},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pm&#39;</span><span class="p">,</span> <span class="n">_size</span><span class="p">)},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -365,7 +365,7 @@ resolved, namely the width of a mesh cell, here <code class="docutils literal no
 expect to achieve a more accurate result by lowering this length scale, e.g.
 by doubling the size (resolution) of the potential grid (in each direction):</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pm&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pm&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -381,11 +381,11 @@ used only to get the gravitational force between particles separated by a
 distance much greater than the potential cell size, minimizing discretization
 errors. The remaning — so-called short-range — component of gravity
 between nearby particles is then computed separately, by directly pairing up
-particles (no potential grid required).</p>
+particles and computing the force between them (no potential grid required).</p>
 <p>To switch out PM for P³M, simply replace <code class="docutils literal notranslate"><span class="pre">'pm'</span></code> in the <code class="docutils literal notranslate"><span class="pre">select_forces</span></code>
 parameter with <code class="docutils literal notranslate"><span class="pre">'p3m'</span></code>. Let’s run a simulation D using</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="n">_size</span><span class="p">)},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="n">_size</span><span class="p">)},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -398,7 +398,7 @@ short-range part is by far the most time-consuming.</p>
 simulations B and C. You will find that we now have three different results.</p>
 <p>As before, let’s now double the grid size, and perform a final simulation, E:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -419,8 +419,10 @@ script below:</p>
 <span class="n">this_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{this_dir}</span><span class="s1">/powerspec*&#39;</span><span class="p">)):</span>
-    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">):</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;powerspec_(.+)_a=[\d.]+$&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
         <span class="k">continue</span>
+    <span class="n">sim</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">P_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">sim</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;powerspec_(.+)_&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">linetype</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span> <span class="k">if</span> <span class="n">sim</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">}</span> <span class="k">else</span> <span class="s1">&#39;-&#39;</span>
@@ -446,27 +448,27 @@ case, this is almost equivalent to just running the script using Python
 directly, but using <code class="docutils literal notranslate"><span class="pre">./concept</span> <span class="pre">-m</span></code> we are guarenteed that the environment
 is set up correctly, according to the CO<em>N</em>CEPT installation.</p>
 </div>
-<p>The script will produce the output <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.py</span></code>.</p>
+<p>The script will produce the output <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code>.</p>
 <p>Studying the collective plot containing all our simulation power spectra, it
 is indeed clear that the P³M simulations agree far better with each other than
 do the PM simulations. We should thus set our trust in the P³M power spectra,
 not the PM ones. Generally, though much slower, the P³M method is then the
-preferable gravitational method to use in CO<em>N</em>CEPT. As we saw, increasing
+preferred gravitational method to use in CO<em>N</em>CEPT. As we saw, increasing
 the size of the potential grid used can dramatically cut down the computation
 time. In fact, it may well be worth it to increase it even further than what
-was done here.</p>
+was done here, though at the cost of increased memory consumption.</p>
 <p>It is remarkable that not only is the PM force not invariant under a change in
 grid size, but the smaller of the two grids actually produced the better
 result, as evident from the collective plot (taking the P³M power spectra to
 be essentially exact).</p>
 <p>Though inadequate for precise particle simulations, the PM method is still a
 valuable tool, as sometimes the benefits of rapid simulations outweigh the
-drawbacks of loss of precision. Also, as we shall
+drawbacks from loss of precision. Also, as we shall
 <a class="reference internal" href="beyond_matter_only.html"><span class="doc">delve into later</span></a>, PM gravity is as accurate as
 can be for fluid (i.e. non-particle) components, used to model species
 different from matter. Finally — though sticking to default values are
-recommended — you should be aware that the details about the PM and P³M
-methods can be further specified using
+generally recommended — you should be aware that the details about the PM
+and P³M methods can be further specified using
 <a class="reference internal" href="../parameters/numerical_parameters.html"><span class="doc">various parameters</span></a>, affecting the
 performance and accuracy.</p>
 <div class="topic">
@@ -476,9 +478,9 @@ bare particle-particle (PP) method, which simply performs the naïve
 pairwise force computation between all particles, effecively computing
 “short”-range forces as in the P³M method, but now across the entire
 simulation box.</p>
-<p>As expected, the PP method may be specified using e.g.</p>
+<p>As expected, the PP method may be specified using</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;pp&#39;</span><span class="p">},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;pp&#39;</span><span class="p">},</span>
 <span class="p">}</span>
 </pre></div>
 </div>
