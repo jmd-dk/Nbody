@@ -106,13 +106,11 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="working_remotely.html">6. Working on remote clusters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="beyond_matter_only.html">7. Beyond matter-only simulations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#adding-linear-speciess">7.1. Adding linear speciess</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="beyond_matter_only.html#massive-neutrinos">7.1.1. Massive neutrinos</a></li>
-<li class="toctree-l4"><a class="reference internal" href="beyond_matter_only.html#dynamical-dark-energy">7.1.2. Dynamical dark energy</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#decaying-cold-dark-matter">7.2. Decaying cold dark matter</a></li>
-<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">7.3. Non-linear massive neutrinos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#radiation">7.1. Radiation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#massive-neutrinos">7.2. Massive neutrinos</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#dynamical-dark-energy">7.3. Dynamical dark energy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#decaying-cold-dark-matter">7.4. Decaying cold dark matter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="utilities.html">8. Using utilities</a><ul>
@@ -424,7 +422,6 @@ script below:</p>
         <span class="k">continue</span>
     <span class="n">sim</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">P_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">sim</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;powerspec_(.+)_&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">linetype</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span> <span class="k">if</span> <span class="n">sim</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">}</span> <span class="k">else</span> <span class="s1">&#39;-&#39;</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">linetype</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;simulation </span><span class="si">{sim}</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_lin</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>

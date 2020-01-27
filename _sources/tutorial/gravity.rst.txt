@@ -193,7 +193,6 @@ script below:
            continue
        sim = match.group(1)
        k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
-       sim = re.search('powerspec_(.+)_', filename).group(1)
        linetype = '--' if sim in {'B', 'E'} else '-'
        ax.loglog(k, P_sim, linetype, label=f'simulation {sim}')
    ax.loglog(k, P_lin, 'k--', label='linear')
