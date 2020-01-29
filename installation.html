@@ -41,7 +41,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Command-line options" href="command_line_options.html" />
-    <link rel="prev" title="9. Looking under the hood" href="tutorial/under_the_hood.html" /> 
+    <link rel="prev" title="8. Using utilities" href="tutorial/utilities.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -119,10 +119,10 @@
 <li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-update-utility">8.3. The update utility</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/under_the_hood.html">9. Looking under the hood</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#supported-platforms">Supported platforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#standard-installation">Standard installation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#optimal-network-performance-on-clusters">Optimal network performance on clusters</a></li>
 </ul>
@@ -171,6 +171,7 @@
 <li class="toctree-l2"><a class="reference internal" href="utilities/watch.html">The watch utility</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="under_the_hood.html">Looking under the hood</a></li>
 <li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
@@ -284,29 +285,58 @@ the <code class="docutils literal notranslate"><span class="pre">.paths</span></
 <p>Entries on this page:</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#standard-installation" id="id8">Standard installation</a></p>
+<li><p><a class="reference internal" href="#supported-platforms" id="id8">Supported platforms</a></p></li>
+<li><p><a class="reference internal" href="#standard-installation" id="id9">Standard installation</a></p>
 <ul>
-<li><p><a class="reference internal" href="#optimal-network-performance-on-clusters" id="id9">Optimal network performance on clusters</a></p></li>
+<li><p><a class="reference internal" href="#optimal-network-performance-on-clusters" id="id10">Optimal network performance on clusters</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#the-installer-script-in-depth" id="id10">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a></p>
+<li><p><a class="reference internal" href="#the-installer-script-in-depth" id="id11">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a></p>
 <ul>
-<li><p><a class="reference internal" href="#programs-installed" id="id11">Programs installed</a></p></li>
-<li><p><a class="reference internal" href="#command-line-options" id="id12">Command-line options</a></p></li>
-<li><p><a class="reference internal" href="#influential-environment-variables" id="id13">Influential environment variables</a></p></li>
+<li><p><a class="reference internal" href="#programs-installed" id="id12">Programs installed</a></p></li>
+<li><p><a class="reference internal" href="#command-line-options" id="id13">Command-line options</a></p></li>
+<li><p><a class="reference internal" href="#influential-environment-variables" id="id14">Influential environment variables</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#dependencies" id="id14">Dependencies</a></p></li>
-<li><p><a class="reference internal" href="#the-paths-and-env-files" id="id15">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></p>
+<li><p><a class="reference internal" href="#dependencies" id="id15">Dependencies</a></p></li>
+<li><p><a class="reference internal" href="#the-paths-and-env-files" id="id16">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></p>
 <ul>
-<li><p><a class="reference internal" href="#the-paths-file" id="id16">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></p></li>
-<li><p><a class="reference internal" href="#the-env-file" id="id17">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></p></li>
+<li><p><a class="reference internal" href="#the-paths-file" id="id17">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></p></li>
+<li><p><a class="reference internal" href="#the-env-file" id="id18">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
+<div class="section" id="supported-platforms">
+<h2><a class="toc-backref" href="#id8">Supported platforms</a><a class="headerlink" href="#supported-platforms" title="Permalink to this headline">¶</a></h2>
+<div class="topic">
+<p class="topic-title first"><img alt="linux" src="_images/linux.png" style="height: 35px;" /> <span class="math notranslate nohighlight">\(\,\,\)</span> Linux</p>
+<p>CO<em>N</em>CEPT should install trivially on all major Linux
+distributions. The system may be a laptop, a workstation,
+a massively parallel computer cluster, a Raspberry Pi,
+a virtual machine, etc.</p>
+</div>
+<div class="topic">
+<p class="topic-title first"><img alt="windows" src="_images/windows.png" style="height: 35px;" /> <span class="math notranslate nohighlight">\(\,\,\)</span> Windows</p>
+<p>Though CO<em>N</em>CEPT does not run on native Windows, support is obtained
+via the <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsytem for Linux</a>.
+If installing CO<em>N</em>CEPT on Windows this way, make sure to install it
+into a proper Linux directory (e.g. your home directory <code class="docutils literal notranslate"><span class="pre">~</span></code>) and not a
+Windows directory (e.g. <code class="docutils literal notranslate"><span class="pre">/mnt/c/...</span></code>).</p>
+<p>The more traditional approach of installing Linux in a virtual machine
+within Windows of course works too.</p>
+</div>
+<div class="topic">
+<p class="topic-title first"><img alt="macos" src="_images/macos.png" style="height: 35px;" /> <span class="math notranslate nohighlight">\(\,\,\)</span> macOS</p>
+<p>Though much of the POSIX infrastructure needed to install and run
+CO<em>N</em>CEPT is available to macOS via <a class="reference external" href="https://brew.sh/">Homebrew</a>,
+numerous incompatibilities between the GNU and BSD tools make the porting
+of CO<em>N</em>CEPT to macOS non-trivial. Currently the only option is to
+run CO<em>N</em>CEPT in a virtual Linux machine.</p>
+</div>
+</div>
 <div class="section" id="standard-installation">
-<span id="id1"></span><h2><a class="toc-backref" href="#id8">Standard installation</a><a class="headerlink" href="#standard-installation" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id9">Standard installation</a><a class="headerlink" href="#standard-installation" title="Permalink to this headline">¶</a></h2>
 <p>The easiest way to install CO<em>N</em>CEPT along with all of its dependencies is
 to use the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">installer</span></code> bash script. This script is part of the
 CO<em>N</em>CEPT source code, and so if you have CO<em>N</em>CEPT already downloaded,
@@ -349,7 +379,7 @@ about 1.5 GB of storage. Should the installation process end prematurely
 (e.g. if you kill it yourself), simply rerun the installation command and it
 will pick up from where it was.</p>
 <div class="section" id="optimal-network-performance-on-clusters">
-<span id="id2"></span><h3><a class="toc-backref" href="#id9">Optimal network performance on clusters</a><a class="headerlink" href="#optimal-network-performance-on-clusters" title="Permalink to this headline">¶</a></h3>
+<span id="id2"></span><h3><a class="toc-backref" href="#id10">Optimal network performance on clusters</a><a class="headerlink" href="#optimal-network-performance-on-clusters" title="Permalink to this headline">¶</a></h3>
 <p>To install CO<em>N</em>CEPT on a cluster, the standard installation procedure
 above may be used. However, the performance of simulations running on multiple
 processors may be very poor, as the MPI library installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code>
@@ -389,7 +419,7 @@ the MPI library used supports the MPI-3 standard.</p>
 </div>
 </div>
 <div class="section" id="the-installer-script-in-depth">
-<span id="id3"></span><h2><a class="toc-backref" href="#id10">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><a class="headerlink" href="#the-installer-script-in-depth" title="Permalink to this headline">¶</a></h2>
+<span id="id3"></span><h2><a class="toc-backref" href="#id11">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><a class="headerlink" href="#the-installer-script-in-depth" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script may be run with additional options or influential
 environment variables, which can be used to e.g. request for a specific
 version of a dependency to be installed, or to skip the installation of a
@@ -397,7 +427,7 @@ particular dependency and instead make use of a preinstalled version of the
 same library. Before discussing such features, it is good to know exactly
 what dependencies are installed.</p>
 <div class="section" id="programs-installed">
-<h3><a class="toc-backref" href="#id11">Programs installed</a><a class="headerlink" href="#programs-installed" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id12">Programs installed</a><a class="headerlink" href="#programs-installed" title="Permalink to this headline">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> partitions all dependencies into <em>library</em> and <em>system</em>
 dependencies. Unless explicitly specified, the <code class="docutils literal notranslate"><span class="pre">installer</span></code> installs all
 library dependencies regardless of whether these already exist on the system.
@@ -467,7 +497,7 @@ pytest Python package will be installed as well (needed for testing NumPy and
 SciPy).</p>
 </div>
 <div class="section" id="command-line-options">
-<span id="id4"></span><h3><a class="toc-backref" href="#id12">Command-line options</a><a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h3>
+<span id="id4"></span><h3><a class="toc-backref" href="#id13">Command-line options</a><a class="headerlink" href="#command-line-options" title="Permalink to this headline">¶</a></h3>
 <p>When invoking the <code class="docutils literal notranslate"><span class="pre">installer</span></code> — whether a local copy or directly off of
 GitHub — you may supply optional command-line arguments, the most useful of
 which is probably the installation path. That is,</p>
@@ -540,7 +570,7 @@ use with remote jobs running on multiple nodes, as described
 <a class="reference internal" href="troubleshooting.html#problems-when-using-multiple-nodes"><span class="std std-ref">here</span></a>.</p>
 </div>
 <div class="section" id="influential-environment-variables">
-<span id="id5"></span><h3><a class="toc-backref" href="#id13">Influential environment variables</a><a class="headerlink" href="#influential-environment-variables" title="Permalink to this headline">¶</a></h3>
+<span id="id5"></span><h3><a class="toc-backref" href="#id14">Influential environment variables</a><a class="headerlink" href="#influential-environment-variables" title="Permalink to this headline">¶</a></h3>
 <p>The behavior of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> is governed by a large set of environment
 variables. An example is the <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code> variable described in
 ‘<a class="reference internal" href="#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance on clusters</span></a>’,
@@ -676,7 +706,7 @@ dependencies.</p>
 </div>
 </div>
 <div class="section" id="dependencies">
-<span id="id6"></span><h2><a class="toc-backref" href="#id14">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<span id="id6"></span><h2><a class="toc-backref" href="#id15">Dependencies</a><a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
 <p>This entry lists the dependency stack of CO<em>N</em>CEPT. Knowledge about this
 stack is not needed if using the installation script (<em>highly</em> recommended!),
 but it is important if for some reason you want to build (parts of) this stack
@@ -784,7 +814,7 @@ library used. The GNU make utility is also needed.</p>
 </div>
 </div>
 <div class="section" id="the-paths-and-env-files">
-<span id="id7"></span><h2><a class="toc-backref" href="#id15">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><a class="headerlink" href="#the-paths-and-env-files" title="Permalink to this headline">¶</a></h2>
+<span id="id7"></span><h2><a class="toc-backref" href="#id16">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><a class="headerlink" href="#the-paths-and-env-files" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file and the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file are special files storing
 static information about the CO<em>N</em>CEPT installation. The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file
 store absolute paths to various files and directories, while the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file
@@ -794,7 +824,7 @@ Should you wish to not use the <code class="docutils literal notranslate"><span 
 <code class="docutils literal notranslate"><span class="pre">.env</span></code> from the <a class="reference external" href="https://github.com/jmd-dk/concept">online repository</a> and
 edit them manually.</p>
 <div class="section" id="the-paths-file">
-<h3><a class="toc-backref" href="#id16">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a><a class="headerlink" href="#the-paths-file" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id17">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a><a class="headerlink" href="#the-paths-file" title="Permalink to this headline">¶</a></h3>
 <p>This is simply a bash script of variable declarations, each variable storing
 the absolute path to some file or directory. To install CO<em>N</em>CEPT without
 the use of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script, you must manually set these paths.</p>
@@ -829,7 +859,7 @@ absoute path to the the <code class="docutils literal notranslate"><span class="
 via the <code class="docutils literal notranslate"><span class="pre">paths</span></code> <code class="docutils literal notranslate"><span class="pre">dict</span></code>.</p>
 </div>
 <div class="section" id="the-env-file">
-<h3><a class="toc-backref" href="#id17">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><a class="headerlink" href="#the-env-file" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id18">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><a class="headerlink" href="#the-env-file" title="Permalink to this headline">¶</a></h3>
 <p>This file is meant to set up the needed environment variables needed for
 building and running CO<em>N</em>CEPT. It is sourced by the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script
 before building and running the code.</p>

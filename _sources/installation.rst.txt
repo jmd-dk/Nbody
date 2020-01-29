@@ -29,6 +29,46 @@ Entries on this page:
 
 
 
+Supported platforms
+-------------------
+
+.. |linux| image:: /_static/linux.png
+   :height: 35px
+
+.. |windows| image:: /_static/windows.png
+   :height: 35px
+
+.. |macos| image:: /_static/macos.png
+   :height: 35px
+
+.. topic:: |linux| :math:`\,\,` Linux
+
+   CO\ *N*\ CEPT should install trivially on all major Linux
+   distributions. The system may be a laptop, a workstation,
+   a massively parallel computer cluster, a Raspberry Pi,
+   a virtual machine, etc.
+
+.. topic:: |windows| :math:`\,\,` Windows
+
+   Though CO\ *N*\ CEPT does not run on native Windows, support is obtained
+   via the `Windows Subsytem for Linux <https://docs.microsoft.com/en-us/windows/wsl/about>`_.
+   If installing CO\ *N*\ CEPT on Windows this way, make sure to install it
+   into a proper Linux directory (e.g. your home directory ``~``) and not a
+   Windows directory (e.g. ``/mnt/c/...``).
+
+   The more traditional approach of installing Linux in a virtual machine
+   within Windows of course works too.
+
+.. topic:: |macos| :math:`\,\,` macOS
+
+   Though much of the POSIX infrastructure needed to install and run
+   CO\ *N*\ CEPT is available to macOS via `Homebrew <https://brew.sh/>`_,
+   numerous incompatibilities between the GNU and BSD tools make the porting
+   of CO\ *N*\ CEPT to macOS non-trivial. Currently the only option is to
+   run CO\ *N*\ CEPT in a virtual Linux machine.
+
+
+
 .. _standard_installation:
 
 Standard installation

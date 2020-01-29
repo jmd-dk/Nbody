@@ -1,17 +1,3 @@
-.. raw:: html
-
-   <style type="text/css">
-     span.bolditalic {
-       font-weight: bold;
-       font-style: italic;
-     }
-   </style>
-
-.. role:: bolditalic
-   :class: bolditalic
-
-
-
 Beyond matter-only simulations
 ------------------------------
 If you've followed this tutorial so far, you're now fully capable of using
@@ -56,13 +42,6 @@ specified by the below parameter file:
    # Non-parameter helper variable used to control the size of the simulation
    _size = 192
 
-   # Non-parameter helper variable used to specify linear components.
-   # Should be supplied as a command-line argument.
-   try:
-       _lin
-   except NameError:
-       _lin = ''
-
    # Input/output
    initial_conditions = [
        # Non-linear matter particles
@@ -71,16 +50,17 @@ specified by the below parameter file:
            'N'      : _size**3,
        },
    ]
-   if _lin:
-       for _species in _lin.split(','):
-           initial_conditions.append(
-               # Linear fluid component
-               {
-                   'species'        : _species.strip(),
-                   'gridsize'       : _size,
-                   'boltzmann order': -1,
-               }
-           )
+   for _species in _lin.split(','):
+       if not _species:
+           continue
+       initial_conditions.append(
+           # Linear fluid component
+           {
+               'species'        : _species.strip(),
+               'gridsize'       : _size,
+               'boltzmann order': -1,
+           }
+       )
    output_dirs = {
        'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
    }
@@ -105,6 +85,10 @@ specified by the below parameter file:
        'particles': {'gravity': ('p3m', 2*_size)},
        'fluid'    : {'gravity': 'pm'},
    }
+
+   # Non-parameter helper variable used to specify linear components.
+   # Should be supplied as a command-line argument.
+   _lin = ''
 
 As usual, save the parameters in e.g. ``params/tutorial`` and run the
 simulation via
@@ -135,7 +119,7 @@ The unfamiliar parameter specifications will be explained in due time.
       # Simulation options
       primordial_amplitude_fixed = True
 
-   to the parameters and rerunning the simulation. This has the effect of
+   to the parameter file and rerunning the simulation. This has the effect of
    replacing the uncorrelated random amplitudes of the primordial noise used
    to generate the initial conditions with amplitudes that are all of the same
    size. With this change, ``powerspec_lin=_a=0.02.png`` should look much
@@ -163,10 +147,11 @@ plotting script:
        match = re.search(r'powerspec_lin=(.*)_a=[\d.]+$', filename)
        if not match:
            continue
-       lin = match.group(1)
+       lin = match.group(1).replace(',', ', ').replace('+', ' + ')
        k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
-       axes[0].loglog(k, P_sim, label=f'simulation with lin = {lin}')
-       axes[1].semilogx(k, (P_sim/P_lin - 1)*100)
+       linestyle, zorder = ('--', 1) if '+' in lin else ('-', 0)
+       axes[0].loglog(k, P_sim, linestyle, zorder=zorder, label=f'simulation with lin = {lin}')
+       axes[1].semilogx(k, (P_sim/P_lin - 1)*100, linestyle, zorder=zorder)
    axes[0].loglog(k, P_lin, 'k--', label='linear')
    axes[1].semilogx(k, (P_lin/P_lin - 1)*100, 'k--')
    axes[0].legend()
@@ -213,13 +198,13 @@ observe better agreement with linear theory at low :math:`k`.
 
 
 
-.. topic:: Adding linear species
+.. topic:: Including linear species
 
    With our high-precision setup established, we are ready to start
    experimenting with adding in the missing species to the simulation,
-   hopefully leading to better agreement with linear theory on large scales.
-   To keep the clutter within ``output/tutorial`` to a minimum, go ahead and
-   add
+   hopefully leading to better agreement with linear theory on the largest
+   scales. To keep the clutter within ``output/tutorial`` to a minimum, go
+   ahead and add
 
    .. code-block:: python3
 
@@ -231,7 +216,8 @@ observe better agreement with linear theory at low :math:`k`.
 
    The inhomogeneities in the CMB causes a slight gravitational tug on matter,
    perturbing its evolution. To add this effect to the simulation, we need to
-   add a photon component. This could look like
+   add a photon component. This could look like (do not change the parameter
+   file)
 
    .. code-block:: python3
 
@@ -267,17 +253,20 @@ observe better agreement with linear theory at low :math:`k`.
    precisely the Boltzmann order. A few examples shall illuminate this
    concept:
 
-   - **Bolzmann order 0**: The lowest moment, corresponding to energy density,
-     is solved non-linearly during the simulation, while higher moments like
-     momentum density (on which the energy density depends) are solved purely
-     using linear theory.
-   - **Boltzmann order 1**: The two lowest moments, corresponding to energy
-     and momentum density, are solved non-linearly during the simulation,
-     while higher moments like pressure and shear (on which energy and
-     momentum density depend) are solved purely using linear theory.
+   - **Bolzmann order 0**: The evolution equation for the lowest moment (i.e.
+     the continuity equation for the energy density) is solved non-linearly
+     during the simulation, while higher moments like momentum density (on
+     which the energy density depends) are solved in pure linear theory.
+   - **Boltzmann order 1**: The evolution equations for the two lowest moments
+     (i.e. the continuity equation for the energy density and the Euler
+     equation for the momentum density) are solved non-linearly during the
+     simulation, while higher moments like pressure and shear (on which the
+     energy and momentum density depend) are solved in pure linear theory.
    - **Boltzmann order -1**: None of the moments are treated non-linearly,
-     i.e. this results in a purely linear component. Such components may still
-     act with a force on other, non-linear components.
+     i.e. this results in a purely linear component. Though the evolution of
+     such a component is independent of the simulation, a purely linear
+     component may still act with a force on other, non-linear components
+     during the simulation.
 
    .. note::
 
@@ -301,6 +290,15 @@ observe better agreement with linear theory at low :math:`k`.
    .. code-block:: bash
 
       ./concept -p params/tutorial -c '_lin = "photons"'
+
+   .. tip::
+
+      Note that the ``_lin`` helper variable is defined at the bottom of the
+      paramter file to have an empty value (leading to no linear species being
+      included). As this is placed after all actual parameters, this defines a
+      default value which is used when ``_lin`` is not given as a command-line
+      parameter. As ``_size`` is defined at the top, supplying ``_size`` as a
+      command-line parameter will have no effect.
 
    Now redo the plot, and the results of both the matter-only and the matter
    plus photon simulation should appear. The plot will show that --- sadly ---
@@ -343,10 +341,10 @@ observe better agreement with linear theory at low :math:`k`.
       *N*-body gauge. That is, initial conditions for non-linear species
       as well as linear input during the simulation must all be in this gauge.
       This is the default (and only) mode of CO\ *N*\ CEPT. Note that all
-      outputs are similarly in this gauge. Direct comparison to output from
-      other *N*-body codes (which usually does not define a gauge at all) is
-      perfectly doable, as the choice of gauge only becomes aparrent at very
-      large scales.
+      outputs are similarly in this gauge, including linear (CLASS) power
+      spectra. Direct comparison to output from other *N*-body codes (which
+      usually do not define a gauge at all) is perfectly doable, as the choice
+      of gauge only becomes aparrent at very large scales.
 
    To finally run a simulation which include the gravitational effects from
    photons and neutrinos in their entirety, run
@@ -356,40 +354,6 @@ observe better agreement with linear theory at low :math:`k`.
       ./concept -p params/tutorial -c '_lin = "photons, massless neutrinos, metric"'
 
    Replotting, you should see a much better behaved simulation power spectrum.
-
-
-
-.. topic:: Achieving perfection
-
-   Though the final simulation power spectrum indeed appear well behaved
-   at large scales, you might not --- after all this effort --- be happy about
-   it disagreeing with linear theory at the 0.1% level. This remaining
-   disagreement stems from numerical inaccuracy in the simulation, which we
-   may remedy by lowering the time step size. The time step size is limited
-   by a set of conditions, each categorized as either 'background' or
-   'non-linear'. The maximum allowed time step size within each category is
-   scaled by the parameter ``Δt_base_background_factor`` and
-   ``Δt_base_nonlinear_factor``, respectively. At the very linear times and
-   scales with which we are currently operating, it's a safe bet that the
-   maximum allowed time step is set by one of the background limiters.
-
-   To make the time steps 10 times smaller than normally, place
-
-   .. code-block:: python3
-
-      Δt_base_background_factor = 0.1
-
-   in the parameter file and rerun the full simulation. Note that this will
-   not increase the total number of time steps (and thus the computation time)
-   by a factor of 10, as the time step is periodically increased (though
-   always in accordance to ``Δt_base_background_factor`` and
-   ``Δt_base_nonlinear_factor``).
-
-   With this last tweak, the simulation power spectrum should agree with
-   linear theory far better than 0.1%, at the largest scales.
-   Incidentally, you may increase the output time all the way to :math:`a = 1`
-   while retaining excellent with linear theory. Keeping the time steps small,
-   such simulations takes a long time however.
 
 
 
@@ -417,22 +381,23 @@ observe better agreement with linear theory at low :math:`k`.
           },
       ]
 
-   Using our magic parameter file, we may of course specify this directly at
-   the command-line using
+   Using our clever parameter file however, we may of course specify this
+   directly at the command-line using
 
    .. code-block:: bash
 
       ./concept -p params/tutorial -c '_lin = "photons + massless neutrinos + metric"'
 
    This idea of combining species is embraced fully by CO\ *N*\ CEPT. As such,
-   the combination species ``'photons + massless neutrinos'`` may be referred
+   the species ``'photons + massless neutrinos'`` may be collectively referred
    to simply as ``'radiation'``. Thus,
 
    .. code-block:: bash
 
       ./concept -p params/tutorial -c '_lin = "radiation + metric"'
 
-   works just as well.
+   works just as well. You should run one of the above and check that you
+   obtain the same result as before.
 
    You are in fact already very familiar with the idea of combining species,
    as ``'matter'`` really means ``'baryons + cold dark matter'``.
@@ -445,7 +410,42 @@ observe better agreement with linear theory at low :math:`k`.
       always safe, as this dynamically maps to the set of all radiation
       species present in the current cosmology, whatever this may be.
       Similarly, ``'matter'`` is safe to use even in a cosmology without
-      e.g. cold dark matter, whereas ``'baryons + cold dark matter'`` is not.
+
+
+
+.. topic:: Achieving perfection
+
+   Though the final simulation power spectrum indeed appear well behaved
+   at large scales, you might not --- after all this effort --- be happy about
+   it disagreeing with linear theory at the 0.1% level. This remaining
+   disagreement stems from numerical inaccuracy in the simulation, which we
+   may remedy by lowering the time step size.
+
+   The time step size is limited by a set of conditions/limiters, each
+   classified as either a 'background' or 'non-linear' condition. The
+   maximum allowed time step size within each category is scaled by the
+   parameter ``Δt_base_background_factor`` and ``Δt_base_nonlinear_factor``,
+   respectively. At the very linear times and scales with which we are
+   currently operating, it's a safe bet that the maximum allowed time step is
+   set by one of the background limiters.
+
+   To make the time steps 10 times smaller than usually, place
+
+   .. code-block:: python3
+
+      Δt_base_background_factor = 0.1
+
+   in the parameter file and rerun the full simulation. Note that this will
+   not increase the total number of time steps (and thus the computation time)
+   by a factor of 10, as the time step is periodically increased (though
+   always in accordance to ``Δt_base_background_factor`` and
+   ``Δt_base_nonlinear_factor``).
+
+   With this last tweak, the simulation power spectrum should agree with
+   linear theory far better than 0.1%, at the largest scales. Incidentally,
+   you may increase the output time all the way to :math:`a = 1` while
+   retaining excellent agreement with linear theory. Keeping the time steps
+   small, such simulations takes a long time however.
 
 
 
