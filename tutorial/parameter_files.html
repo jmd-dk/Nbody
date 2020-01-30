@@ -29,6 +29,9 @@
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
         <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/clipboard.min.js"></script>
+        <script type="text/javascript" src="../_static/copybutton.js"></script>
+        <script type="text/javascript">var copybuttonSkipText = '>>> ';</script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -38,6 +41,7 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="4. Mastering gravity" href="gravity.html" />
@@ -355,7 +359,7 @@ and so it’s critical that you explicitly tack on units on all parameters
 that are not unitless. For <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>, the extra fancy unit of
 <span class="math notranslate nohighlight">\(\mathrm{Mpc}/h\)</span> is used above, with
 <span class="math notranslate nohighlight">\(h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})\)</span>
-determined dynamically from the Hubble constant <code class="docutils literal notranslate"><span class="pre">H0</span></code> set further down.</p>
+inferred dynamically from the Hubble constant <code class="docutils literal notranslate"><span class="pre">H0</span></code> set further down.</p>
 </li>
 <li><p>The parameters <code class="docutils literal notranslate"><span class="pre">Ωb</span></code> and <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> of course set the amount of baryons and
 cold dark matter, respectively. Together, these otherwise distinct species

@@ -29,6 +29,9 @@
         <script type="text/javascript" src="../_static/underscore.js"></script>
         <script type="text/javascript" src="../_static/doctools.js"></script>
         <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script type="text/javascript" src="../_static/clipboard.min.js"></script>
+        <script type="text/javascript" src="../_static/copybutton.js"></script>
+        <script type="text/javascript">var copybuttonSkipText = '>>> ';</script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
@@ -38,6 +41,7 @@
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="8. Using utilities" href="utilities.html" />
@@ -273,7 +277,8 @@ demonstrate.</p>
 perform a slew of simulations throughout this section. As most effects are
 small, we shall also learn how to crank up the precision, introducing several
 new parameters. If you have no interest in any of this, feel free to skip this
-section.</p>
+section, as it is rather lengthy and more technical than the other sections of
+this tutorial.</p>
 <div class="section" id="radiation">
 <h2>7.1. Radiation<a class="headerlink" href="#radiation" title="Permalink to this headline">¶</a></h2>
 <div class="topic">
@@ -292,9 +297,8 @@ linear perturbation equations. For details on how the linear perturbations
 are applied to the <em>N</em>-body particles during the simulation, we refer to
 the paper on
 “<a class="reference internal" href="../publications.html"><span class="doc">Fully relativistic treatment of light neutrinos in 𝘕-body simulations</span></a>”.</p>
-</div>
-<p>We begin our exploration by performing a standard matter-only simulation, as
-specified by the below parameter file:</p>
+<p>We begin our exploration by performing a standard matter-only simulation,
+as specified by the below parameter file:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter helper variable used to control the size of the simulation</span>
 <span class="n">_size</span> <span class="o">=</span> <span class="mi">192</span>
 
@@ -353,11 +357,13 @@ simulation via</p>
 </pre></div>
 </div>
 <p>possibly with the addition of <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">4</span></code> or some other number of processes.</p>
-<p>A relatively large number of particles <span class="math notranslate nohighlight">\(N = 192^3\)</span> is used in order to
-increase the precision of the simulation. Our goal is to investigate the
-effects from radiation perturbations, which are most pronounced at very large
-scales and early times — hence the large <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and early output time.
-The unfamiliar parameter specifications will be explained in due time.</p>
+<p>A relatively large number of particles <span class="math notranslate nohighlight">\(N = 192^3\)</span> is used in order
+to increase the precision of the simulation. Our goal is to investigate the
+effects from radiation perturbations, which are most pronounced at very
+large scales and early times — hence the large <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and early
+output time. The unfamiliar parameter specifications will be explained in
+due time.</p>
+</div>
 <div class="topic">
 <p class="topic-title first">The hunt for high precision</p>
 <p>Investigating the resulting <code class="docutils literal notranslate"><span class="pre">output/tutorial/powerspec_lin=_a=0.02.png</span></code>
@@ -379,12 +385,11 @@ as here many more <span class="math notranslate nohighlight">\(\vec{k}\)</span> 
 <span class="math notranslate nohighlight">\(|\vec{k}|=k\)</span> goes into producing each data point (recorded in the
 <code class="docutils literal notranslate"><span class="pre">modes</span></code> column in the power spectrum data file), reducing errors arising
 due to small number statistics).</p>
-</div>
-<p>We expect the evolution of the <em>N</em>-body particles to be completely linear at
-these large scales and early times, and so we may use the difference between
-the simulation and linear power spectrum as a measure for the error in the
-simulation. To better see this difference, we shall make use of the below
-plotting script:</p>
+<p>We expect the evolution of the <em>N</em>-body particles to be completely linear
+at these large scales and early times, and so we may use the difference
+between the simulation and linear power spectrum as a measure for the error
+in the simulation. To better see this difference, we shall make use of the
+below plotting script:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -398,7 +403,9 @@ plotting script:</p>
     <span class="n">lin</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39; + &#39;</span><span class="p">)</span>
     <span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">P_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">linestyle</span><span class="p">,</span> <span class="n">zorder</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;+&#39;</span> <span class="ow">in</span> <span class="n">lin</span> <span class="k">else</span> <span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">linestyle</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;simulation with lin = </span><span class="si">{lin}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">linestyle</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;simulation: lin = </span><span class="si">{lin}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">P_sim</span><span class="o">/</span><span class="n">P_lin</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="n">linestyle</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
 <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_lin</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
 <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">P_lin</span><span class="o">/</span><span class="n">P_lin</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">)</span>
@@ -421,24 +428,25 @@ plotting script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -m output/tutorial/plot.py
 </pre></div>
 </div>
-<p>This will produce <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code>, where the bottom panel shows
-the relative error between the simulated power spectrum and that computed
-using purely linear theory. They should agree to within a percent at the
-lowest <span class="math notranslate nohighlight">\(k\)</span>. At higher <span class="math notranslate nohighlight">\(k\)</span> the agreement is worse. Though this can
-be remedied by increasing the resolution of the simulation (i.e. by
-increasing <code class="docutils literal notranslate"><span class="pre">_size</span></code>), we shall not do so here, as we focus on the lower
+<p>This will produce <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code>, where the bottom panel
+shows the relative error between the simulated power spectrum and that
+computed using purely linear theory. They should agree to within a percent
+at the lowest <span class="math notranslate nohighlight">\(k\)</span>. At higher <span class="math notranslate nohighlight">\(k\)</span> the agreement is worse. Though
+this can be remedied by increasing the resolution of the simulation (i.e.
+by increasing <code class="docutils literal notranslate"><span class="pre">_size</span></code>), we shall not do so here, as we focus on the lower
 <span class="math notranslate nohighlight">\(k\)</span> only.</p>
 <p>The power spectra outputted by the simulation are binned using a constant
 linear bin size in <span class="math notranslate nohighlight">\(k\)</span>. This is usually desirable, though higher
-precision at the lowest <span class="math notranslate nohighlight">\(k\)</span> can be achieved by leaving out this binning.
-The bin size is controlled by the <code class="docutils literal notranslate"><span class="pre">powerspec_binsize</span></code> parameter. By setting
-it to <code class="docutils literal notranslate"><span class="pre">0</span></code> we disable binning altogether. Add</p>
+precision at the lowest <span class="math notranslate nohighlight">\(k\)</span> can be achieved by leaving out this
+binning. The bin size is controlled by the <code class="docutils literal notranslate"><span class="pre">powerspec_binsize</span></code> parameter.
+By setting it to <code class="docutils literal notranslate"><span class="pre">0</span></code> we disable binning altogether. Add</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">powerspec_binsize</span> <span class="o">=</span> <span class="mi">0</span>
 </pre></div>
 </div>
 <p>to the parameter file, then rerun the simulation and the plotting script.
-Though the simulation power spectrum generally becomes more jagged, you should
-observe better agreement with linear theory at low <span class="math notranslate nohighlight">\(k\)</span>.</p>
+Though the simulation power spectrum generally becomes more jagged, you
+should observe better agreement with linear theory at low <span class="math notranslate nohighlight">\(k\)</span>.</p>
+</div>
 <div class="topic">
 <p class="topic-title first">Including linear species</p>
 <p>With our high-precision setup established, we are ready to start
@@ -654,12 +662,255 @@ always in accordance to <code class="docutils literal notranslate"><span class="
 linear theory far better than 0.1%, at the largest scales. Incidentally,
 you may increase the output time all the way to <span class="math notranslate nohighlight">\(a = 1\)</span> while
 retaining excellent agreement with linear theory. Keeping the time steps
-small, such simulations takes a long time however.</p>
+small, such simulations take a long time however.</p>
 </div>
 </div>
 <div class="section" id="massive-neutrinos">
 <h2>7.2. Massive neutrinos<a class="headerlink" href="#massive-neutrinos" title="Permalink to this headline">¶</a></h2>
-<p><em>Under construction!</em></p>
+<p>The previous subsection demonstrated how simulations of matter can be made to
+agree extremely well with linear theory at linear scales, if we include the
+gravitational contributions from the otherwise missing species, which were
+treated linearly. It did this by comparing the simulated power spectrum
+directly to the linear one, for the same cosmology.</p>
+<p>With confidence in the strategy of including linear species, let’s now look at
+the relative difference in matter power between two separate cosmologies, with
+and without the inclusion of linear species. As dividing one simulated power
+spectrum by another cancels out much of the numerical noise, this time we can
+obtain high accuracy without using any of the special tricks from the previous
+subsection.</p>
+<div class="topic">
+<p class="topic-title first">Adding massive neutrinos to the background cosmology</p>
+<p>We wish to compute the effect on the matter power spectrum caused by
+neglecting the fact that neutrinos really do have mass. For this purpose,
+we shall make use of the below parameter file:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter helper variable used to control the size of the simulation</span>
+<span class="n">_size</span> <span class="o">=</span> <span class="mi">128</span>
+
+<span class="c1"># Input/output</span>
+<span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># Non-linear matter particles</span>
+    <span class="p">{</span>
+        <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">]</span>
+<span class="k">for</span> <span class="n">_species</span> <span class="ow">in</span> <span class="n">_lin</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_species</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="n">initial_conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="c1"># Linear fluid component</span>
+        <span class="p">{</span>
+            <span class="s1">&#39;species&#39;</span>        <span class="p">:</span> <span class="n">_species</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+            <span class="s1">&#39;gridsize&#39;</span>       <span class="p">:</span> <span class="n">_size</span><span class="p">,</span>
+            <span class="s1">&#39;boltzmann order&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+<span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
+<span class="p">}</span>
+<span class="n">output_bases</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;powerspec_mass=</span><span class="si">{_mass}</span><span class="s1">eV_lin=</span><span class="si">{_lin}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">powerspec_select</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="c1"># Numerical parameters</span>
+<span class="n">boxsize</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">Gpc</span>
+
+<span class="c1"># Cosmology</span>
+<span class="n">H0</span>      <span class="o">=</span> <span class="mi">67</span><span class="o">*</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">Mpc</span><span class="p">)</span>
+<span class="n">Ωb</span>      <span class="o">=</span> <span class="mf">0.049</span>
+<span class="n">Ωcdm</span>    <span class="o">=</span> <span class="mf">0.27</span> <span class="o">-</span> <span class="n">Ων</span>
+<span class="n">a_begin</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">class_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Disable massless neutrinos</span>
+    <span class="s1">&#39;N_ur&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="c1"># Add 3 massive neutrinos of equal mass</span>
+    <span class="s1">&#39;N_ncdm&#39;</span>  <span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;deg_ncdm&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s1">&#39;m_ncdm&#39;</span>  <span class="p">:</span> <span class="nb">max</span><span class="p">(</span><span class="n">_mass</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mf">1e-100</span><span class="p">),</span>  <span class="c1"># Avoid exact value of 0.0</span>
+<span class="p">}</span>
+
+<span class="c1"># Physics</span>
+<span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;particles&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
+    <span class="s1">&#39;fluid&#39;</span>    <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;pm&#39;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="c1"># Non-parameter helper variables which should</span>
+<span class="c1"># be supplied as command-line arguments.</span>
+<span class="n">_mass</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Sum of neutrino masses in eV</span>
+<span class="n">_lin</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>  <span class="c1"># Linear species to include</span>
+</pre></div>
+</div>
+<p>You may want to save this and get a simulation going (without supplying any
+command-line parameters, for now) while you read on.</p>
+<p>The new elements appearing in the parameter file are:</p>
+<ul>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">class_params</span></code> parameter has been added. Items defined within
+<code class="docutils literal notranslate"><span class="pre">class_params</span></code> are passed onto CLASS and are thus used for the
+background and linear computations. That is, <code class="docutils literal notranslate"><span class="pre">class_params</span></code> is used to
+change the cosmology used within the CO<em>N</em>CEPT simulation away from
+the default cosmology as defined by CLASS.</p>
+<p>As for CO<em>N</em>CEPT itself, a vast number of CLASS parameters exist.
+The best source for exploring these is probably the
+<a class="reference external" href="https://github.com/lesgourg/class_public/blob/master/explanatory.ini">explanatory.ini</a>
+example CLASS parameter file, which also lists default values.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>As <span class="math notranslate nohighlight">\(H_0\)</span> (<code class="docutils literal notranslate"><span class="pre">H0</span></code>), <span class="math notranslate nohighlight">\(\Omega_{\text{b}}\)</span> (<code class="docutils literal notranslate"><span class="pre">Ωb</span></code>) and
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}}\)</span> (<code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code>) already exist as stand-alone
+CO<em>N</em>CEPT parameters, these should never be supplied explicitly to
+<code class="docutils literal notranslate"><span class="pre">class_params</span></code>.</p>
+</div>
+<p>Of interest to us now are <code class="docutils literal notranslate"><span class="pre">'N_ur'</span></code> and <code class="docutils literal notranslate"><span class="pre">'N_ncdm'</span></code>; the number of
+<strong>u</strong>n<strong>r</strong>elativistic species (massless neutrinos) and
+<strong>n</strong>on-<strong>c</strong>old <strong>d</strong>ark <strong>m</strong>atter species (massive
+neutrinos). In the above parameter specifications we switch out the
+default use of massless neutrinos with one (<code class="docutils literal notranslate"><span class="pre">'N_ncdm':</span> <span class="pre">1</span></code>) 3-times
+degenerate (<code class="docutils literal notranslate"><span class="pre">'deg_ncdm':</span> <span class="pre">3</span></code>) neutrino, which really amounts to three
+separate neutrinos but all of the same mass (<code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code>).</p>
+</li>
+<li><p>Besides <code class="docutils literal notranslate"><span class="pre">_lin</span></code>, another command-line parameter <code class="docutils literal notranslate"><span class="pre">_mass</span></code> is now in
+play. This is the sum of neutrino masses <span class="math notranslate nohighlight">\(\sum m_\nu\)</span>, in eV. As we
+have three neutrinos of equal mass, the neutrino mass <code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code> is set
+to <code class="docutils literal notranslate"><span class="pre">_mass/3</span></code>.</p>
+<p>We can in fact obtain massless neutrinos in CLASS using the ‘ncdm’
+species by setting <code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code> to zero. However, a switch in CLASS
+detects if this mass is exactly zero and  changes the value noticeably.
+To avoid this, we ensure that a value of <code class="docutils literal notranslate"><span class="pre">0.0</span></code> gets replaced by a tiny
+but non-zero number (here <span class="math notranslate nohighlight">\(10^{-100}\)</span>).</p>
+</li>
+<li><p>As you may gather from the name ‘non-cold dark matter’, the massive
+neutrinos behave like unrelativistic dark matter during most if not all
+of the simulation time span (unless <code class="docutils literal notranslate"><span class="pre">_mass</span></code> is set very low). When
+specifying the amount of dark matter in the cosmology, one may then
+choose to state <span class="math notranslate nohighlight">\(\Omega_{\text{cdm}} + \Omega_\nu\)</span> instead of
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}}\)</span> alone. Since <span class="math notranslate nohighlight">\(\Omega_\nu\)</span> is implicitly
+fixed by the choice of neutrino masses, this means that
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}}\)</span> can no longer be chosen freely. Rather, if we
+want the total dark matter energy density parameter to equal e.g. 0.27,
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}} + \Omega_{\nu} = 0.27\)</span>, we must specify
+<code class="docutils literal notranslate"><span class="pre">Ωcdm</span> <span class="pre">=</span> <span class="pre">0.27</span> <span class="pre">-</span> <span class="pre">Ων</span></code>, as is done in the above parameter file. Just like
+<code class="docutils literal notranslate"><span class="pre">h</span></code> is automatically inferred from <code class="docutils literal notranslate"><span class="pre">H0</span></code>, so is <code class="docutils literal notranslate"><span class="pre">Ων</span></code> automatically
+inferred from <code class="docutils literal notranslate"><span class="pre">class_params</span></code>. As this latter inference is non-trivial,
+the resulting <code class="docutils literal notranslate"><span class="pre">Ων</span></code> is written to the terminal at the beginning of the
+simulation.</p></li>
+</ul>
+<p>Once the first simulation — with a cosmology including three neutrinos of
+zero mass — is done, run a simulation with e.g.
+<span class="math notranslate nohighlight">\(\sum m_\nu = 0.1\,\text{eV}\)</span>. Assuming the parameter file is stored
+as the usual <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_mass = 0.1&#39;</span>
+</pre></div>
+</div>
+<p>With both simulations done, we can plot their relative power spectrum. To
+do this, you should make use of the following script:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">this_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+<span class="n">P_sims</span><span class="p">,</span> <span class="n">P_lins</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{this_dir}</span><span class="s1">/powerspec*&#39;</span><span class="p">)):</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;powerspec_mass=(.+)eV_lin=(.*)_a=[\d.]+$&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="n">mass</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">lin</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;, &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39; + &#39;</span><span class="p">)</span>
+    <span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">P_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">P_lin</span><span class="p">)</span>
+    <span class="n">P_sims</span><span class="p">[</span><span class="n">mass</span><span class="p">,</span> <span class="n">lin</span><span class="p">]</span> <span class="o">=</span> <span class="n">P_sim</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">P_lins</span><span class="p">[</span><span class="n">mass</span><span class="p">]</span> <span class="o">=</span> <span class="n">P_lin</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<span class="n">k</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">mass</span><span class="p">,</span> <span class="n">lin</span><span class="p">),</span> <span class="n">P_sim</span> <span class="ow">in</span> <span class="n">P_sims</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mass</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">P_sim</span><span class="o">/</span><span class="n">P_sims</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">lin</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span>
+        <span class="s1">&#39;-&#39;</span> <span class="k">if</span> <span class="n">lin</span> <span class="k">else</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;simulation: mass = </span><span class="si">{mass}</span><span class="s1"> eV, lin = </span><span class="si">{lin}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">P_lin</span> <span class="o">=</span> <span class="n">P_lins</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">mass</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">P_lin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">semilogx</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">P_lin</span><span class="o">/</span><span class="n">P_lins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;linear: mass = </span><span class="si">{mass}</span><span class="s1"> eV&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$k$ $[\mathrm</span><span class="si">{Mpc}</span><span class="s1">^{-1}]$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$P_{\Sigma m_\nu &gt; 0}/P_{\Sigma m_\nu = 0}-1\,[\%]$&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{this_dir}</span><span class="s1">/plot.png&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As usual, to run the script, save it as e.g. <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.py</span></code>
+and invoke</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -m output/tutorial/plot.py
+</pre></div>
+</div>
+<p>The resulting <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code> should show that letting the
+neutrinos have mass results in a few percent suppression of the matter
+power spectrum. At intermediary <span class="math notranslate nohighlight">\(k\)</span> the simulation and linear
+relative power spectra agrees, whereas they do not for the smallest and
+largest <span class="math notranslate nohighlight">\(k\)</span>. In the case of large <span class="math notranslate nohighlight">\(k\)</span>, you should see that the
+non-linear solution forms a trough below the linear one, before rising up
+above it near the largest <span class="math notranslate nohighlight">\(k\)</span> shown. This is the well-known
+non-linear supression dip, the low-<span class="math notranslate nohighlight">\(k\)</span> end of which marks the
+beginning of the truly non-linear regime. We thus trust the simulated
+results at the high-<span class="math notranslate nohighlight">\(k\)</span> end of the plot, while we trust the linear
+results at the low-<cite>k</cite> end.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Adding gravitation from massive neutrinos</p>
+<p>The hope is now to be able to correct the simulated relative power spectrum
+at low <span class="math notranslate nohighlight">\(k\)</span> by including the missing species to the simulation,
+without this altering the high-<span class="math notranslate nohighlight">\(k\)</span> behavior. Besides
+<code class="docutils literal notranslate"><span class="pre">'massive</span> <span class="pre">neutrinos'</span></code>, we should not forget about <code class="docutils literal notranslate"><span class="pre">'photons'</span></code> and the
+<code class="docutils literal notranslate"><span class="pre">'metric'</span></code>. Note that <code class="docutils literal notranslate"><span class="pre">'massive</span> <span class="pre">neutrinos'</span></code> are not considered part of
+<code class="docutils literal notranslate"><span class="pre">'radiation'</span></code>. We can however just write <code class="docutils literal notranslate"><span class="pre">'neutrinos'</span></code>, as this refers
+to all neutrinos (massive (‘ncdm’) as well as massless (‘ur’)) present in
+the cosmology. To rerun both cosmologies with all linear species included,
+we might call <code class="docutils literal notranslate"><span class="pre">concept</span></code> within a Bash for-loop:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> mass in <span class="m">0</span> <span class="m">0</span>.1<span class="p">;</span> <span class="k">do</span>
+    ./concept <span class="se">\</span>
+        -p params/tutorial <span class="se">\</span>
+        -c <span class="s2">&quot;_mass = </span><span class="nv">$mass</span><span class="s2">&quot;</span> <span class="se">\</span>
+        -c <span class="s1">&#39;_lin = &quot;photons + neutrinos + metric&quot;&#39;</span>
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>Once completed, redo the plot. You should find that including the linear
+species did indeed correct the large-scale behavior while leaving the
+small-scale behavior intact.</p>
+</div>
+<div class="topic">
+<p class="topic-title first">Tweaking the CLASS computation</p>
+<p>Though better agreement with linear theory is achieved after the inclusion
+of the linear species, the plot also shows that this inclusion leads to a
+less smooth relative spectrum. The added noise stems from the massive
+neutrinos, the evolution of which is not solved perfectly by CLASS. A large
+set of general and massive neutrino specifc CLASS precision parameters
+exist, which can remedy this problem.</p>
+<p>Here we shall look at just one such CLASS parameter; <code class="docutils literal notranslate"><span class="pre">'evolver'</span></code>. This
+sets the ODE solver to be used by CLASS, and may be either <code class="docutils literal notranslate"><span class="pre">0</span></code>
+(Runge-Kutta Cash-Karp) or <code class="docutils literal notranslate"><span class="pre">1</span></code> (ndf15, the default). For high-precision
+CLASS computations used for <em>N</em>-body simulations, it is generally
+preferable to switch to the Runge-Kutta solver. To do this, just add</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the Runge-Kutta evolver</span>
+<span class="s1">&#39;evolver&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+</pre></div>
+</div>
+<p>to the <code class="docutils literal notranslate"><span class="pre">class_params</span></code> in the parameter file.</p>
+<p>With this change, rerun the two simulations with linear species included
+(you may also rerun all four simulations, but the matter-only ones are
+hardly affected by the change to <code class="docutils literal notranslate"><span class="pre">'evolver'</span></code>). After replotting, the
+simulated relative power spectrum should have been smoothed out at low
+<span class="math notranslate nohighlight">\(k\)</span>, showing excellent agreement with the linear prediction.</p>
+</div>
 </div>
 <div class="section" id="dynamical-dark-energy">
 <h2>7.3. Dynamical dark energy<a class="headerlink" href="#dynamical-dark-energy" title="Permalink to this headline">¶</a></h2>

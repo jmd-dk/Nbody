@@ -74,7 +74,7 @@ Supported platforms
 Standard installation
 ---------------------
 The easiest way to install CO\ *N*\ CEPT along with all of its dependencies is
-to use the CO\ *N*\ CEPT ``installer`` bash script. This script is part of the
+to use the CO\ *N*\ CEPT ``installer`` Bash script. This script is part of the
 CO\ *N*\ CEPT source code, and so if you have CO\ *N*\ CEPT already downloaded,
 you may find and run this script:
 
@@ -193,8 +193,8 @@ system-wide. If the ``installer`` detects a missing system dependency, it will
 prompt for system-wide (root) installation through the package manager on the
 system.
 
-The ``installer`` script is able to bootstrap itself up from just bash, GNU
-core utilities and a package manager (or just bash and GNU core utilities if
+The ``installer`` script is able to bootstrap itself up from just Bash, GNU
+core utilities and a package manager (or just Bash and GNU core utilities if
 all system dependencies are already present). In addition, it builds all
 library dependencies from source, increasing the total number of dependencies
 (as many dependencies have other dependencies, and so on). For the absolute
@@ -378,7 +378,7 @@ or defining it as an environmet variable prior to the invocation;
 
 .. code-block:: bash
 
-   export mpi_dir=/path/to/mpi  # Assuming bash-like shell
+   export mpi_dir=/path/to/mpi  # Assuming Bash-like shell
    bash installer
 
 All other influential environment variables may be set in similar ways.
@@ -634,7 +634,7 @@ You may draw inspiration from the current or older versions of the
    In addition to the many dependencies above, CO\ *N*\ CEPT further uses
    a lot of *system dependencies*, by which is meant programs that usually is
    installed system-wide. These include
-   `bash <https://www.gnu.org/software/bash/>`_ 3.0 or newer and the
+   `Bash <https://www.gnu.org/software/bash/>`_ 3.0 or newer and the
    `GNU core utilities <https://www.gnu.org/software/coreutils/>`_, which are
    the only two dependencies not installed by the ``installer`` script.
 
@@ -677,7 +677,7 @@ edit them manually.
 
 The ``.paths`` file
 ...................
-This is simply a bash script of variable declarations, each variable storing
+This is simply a Bash script of variable declarations, each variable storing
 the absolute path to some file or directory. To install CO\ *N*\ CEPT without
 the use of the ``installer`` script, you must manually set these paths.
 

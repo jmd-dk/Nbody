@@ -29,6 +29,9 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
+        <script type="text/javascript" src="_static/clipboard.min.js"></script>
+        <script type="text/javascript" src="_static/copybutton.js"></script>
+        <script type="text/javascript">var copybuttonSkipText = '>>> ';</script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
@@ -38,6 +41,7 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Command-line options" href="command_line_options.html" />
@@ -338,7 +342,7 @@ run CO<em>N</em>CEPT in a virtual Linux machine.</p>
 <div class="section" id="standard-installation">
 <span id="id1"></span><h2><a class="toc-backref" href="#id9">Standard installation</a><a class="headerlink" href="#standard-installation" title="Permalink to this headline">¶</a></h2>
 <p>The easiest way to install CO<em>N</em>CEPT along with all of its dependencies is
-to use the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">installer</span></code> bash script. This script is part of the
+to use the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">installer</span></code> Bash script. This script is part of the
 CO<em>N</em>CEPT source code, and so if you have CO<em>N</em>CEPT already downloaded,
 you may find and run this script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash installer
@@ -435,8 +439,8 @@ The system dependencies consist of standard tools commonly installed
 system-wide. If the <code class="docutils literal notranslate"><span class="pre">installer</span></code> detects a missing system dependency, it will
 prompt for system-wide (root) installation through the package manager on the
 system.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script is able to bootstrap itself up from just bash, GNU
-core utilities and a package manager (or just bash and GNU core utilities if
+<p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script is able to bootstrap itself up from just Bash, GNU
+core utilities and a package manager (or just Bash and GNU core utilities if
 all system dependencies are already present). In addition, it builds all
 library dependencies from source, increasing the total number of dependencies
 (as many dependencies have other dependencies, and so on). For the absolute
@@ -581,7 +585,7 @@ either directly in the invocation of <code class="docutils literal notranslate">
 </pre></div>
 </div>
 <p>or defining it as an environmet variable prior to the invocation;</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi  <span class="c1"># Assuming bash-like shell</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi  <span class="c1"># Assuming Bash-like shell</span>
 bash installer
 </pre></div>
 </div>
@@ -791,7 +795,7 @@ the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre
 <p>In addition to the many dependencies above, CO<em>N</em>CEPT further uses
 a lot of <em>system dependencies</em>, by which is meant programs that usually is
 installed system-wide. These include
-<a class="reference external" href="https://www.gnu.org/software/bash/">bash</a> 3.0 or newer and the
+<a class="reference external" href="https://www.gnu.org/software/bash/">Bash</a> 3.0 or newer and the
 <a class="reference external" href="https://www.gnu.org/software/coreutils/">GNU core utilities</a>, which are
 the only two dependencies not installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script.</p>
 <p>Other system dependencies needed for the core CO<em>N</em>CEPT functionality
@@ -825,7 +829,7 @@ Should you wish to not use the <code class="docutils literal notranslate"><span 
 edit them manually.</p>
 <div class="section" id="the-paths-file">
 <h3><a class="toc-backref" href="#id17">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a><a class="headerlink" href="#the-paths-file" title="Permalink to this headline">¶</a></h3>
-<p>This is simply a bash script of variable declarations, each variable storing
+<p>This is simply a Bash script of variable declarations, each variable storing
 the absolute path to some file or directory. To install CO<em>N</em>CEPT without
 the use of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script, you must manually set these paths.</p>
 <p>From the comment above each variable, exactly what they refer to should be

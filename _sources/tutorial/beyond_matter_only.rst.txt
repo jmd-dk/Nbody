@@ -9,7 +9,8 @@ To assess the effects resulting from including non-matter species, we shall
 perform a slew of simulations throughout this section. As most effects are
 small, we shall also learn how to crank up the precision, introducing several
 new parameters. If you have no interest in any of this, feel free to skip this
-section.
+section, as it is rather lengthy and more technical than the other sections of
+this tutorial.
 
 
 
@@ -34,76 +35,78 @@ Radiation
    the paper on
    ":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations</publications>`".
 
-We begin our exploration by performing a standard matter-only simulation, as
-specified by the below parameter file:
+   We begin our exploration by performing a standard matter-only simulation,
+   as specified by the below parameter file:
 
-.. code-block:: python3
+   .. code-block:: python3
 
-   # Non-parameter helper variable used to control the size of the simulation
-   _size = 192
+      # Non-parameter helper variable used to control the size of the simulation
+      _size = 192
 
-   # Input/output
-   initial_conditions = [
-       # Non-linear matter particles
-       {
-           'species': 'matter',
-           'N'      : _size**3,
-       },
-   ]
-   for _species in _lin.split(','):
-       if not _species:
-           continue
-       initial_conditions.append(
-           # Linear fluid component
-           {
-               'species'        : _species.strip(),
-               'gridsize'       : _size,
-               'boltzmann order': -1,
-           }
-       )
-   output_dirs = {
-       'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
-   }
-   output_bases = {
-       'powerspec': f'powerspec_lin={_lin}'.replace(' ', ''),
-   }
-   output_times = {
-       'powerspec': 2*a_begin,
-   }
+      # Input/output
+      initial_conditions = [
+          # Non-linear matter particles
+          {
+              'species': 'matter',
+              'N'      : _size**3,
+          },
+      ]
+      for _species in _lin.split(','):
+          if not _species:
+              continue
+          initial_conditions.append(
+              # Linear fluid component
+              {
+                  'species'        : _species.strip(),
+                  'gridsize'       : _size,
+                  'boltzmann order': -1,
+              }
+          )
+      output_dirs = {
+          'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
+      }
+      output_bases = {
+          'powerspec': f'powerspec_lin={_lin}'.replace(' ', ''),
+      }
+      output_times = {
+          'powerspec': 2*a_begin,
+      }
 
-   # Numerical parameters
-   boxsize = 4*Gpc
+      # Numerical parameters
+      boxsize = 4*Gpc
 
-   # Cosmology
-   H0      = 67*km/(s*Mpc)
-   Ωb      = 0.049
-   Ωcdm    = 0.27
-   a_begin = 0.01
+      # Cosmology
+      H0      = 67*km/(s*Mpc)
+      Ωb      = 0.049
+      Ωcdm    = 0.27
+      a_begin = 0.01
 
-   # Physics
-   select_forces = {
-       'particles': {'gravity': ('p3m', 2*_size)},
-       'fluid'    : {'gravity': 'pm'},
-   }
+      # Physics
+      select_forces = {
+          'particles': {'gravity': ('p3m', 2*_size)},
+          'fluid'    : {'gravity': 'pm'},
+      }
 
-   # Non-parameter helper variable used to specify linear components.
-   # Should be supplied as a command-line argument.
-   _lin = ''
+      # Non-parameter helper variable used to specify linear components.
+      # Should be supplied as a command-line argument.
+      _lin = ''
 
-As usual, save the parameters in e.g. ``params/tutorial`` and run the
-simulation via
+   As usual, save the parameters in e.g. ``params/tutorial`` and run the
+   simulation via
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   ./concept -p params/tutorial
+      ./concept -p params/tutorial
 
-possibly with the addition of ``-n 4`` or some other number of processes.
+   possibly with the addition of ``-n 4`` or some other number of processes.
 
-A relatively large number of particles :math:`N = 192^3` is used in order to
-increase the precision of the simulation. Our goal is to investigate the
-effects from radiation perturbations, which are most pronounced at very large
-scales and early times --- hence the large ``boxsize`` and early output time.
-The unfamiliar parameter specifications will be explained in due time.
+   A relatively large number of particles :math:`N = 192^3` is used in order
+   to increase the precision of the simulation. Our goal is to investigate the
+   effects from radiation perturbations, which are most pronounced at very
+   large scales and early times --- hence the large ``boxsize`` and early
+   output time. The unfamiliar parameter specifications will be explained in
+   due time.
+
 
 .. topic:: The hunt for high precision
 
@@ -129,73 +132,74 @@ The unfamiliar parameter specifications will be explained in due time.
    ``modes`` column in the power spectrum data file), reducing errors arising
    due to small number statistics).
 
-We expect the evolution of the *N*-body particles to be completely linear at
-these large scales and early times, and so we may use the difference between
-the simulation and linear power spectrum as a measure for the error in the
-simulation. To better see this difference, we shall make use of the below
-plotting script:
+   We expect the evolution of the *N*-body particles to be completely linear
+   at these large scales and early times, and so we may use the difference
+   between the simulation and linear power spectrum as a measure for the error
+   in the simulation. To better see this difference, we shall make use of the
+   below plotting script:
 
-.. code-block:: python3
+   .. code-block:: python3
 
-   import glob, os, re
-   import numpy as np
-   import matplotlib.pyplot as plt
+      import glob, os, re
+      import numpy as np
+      import matplotlib.pyplot as plt
 
-   this_dir = os.path.dirname(os.path.realpath(__file__))
-   fig, axes = plt.subplots(2, sharex=True)
-   for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
-       match = re.search(r'powerspec_lin=(.*)_a=[\d.]+$', filename)
-       if not match:
-           continue
-       lin = match.group(1).replace(',', ', ').replace('+', ' + ')
-       k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
-       linestyle, zorder = ('--', 1) if '+' in lin else ('-', 0)
-       axes[0].loglog(k, P_sim, linestyle, zorder=zorder, label=f'simulation with lin = {lin}')
-       axes[1].semilogx(k, (P_sim/P_lin - 1)*100, linestyle, zorder=zorder)
-   axes[0].loglog(k, P_lin, 'k--', label='linear')
-   axes[1].semilogx(k, (P_lin/P_lin - 1)*100, 'k--')
-   axes[0].legend()
-   k_min, k_max = k[~np.isnan(P_lin)][[0, -1]]
-   axes[0].set_xlim(k_min, 0.5*k_max)
-   axes[0].set_ylim(0.9*np.nanmin(P_lin), 1.1*np.nanmax(P_lin))
-   axes[1].set_ylim(-1, 1)
-   axes[1].set_xlabel(r'$k$ $[\mathrm{Mpc}^{-1}]$')
-   axes[0].set_ylabel(r'$P\,[\mathrm{Mpc}^3]$')
-   axes[1].set_ylabel(r'$P_{\mathrm{sim}}/P_{\mathrm{lin}}-1\,[\%]$')
-   axes[0].tick_params('x', direction='inout', which='both')
-   axes[0].set_zorder(np.inf)
-   fig.tight_layout()
-   fig.subplots_adjust(hspace=0)
-   fig.savefig(f'{this_dir}/plot.png')
+      this_dir = os.path.dirname(os.path.realpath(__file__))
+      fig, axes = plt.subplots(2, sharex=True)
+      for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
+          match = re.search(r'powerspec_lin=(.*)_a=[\d.]+$', filename)
+          if not match:
+              continue
+          lin = match.group(1).replace(',', ', ').replace('+', ' + ')
+          k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
+          linestyle, zorder = ('--', 1) if '+' in lin else ('-', 0)
+          axes[0].loglog(k, P_sim, linestyle, zorder=zorder,
+              label=f'simulation: lin = {lin}',
+          )
+          axes[1].semilogx(k, (P_sim/P_lin - 1)*100, linestyle, zorder=zorder)
+      axes[0].loglog(k, P_lin, 'k--', label='linear')
+      axes[1].semilogx(k, (P_lin/P_lin - 1)*100, 'k--')
+      axes[0].legend()
+      k_min, k_max = k[~np.isnan(P_lin)][[0, -1]]
+      axes[0].set_xlim(k_min, 0.5*k_max)
+      axes[0].set_ylim(0.9*np.nanmin(P_lin), 1.1*np.nanmax(P_lin))
+      axes[1].set_ylim(-1, 1)
+      axes[1].set_xlabel(r'$k$ $[\mathrm{Mpc}^{-1}]$')
+      axes[0].set_ylabel(r'$P\,[\mathrm{Mpc}^3]$')
+      axes[1].set_ylabel(r'$P_{\mathrm{sim}}/P_{\mathrm{lin}}-1\,[\%]$')
+      axes[0].tick_params('x', direction='inout', which='both')
+      axes[0].set_zorder(np.inf)
+      fig.tight_layout()
+      fig.subplots_adjust(hspace=0)
+      fig.savefig(f'{this_dir}/plot.png')
 
-Save the script as e.g. ``output/tutorial/plot.py`` and run it using
+   Save the script as e.g. ``output/tutorial/plot.py`` and run it using
 
-.. code-block:: bash
+   .. code-block:: bash
 
-   ./concept -m output/tutorial/plot.py
+      ./concept -m output/tutorial/plot.py
 
-This will produce ``output/tutorial/plot.png``, where the bottom panel shows
-the relative error between the simulated power spectrum and that computed
-using purely linear theory. They should agree to within a percent at the
-lowest :math:`k`. At higher :math:`k` the agreement is worse. Though this can
-be remedied by increasing the resolution of the simulation (i.e. by
-increasing ``_size``), we shall not do so here, as we focus on the lower
-:math:`k` only.
+   This will produce ``output/tutorial/plot.png``, where the bottom panel
+   shows the relative error between the simulated power spectrum and that
+   computed using purely linear theory. They should agree to within a percent
+   at the lowest :math:`k`. At higher :math:`k` the agreement is worse. Though
+   this can be remedied by increasing the resolution of the simulation (i.e.
+   by increasing ``_size``), we shall not do so here, as we focus on the lower
+   :math:`k` only.
 
-The power spectra outputted by the simulation are binned using a constant
-linear bin size in :math:`k`. This is usually desirable, though higher
-precision at the lowest :math:`k` can be achieved by leaving out this binning.
-The bin size is controlled by the ``powerspec_binsize`` parameter. By setting
-it to ``0`` we disable binning altogether. Add
+   The power spectra outputted by the simulation are binned using a constant
+   linear bin size in :math:`k`. This is usually desirable, though higher
+   precision at the lowest :math:`k` can be achieved by leaving out this
+   binning. The bin size is controlled by the ``powerspec_binsize`` parameter.
+   By setting it to ``0`` we disable binning altogether. Add
 
-.. code-block:: python3
+   .. code-block:: python3
 
-   powerspec_binsize = 0
+      powerspec_binsize = 0
 
-to the parameter file, then rerun the simulation and the plotting script.
-Though the simulation power spectrum generally becomes more jagged, you should
-observe better agreement with linear theory at low :math:`k`.
-
+   to the parameter file, then rerun the simulation and the plotting script.
+   Though the simulation power spectrum generally becomes more jagged, you
+   should observe better agreement with linear theory at low :math:`k`.
 
 
 .. topic:: Including linear species
@@ -356,7 +360,6 @@ observe better agreement with linear theory at low :math:`k`.
    Replotting, you should see a much better behaved simulation power spectrum.
 
 
-
 .. topic:: Combining species
 
    If you've read along in the terminal output during the simulations, you may
@@ -412,7 +415,6 @@ observe better agreement with linear theory at low :math:`k`.
       Similarly, ``'matter'`` is safe to use even in a cosmology without
 
 
-
 .. topic:: Achieving perfection
 
    Though the final simulation power spectrum indeed appear well behaved
@@ -445,13 +447,283 @@ observe better agreement with linear theory at low :math:`k`.
    linear theory far better than 0.1%, at the largest scales. Incidentally,
    you may increase the output time all the way to :math:`a = 1` while
    retaining excellent agreement with linear theory. Keeping the time steps
-   small, such simulations takes a long time however.
+   small, such simulations take a long time however.
 
 
 
 Massive neutrinos
 .................
-*Under construction!*
+
+The previous subsection demonstrated how simulations of matter can be made to
+agree extremely well with linear theory at linear scales, if we include the
+gravitational contributions from the otherwise missing species, which were
+treated linearly. It did this by comparing the simulated power spectrum
+directly to the linear one, for the same cosmology.
+
+With confidence in the strategy of including linear species, let's now look at
+the relative difference in matter power between two separate cosmologies, with
+and without the inclusion of linear species. As dividing one simulated power
+spectrum by another cancels out much of the numerical noise, this time we can
+obtain high accuracy without using any of the special tricks from the previous
+subsection.
+
+.. topic:: Adding massive neutrinos to the background cosmology
+
+   We wish to compute the effect on the matter power spectrum caused by
+   neglecting the fact that neutrinos really do have mass. For this purpose,
+   we shall make use of the below parameter file:
+
+   .. code-block:: python3
+
+      # Non-parameter helper variable used to control the size of the simulation
+      _size = 128
+
+      # Input/output
+      initial_conditions = [
+          # Non-linear matter particles
+          {
+              'species': 'matter',
+              'N'      : _size**3,
+          },
+      ]
+      for _species in _lin.split(','):
+          if not _species:
+              continue
+          initial_conditions.append(
+              # Linear fluid component
+              {
+                  'species'        : _species.strip(),
+                  'gridsize'       : _size,
+                  'boltzmann order': -1,
+              }
+          )
+      output_dirs = {
+          'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
+      }
+      output_bases = {
+          'powerspec': f'powerspec_mass={_mass}eV_lin={_lin}'.replace(' ', ''),
+      }
+      output_times = {
+          'powerspec': 1,
+      }
+      powerspec_select = {
+          'matter': {'data': True, 'plot': False},
+      }
+
+      # Numerical parameters
+      boxsize = 2*Gpc
+
+      # Cosmology
+      H0      = 67*km/(s*Mpc)
+      Ωb      = 0.049
+      Ωcdm    = 0.27 - Ων
+      a_begin = 0.01
+      class_params = {
+          # Disable massless neutrinos
+          'N_ur': 0,
+          # Add 3 massive neutrinos of equal mass
+          'N_ncdm'  : 1,
+          'deg_ncdm': 3,
+          'm_ncdm'  : max(_mass/3, 1e-100),  # Avoid exact value of 0.0
+      }
+
+      # Physics
+      select_forces = {
+          'particles': {'gravity': ('p3m', 2*_size)},
+          'fluid'    : {'gravity': 'pm'},
+      }
+
+      # Non-parameter helper variables which should
+      # be supplied as command-line arguments.
+      _mass = 0  # Sum of neutrino masses in eV
+      _lin = ''  # Linear species to include
+
+   You may want to save this and get a simulation going (without supplying any
+   command-line parameters, for now) while you read on.
+
+   The new elements appearing in the parameter file are:
+
+   - The ``class_params`` parameter has been added. Items defined within
+     ``class_params`` are passed onto CLASS and are thus used for the
+     background and linear computations. That is, ``class_params`` is used to
+     change the cosmology used within the CO\ *N*\ CEPT simulation away from
+     the default cosmology as defined by CLASS.
+
+     As for CO\ *N*\ CEPT itself, a vast number of CLASS parameters exist.
+     The best source for exploring these is probably the
+     `explanatory.ini <https://github.com/lesgourg/class_public/blob/master/explanatory.ini>`_
+     example CLASS parameter file, which also lists default values.
+
+     .. caution::
+
+        As :math:`H_0` (``H0``), :math:`\Omega_{\text{b}}` (``Ωb``) and
+        :math:`\Omega_{\text{cdm}}` (``Ωcdm``) already exist as stand-alone
+        CO\ *N*\ CEPT parameters, these should never be supplied explicitly to
+        ``class_params``.
+
+     Of interest to us now are ``'N_ur'`` and ``'N_ncdm'``; the number of
+     **u**\ n\ **r**\ elativistic species (massless neutrinos) and
+     **n**\ on-\ **c**\ old **d**\ ark **m**\ atter species (massive
+     neutrinos). In the above parameter specifications we switch out the
+     default use of massless neutrinos with one (``'N_ncdm': 1``) 3-times
+     degenerate (``'deg_ncdm': 3``) neutrino, which really amounts to three
+     separate neutrinos but all of the same mass (``'m_ncdm'``).
+
+   - Besides ``_lin``, another command-line parameter ``_mass`` is now in
+     play. This is the sum of neutrino masses :math:`\sum m_\nu`, in eV. As we
+     have three neutrinos of equal mass, the neutrino mass ``'m_ncdm'`` is set
+     to ``_mass/3``.
+
+     We can in fact obtain massless neutrinos in CLASS using the 'ncdm'
+     species by setting ``'m_ncdm'`` to zero. However, a switch in CLASS
+     detects if this mass is exactly zero and  changes the value noticeably.
+     To avoid this, we ensure that a value of ``0.0`` gets replaced by a tiny
+     but non-zero number (here :math:`10^{-100}`).
+
+   - As you may gather from the name 'non-cold dark matter', the massive
+     neutrinos behave like unrelativistic dark matter during most if not all
+     of the simulation time span (unless ``_mass`` is set very low). When
+     specifying the amount of dark matter in the cosmology, one may then
+     choose to state :math:`\Omega_{\text{cdm}} + \Omega_\nu` instead of
+     :math:`\Omega_{\text{cdm}}` alone. Since :math:`\Omega_\nu` is implicitly
+     fixed by the choice of neutrino masses, this means that
+     :math:`\Omega_{\text{cdm}}` can no longer be chosen freely. Rather, if we
+     want the total dark matter energy density parameter to equal e.g. 0.27,
+     :math:`\Omega_{\text{cdm}} + \Omega_{\nu} = 0.27`, we must specify
+     ``Ωcdm = 0.27 - Ων``, as is done in the above parameter file. Just like
+     ``h`` is automatically inferred from ``H0``, so is ``Ων`` automatically
+     inferred from ``class_params``. As this latter inference is non-trivial,
+     the resulting ``Ων`` is written to the terminal at the beginning of the
+     simulation.
+
+   Once the first simulation --- with a cosmology including three neutrinos of
+   zero mass --- is done, run a simulation with e.g.
+   :math:`\sum m_\nu = 0.1\,\text{eV}`. Assuming the parameter file is stored
+   as the usual ``params/tutorial``:
+
+   .. code-block:: bash
+
+       ./concept -p params/tutorial -c '_mass = 0.1'
+
+   With both simulations done, we can plot their relative power spectrum. To
+   do this, you should make use of the following script:
+
+   .. code-block:: python3
+
+      import glob, os, re
+      import numpy as np
+      import matplotlib.pyplot as plt
+
+      this_dir = os.path.dirname(os.path.realpath(__file__))
+      P_sims, P_lins = {}, {}
+      for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
+          match = re.search(r'powerspec_mass=(.+)eV_lin=(.*)_a=[\d.]+$', filename)
+          if not match:
+              continue
+          mass = float(match.group(1))
+          lin = match.group(2).replace(',', ', ').replace('+', ' + ')
+          k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
+          mask = ~np.isnan(P_lin)
+          P_sims[mass, lin] = P_sim[mask]
+          P_lins[mass] = P_lin[mask]
+      k = k[mask]
+      for (mass, lin), P_sim in P_sims.items():
+          if not mass:
+              continue
+          plt.semilogx(k, (P_sim/P_sims[0, lin] - 1)*100,
+              '-' if lin else '--',
+              label=f'simulation: mass = {mass} eV, lin = {lin}',
+          )
+          P_lin = P_lins.pop(mass, None)
+          if P_lin is None:
+              continue
+          plt.semilogx(k, (P_lin/P_lins[0] - 1)*100, 'k--',
+              label=f'linear: mass = {mass} eV')
+      plt.legend()
+      plt.xlim(k[0], k[-1])
+      plt.xlabel(r'$k$ $[\mathrm{Mpc}^{-1}]$')
+      plt.ylabel(r'$P_{\Sigma m_\nu > 0}/P_{\Sigma m_\nu = 0}-1\,[\%]$')
+      plt.tight_layout()
+      plt.savefig(f'{this_dir}/plot.png')
+
+   As usual, to run the script, save it as e.g. ``output/tutorial/plot.py``
+   and invoke
+
+   .. code-block:: bash
+
+      ./concept -m output/tutorial/plot.py
+
+   The resulting ``output/tutorial/plot.png`` should show that letting the
+   neutrinos have mass results in a few percent suppression of the matter
+   power spectrum. At intermediary :math:`k` the simulation and linear
+   relative power spectra agrees, whereas they do not for the smallest and
+   largest :math:`k`. In the case of large :math:`k`, you should see that the
+   non-linear solution forms a trough below the linear one, before rising up
+   above it near the largest :math:`k` shown. This is the well-known
+   non-linear supression dip, the low-:math:`k` end of which marks the
+   beginning of the truly non-linear regime. We thus trust the simulated
+   results at the high-:math:`k` end of the plot, while we trust the linear
+   results at the low-`k` end.
+
+
+.. topic:: Adding gravitation from massive neutrinos
+
+   The hope is now to be able to correct the simulated relative power spectrum
+   at low :math:`k` by including the missing species to the simulation,
+   without this altering the high-:math:`k` behavior. Besides
+   ``'massive neutrinos'``, we should not forget about ``'photons'`` and the
+   ``'metric'``. Note that ``'massive neutrinos'`` are not considered part of
+   ``'radiation'``. We can however just write ``'neutrinos'``, as this refers
+   to all neutrinos (massive ('ncdm') as well as massless ('ur')) present in
+   the cosmology. To rerun both cosmologies with all linear species included,
+   we might call ``concept`` within a Bash for-loop:
+
+   .. code-block:: bash
+
+      for mass in 0 0.1; do
+          ./concept \
+              -p params/tutorial \
+              -c "_mass = $mass" \
+              -c '_lin = "photons + neutrinos + metric"'
+      done
+
+   Once completed, redo the plot. You should find that including the linear
+   species did indeed correct the large-scale behavior while leaving the
+   small-scale behavior intact.
+
+
+.. topic:: Tweaking the CLASS computation
+
+   Though better agreement with linear theory is achieved after the inclusion
+   of the linear species, the plot also shows that this inclusion leads to a
+   less smooth relative spectrum. The added noise stems from the massive
+   neutrinos, the evolution of which is not solved perfectly by CLASS. A large
+   set of general and massive neutrino specifc CLASS precision parameters
+   exist, which can remedy this problem.
+
+   Here we shall look at just one such CLASS parameter; ``'evolver'``. This
+   sets the ODE solver to be used by CLASS, and may be either ``0``
+   (Runge-Kutta Cash-Karp) or ``1`` (ndf15, the default). For high-precision
+   CLASS computations used for *N*-body simulations, it is generally
+   preferable to switch to the Runge-Kutta solver. To do this, just add
+
+   .. code-block:: python3
+
+      # Use the Runge-Kutta evolver
+      'evolver': 0,
+
+   to the ``class_params`` in the parameter file.
+
+   With this change, rerun the two simulations with linear species included
+   (you may also rerun all four simulations, but the matter-only ones are
+   hardly affected by the change to ``'evolver'``). After replotting, the
+   simulated relative power spectrum should have been smoothed out at low
+   :math:`k`, showing excellent agreement with the linear prediction.
+
+
+
+
+
 
 
 
