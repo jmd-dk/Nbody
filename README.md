@@ -2,8 +2,16 @@ CO*N*CEPT documentation
 =======================
 <img align="right" height="300" src="/_static/render2D.png"/>
 
-This is the git branch for the published CO*N*CEPT documentation.
-If you have stumbled your way here, you are most likely looking for the
-[hosted documentation website][documentation].
+This is the git branch for the published CO*N*CEPT documentation,
+and is most likely not what you are looking for.
 
-[documentation]: https://jmd-dk.github.io/concept/
+Useful links:
+
+* [Hosted documentation][documentation_hosted]
+* [Source code for documentation][documentation_source]
+* [Code repository (master branch)][master_branch]
+
+[documentation_hosted]: https://jmd-dk.github.io/concept/
+[documentation_source]: https://github.com/jmd-dk/concept/tree/master/concept/docs/
+[master_branch]: https://github.com/jmd-dk/concept/
+
