@@ -483,6 +483,7 @@ needed to install the packages below:</p>
 <li><p><strong>MPI4Py</strong> (depends on MPI, Cython)</p></li>
 <li><p><strong>H5Py</strong> (depends on HDF5 and MPI)</p></li>
 <li><p><strong>Sphinx</strong></p></li>
+<li><p><strong>sphinx-copybutton</strong></p></li>
 <li><p><strong>sphinx_rtd_theme</strong></p></li>
 </ul>
 </li>
@@ -492,7 +493,7 @@ needed to install the packages below:</p>
 </ul>
 <p>Finally, CO<em>N</em>CEPT itself depends on MPI, FFTW (3), GADGET, Python,
 Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy,
-Sphinx, sphinx_rtd_theme.</p>
+Sphinx, sphinx-copybutton, sphinx_rtd_theme.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> installs the <a class="reference external" href="https://github.com/xianyi/OpenBLAS">OpenBLAS</a>
 library in order to provide both BLAS and LAPACK. For MPI, MPICH (default) or
 OpenMPI is installed. If tests are to be performed during the installation
@@ -623,7 +624,8 @@ has a version, speficied by <code class="docutils literal notranslate"><span cla
 <code class="docutils literal notranslate"><span class="pre">cythongsl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">h5py_version</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib_version</span></code>,
 <code class="docutils literal notranslate"><span class="pre">mpi4py_version</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy_version</span></code>, <code class="docutils literal notranslate"><span class="pre">pip_version</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest_version</span></code>,
 <code class="docutils literal notranslate"><span class="pre">scipy_version</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">sphinx_rtd_theme_version</span></code>, <code class="docutils literal notranslate"><span class="pre">wheel_version</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">sphinx_copybutton_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_rtd_theme_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">wheel_version</span></code>.</p>
 </div>
 <div class="topic">
 <p class="topic-title first">Choosing compiler precedence</p>
@@ -750,7 +752,8 @@ NumPy/SciPy functionalities when running CO<em>N</em>CEPT in compiled mode.</p><
 <li><p><a class="reference external" href="https://github.com/erikrose/blessings">Blessings</a>: Provides terminal
 formatting.</p></li>
 </ul>
-<p>In addition, the <a class="reference external" href="http://www.sphinx-doc.org/">Sphinx</a> and
+<p>In addition, the <a class="reference external" href="http://www.sphinx-doc.org/">Sphinx</a>,
+<a class="reference external" href="https://sphinx-copybutton.readthedocs.io/">sphinx-copybutton</a> and
 <a class="reference external" href="https://sphinx-rtd-theme.readthedocs.io/">sphinx_rtd_theme</a> Python
 packages are needed to build the documentation, but may otherwise be left
 out.</p>

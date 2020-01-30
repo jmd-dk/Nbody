@@ -238,13 +238,14 @@ installed by the ``installer`` is given below:
     - **MPI4Py** (depends on MPI, Cython)
     - **H5Py** (depends on HDF5 and MPI)
     - **Sphinx**
+    - **sphinx-copybutton**
     - **sphinx_rtd_theme**
 
 * **CLASS** + **classy** (depends on Cython, NumPy)
 
 Finally, CO\ *N*\ CEPT itself depends on MPI, FFTW (3), GADGET, Python,
 Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy,
-Sphinx, sphinx_rtd_theme.
+Sphinx, sphinx-copybutton, sphinx_rtd_theme.
 
 The ``installer`` installs the `OpenBLAS <https://github.com/xianyi/OpenBLAS>`_
 library in order to provide both BLAS and LAPACK. For MPI, MPICH (default) or
@@ -420,7 +421,8 @@ All other influential environment variables may be set in similar ways.
    ``cythongsl_version``, ``h5py_version``, ``matplotlib_version``,
    ``mpi4py_version``, ``numpy_version``, ``pip_version``, ``pytest_version``,
    ``scipy_version``, ``setuptools_version``, ``sphinx_version``,
-   ``sphinx_rtd_theme_version``, ``wheel_version``.
+   ``sphinx_copybutton_version``, ``sphinx_rtd_theme_version``,
+   ``wheel_version``.
 
 
 .. topic:: Choosing compiler precedence
@@ -580,7 +582,8 @@ You may draw inspiration from the current or older versions of the
    * `Blessings <https://github.com/erikrose/blessings>`_: Provides terminal
      formatting.
 
-   In addition, the `Sphinx <http://www.sphinx-doc.org/>`_ and
+   In addition, the `Sphinx <http://www.sphinx-doc.org/>`_,
+   `sphinx-copybutton <https://sphinx-copybutton.readthedocs.io/>`_ and
    `sphinx_rtd_theme <https://sphinx-rtd-theme.readthedocs.io/>`_ Python
    packages are needed to build the documentation, but may otherwise be left
    out.
