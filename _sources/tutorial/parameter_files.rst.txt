@@ -122,34 +122,37 @@ parameter file --- CO\ *N*\ CEPT will exit with an error, letting you know.
 
 
 
-.. topic:: Log files
+.. raw:: html
 
-   The printed output of all CO\ *N*\ CEPT runs gets logged in the ``logs``
-   directory. Each run (or *job*) gets a unique integer ID, which is also used
-   as the filename for the logged output. The log filename of any CO\ *N*\ CEPT
-   run is stated when the program starts, and the job ID is written again at
-   the end. Also, the job ID is included in the header of the power spectrum
-   data files.
+   <h3>Log files</h3>
 
-   .. tip::
-      To view the logged output of e.g. CO\ *N*\ CEPT run 1 with proper
-      coloring, use ``less -r logs/1``. Arrow keys to navigate, ``q`` to quit.
+The printed output of all CO\ *N*\ CEPT runs gets logged in the ``logs``
+directory. Each run (or *job*) gets a unique integer ID, which is also used as
+the filename for the logged output. The log filename of any CO\ *N*\ CEPT run
+is stated when the program starts, and the job ID is written again at the end.
+Also, the job ID is included in the header of the power spectrum data files.
+
+.. tip::
+   To view the logged output of e.g. CO\ *N*\ CEPT run 1 with proper
+   coloring, use ``less -r logs/1``. Arrow keys to navigate, ``q`` to quit.
 
 
 
-.. topic:: Checking previously used parameters
+.. raw:: html
 
-   Among the first lines of output of any CO\ *N*\ CEPT run is the path to the
-   parameter file in use. As this is included in the log file, you can always
-   go back and check the parameters used by a given run. However, this
-   information isn't reliable, as we may have modified the parameter file
-   since its original use. To this end, a complete copy of the parameter file
-   is made upon every invocation of CO\ *N*\ CEPT, and stored in the ``params``
-   directory. The name of this copy is written together with the name of the
-   original parameter file when CO\ *N*\ CEPT starts.
+   <h3>Checking previously used parameters</h3>
 
-   When mixing ``-p`` and ``-c``, the combined parameters are what's stored in
-   the copied parameter file.
+Among the first lines of output of any CO\ *N*\ CEPT run is the path to the
+parameter file in use. As this is included in the log file, you can always go
+back and check the parameters used by a given run. However, this information
+isn't reliable, as we may have modified the parameter file since its original
+use. To this end, a complete copy of the parameter file is made upon every
+invocation of CO\ *N*\ CEPT, and stored in the ``params`` directory. The name
+of this copy is written together with the name of the original parameter file
+when CO\ *N*\ CEPT starts.
+
+When mixing ``-p`` and ``-c``, the combined parameters are what's stored in the
+copied parameter file.
 
 As an exercise, get the job ID of the latest simulation from the header of one
 of the power spectrum data files (e.g. ``output/tutorial/powerspec_a=1.00``),

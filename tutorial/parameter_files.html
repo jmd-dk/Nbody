@@ -92,10 +92,7 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorial</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation.html">1. Effortless installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#don-t-forget-about-gravity">2.1. Don’t forget about gravity</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">3. Working with parameter files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gravity.html">4. Mastering gravity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="gravity.html#the-pm-method">4.1. The PM method</a></li>
@@ -134,13 +131,31 @@
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#command-line-options">Command-line options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#making-use-of-preinstalled-libraries">Making use of preinstalled libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#specifying-dependency-versions">Specifying dependency versions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#choosing-compiler-precedence">Choosing compiler precedence</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#installing-mpich-or-openmpi">Installing MPICH or OpenMPI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#parallel-builds">Parallel builds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#using-the-installer-to-install-specific-libraries-but-not-concept-itself">Using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> to install specific libraries but not CO<em>N</em>CEPT itself</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#python-dependencies">Python dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#other-primary-dependencies">Other primary dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#system-dependencies">System dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -182,7 +197,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#it-still-does-not-work">It <em>still</em> does not work!</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
 </li>
@@ -376,33 +396,26 @@ code:</p>
 </div>
 <p>If you forget to specify <code class="docutils literal notranslate"><span class="pre">_size</span></code> — or any other variable used in the
 parameter file — CO<em>N</em>CEPT will exit with an error, letting you know.</p>
-<div class="topic">
-<p class="topic-title first">Log files</p>
-<p>The printed output of all CO<em>N</em>CEPT runs gets logged in the <code class="docutils literal notranslate"><span class="pre">logs</span></code>
-directory. Each run (or <em>job</em>) gets a unique integer ID, which is also used
-as the filename for the logged output. The log filename of any CO<em>N</em>CEPT
-run is stated when the program starts, and the job ID is written again at
-the end. Also, the job ID is included in the header of the power spectrum
-data files.</p>
+<h3>Log files</h3><p>The printed output of all CO<em>N</em>CEPT runs gets logged in the <code class="docutils literal notranslate"><span class="pre">logs</span></code>
+directory. Each run (or <em>job</em>) gets a unique integer ID, which is also used as
+the filename for the logged output. The log filename of any CO<em>N</em>CEPT run
+is stated when the program starts, and the job ID is written again at the end.
+Also, the job ID is included in the header of the power spectrum data files.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>To view the logged output of e.g. CO<em>N</em>CEPT run 1 with proper
 coloring, use <code class="docutils literal notranslate"><span class="pre">less</span> <span class="pre">-r</span> <span class="pre">logs/1</span></code>. Arrow keys to navigate, <code class="docutils literal notranslate"><span class="pre">q</span></code> to quit.</p>
 </div>
-</div>
-<div class="topic">
-<p class="topic-title first">Checking previously used parameters</p>
-<p>Among the first lines of output of any CO<em>N</em>CEPT run is the path to the
-parameter file in use. As this is included in the log file, you can always
-go back and check the parameters used by a given run. However, this
-information isn’t reliable, as we may have modified the parameter file
-since its original use. To this end, a complete copy of the parameter file
-is made upon every invocation of CO<em>N</em>CEPT, and stored in the <code class="docutils literal notranslate"><span class="pre">params</span></code>
-directory. The name of this copy is written together with the name of the
-original parameter file when CO<em>N</em>CEPT starts.</p>
-<p>When mixing <code class="docutils literal notranslate"><span class="pre">-p</span></code> and <code class="docutils literal notranslate"><span class="pre">-c</span></code>, the combined parameters are what’s stored in
-the copied parameter file.</p>
-</div>
+<h3>Checking previously used parameters</h3><p>Among the first lines of output of any CO<em>N</em>CEPT run is the path to the
+parameter file in use. As this is included in the log file, you can always go
+back and check the parameters used by a given run. However, this information
+isn’t reliable, as we may have modified the parameter file since its original
+use. To this end, a complete copy of the parameter file is made upon every
+invocation of CO<em>N</em>CEPT, and stored in the <code class="docutils literal notranslate"><span class="pre">params</span></code> directory. The name
+of this copy is written together with the name of the original parameter file
+when CO<em>N</em>CEPT starts.</p>
+<p>When mixing <code class="docutils literal notranslate"><span class="pre">-p</span></code> and <code class="docutils literal notranslate"><span class="pre">-c</span></code>, the combined parameters are what’s stored in the
+copied parameter file.</p>
 <p>As an exercise, get the job ID of the latest simulation from the header of one
 of the power spectrum data files (e.g. <code class="docutils literal notranslate"><span class="pre">output/tutorial/powerspec_a=1.00</span></code>),
 find the filename of the parameter file copy from the corresponding log file,

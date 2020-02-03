@@ -9,7 +9,7 @@ To learn how to *use* parameters and parameter files, see the
 
 Parameters are specified as live Python 3 variables. As such, it is helpful to
 be familiar with basic Python syntax and knowledge of data types, such as
-``str``'s (strings), ``list``'s and ``dict``'s (dictionaries).
+``str``\ ings, ``list``\ s and ``dict``\ ionaries.
 
 Below you will find the parameter categories, corresponding to the sections
 ahead. Besides bringing some organization to the large set of parameters,
@@ -33,7 +33,7 @@ specification generally, independent of the specific parameters.
 
 .. raw:: html
 
-   <h4>Units</h4>
+   <h3>Units</h3>
 
 For dimensional parameters, it is important to explicitly tack the unit onto
 the value, as no default units are ever assumed by CO\ *N*\ CEPT. For example,
@@ -66,7 +66,7 @@ A vast set of units are understood, like ``km``, ``pc``, ``kpc``, ``Mpc``,
 
 .. raw:: html
 
-   <h4>Parameter files as Python scripts</h4>
+   <h3>Parameter files as Python scripts</h3>
 
 You may think of parameter files as Python scripts, and use any valid Python 3
 statements to formulate or compute your parameters. Even without any explicit
@@ -101,118 +101,130 @@ explicit ``import``.
 
 .. raw:: html
 
-   <h4>Parameter files as <em>glorified</em> Python scripts</h4>
+   <h3>Parameter files as <em>glorified</em> Python scripts</h3>
 
 The parameter files of CO\ *N*\ CEPT are in fact even more powerful than
 regular Python scripts. The additional super powers are described below.
 
-.. topic:: Non-linear parsing of parameter file content
-
-   Parameters may be defined in terms of each other. Unlike regular variables,
-   the definition order does not matter (i.e. you may reference a variable
-   "before" it is defined).
 
 
-.. topic:: Non-parameter variables
+.. raw:: html
 
-   Using additional, non-parameter variables in parameter files can help
-   provide better organisation. For example, you may want to define both the
-   ``boxsize`` and the resolution of the gravitational potential grid in terms
-   of a common variable:
+   <h4>Non-linear parsing of parameter file content</h4>
 
-   .. code-block:: python3
-
-      # Conveniently placed at the top
-      _size = 256
-
-      # Numerical parameters
-      boxsize = _size*Mpc
-
-      # Physics
-      select_forces = {
-          'all': {'gravity': ('p3m', 2*_size)},
-      }
-
-   Both the ``boxsize`` and the P³M grid size within ``select_forces`` can
-   now be simultaneously updated through the newly introduced ``_size``
-   variable, which itself is not a parameter. When defined in a parameter
-   file, CO\ *N*\ CEPT treats any variable whose name does not begin with an
-   underscore '``_``' as a parameter; hence '``_size``' and not '``size``'.
+Parameters may be defined in terms of each other. Unlike regular variables,
+the definition order does not matter (i.e. you may reference a variable
+"before" it is defined).
 
 
-.. topic:: Dynamic value insertion using ellipses
 
-   Several of the parameters are ``dict``'s with which one often want the
-   values to be identical for multiple keys. Instead of typing out the same
-   value multiple times, this may be inferred dynamically from the placement
-   of ellipses '``...``' like so:
+.. raw:: html
 
-   .. code-block:: python3
+   <h4>Non-parameter variables</h4>
 
-      output_dirs = {
-          'snapshot' : paths['output_dir'] + '/' + basename(paths['params']),
-          'powerspec': ...,
-          'render2D' : ...,
-          'render3D' : ...,
-      }
+Using additional, non-parameter variables in parameter files can help provide
+better organisation. For example, you may want to define both the ``boxsize``
+and the resolution of the gravitational potential grid in terms of a common
+variable:
 
-   Here, the keys ``'powerspec'``, ``'render2D'`` and ``'render23'`` will map
-   to the same value as ``'snapshot'``. More generally, an ellipsis is
-   replaced by the first non-ellipsis value encountered when looking back up
-   the key-value definitions, wrapping around if necessary. Thus,
+.. code-block:: python3
 
-   .. code-block:: python3
+   # Conveniently placed at the top
+   _size = 256
 
-      output_times = {
-          'snapshot' : ...,
-          'powerspec': 1,
-          'render2D' : ...,
-          'render3D' : [0.1, 0.3, 1],
-      }
+   # Numerical parameters
+   boxsize = _size*Mpc
 
-   results in ``'snapshot'`` being mapped to ``[0.1, 0.3, 1]`` and
-   ``'render2D'`` to ``1``.
+   # Physics
+   select_forces = {
+       'all': {'gravity': ('p3m', 2*_size)},
+   }
 
-.. topic:: Inferred parameters
-
-   Finally, some parameters are inferred from other parameters. The value of
-   these may be used to define other parameters, but they should not be
-   explicitly specified themselves. Currently, the only two such *inferred*
-   parameters are ``h`` and ``Ων``:
-
-   * ``h`` is simply defined through
-     :math:`h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})`,
-     with the Hubble constant :math:`H_0` being a normal parameter, ``H0``,
-     defined as e.g.
-
-     .. code-block:: python3
-
-        H0 = 67*km/(s*Mpc)
-
-     in which case ``h`` is set equal to ``0.67``. Having ``h`` available is
-     useful if you want to use the common unit of :math:`\mathrm{Mpc}/h`,
-     e.g. when defining the box size:
-
-     .. code-block:: python3
-
-        boxsize = 256*Mpc/h
-
-   * ``Ων`` is the total density parameter :math:`\Omega_\nu` for all
-     *massive* neutrino species. It is set based on the massive neutrino
-     parameters defined by the ``class_params`` parameter, described in the
-     :doc:`cosmology<cosmology>` section. As the computation of
-     :math:`\Omega_\nu` is non-trivial, this is nice to have available for
-     simulations with massive neutrinos where the sum
-     :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu` is constrained. With e.g.
-     :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu = 0.27`, one would set
-
-     .. code-block:: python3
-
-        Ωcdm = 0.27 - Ων
-
-     in the parameter file. As ``Ων`` unlike ``h`` is non-trivial to compute
-     from existing parameters, its value will be printed at the beginning of
-     the CO\ *N*\ CEPT run (when running with massive neutrinos).
+Both the ``boxsize`` and the P³M grid size within ``select_forces`` can now
+be simultaneously updated through the newly introduced ``_size`` variable,
+which itself is not a parameter. When defined in a parameter file,
+CO\ *N*\ CEPT treats any variable whose name does not begin with an underscore
+'``_``' as a parameter; hence '``_size``' and not '``size``'.
 
 
+
+.. raw:: html
+
+   <h4>Dynamic value insertion using ellipses</h4>
+
+Several of the parameters are ``dict``'s with which one often want the
+values to be identical for multiple keys. Instead of typing out the same
+value multiple times, this may be inferred dynamically from the placement
+of ellipses '``...``' like so:
+
+.. code-block:: python3
+
+   output_dirs = {
+       'snapshot' : paths['output_dir'] + '/' + basename(paths['params']),
+       'powerspec': ...,
+       'render2D' : ...,
+       'render3D' : ...,
+   }
+
+Here, the keys ``'powerspec'``, ``'render2D'`` and ``'render23'`` will map
+to the same value as ``'snapshot'``. More generally, an ellipsis is replaced
+by the first non-ellipsis value encountered when looking back up the key-value
+definitions, wrapping around if necessary. Thus,
+
+.. code-block:: python3
+
+   output_times = {
+       'snapshot' : ...,
+       'powerspec': 1,
+       'render2D' : ...,
+       'render3D' : [0.1, 0.3, 1],
+   }
+
+results in ``'snapshot'`` being mapped to ``[0.1, 0.3, 1]`` and ``'render2D'``
+to ``1``.
+
+
+
+.. raw:: html
+
+   <h4>Inferred parameters</h4>
+
+Finally, some parameters are inferred from other parameters. The value of
+these may be used to define other parameters, but they should not be
+explicitly specified themselves. Currently, the only two such *inferred*
+parameters are ``h`` and ``Ων``:
+
+* ``h`` is simply defined through
+  :math:`h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})`,
+  with the Hubble constant :math:`H_0` being a normal parameter, ``H0``,
+  defined as e.g.
+
+  .. code-block:: python3
+
+     H0 = 67*km/(s*Mpc)
+
+  in which case ``h`` is set equal to ``0.67``. Having ``h`` available is
+  useful if you want to use the common unit of :math:`\mathrm{Mpc}/h`, e.g.
+  when defining the box size:
+
+  .. code-block:: python3
+
+     boxsize = 256*Mpc/h
+
+* ``Ων`` is the total density parameter :math:`\Omega_\nu` for all *massive*
+  neutrino species. It is set based on the massive neutrino parameters defined
+  by the ``class_params`` parameter, described in the
+  :doc:`cosmology<cosmology>` section. As the computation of
+  :math:`\Omega_\nu` is non-trivial, this is nice to have available for
+  simulations with massive neutrinos where the sum
+  :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu` is constrained. With e.g.
+  :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu = 0.27`, one would set
+
+  .. code-block:: python3
+
+     Ωcdm = 0.27 - Ων
+
+in the parameter file. As ``Ων`` unlike ``h`` is non-trivial to compute from
+existing parameters, its value will be printed at the beginning of the
+CO\ *N*\ CEPT run (when running with massive neutrinos).
 

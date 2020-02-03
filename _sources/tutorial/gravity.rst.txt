@@ -245,28 +245,28 @@ performance and accuracy.
 
 
 
-.. topic:: The PP method
+.. raw:: html
 
-   Finally, let it be known that CO\ *N*\ CEPT also supports the
-   bare particle-particle (PP) method, which simply performs the naïve
-   pairwise force computation between all particles, effecively computing
-   "short"-range forces as in the P³M method, but now across the entire
-   simulation box.
+   <h3>The PP method</h3>
 
-   As expected, the PP method may be specified using
+Finally, let it be known that CO\ *N*\ CEPT also supports the bare
+particle-particle (PP) method, which simply performs the naïve pairwise
+force computation between all particles, effecively computing "short"-range
+forces as in the P³M method, but now across the entire simulation box.
 
-   .. code-block:: python3
+As expected, the PP method may be specified using
 
-      select_forces = {
-          'matter': {'gravity': 'pp'},
-      }
+.. code-block:: python3
 
-   If you actually try this out, reduce ``_size`` to *at most* 32, as running
-   a PP simulation with :math:`64^3` particles literately takes days. Though
-   slightly more accurate than the P³M method, the PP method should never be
-   used for running simulations and is only really included in CO\ *N*\ CEPT
-   as it is used internally when running tests. Running (well, starting) a
-   small PP simulation at least once will help any user of *N*-body codes
-   appreciate the enourmous performance gains achieved by the more
-   sophisticated methods.
+   select_forces = {
+       'matter': {'gravity': 'pp'},
+   }
+
+If you actually try this out, reduce ``_size`` to *at most* 32, as running a
+PP simulation with :math:`64^3` particles literately takes days. Though
+slightly more accurate than the P³M method, the PP method should never be used
+for running simulations and is only really included in CO\ *N*\ CEPT as it is
+used internally when running tests. Running (well, starting) a small PP
+simulation at least once will help any user of *N*-body codes appreciate the
+enourmous performance gains achieved by the more sophisticated methods.
 

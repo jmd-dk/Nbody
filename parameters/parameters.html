@@ -92,10 +92,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../tutorial/tutorial.html">Tutorial</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial/installation.html">1. Effortless installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../tutorial/first_simulations.html">2. Your first simulations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="../tutorial/first_simulations.html#don-t-forget-about-gravity">2.1. Don’t forget about gravity</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorial/first_simulations.html">2. Your first simulations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial/parameter_files.html">3. Working with parameter files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tutorial/gravity.html">4. Mastering gravity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../tutorial/gravity.html#the-pm-method">4.1. The PM method</a></li>
@@ -134,13 +131,31 @@
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#command-line-options">Command-line options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#making-use-of-preinstalled-libraries">Making use of preinstalled libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#specifying-dependency-versions">Specifying dependency versions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#choosing-compiler-precedence">Choosing compiler precedence</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#installing-mpich-or-openmpi">Installing MPICH or OpenMPI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#parallel-builds">Parallel builds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#using-the-installer-to-install-specific-libraries-but-not-concept-itself">Using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> to install specific libraries but not CO<em>N</em>CEPT itself</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#python-dependencies">Python dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#other-primary-dependencies">Other primary dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#system-dependencies">System dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -182,7 +197,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#it-still-does-not-work">It <em>still</em> does not work!</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
 </li>
@@ -274,7 +294,7 @@ section deals with a specific category of parameters.</p>
 <a class="reference internal" href="../tutorial/parameter_files.html"><span class="doc">tutorial</span></a>.</p>
 <p>Parameters are specified as live Python 3 variables. As such, it is helpful to
 be familiar with basic Python syntax and knowledge of data types, such as
-<code class="docutils literal notranslate"><span class="pre">str</span></code>’s (strings), <code class="docutils literal notranslate"><span class="pre">list</span></code>’s and <code class="docutils literal notranslate"><span class="pre">dict</span></code>’s (dictionaries).</p>
+<code class="docutils literal notranslate"><span class="pre">str</span></code>ings, <code class="docutils literal notranslate"><span class="pre">list</span></code>s and <code class="docutils literal notranslate"><span class="pre">dict</span></code>ionaries.</p>
 <p>Below you will find the parameter categories, corresponding to the sections
 ahead. Besides bringing some organization to the large set of parameters,
 these categories have no meaning.</p>
@@ -294,7 +314,7 @@ these categories have no meaning.</p>
 </div></blockquote>
 <p>The rest of this page contains helpful information regarding parameter
 specification generally, independent of the specific parameters.</p>
-<h4>Units</h4><p>For dimensional parameters, it is important to explicitly tack the unit onto
+<h3>Units</h3><p>For dimensional parameters, it is important to explicitly tack the unit onto
 the value, as no default units are ever assumed by CO<em>N</em>CEPT. For example,
 you may define the <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> as</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">boxsize</span> <span class="o">=</span> <span class="mi">512</span><span class="o">*</span><span class="n">Mpc</span>
@@ -316,7 +336,7 @@ have no need to manually specify the internal unit system, it is useful
 for e.g. testing against other simulation codes that use some other,
 fixed system of units.</p>
 </div>
-<h4>Parameter files as Python scripts</h4><p>You may think of parameter files as Python scripts, and use any valid Python 3
+<h3>Parameter files as Python scripts</h3><p>You may think of parameter files as Python scripts, and use any valid Python 3
 statements to formulate or compute your parameters. Even without any explicit
 <code class="docutils literal notranslate"><span class="pre">import</span></code> statement present in the parameter file, all of <code class="docutils literal notranslate"><span class="pre">numpy</span></code> is
 readily available. As an example, consider the following specification of 7
@@ -340,20 +360,15 @@ same name as the parameter file, within the dedicated <code class="docutils lite
 specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file. Here, <code class="docutils literal notranslate"><span class="pre">basename</span></code> is really
 <code class="docutils literal notranslate"><span class="pre">os.path.basename</span></code>, which again is made available without the need for an
 explicit <code class="docutils literal notranslate"><span class="pre">import</span></code>.</p>
-<h4>Parameter files as <em>glorified</em> Python scripts</h4><p>The parameter files of CO<em>N</em>CEPT are in fact even more powerful than
+<h3>Parameter files as <em>glorified</em> Python scripts</h3><p>The parameter files of CO<em>N</em>CEPT are in fact even more powerful than
 regular Python scripts. The additional super powers are described below.</p>
-<div class="topic">
-<p class="topic-title first">Non-linear parsing of parameter file content</p>
-<p>Parameters may be defined in terms of each other. Unlike regular variables,
+<h4>Non-linear parsing of parameter file content</h4><p>Parameters may be defined in terms of each other. Unlike regular variables,
 the definition order does not matter (i.e. you may reference a variable
 “before” it is defined).</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Non-parameter variables</p>
-<p>Using additional, non-parameter variables in parameter files can help
-provide better organisation. For example, you may want to define both the
-<code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and the resolution of the gravitational potential grid in terms
-of a common variable:</p>
+<h4>Non-parameter variables</h4><p>Using additional, non-parameter variables in parameter files can help provide
+better organisation. For example, you may want to define both the <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>
+and the resolution of the gravitational potential grid in terms of a common
+variable:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Conveniently placed at the top</span>
 <span class="n">_size</span> <span class="o">=</span> <span class="mi">256</span>
 
@@ -366,15 +381,12 @@ of a common variable:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Both the <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and the P³M grid size within <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> can
-now be simultaneously updated through the newly introduced <code class="docutils literal notranslate"><span class="pre">_size</span></code>
-variable, which itself is not a parameter. When defined in a parameter
-file, CO<em>N</em>CEPT treats any variable whose name does not begin with an
-underscore ‘<code class="docutils literal notranslate"><span class="pre">_</span></code>’ as a parameter; hence ‘<code class="docutils literal notranslate"><span class="pre">_size</span></code>’ and not ‘<code class="docutils literal notranslate"><span class="pre">size</span></code>’.</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Dynamic value insertion using ellipses</p>
-<p>Several of the parameters are <code class="docutils literal notranslate"><span class="pre">dict</span></code>’s with which one often want the
+<p>Both the <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and the P³M grid size within <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> can now
+be simultaneously updated through the newly introduced <code class="docutils literal notranslate"><span class="pre">_size</span></code> variable,
+which itself is not a parameter. When defined in a parameter file,
+CO<em>N</em>CEPT treats any variable whose name does not begin with an underscore
+‘<code class="docutils literal notranslate"><span class="pre">_</span></code>’ as a parameter; hence ‘<code class="docutils literal notranslate"><span class="pre">_size</span></code>’ and not ‘<code class="docutils literal notranslate"><span class="pre">size</span></code>’.</p>
+<h4>Dynamic value insertion using ellipses</h4><p>Several of the parameters are <code class="docutils literal notranslate"><span class="pre">dict</span></code>’s with which one often want the
 values to be identical for multiple keys. Instead of typing out the same
 value multiple times, this may be inferred dynamically from the placement
 of ellipses ‘<code class="docutils literal notranslate"><span class="pre">...</span></code>’ like so:</p>
@@ -387,9 +399,9 @@ of ellipses ‘<code class="docutils literal notranslate"><span class="pre">...<
 </pre></div>
 </div>
 <p>Here, the keys <code class="docutils literal notranslate"><span class="pre">'powerspec'</span></code>, <code class="docutils literal notranslate"><span class="pre">'render2D'</span></code> and <code class="docutils literal notranslate"><span class="pre">'render23'</span></code> will map
-to the same value as <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code>. More generally, an ellipsis is
-replaced by the first non-ellipsis value encountered when looking back up
-the key-value definitions, wrapping around if necessary. Thus,</p>
+to the same value as <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code>. More generally, an ellipsis is replaced
+by the first non-ellipsis value encountered when looking back up the key-value
+definitions, wrapping around if necessary. Thus,</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span>
     <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -398,12 +410,9 @@ the key-value definitions, wrapping around if necessary. Thus,</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>results in <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code> being mapped to <code class="docutils literal notranslate"><span class="pre">[0.1,</span> <span class="pre">0.3,</span> <span class="pre">1]</span></code> and
-<code class="docutils literal notranslate"><span class="pre">'render2D'</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Inferred parameters</p>
-<p>Finally, some parameters are inferred from other parameters. The value of
+<p>results in <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code> being mapped to <code class="docutils literal notranslate"><span class="pre">[0.1,</span> <span class="pre">0.3,</span> <span class="pre">1]</span></code> and <code class="docutils literal notranslate"><span class="pre">'render2D'</span></code>
+to <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<h4>Inferred parameters</h4><p>Finally, some parameters are inferred from other parameters. The value of
 these may be used to define other parameters, but they should not be
 explicitly specified themselves. Currently, the only two such <em>inferred</em>
 parameters are <code class="docutils literal notranslate"><span class="pre">h</span></code> and <code class="docutils literal notranslate"><span class="pre">Ων</span></code>:</p>
@@ -416,15 +425,15 @@ defined as e.g.</p>
 </pre></div>
 </div>
 <p>in which case <code class="docutils literal notranslate"><span class="pre">h</span></code> is set equal to <code class="docutils literal notranslate"><span class="pre">0.67</span></code>. Having <code class="docutils literal notranslate"><span class="pre">h</span></code> available is
-useful if you want to use the common unit of <span class="math notranslate nohighlight">\(\mathrm{Mpc}/h\)</span>,
-e.g. when defining the box size:</p>
+useful if you want to use the common unit of <span class="math notranslate nohighlight">\(\mathrm{Mpc}/h\)</span>, e.g.
+when defining the box size:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">boxsize</span> <span class="o">=</span> <span class="mi">256</span><span class="o">*</span><span class="n">Mpc</span><span class="o">/</span><span class="n">h</span>
 </pre></div>
 </div>
 </li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Ων</span></code> is the total density parameter <span class="math notranslate nohighlight">\(\Omega_\nu\)</span> for all
-<em>massive</em> neutrino species. It is set based on the massive neutrino
-parameters defined by the <code class="docutils literal notranslate"><span class="pre">class_params</span></code> parameter, described in the
+<li><p><code class="docutils literal notranslate"><span class="pre">Ων</span></code> is the total density parameter <span class="math notranslate nohighlight">\(\Omega_\nu\)</span> for all <em>massive</em>
+neutrino species. It is set based on the massive neutrino parameters defined
+by the <code class="docutils literal notranslate"><span class="pre">class_params</span></code> parameter, described in the
 <a class="reference internal" href="cosmology.html"><span class="doc">cosmology</span></a> section. As the computation of
 <span class="math notranslate nohighlight">\(\Omega_\nu\)</span> is non-trivial, this is nice to have available for
 simulations with massive neutrinos where the sum
@@ -433,12 +442,11 @@ simulations with massive neutrinos where the sum
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">Ωcdm</span> <span class="o">=</span> <span class="mf">0.27</span> <span class="o">-</span> <span class="n">Ων</span>
 </pre></div>
 </div>
-<p>in the parameter file. As <code class="docutils literal notranslate"><span class="pre">Ων</span></code> unlike <code class="docutils literal notranslate"><span class="pre">h</span></code> is non-trivial to compute
-from existing parameters, its value will be printed at the beginning of
-the CO<em>N</em>CEPT run (when running with massive neutrinos).</p>
 </li>
 </ul>
-</div>
+<p>in the parameter file. As <code class="docutils literal notranslate"><span class="pre">Ων</span></code> unlike <code class="docutils literal notranslate"><span class="pre">h</span></code> is non-trivial to compute from
+existing parameters, its value will be printed at the beginning of the
+CO<em>N</em>CEPT run (when running with massive neutrinos).</p>
 </div>
 
 

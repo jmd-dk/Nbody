@@ -92,10 +92,7 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorial</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation.html">1. Effortless installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#don-t-forget-about-gravity">2.1. Don’t forget about gravity</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter_files.html">3. Working with parameter files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gravity.html">4. Mastering gravity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="gravity.html#the-pm-method">4.1. The PM method</a></li>
@@ -134,13 +131,31 @@
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#command-line-options">Command-line options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#making-use-of-preinstalled-libraries">Making use of preinstalled libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#specifying-dependency-versions">Specifying dependency versions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#choosing-compiler-precedence">Choosing compiler precedence</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#installing-mpich-or-openmpi">Installing MPICH or OpenMPI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#parallel-builds">Parallel builds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#using-the-installer-to-install-specific-libraries-but-not-concept-itself">Using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> to install specific libraries but not CO<em>N</em>CEPT itself</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#python-dependencies">Python dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#other-primary-dependencies">Other primary dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#system-dependencies">System dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -182,7 +197,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#it-still-does-not-work">It <em>still</em> does not work!</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
 </li>
@@ -281,24 +301,22 @@ section, as it is rather lengthy and more technical than the other sections of
 this tutorial.</p>
 <div class="section" id="radiation">
 <h2>7.1. Radiation<a class="headerlink" href="#radiation" title="Permalink to this headline">¶</a></h2>
-<div class="topic">
-<p class="topic-title first">Introduction</p>
-<p>Though universes of interest may contain several different species, in
-cosmological <em>N</em>-body simulations we are typically interested in following
-the evolution of the matter component only, as this is the only component
-which is non-linear at cosmological scales. Even so, we may wish to not
-neglect the small gravitational effects on matter from the other, linear
-species. We can do this by solving the given cosmology (including the
-matter) in linear perturbation theory ahead of time, and then feed the
-linear gravitational field from all species but matter to the <em>N</em>-body
-simulation, applying the otherwise missing gravity as an external force.</p>
+<h3>Introduction</h3><p>Though universes of interest may contain several different species, in
+cosmological <em>N</em>-body simulations we are typically interested in following the
+evolution of the matter component only, as this is the only component which is
+non-linear at cosmological scales. Even so, we may wish to not neglect the
+small gravitational effects on matter from the other, linear species. We can
+do this by solving the given cosmology (including the matter) in linear
+perturbation theory ahead of time, and then feed the linear gravitational
+field from all species but matter to the <em>N</em>-body simulation, applying the
+otherwise missing gravity as an external force.</p>
 <p>CO<em>N</em>CEPT uses the <a class="reference external" href="http://class-code.net/">CLASS</a> code to solve the
 linear perturbation equations. For details on how the linear perturbations
-are applied to the <em>N</em>-body particles during the simulation, we refer to
-the paper on
+are applied to the <em>N</em>-body particles during the simulation, we refer to the
+paper on
 “<a class="reference internal" href="../publications.html"><span class="doc">Fully relativistic treatment of light neutrinos in 𝘕-body simulations</span></a>”.</p>
-<p>We begin our exploration by performing a standard matter-only simulation,
-as specified by the below parameter file:</p>
+<p>We begin our exploration by performing a standard matter-only simulation, as
+specified by the below parameter file:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter helper variable used to control the size of the simulation</span>
 <span class="n">_size</span> <span class="o">=</span> <span class="mi">192</span>
 
@@ -357,39 +375,39 @@ simulation via</p>
 </pre></div>
 </div>
 <p>possibly with the addition of <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">4</span></code> or some other number of processes.</p>
-<p>A relatively large number of particles <span class="math notranslate nohighlight">\(N = 192^3\)</span> is used in order
-to increase the precision of the simulation. Our goal is to investigate the
-effects from radiation perturbations, which are most pronounced at very
-large scales and early times — hence the large <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and early
-output time. The unfamiliar parameter specifications will be explained in
-due time.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The remainder of this tutorial leaves out explicit mention of the <code class="docutils literal notranslate"><span class="pre">-n</span></code>
+option to <code class="docutils literal notranslate"><span class="pre">concept</span></code> invocations. Feel free to add this yourself.</p>
 </div>
-<div class="topic">
-<p class="topic-title first">The hunt for high precision</p>
-<p>Investigating the resulting <code class="docutils literal notranslate"><span class="pre">output/tutorial/powerspec_lin=_a=0.02.png</span></code>
-you should see a familiar looking simulation power spectrum: decently
-looking at intermediary <span class="math notranslate nohighlight">\(k\)</span>, inaccurate at small <span class="math notranslate nohighlight">\(k\)</span> and with
-obvious numerical artifacts at large <span class="math notranslate nohighlight">\(k\)</span>. As we are interested in
-fine details at low <span class="math notranslate nohighlight">\(k\)</span>, we need to improve the precision here. We
-can do so by adding</p>
+<p>A relatively large number of particles <span class="math notranslate nohighlight">\(N = 192^3\)</span> is used in order to
+increase the precision of the simulation. Our goal is to investigate the
+effects from radiation perturbations, which are most pronounced at very large
+scales and early times — hence the large <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and early output time.
+The unfamiliar parameter specifications will be explained in due time.</p>
+<h3>The hunt for high precision</h3><p>Investigating the resulting <code class="docutils literal notranslate"><span class="pre">output/tutorial/powerspec_lin=_a=0.02.png</span></code> you
+should see a familiar looking simulation power spectrum: decently looking at
+intermediary <span class="math notranslate nohighlight">\(k\)</span>, inaccurate at small <span class="math notranslate nohighlight">\(k\)</span> and with obvious
+numerical artifacts at large <span class="math notranslate nohighlight">\(k\)</span>. As we are interested in fine details
+at low <span class="math notranslate nohighlight">\(k\)</span>, we need to improve the precision here. We can do so by
+adding</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Simulation options</span>
 <span class="n">primordial_amplitude_fixed</span> <span class="o">=</span> <span class="kc">True</span>
 </pre></div>
 </div>
 <p>to the parameter file and rerunning the simulation. This has the effect of
-replacing the uncorrelated random amplitudes of the primordial noise used
-to generate the initial conditions with amplitudes that are all of the same
-size. With this change, <code class="docutils literal notranslate"><span class="pre">powerspec_lin=_a=0.02.png</span></code> should look much
-better at low <span class="math notranslate nohighlight">\(k\)</span> (larger <span class="math notranslate nohighlight">\(k\)</span> are not very affected by this,
-as here many more <span class="math notranslate nohighlight">\(\vec{k}\)</span> with the same magnitude
-<span class="math notranslate nohighlight">\(|\vec{k}|=k\)</span> goes into producing each data point (recorded in the
-<code class="docutils literal notranslate"><span class="pre">modes</span></code> column in the power spectrum data file), reducing errors arising
-due to small number statistics).</p>
-<p>We expect the evolution of the <em>N</em>-body particles to be completely linear
-at these large scales and early times, and so we may use the difference
-between the simulation and linear power spectrum as a measure for the error
-in the simulation. To better see this difference, we shall make use of the
-below plotting script:</p>
+replacing the uncorrelated random amplitudes of the primordial noise used to
+generate the initial conditions with amplitudes that are all of the same size.
+With this change, <code class="docutils literal notranslate"><span class="pre">powerspec_lin=_a=0.02.png</span></code> should look much better at
+low <span class="math notranslate nohighlight">\(k\)</span> (larger <span class="math notranslate nohighlight">\(k\)</span> are not very affected by this, as here many
+more <span class="math notranslate nohighlight">\(\vec{k}\)</span> with the same magnitude <span class="math notranslate nohighlight">\(|\vec{k}|=k\)</span> goes into
+producing each data point (recorded in the <code class="docutils literal notranslate"><span class="pre">modes</span></code> column in the power
+spectrum data file), reducing errors arising due to small number statistics).</p>
+<p>We expect the evolution of the <em>N</em>-body particles to be completely linear at
+these large scales and early times, and so we may use the difference between
+the simulation and linear power spectrum as a measure for the error in the
+simulation. To better see this difference, we shall make use of the below
+plotting script:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -428,13 +446,12 @@ below plotting script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -m output/tutorial/plot.py
 </pre></div>
 </div>
-<p>This will produce <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code>, where the bottom panel
-shows the relative error between the simulated power spectrum and that
-computed using purely linear theory. They should agree to within a percent
-at the lowest <span class="math notranslate nohighlight">\(k\)</span>. At higher <span class="math notranslate nohighlight">\(k\)</span> the agreement is worse. Though
-this can be remedied by increasing the resolution of the simulation (i.e.
-by increasing <code class="docutils literal notranslate"><span class="pre">_size</span></code>), we shall not do so here, as we focus on the lower
-<span class="math notranslate nohighlight">\(k\)</span> only.</p>
+<p>This will produce <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code>, where the bottom panel shows
+the relative error between the simulated power spectrum and that computed
+using purely linear theory. They should agree to within a percent at the
+lowest <span class="math notranslate nohighlight">\(k\)</span>. At higher <span class="math notranslate nohighlight">\(k\)</span> the agreement is worse. Though this can
+be remedied by increasing the resolution of the simulation (i.e. by increasing
+<code class="docutils literal notranslate"><span class="pre">_size</span></code>), we shall not do so here, as we focus on the lower <span class="math notranslate nohighlight">\(k\)</span> only.</p>
 <p>The power spectra outputted by the simulation are binned using a constant
 linear bin size in <span class="math notranslate nohighlight">\(k\)</span>. This is usually desirable, though higher
 precision at the lowest <span class="math notranslate nohighlight">\(k\)</span> can be achieved by leaving out this
@@ -444,16 +461,12 @@ By setting it to <code class="docutils literal notranslate"><span class="pre">0<
 </pre></div>
 </div>
 <p>to the parameter file, then rerun the simulation and the plotting script.
-Though the simulation power spectrum generally becomes more jagged, you
-should observe better agreement with linear theory at low <span class="math notranslate nohighlight">\(k\)</span>.</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Including linear species</p>
-<p>With our high-precision setup established, we are ready to start
-experimenting with adding in the missing species to the simulation,
-hopefully leading to better agreement with linear theory on the largest
-scales. To keep the clutter within <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code> to a minimum, go
-ahead and add</p>
+Though the simulation power spectrum generally becomes more jagged, you should
+observe better agreement with linear theory at low <span class="math notranslate nohighlight">\(k\)</span>.</p>
+<h3>Including linear species</h3><p>With our high-precision setup established, we are ready to start experimenting
+with adding in the missing species to the simulation, hopefully leading to
+better agreement with linear theory on the largest scales. To keep the clutter
+within <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code> to a minimum, go ahead and add</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">powerspec_select</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
 <span class="p">}</span>
@@ -461,9 +474,8 @@ ahead and add</p>
 </div>
 <p>to the parameter file before continuing.</p>
 <p>The inhomogeneities in the CMB causes a slight gravitational tug on matter,
-perturbing its evolution. To add this effect to the simulation, we need to
-add a photon component. This could look like (do not change the parameter
-file)</p>
+perturbing its evolution. To add this effect to the simulation, we need to add
+a photon component. This could look like (do not change the parameter file)</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
     <span class="c1"># Non-linear matter particles</span>
     <span class="p">{</span>
@@ -479,38 +491,36 @@ file)</p>
 <span class="p">]</span>
 </pre></div>
 </div>
-<p>We do not want to model the photons using <em>N</em>-body particles, but rather
-as a collection of spaially fixed grids, storing the energy density,
-momentum density, etc. This is referred to as the
-<em>fluid representation</em> — as opposed to the <em>particle representation</em> —
-and is generally preferable for non-linear components. To represent the
-photon component as a fluid, we specify <code class="docutils literal notranslate"><span class="pre">'gridsize'</span></code> in place of <code class="docutils literal notranslate"><span class="pre">'N'</span></code>,
-where <code class="docutils literal notranslate"><span class="pre">'gridsize'</span></code> is the number of grid cells along each dimension, for
-the 3D Cartesian fluid grids. Finally, the number of fluid quantities —
-and corresponding grids — to take into account is implicitly specified
-by the <em>Boltzmann order</em>. As is <a class="reference external" href="https://arxiv.org/abs/astro-ph/9506072">customary</a>
-in linear perturbation theory, we transform the Boltzmann equation for a
-given species into an infinite hierarchy of multipole moments
-<span class="math notranslate nohighlight">\(\ell \geq 0\)</span>. We then partition this hierarchy in two; a
-non-linear part <span class="math notranslate nohighlight">\(\ell \leq \ell_{\text{nl}}\)</span> and a linear part
-<span class="math notranslate nohighlight">\(\ell &gt; \ell_{\text{nl}}\)</span>, where <span class="math notranslate nohighlight">\(\ell_{\text{nl}}\)</span> is
-precisely the Boltzmann order. A few examples shall illuminate this
-concept:</p>
+<p>We do not want to model the photons using <em>N</em>-body particles, but rather as a
+collection of spaially fixed grids, storing the energy density, momentum
+density, etc. This is referred to as the <em>fluid representation</em> — as opposed
+to the <em>particle representation</em> — and is generally preferable for
+non-linear components. To represent the photon component as a fluid, we
+specify <code class="docutils literal notranslate"><span class="pre">'gridsize'</span></code> in place of <code class="docutils literal notranslate"><span class="pre">'N'</span></code>, where <code class="docutils literal notranslate"><span class="pre">'gridsize'</span></code> is the number
+of grid cells along each dimension, for the 3D Cartesian fluid grids. Finally,
+the number of fluid quantities — and corresponding grids — to take into
+account is implicitly specified by the <em>Boltzmann order</em>. As is
+<a class="reference external" href="https://arxiv.org/abs/astro-ph/9506072">customary</a> in linear perturbation
+theory, we transform the Boltzmann equation for a given species into an
+infinite hierarchy of multipole moments <span class="math notranslate nohighlight">\(\ell \geq 0\)</span>. We then partition
+this hierarchy in two; a non-linear part <span class="math notranslate nohighlight">\(\ell \leq \ell_{\text{nl}}\)</span>
+and a linear part <span class="math notranslate nohighlight">\(\ell &gt; \ell_{\text{nl}}\)</span>, where
+<span class="math notranslate nohighlight">\(\ell_{\text{nl}}\)</span> is precisely the Boltzmann order. A few examples
+shall illuminate this concept:</p>
 <ul class="simple">
-<li><p><strong>Bolzmann order 0</strong>: The evolution equation for the lowest moment (i.e.
-the continuity equation for the energy density) is solved non-linearly
-during the simulation, while higher moments like momentum density (on
-which the energy density depends) are solved in pure linear theory.</p></li>
+<li><p><strong>Bolzmann order 0</strong>: The evolution equation for the lowest moment (i.e. the
+continuity equation for the energy density) is solved non-linearly during
+the simulation, while higher moments like momentum density (on which the
+energy density depends) are solved in pure linear theory.</p></li>
 <li><p><strong>Boltzmann order 1</strong>: The evolution equations for the two lowest moments
-(i.e. the continuity equation for the energy density and the Euler
-equation for the momentum density) are solved non-linearly during the
-simulation, while higher moments like pressure and shear (on which the
-energy and momentum density depend) are solved in pure linear theory.</p></li>
-<li><p><strong>Boltzmann order -1</strong>: None of the moments are treated non-linearly,
-i.e. this results in a purely linear component. Though the evolution of
-such a component is independent of the simulation, a purely linear
-component may still act with a force on other, non-linear components
-during the simulation.</p></li>
+(i.e. the continuity equation for the energy density and the Euler equation
+for the momentum density) are solved non-linearly during the simulation,
+while higher moments like pressure and shear (on which the energy and
+momentum density depend) are solved in pure linear theory.</p></li>
+<li><p><strong>Boltzmann order -1</strong>: None of the moments are treated non-linearly, i.e.
+this results in a purely linear component. Though the evolution of such a
+component is independent of the simulation, a purely linear component may
+still act with a force on other, non-linear components during the simulation.</p></li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -518,68 +528,68 @@ during the simulation.</p></li>
 order currently implemnted in CO<em>N</em>CEPT is 1.</p>
 </div>
 <p>We shall look into Boltzmann orders different from -1 in the subsection on
-<a class="reference internal" href="#nonlinear-massive-neutrinos"><span class="std std-ref">non-linear massive neutrinos</span></a>. For now
-we shall keep to the purely linear case of Boltzmann order -1.</p>
+<a class="reference internal" href="#nonlinear-massive-neutrinos"><span class="std std-ref">non-linear massive neutrinos</span></a>. For now we
+shall keep to the purely linear case of Boltzmann order -1.</p>
 <p>For two components to have any affect on each other, they must both be
-registered with the same force in the <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> parameter. Looking
-at this parameter in the parameter file, we see that both <code class="docutils literal notranslate"><span class="pre">'particles'</span></code>
-and <code class="docutils literal notranslate"><span class="pre">'fluid'</span></code> components have been assigned gravity. For fluids, only the
-PM method with a grid size equal to the fluid grid size is sensible.</p>
+registered with the same force in the <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> parameter. Looking at
+this parameter in the parameter file, we see that both <code class="docutils literal notranslate"><span class="pre">'particles'</span></code> and
+<code class="docutils literal notranslate"><span class="pre">'fluid'</span></code> components have been assigned gravity. For fluids, only the PM
+method with a grid size equal to the fluid grid size is sensible.</p>
 <p>The parameter file has already been set up to include optional linear fluid
-components, using the <code class="docutils literal notranslate"><span class="pre">_lin</span></code> command-line parameter. To perform a
-simulation with the inclusion of linear photons, run</p>
+components, using the <code class="docutils literal notranslate"><span class="pre">_lin</span></code> command-line parameter. To perform a simulation
+with the inclusion of linear photons, run</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_lin = &quot;photons&quot;&#39;</span>
 </pre></div>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Note that the <code class="docutils literal notranslate"><span class="pre">_lin</span></code> helper variable is defined at the bottom of the
-paramter file to have an empty value (leading to no linear species being
+parameter file to have an empty value (leading to no linear species being
 included). As this is placed after all actual parameters, this defines a
 default value which is used when <code class="docutils literal notranslate"><span class="pre">_lin</span></code> is not given as a command-line
 parameter. As <code class="docutils literal notranslate"><span class="pre">_size</span></code> is defined at the top, supplying <code class="docutils literal notranslate"><span class="pre">_size</span></code> as a
 command-line parameter will have no effect.</p>
 </div>
-<p>Now redo the plot, and the results of both the matter-only and the matter
-plus photon simulation should appear. The plot will show that — sadly —
+<p>Now redo the plot, and the results of both the matter-only and the matter plus
+photon simulation should appear. The plot will show that — sadly —
 including the photons does <em>not</em> lead to better large-scale behavior.</p>
-<p>CO<em>N</em>CEPT deligates all linear (and background) computations to the
-CLASS code. Though we have specified <span class="math notranslate nohighlight">\(H_0\)</span>, <span class="math notranslate nohighlight">\(\Omega_{\text{b}}\)</span>
-and <span class="math notranslate nohighlight">\(\Omega_{\text{cdm}}\)</span> in the parameter file, many cosmological
-parameters are still left unspecified. Here the default CLASS parameters
-are used, which in addition to baryons, cold dark matter and photons also
-contain massless neutrinos. With our hope renewed, let’s run a simulation
-which include both linear photons and linear massless neutrinos:</p>
+<p>CO<em>N</em>CEPT deligates all linear (and background) computations to the CLASS
+code. Though we have specified <span class="math notranslate nohighlight">\(H_0\)</span>, <span class="math notranslate nohighlight">\(\Omega_{\text{b}}\)</span> and
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}}\)</span> in the parameter file, many cosmological
+parameters are still left unspecified. Here the default CLASS parameters are
+used, which in addition to baryons, cold dark matter and photons also contain
+massless neutrinos. With our hope renewed, let’s run a simulation which
+include both linear photons and linear massless neutrinos:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_lin = &quot;photons, massless neutrinos&quot;&#39;</span>
 </pre></div>
 </div>
 <p>To our horror, including the neutrinos made the disagreement between the
 simulation and linear theory even larger!</p>
-<p>The gravity applied to the non-linear matter particles from the linear
-photon and neutrino fluids is the <em>Newtonian</em> gravity, i.e. that which
-results from their energy densities. By contrast, the linear theory
-computation includes full general relativistic gravity, meaning that we
-have still to account for the gravitational effects due to the momentum
-density, pressure and shear of the photons and neutrinos. As this part of
-gravity amounts to a general relativistic correction, we shall refer to it
-as the <em>metric</em> contribution. That is, we invent a new numerical species,
-the metric, containing the collective non-Newtonian gravitational effects
-due to all physical species. As demonstrated in the paper on
+<p>The gravity applied to the non-linear matter particles from the linear photon
+and neutrino fluids is the <em>Newtonian</em> gravity, i.e. that which results from
+their energy densities. By contrast, the linear theory computation includes
+full general relativistic gravity, meaning that we have still to account for
+the gravitational effects due to the momentum density, pressure and shear of
+the photons and neutrinos. As this part of gravity amounts to a general
+relativistic correction, we shall refer to it as the <em>metric</em> contribution.
+That is, we invent a new numerical species, the metric, containing the
+collective non-Newtonian gravitational effects due to all physical species. As
+demonstrated in the paper on
 “<a class="reference internal" href="../publications.html"><span class="doc">Fully relativistic treatment of light neutrinos in 𝘕-body simulations</span></a>”,
 this metric species might be numerically realized as a (fictitious) linear
 energy density field, the <em>Newtonian</em> gravity from which implements exactly
 the missing general relativistic corrections!</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>For the metric species to be able to supply the correct force, the
-entire simulation must be performed in a particular gauge; the
-<em>N</em>-body gauge. That is, initial conditions for non-linear species
-as well as linear input during the simulation must all be in this gauge.
-This is the default (and only) mode of CO<em>N</em>CEPT. Note that all
-outputs are similarly in this gauge, including linear (CLASS) power
-spectra. Direct comparison to output from other <em>N</em>-body codes (which
-usually do not define a gauge at all) is perfectly doable, as the choice
-of gauge only becomes aparrent at very large scales.</p>
+<p>For the metric species to be able to supply the correct force, the entire
+simulation must be performed in a particular gauge; the <em>N</em>-body gauge.
+That is, initial conditions for non-linear species as well as linear input
+during the simulation must all be in this gauge. This is the default (and
+only) mode of CO<em>N</em>CEPT. Note that all outputs are similarly in this
+gauge, including linear (CLASS) power spectra. Direct comparison to output
+from other <em>N</em>-body codes (which usually do not define a gauge at all) is
+perfectly doable, as the choice of gauge only becomes aparrent at very
+large scales.</p>
 </div>
 <p>To finally run a simulation which include the gravitational effects from
 photons and neutrinos in their entirety, run</p>
@@ -587,14 +597,11 @@ photons and neutrinos in their entirety, run</p>
 </pre></div>
 </div>
 <p>Replotting, you should see a much better behaved simulation power spectrum.</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Combining species</p>
-<p>If you’ve read along in the terminal output during the simulations, you may
-have noticed that the energy density, <span class="math notranslate nohighlight">\(\varrho\)</span>, of each of the
-linear species are realized in turn. We can save some time and memory by
-treating all linear species as a single, collective component. To specify
-this, we would normally write e.g.</p>
+<h3>Combining species</h3><p>If you’ve read along in the terminal output during the simulations, you may
+have noticed that the energy density, <span class="math notranslate nohighlight">\(\varrho\)</span>, of each of the linear
+species are realized in turn. We can save some time and memory by treating all
+linear species as a single, collective component. To specify this, we would
+normally write e.g.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_conditions</span> <span class="o">=</span> <span class="p">[</span>
     <span class="c1"># Non-linear matter particles</span>
     <span class="p">{</span>
@@ -616,54 +623,49 @@ directly at the command-line using</p>
 </pre></div>
 </div>
 <p>This idea of combining species is embraced fully by CO<em>N</em>CEPT. As such,
-the species <code class="docutils literal notranslate"><span class="pre">'photons</span> <span class="pre">+</span> <span class="pre">massless</span> <span class="pre">neutrinos'</span></code> may be collectively referred
-to simply as <code class="docutils literal notranslate"><span class="pre">'radiation'</span></code>. Thus,</p>
+the species <code class="docutils literal notranslate"><span class="pre">'photons</span> <span class="pre">+</span> <span class="pre">massless</span> <span class="pre">neutrinos'</span></code> may be collectively referred to
+simply as <code class="docutils literal notranslate"><span class="pre">'radiation'</span></code>. Thus,</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_lin = &quot;radiation + metric&quot;&#39;</span>
 </pre></div>
 </div>
-<p>works just as well. You should run one of the above and check that you
-obtain the same result as before.</p>
-<p>You are in fact already very familiar with the idea of combining species,
-as <code class="docutils literal notranslate"><span class="pre">'matter'</span></code> really means <code class="docutils literal notranslate"><span class="pre">'baryons</span> <span class="pre">+</span> <span class="pre">cold</span> <span class="pre">dark</span> <span class="pre">matter'</span></code>.</p>
+<p>works just as well. You should run one of the above and check that you obtain
+the same result as before.</p>
+<p>You are in fact already very familiar with the idea of combining species, as
+<code class="docutils literal notranslate"><span class="pre">'matter'</span></code> really means <code class="docutils literal notranslate"><span class="pre">'baryons</span> <span class="pre">+</span> <span class="pre">cold</span> <span class="pre">dark</span> <span class="pre">matter'</span></code>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>When performing simulaitons in a cosmology without massless neutrinos,
-specifying <code class="docutils literal notranslate"><span class="pre">'photons</span> <span class="pre">+</span> <span class="pre">massless</span> <span class="pre">neutrinos'</span></code> as the species of a
-component will produce an error. However, specfying <code class="docutils literal notranslate"><span class="pre">'radiation'</span></code> is
-always safe, as this dynamically maps to the set of all radiation
-species present in the current cosmology, whatever this may be.
-Similarly, <code class="docutils literal notranslate"><span class="pre">'matter'</span></code> is safe to use even in a cosmology without</p>
+specifying <code class="docutils literal notranslate"><span class="pre">'photons</span> <span class="pre">+</span> <span class="pre">massless</span> <span class="pre">neutrinos'</span></code> as the species of a component
+will produce an error. However, specfying <code class="docutils literal notranslate"><span class="pre">'radiation'</span></code> is always safe,
+as this dynamically maps to the set of all radiation species present in the
+current cosmology, whatever this may be. Similarly, <code class="docutils literal notranslate"><span class="pre">'matter'</span></code> is safe to
+use even in a cosmology without</p>
 </div>
-</div>
-<div class="topic">
-<p class="topic-title first">Achieving perfection</p>
-<p>Though the final simulation power spectrum indeed appear well behaved
-at large scales, you might not — after all this effort — be happy about
-it disagreeing with linear theory at the 0.1% level. This remaining
-disagreement stems from numerical inaccuracy in the simulation, which we
-may remedy by lowering the time step size.</p>
-<p>The time step size is limited by a set of conditions/limiters, each
-classified as either a ‘background’ or ‘non-linear’ condition. The
-maximum allowed time step size within each category is scaled by the
-parameter <code class="docutils literal notranslate"><span class="pre">Δt_base_background_factor</span></code> and <code class="docutils literal notranslate"><span class="pre">Δt_base_nonlinear_factor</span></code>,
-respectively. At the very linear times and scales with which we are
-currently operating, it’s a safe bet that the maximum allowed time step is
-set by one of the background limiters.</p>
+<h3>Achieving perfection</h3><p>Though the final simulation power spectrum indeed appear well behaved at large
+scales, you might not — after all this effort — be happy about it
+disagreeing with linear theory at the 0.1% level. This remaining disagreement
+stems from numerical inaccuracy in the simulation, which we may remedy by
+lowering the time step size.</p>
+<p>The time step size is limited by a set of conditions/limiters, each classified
+as either a ‘background’ or ‘non-linear’ condition. The maximum allowed time
+step size within each category is scaled by the parameter
+<code class="docutils literal notranslate"><span class="pre">Δt_base_background_factor</span></code> and <code class="docutils literal notranslate"><span class="pre">Δt_base_nonlinear_factor</span></code>, respectively.
+At the very linear times and scales with which we are currently operating,
+it’s a safe bet that the maximum allowed time step is set by one of the
+background limiters.</p>
 <p>To make the time steps 10 times smaller than usually, place</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">Δt_base_background_factor</span> <span class="o">=</span> <span class="mf">0.1</span>
 </pre></div>
 </div>
-<p>in the parameter file and rerun the full simulation. Note that this will
-not increase the total number of time steps (and thus the computation time)
-by a factor of 10, as the time step is periodically increased (though
-always in accordance to <code class="docutils literal notranslate"><span class="pre">Δt_base_background_factor</span></code> and
-<code class="docutils literal notranslate"><span class="pre">Δt_base_nonlinear_factor</span></code>).</p>
-<p>With this last tweak, the simulation power spectrum should agree with
-linear theory far better than 0.1%, at the largest scales. Incidentally,
-you may increase the output time all the way to <span class="math notranslate nohighlight">\(a = 1\)</span> while
-retaining excellent agreement with linear theory. Keeping the time steps
-small, such simulations take a long time however.</p>
-</div>
+<p>in the parameter file and rerun the full simulation. Note that this will not
+increase the total number of time steps (and thus the computation time) by a
+factor of 10, as the time step is periodically increased (though always in
+accordance to <code class="docutils literal notranslate"><span class="pre">Δt_base_background_factor</span></code> and <code class="docutils literal notranslate"><span class="pre">Δt_base_nonlinear_factor</span></code>).</p>
+<p>With this last tweak, the simulation power spectrum should agree with linear
+theory far better than 0.1%, at the largest scales. Incidentally, you may
+increase the output time all the way to <span class="math notranslate nohighlight">\(a = 1\)</span> while retaining
+excellent agreement with linear theory. Keeping the time steps small, such
+simulations take a long time however.</p>
 </div>
 <div class="section" id="massive-neutrinos">
 <h2>7.2. Massive neutrinos<a class="headerlink" href="#massive-neutrinos" title="Permalink to this headline">¶</a></h2>
@@ -678,11 +680,9 @@ and without the inclusion of linear species. As dividing one simulated power
 spectrum by another cancels out much of the numerical noise, this time we can
 obtain high accuracy without using any of the special tricks from the previous
 subsection.</p>
-<div class="topic">
-<p class="topic-title first">Adding massive neutrinos to the background cosmology</p>
-<p>We wish to compute the effect on the matter power spectrum caused by
-neglecting the fact that neutrinos really do have mass. For this purpose,
-we shall make use of the below parameter file:</p>
+<h3>Adding massive neutrinos to the background cosmology</h3><p>We wish to compute the effect on the matter power spectrum caused by
+neglecting the fact that neutrinos really do have mass. For this purpose, we
+shall make use of the below parameter file:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter helper variable used to control the size of the simulation</span>
 <span class="n">_size</span> <span class="o">=</span> <span class="mi">128</span>
 
@@ -752,12 +752,12 @@ command-line parameters, for now) while you read on.</p>
 <p>The new elements appearing in the parameter file are:</p>
 <ul>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">class_params</span></code> parameter has been added. Items defined within
-<code class="docutils literal notranslate"><span class="pre">class_params</span></code> are passed onto CLASS and are thus used for the
-background and linear computations. That is, <code class="docutils literal notranslate"><span class="pre">class_params</span></code> is used to
-change the cosmology used within the CO<em>N</em>CEPT simulation away from
-the default cosmology as defined by CLASS.</p>
-<p>As for CO<em>N</em>CEPT itself, a vast number of CLASS parameters exist.
-The best source for exploring these is probably the
+<code class="docutils literal notranslate"><span class="pre">class_params</span></code> are passed onto CLASS and are thus used for the background
+and linear computations. That is, <code class="docutils literal notranslate"><span class="pre">class_params</span></code> is used to change the
+cosmology used within the CO<em>N</em>CEPT simulation away from the default
+cosmology as defined by CLASS.</p>
+<p>As for CO<em>N</em>CEPT itself, a vast number of CLASS parameters exist. The
+best source for exploring these is probably the
 <a class="reference external" href="https://github.com/lesgourg/class_public/blob/master/explanatory.ini">explanatory.ini</a>
 example CLASS parameter file, which also lists default values.</p>
 <div class="admonition caution">
@@ -769,27 +769,27 @@ CO<em>N</em>CEPT parameters, these should never be supplied explicitly to
 </div>
 <p>Of interest to us now are <code class="docutils literal notranslate"><span class="pre">'N_ur'</span></code> and <code class="docutils literal notranslate"><span class="pre">'N_ncdm'</span></code>; the number of
 <strong>u</strong>n<strong>r</strong>elativistic species (massless neutrinos) and
-<strong>n</strong>on-<strong>c</strong>old <strong>d</strong>ark <strong>m</strong>atter species (massive
-neutrinos). In the above parameter specifications we switch out the
-default use of massless neutrinos with one (<code class="docutils literal notranslate"><span class="pre">'N_ncdm':</span> <span class="pre">1</span></code>) 3-times
-degenerate (<code class="docutils literal notranslate"><span class="pre">'deg_ncdm':</span> <span class="pre">3</span></code>) neutrino, which really amounts to three
-separate neutrinos but all of the same mass (<code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code>).</p>
+<strong>n</strong>on-<strong>c</strong>old <strong>d</strong>ark <strong>m</strong>atter species (massive neutrinos).
+In the above parameter specifications we switch out the default use of
+massless neutrinos with one (<code class="docutils literal notranslate"><span class="pre">'N_ncdm':</span> <span class="pre">1</span></code>) 3-times degenerate
+(<code class="docutils literal notranslate"><span class="pre">'deg_ncdm':</span> <span class="pre">3</span></code>) neutrino, which really amounts to three separate
+neutrinos but all of the same mass (<code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code>).</p>
 </li>
-<li><p>Besides <code class="docutils literal notranslate"><span class="pre">_lin</span></code>, another command-line parameter <code class="docutils literal notranslate"><span class="pre">_mass</span></code> is now in
-play. This is the sum of neutrino masses <span class="math notranslate nohighlight">\(\sum m_\nu\)</span>, in eV. As we
-have three neutrinos of equal mass, the neutrino mass <code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code> is set
-to <code class="docutils literal notranslate"><span class="pre">_mass/3</span></code>.</p>
-<p>We can in fact obtain massless neutrinos in CLASS using the ‘ncdm’
-species by setting <code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code> to zero. However, a switch in CLASS
-detects if this mass is exactly zero and  changes the value noticeably.
-To avoid this, we ensure that a value of <code class="docutils literal notranslate"><span class="pre">0.0</span></code> gets replaced by a tiny
-but non-zero number (here <span class="math notranslate nohighlight">\(10^{-100}\)</span>).</p>
+<li><p>Besides <code class="docutils literal notranslate"><span class="pre">_lin</span></code>, another command-line parameter <code class="docutils literal notranslate"><span class="pre">_mass</span></code> is now in play.
+This is the sum of neutrino masses <span class="math notranslate nohighlight">\(\sum m_\nu\)</span>, in eV. As we have
+three neutrinos of equal mass, the neutrino mass <code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code> is set to
+<code class="docutils literal notranslate"><span class="pre">_mass/3</span></code>.</p>
+<p>We can in fact obtain massless neutrinos in CLASS using the ‘ncdm’ species
+by setting <code class="docutils literal notranslate"><span class="pre">'m_ncdm'</span></code> to zero. However, a switch in CLASS detects if this
+mass is exactly zero and  changes the value noticeably. To avoid this, we
+ensure that a value of <code class="docutils literal notranslate"><span class="pre">0.0</span></code> gets replaced by a tiny but non-zero number
+(here <span class="math notranslate nohighlight">\(10^{-100}\)</span>).</p>
 </li>
 <li><p>As you may gather from the name ‘non-cold dark matter’, the massive
-neutrinos behave like unrelativistic dark matter during most if not all
-of the simulation time span (unless <code class="docutils literal notranslate"><span class="pre">_mass</span></code> is set very low). When
-specifying the amount of dark matter in the cosmology, one may then
-choose to state <span class="math notranslate nohighlight">\(\Omega_{\text{cdm}} + \Omega_\nu\)</span> instead of
+neutrinos behave like unrelativistic dark matter during most if not all of
+the simulation time span (unless <code class="docutils literal notranslate"><span class="pre">_mass</span></code> is set very low). When specifying
+the amount of dark matter in the cosmology, one may then choose to state
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}} + \Omega_\nu\)</span> instead of
 <span class="math notranslate nohighlight">\(\Omega_{\text{cdm}}\)</span> alone. Since <span class="math notranslate nohighlight">\(\Omega_\nu\)</span> is implicitly
 fixed by the choice of neutrino masses, this means that
 <span class="math notranslate nohighlight">\(\Omega_{\text{cdm}}\)</span> can no longer be chosen freely. Rather, if we
@@ -797,19 +797,19 @@ want the total dark matter energy density parameter to equal e.g. 0.27,
 <span class="math notranslate nohighlight">\(\Omega_{\text{cdm}} + \Omega_{\nu} = 0.27\)</span>, we must specify
 <code class="docutils literal notranslate"><span class="pre">Ωcdm</span> <span class="pre">=</span> <span class="pre">0.27</span> <span class="pre">-</span> <span class="pre">Ων</span></code>, as is done in the above parameter file. Just like
 <code class="docutils literal notranslate"><span class="pre">h</span></code> is automatically inferred from <code class="docutils literal notranslate"><span class="pre">H0</span></code>, so is <code class="docutils literal notranslate"><span class="pre">Ων</span></code> automatically
-inferred from <code class="docutils literal notranslate"><span class="pre">class_params</span></code>. As this latter inference is non-trivial,
-the resulting <code class="docutils literal notranslate"><span class="pre">Ων</span></code> is written to the terminal at the beginning of the
+inferred from <code class="docutils literal notranslate"><span class="pre">class_params</span></code>. As this latter inference is non-trivial, the
+resulting <code class="docutils literal notranslate"><span class="pre">Ων</span></code> is written to the terminal at the beginning of the
 simulation.</p></li>
 </ul>
 <p>Once the first simulation — with a cosmology including three neutrinos of
 zero mass — is done, run a simulation with e.g.
-<span class="math notranslate nohighlight">\(\sum m_\nu = 0.1\,\text{eV}\)</span>. Assuming the parameter file is stored
-as the usual <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code>:</p>
+<span class="math notranslate nohighlight">\(\sum m_\nu = 0.1\,\text{eV}\)</span>. Assuming the parameter file is stored as
+the usual <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_mass = 0.1&#39;</span>
 </pre></div>
 </div>
-<p>With both simulations done, we can plot their relative power spectrum. To
-do this, you should make use of the following script:</p>
+<p>With both simulations done, we can plot their relative power spectrum. To do
+this, you should make use of the following script:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -847,34 +847,30 @@ do this, you should make use of the following script:</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{this_dir}</span><span class="s1">/plot.png&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>As usual, to run the script, save it as e.g. <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.py</span></code>
-and invoke</p>
+<p>As usual, to run the script, save it as e.g. <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.py</span></code> and
+invoke</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -m output/tutorial/plot.py
 </pre></div>
 </div>
 <p>The resulting <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code> should show that letting the
-neutrinos have mass results in a few percent suppression of the matter
-power spectrum. At intermediary <span class="math notranslate nohighlight">\(k\)</span> the simulation and linear
-relative power spectra agrees, whereas they do not for the smallest and
-largest <span class="math notranslate nohighlight">\(k\)</span>. In the case of large <span class="math notranslate nohighlight">\(k\)</span>, you should see that the
-non-linear solution forms a trough below the linear one, before rising up
-above it near the largest <span class="math notranslate nohighlight">\(k\)</span> shown. This is the well-known
-non-linear supression dip, the low-<span class="math notranslate nohighlight">\(k\)</span> end of which marks the
-beginning of the truly non-linear regime. We thus trust the simulated
-results at the high-<span class="math notranslate nohighlight">\(k\)</span> end of the plot, while we trust the linear
-results at the low-<cite>k</cite> end.</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Adding gravitation from massive neutrinos</p>
-<p>The hope is now to be able to correct the simulated relative power spectrum
-at low <span class="math notranslate nohighlight">\(k\)</span> by including the missing species to the simulation,
-without this altering the high-<span class="math notranslate nohighlight">\(k\)</span> behavior. Besides
-<code class="docutils literal notranslate"><span class="pre">'massive</span> <span class="pre">neutrinos'</span></code>, we should not forget about <code class="docutils literal notranslate"><span class="pre">'photons'</span></code> and the
-<code class="docutils literal notranslate"><span class="pre">'metric'</span></code>. Note that <code class="docutils literal notranslate"><span class="pre">'massive</span> <span class="pre">neutrinos'</span></code> are not considered part of
-<code class="docutils literal notranslate"><span class="pre">'radiation'</span></code>. We can however just write <code class="docutils literal notranslate"><span class="pre">'neutrinos'</span></code>, as this refers
-to all neutrinos (massive (‘ncdm’) as well as massless (‘ur’)) present in
-the cosmology. To rerun both cosmologies with all linear species included,
-we might call <code class="docutils literal notranslate"><span class="pre">concept</span></code> within a Bash for-loop:</p>
+neutrinos have mass results in a few percent suppression of the matter power
+spectrum. At intermediary <span class="math notranslate nohighlight">\(k\)</span> the simulation and linear relative power
+spectra agrees, whereas they do not for the smallest and largest <span class="math notranslate nohighlight">\(k\)</span>.
+In the case of large <span class="math notranslate nohighlight">\(k\)</span>, you should see that the non-linear solution
+forms a trough below the linear one, before rising up above it near the
+largest <span class="math notranslate nohighlight">\(k\)</span> shown. This is the well-known non-linear supression dip,
+the low-<span class="math notranslate nohighlight">\(k\)</span> end of which marks the beginning of the truly non-linear
+regime. We thus trust the simulated results at the high-<span class="math notranslate nohighlight">\(k\)</span> end of the
+plot, while we trust the linear results at the low-<span class="math notranslate nohighlight">\(k\)</span> end.</p>
+<h3>Adding gravitation from massive neutrinos</h3><p>The hope is now to be able to correct the simulated relative power spectrum at
+low <span class="math notranslate nohighlight">\(k\)</span> by including the missing species to the simulation, without this
+altering the high-<span class="math notranslate nohighlight">\(k\)</span> behavior. Besides <code class="docutils literal notranslate"><span class="pre">'massive</span> <span class="pre">neutrinos'</span></code>, we
+should not forget about <code class="docutils literal notranslate"><span class="pre">'photons'</span></code> and the <code class="docutils literal notranslate"><span class="pre">'metric'</span></code>. Note that
+<code class="docutils literal notranslate"><span class="pre">'massive</span> <span class="pre">neutrinos'</span></code> are not considered part of <code class="docutils literal notranslate"><span class="pre">'radiation'</span></code>. We can
+however just write <code class="docutils literal notranslate"><span class="pre">'neutrinos'</span></code>, as this refers to all neutrinos (massive
+(‘ncdm’) as well as massless (‘ur’)) present in the cosmology. To rerun both
+cosmologies with all linear species included, we might call <code class="docutils literal notranslate"><span class="pre">concept</span></code> within
+a Bash for-loop:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> mass in <span class="m">0</span> <span class="m">0</span>.1<span class="p">;</span> <span class="k">do</span>
     ./concept <span class="se">\</span>
         -p params/tutorial <span class="se">\</span>
@@ -886,31 +882,27 @@ we might call <code class="docutils literal notranslate"><span class="pre">conce
 <p>Once completed, redo the plot. You should find that including the linear
 species did indeed correct the large-scale behavior while leaving the
 small-scale behavior intact.</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Tweaking the CLASS computation</p>
-<p>Though better agreement with linear theory is achieved after the inclusion
-of the linear species, the plot also shows that this inclusion leads to a
-less smooth relative spectrum. The added noise stems from the massive
-neutrinos, the evolution of which is not solved perfectly by CLASS. A large
-set of general and massive neutrino specifc CLASS precision parameters
-exist, which can remedy this problem.</p>
-<p>Here we shall look at just one such CLASS parameter; <code class="docutils literal notranslate"><span class="pre">'evolver'</span></code>. This
-sets the ODE solver to be used by CLASS, and may be either <code class="docutils literal notranslate"><span class="pre">0</span></code>
-(Runge-Kutta Cash-Karp) or <code class="docutils literal notranslate"><span class="pre">1</span></code> (ndf15, the default). For high-precision
-CLASS computations used for <em>N</em>-body simulations, it is generally
-preferable to switch to the Runge-Kutta solver. To do this, just add</p>
+<h3>Tweaking the CLASS computation</h3><p>Though better agreement with linear theory is achieved after the inclusion of
+the linear species, the plot also shows that this inclusion leads to a less
+smooth relative spectrum. The added noise stems from the massive neutrinos,
+the evolution of which is not solved perfectly by CLASS. A large set of
+general and massive neutrino specifc CLASS precision parameters exist, which
+can remedy this problem.</p>
+<p>Here we shall look at just one such CLASS parameter; <code class="docutils literal notranslate"><span class="pre">'evolver'</span></code>. This sets
+the ODE solver to be used by CLASS, and may be either <code class="docutils literal notranslate"><span class="pre">0</span></code> (Runge-Kutta
+Cash-Karp) or <code class="docutils literal notranslate"><span class="pre">1</span></code> (ndf15, the default). For high-precision CLASS
+computations used for <em>N</em>-body simulations, it is generally preferable to
+switch to the Runge-Kutta solver. To do this, just add</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the Runge-Kutta evolver</span>
 <span class="s1">&#39;evolver&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
 </pre></div>
 </div>
 <p>to the <code class="docutils literal notranslate"><span class="pre">class_params</span></code> in the parameter file.</p>
-<p>With this change, rerun the two simulations with linear species included
-(you may also rerun all four simulations, but the matter-only ones are
-hardly affected by the change to <code class="docutils literal notranslate"><span class="pre">'evolver'</span></code>). After replotting, the
-simulated relative power spectrum should have been smoothed out at low
-<span class="math notranslate nohighlight">\(k\)</span>, showing excellent agreement with the linear prediction.</p>
-</div>
+<p>With this change, rerun the two simulations with linear species included (you
+may also rerun all four simulations, but the matter-only ones are hardly
+affected by the change to <code class="docutils literal notranslate"><span class="pre">'evolver'</span></code>). After replotting, the simulated
+relative power spectrum should have been smoothed out at low <span class="math notranslate nohighlight">\(k\)</span>,
+showing excellent agreement with the linear prediction.</p>
 </div>
 <div class="section" id="dynamical-dark-energy">
 <h2>7.3. Dynamical dark energy<a class="headerlink" href="#dynamical-dark-energy" title="Permalink to this headline">¶</a></h2>

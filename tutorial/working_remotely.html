@@ -92,10 +92,7 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorial</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation.html">1. Effortless installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#don-t-forget-about-gravity">2.1. Don’t forget about gravity</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter_files.html">3. Working with parameter files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gravity.html">4. Mastering gravity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="gravity.html#the-pm-method">4.1. The PM method</a></li>
@@ -134,13 +131,31 @@
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#command-line-options">Command-line options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#making-use-of-preinstalled-libraries">Making use of preinstalled libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#specifying-dependency-versions">Specifying dependency versions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#choosing-compiler-precedence">Choosing compiler precedence</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#installing-mpich-or-openmpi">Installing MPICH or OpenMPI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#parallel-builds">Parallel builds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#using-the-installer-to-install-specific-libraries-but-not-concept-itself">Using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> to install specific libraries but not CO<em>N</em>CEPT itself</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#python-dependencies">Python dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#other-primary-dependencies">Other primary dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#system-dependencies">System dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -182,7 +197,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#it-still-does-not-work">It <em>still</em> does not work!</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
 </li>
@@ -279,19 +299,16 @@ has built-in support for submission of jobs to a job schedular / queueing system
 default behavior when working remotely. If you are working remotely but do not
 intend to use a job shedular, keep using <code class="docutils literal notranslate"><span class="pre">--local</span></code> and skip the rest of this
 section.</p>
-<div class="topic">
-<p class="topic-title first">Submitting jobs</p>
-<p>If you try to run a simulation <em>without</em> the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option while
-logged into a remote server, CO<em>N</em>CEPT will error out immediately,
-letting you know that it has created an almost complete <em>job script</em>,
-simply called <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> and placed in the <code class="docutils literal notranslate"><span class="pre">concept</span></code> directory. This
-job script is a great starting point if you want to control the job
-submission yourself. All that needs to be changed/added are the directives
-at the top of the jobscript.</p>
-<p>To automatically submit a complete job script, you need to specify the
-<em>queue</em> (called <em>partition</em> in Slurm) in which to submit the job using the
-<code class="docutils literal notranslate"><span class="pre">-q</span></code> option to <code class="docutils literal notranslate"><span class="pre">concept</span></code>. Submitting a simulation using e.g. a
-parameter file named <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> using 8 cores then looks like</p>
+<h3>Submitting jobs</h3><p>If you try to run a simulation <em>without</em> the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option while logged
+into a remote server, CO<em>N</em>CEPT will error out immediately, letting you
+know that it has created an almost complete <em>job script</em>, simply called
+<code class="docutils literal notranslate"><span class="pre">jobscript</span></code> and placed in the <code class="docutils literal notranslate"><span class="pre">concept</span></code> directory. This job script is a
+great starting point if you want to control the job submission yourself. All
+that needs to be changed/added are the directives at the top of the jobscript.</p>
+<p>To automatically submit a complete job script, you need to specify the <em>queue</em>
+(called <em>partition</em> in Slurm) in which to submit the job using the <code class="docutils literal notranslate"><span class="pre">-q</span></code>
+option to <code class="docutils literal notranslate"><span class="pre">concept</span></code>. Submitting a simulation using e.g. a parameter file
+named <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> using 8 cores then looks like</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">8</span> -q &lt;queue&gt;  <span class="c1"># Replace &lt;queue&gt; with queue name</span>
 </pre></div>
 </div>
@@ -304,41 +321,35 @@ each with 4 cores.</p>
 <p>If remote CO<em>N</em>CEPT jobs mysteriously fail, check out the
 ‘<a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely"><span class="std std-ref">Problems when running remotely</span></a>’ troubleshooting entry.</p>
 </div>
-<p>To specify a memory requirement, further supply <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">&lt;memory&gt;</span></code>,
-where <code class="docutils literal notranslate"><span class="pre">&lt;memory&gt;</span></code> is the <em>total</em> memory required collectively by all cores
-on all nodes. Examples of legal memory specifications include
-<code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8192MB</span></code>, <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8192M</span></code>, <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8G</span></code>,
-<code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">2*4G</span></code>, which all specify 8 gigabytes, i.e. 1 gigabyte per core
-for <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">8</span></code> or <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">2:4</span></code>.</p>
-<p>To specify a walltime limit, i.e. a maximum time within which the
-simulation is expected to be completed, further supply the
-<code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">&lt;walltime&gt;</span></code> option. Examples of legal walltime specifications include
-<code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60min</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60m</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1hr</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1h</span></code>, which all request one hour
-of walltime.</p>
+<p>To specify a memory requirement, further supply <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">&lt;memory&gt;</span></code>, where
+<code class="docutils literal notranslate"><span class="pre">&lt;memory&gt;</span></code> is the <em>total</em> memory required collectively by all cores on all
+nodes. Examples of legal memory specifications include <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8192MB</span></code>,
+<code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8192M</span></code>, <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8G</span></code>, <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">2*4G</span></code>, which all specify 8
+gigabytes, i.e. 1 gigabyte per core for <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">8</span></code> or <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">2:4</span></code>.</p>
+<p>To specify a walltime limit, i.e. a maximum time within which the simulation
+is expected to be completed, further supply the <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">&lt;walltime&gt;</span></code> option.
+Examples of legal walltime specifications include <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60min</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60m</span></code>,
+<code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1hr</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1h</span></code>, which all request one hour of walltime.</p>
 <p>A complete CO<em>N</em>CEPT job submission could then look like</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">8</span> -q somequeue --mem 8G -w 1h
 </pre></div>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
-<p>Note that in the above, <code class="docutils literal notranslate"><span class="pre">--memory</span></code> is shortened to <code class="docutils literal notranslate"><span class="pre">--mem</span></code>.
-Generally, as long as no conflict occurs with other options, you may
-shorten any option to <code class="docutils literal notranslate"><span class="pre">concept</span></code> in this manner. Also, the order in
-which the options are supplied does not matter.</p>
+<p>Note that in the above, <code class="docutils literal notranslate"><span class="pre">--memory</span></code> is shortened to <code class="docutils literal notranslate"><span class="pre">--mem</span></code>. Generally,
+as long as no conflict occurs with other options, you may shorten any
+option to <code class="docutils literal notranslate"><span class="pre">concept</span></code> in this manner. Also, the order in which the options
+are supplied does not matter.</p>
 </div>
-</div>
-<div class="topic">
-<p class="topic-title first">The watch utility</p>
-<p>Once a job is submitted, CO<em>N</em>CEPT will notify you that you may now kill
-(<code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + <code class="docutils literal notranslate"><span class="pre">C</span></code>) the process. If you don’t, the submitted job is
-continually monitored, and its output will be printed to the screen once it
-starts running, as if you were running the simulation locally. This is
-handled by the <em>watch utility</em>, which is automatically called after job
-submission. It works by continually printing out updates to the log file in
-close to real time.</p>
+<h3>The watch utility</h3><p>Once a job is submitted, CO<em>N</em>CEPT will notify you that you may now kill
+(<code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + <code class="docutils literal notranslate"><span class="pre">C</span></code>) the process. If you don’t, the submitted job is continually
+monitored, and its output will be printed to the screen once it starts
+running, as if you were running the simulation locally. This is handled by the
+<em>watch utility</em>, which is automatically called after job submission. It works
+by continually printing out updates to the log file in close to real time.</p>
 <p>If you don’t want to watch the job after submission, you may supply the
-<code class="docutils literal notranslate"><span class="pre">--no-watching</span></code> option to <code class="docutils literal notranslate"><span class="pre">concept</span></code> instead of having to kill the
-process after submission.</p>
+<code class="docutils literal notranslate"><span class="pre">--no-watching</span></code> option to <code class="docutils literal notranslate"><span class="pre">concept</span></code> instead of having to kill the process
+after submission.</p>
 <p>You may manually run the watch utility at any later time, like so:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -u watch &lt;ID&gt;  <span class="c1"># Replace &lt;ID&gt; with job ID of remote running job</span>
 </pre></div>
@@ -348,16 +359,12 @@ the job schedular, and is printed as soon as the job is submitted. You may
 also leave out any job ID when running the <code class="docutils literal notranslate"><span class="pre">watch</span></code> utility, in which case
 the latest submitted, running job will be watched. Again, to exit, simply
 press <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + <code class="docutils literal notranslate"><span class="pre">C</span></code>.</p>
-</div>
-<div class="topic">
-<p class="topic-title first">Using a pre-installed MPI library</p>
-<p>The <a class="reference internal" href="installation.html"><span class="doc">installation procedure</span></a> described in this
-tutorial installed CO<em>N</em>CEPT along with every dependency, with no
-regard for possibly preinstalled libraries. Though generally recommended,
-for running serious, multi-node simulations one should make use of an MPI
-library native to the cluster, in order to ensure
+<h3>Using a pre-installed MPI library</h3><p>The <a class="reference internal" href="installation.html"><span class="doc">installation procedure</span></a> described in this
+tutorial installed CO<em>N</em>CEPT along with every dependency, with no regard
+for possibly preinstalled libraries. Though generally recommended, for running
+serious, multi-node simulations one should make use of an MPI library native
+to the cluster, in order to ensure
 <a class="reference internal" href="../installation.html#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance</span></a>.</p>
-</div>
 </div>
 
 

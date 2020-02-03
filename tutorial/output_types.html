@@ -92,10 +92,7 @@
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="tutorial.html">Tutorial</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="installation.html">1. Effortless installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="first_simulations.html#don-t-forget-about-gravity">2.1. Don’t forget about gravity</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="first_simulations.html">2. Your first simulations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parameter_files.html">3. Working with parameter files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gravity.html">4. Mastering gravity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="gravity.html#the-pm-method">4.1. The PM method</a></li>
@@ -134,13 +131,31 @@
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#command-line-options">Command-line options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#influential-environment-variables">Influential environment variables</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#making-use-of-preinstalled-libraries">Making use of preinstalled libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#specifying-dependency-versions">Specifying dependency versions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#choosing-compiler-precedence">Choosing compiler precedence</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#installing-mpich-or-openmpi">Installing MPICH or OpenMPI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#parallel-builds">Parallel builds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#using-the-installer-to-install-specific-libraries-but-not-concept-itself">Using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> to install specific libraries but not CO<em>N</em>CEPT itself</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../installation.html#dependencies">Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#python-dependencies">Python dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#other-primary-dependencies">Other primary dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#system-dependencies">System dependencies</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -182,7 +197,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#it-still-does-not-work">It <em>still</em> does not work!</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
 </ul>
 </li>
@@ -390,10 +410,8 @@ details even though the resolution is higher (80 vs. 64).</p>
 <p>Also available through <code class="docutils literal notranslate"><span class="pre">render2D_options</span></code> is the colormap to use. Check out
 <a class="reference external" href="https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html">this</a>
 for a list of available colormaps.</p>
-<div class="topic">
-<p class="topic-title first">The play utility</p>
-<p>For this next trick, the simulation need to have finished, and we need to
-know its job ID.</p>
+<h3>The play utility</h3><p>For this next trick, the simulation need to have finished, and we need to know
+its job ID.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>To grab the job ID from a power spectra data file, you can do e.g.</p>
@@ -405,16 +423,15 @@ know its job ID.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -u play &lt;ID&gt;  <span class="c1"># replace &lt;ID&gt; with job ID number</span>
 </pre></div>
 </div>
-<p>You should see a nice animation of the evolution of the large-scale
-structure, playing out right in the terminal (does it get any better?). The
-animation is produced from the terminal images stored in the log file
-<code class="docutils literal notranslate"><span class="pre">logs/&lt;ID&gt;</span></code>. The <code class="docutils literal notranslate"><span class="pre">-u</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script signals
-CO<em>N</em>CEPT to start up a <em>utility</em> rather than running a simulation.
-These utilities are handy (or sometimes goofy) side programs baked into
-CO<em>N</em>CEPT. Another such utility, the <em>info utility</em>, is encountered
-just below, while a <a class="reference internal" href="utilities.html"><span class="doc">complete section</span></a> of this
-tutorial is dedicated to other utilities.</p>
-</div>
+<p>You should see a nice animation of the evolution of the large-scale structure,
+playing out right in the terminal!. The animation is produced from the
+terminal images stored in the log file <code class="docutils literal notranslate"><span class="pre">logs/&lt;ID&gt;</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">-u</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script signals CO<em>N</em>CEPT to start up
+a <em>utility</em> rather than running a simulation. These utilities are handy (or
+sometimes goofy) side programs baked into CO<em>N</em>CEPT. Another such utility,
+the <em>info utility</em>, is encountered just below, while a
+<a class="reference internal" href="utilities.html"><span class="doc">complete section</span></a> of this tutorial is dedicated to
+more in-depth investigations of other utilities.</p>
 </div>
 <div class="section" id="snapshots">
 <h2>5.3. Snapshots<a class="headerlink" href="#snapshots" title="Permalink to this headline">¶</a></h2>
@@ -475,21 +492,18 @@ CO<em>N</em>CEPT also supports the binary Fortran format of
 <em>second</em> type (<code class="docutils literal notranslate"><span class="pre">SnapFormat</span> <span class="pre">=</span> <span class="pre">2</span></code> in GADGET-2), which is understood by several
 other simulation codes and tools. To use this snapshot format in place of the
 standard one, add <code class="docutils literal notranslate"><span class="pre">snapshot_type</span> <span class="pre">=</span> <span class="pre">'gadget2'</span></code> to your parameter file.</p>
-<div class="topic">
-<p class="topic-title first">The info utility</p>
-<p>We mentioned <a class="reference external" href="http://vitables.org/">ViTables</a> as a great way to peek
-inside the default CO<em>N</em>CEPT (HDF5) snapshots. It would be nice to have
-a general tool which worked for the supported GADGET-2 snapshots as well.
-Luckily, CO<em>N</em>CEPT comes with just such a tool: the <em>info utility</em>.
-To try it out, simply do</p>
+<h3>The info utility</h3><p>We mentioned <a class="reference external" href="http://vitables.org/">ViTables</a> as a great way to peek inside
+the default CO<em>N</em>CEPT (HDF5) snapshots. It would be nice to have a general
+tool which worked for the supported GADGET-2 snapshots as well. Luckily,
+CO<em>N</em>CEPT comes with just such a tool: the <em>info utility</em>. To try it out,
+simply do</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -u info output/tutorial
 </pre></div>
 </div>
-<p>The content of all snapshots — standard (HDF5) or GADGET-2 format — in
-the <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code> directory will now be printed to the screen. Should
-you want information about just a specific snapshot, simply provide its
-entire path.</p>
-</div>
+<p>The content of all snapshots — standard (HDF5) or GADGET-2 format — in the
+<code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code> directory will now be printed to the screen. Should you
+want information about just a specific snapshot, simply provide its entire
+path.</p>
 </div>
 </div>
 

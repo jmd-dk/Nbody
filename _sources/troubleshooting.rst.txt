@@ -1,8 +1,3 @@
-.. role:: raw-html(raw)
-   :format: html
-
-
-
 Troubleshooting
 ===============
 This page contains solutions to and helpful information about possible issues
@@ -152,10 +147,9 @@ but eventually crashes at some nondeterministic step, you should definately
 try changing the MPI executor.
 
 
-.. raw:: html
 
-   <h4>Different hardware architecture on front-end and remote node</h4>
-
+Different hardware architecture on front-end and remote node
+............................................................
 If CO\ *N*\ CEPT and its dependencies have been installed from the front-end,
 these have been tailored to the architecture of the front-end. If the remote
 node to which you are submitting the CO\ *N*\ CEPT job has a different
@@ -233,15 +227,13 @@ can follow the installation process by executing
 
 
 
-.. raw:: html
+.. _chosing_an_mpi_executor:
 
-   <h4>Choosing an MPI executor</h4>
-
+Choosing an MPI executor
+........................
 It may help to manually choose a different remote *MPI executor*. This is the
 term used for e.g. ``mpiexec``/``mpirun`` in CO\ *N*\ CEPT, i.e. the
 executable used to launch MPI programs.
-
-
 
 To see which MPI executor is used when running remotely, check out the
 ``mpi_executor`` variable in the produced ``jobscript`` file. To manually set
@@ -338,10 +330,9 @@ choice of MPI executor depends on the job schedular in use.
    (other possible MPI executors include ``mpiexec.hydra`` and ``orterun``).
 
 
-.. raw:: html
 
-   <h4>It <em>still</em> does not work!</h4>
-
+It *still* does not work!
+.........................
 If you are still struggling, in particular if CO\ *N*\ CEPT does launch but
 the MPI process binding/affinity is wrong, try removing some of the added
 environment variables that gets set in the ``jobscript`` (under the
@@ -393,13 +384,4 @@ reflected in the new content of ``~/.ssh``. If this indeed fixes the
 multi-node problem and you want to preserve your original ssh configuration,
 you must properly merge the original content of ``~/.ssh_backup`` back in with
 the new content of ``~/.ssh``.
-
-
-
-
-
-
-
-
-
 

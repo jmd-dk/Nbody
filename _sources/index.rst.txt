@@ -1,3 +1,6 @@
+.. role:: raw-html(raw)
+   :format: html
+
 .. raw:: html
 
    <style type="text/css">
@@ -37,42 +40,41 @@ This is the documentation for CO\ *N*\ CEPT, the **CO**\ smological
 :bolditalic:`N`\ -body **C**\ od\ **E** in **P**\ y\ **T**\ hon.
 
 
-.. topic:: Abstract
 
-   CO\ *N*\ CEPT is a free and open-source simulation code for cosmological
-   structure formation. The code should run on any Linux system, from
-   massively parallel computer clusters to laptops. The code is
-   written almost exclusively in Python, but achieves C-like performance
-   thanks to Cython.
+Abstract
+--------
+CO\ *N*\ CEPT is a free and open-source simulation code for cosmological
+structure formation. The code should run on any Linux system, from massively
+parallel computer clusters to laptops. The code is written almost exclusively
+in Python, but achieves C-like performance thanks to
+`Cython <https://cython.org/>`_.
 
-   CO\ *N*\ CEPT is capable of simulating matter particles evolving under
-   self-gravity in an expanding background. It has multiple gravitational
-   solvers to choose from, and has adaptive time integration built in.
-   In addition to particles, fluids such as neutrinos are also implemented,
-   and can be simulated at various levels of non-linearity. Completely linear
-   perturbations in all species and the metric itself are fully supported,
-   allowing for simulations consistent with general relativity.
+CO\ *N*\ CEPT is capable of simulating matter particles evolving under
+self-gravity in an expanding background. It has multiple gravitational solvers
+to choose from, and has adaptive time integration built in. In addition to
+particles, fluids such as neutrinos are also implemented, and can be simulated
+at various levels of non-linearity. Completely linear perturbations in all
+species and the metric itself are fully supported, allowing for simulations
+consistent with general relativity.
 
-   CO\ *N*\ CEPT comes with a sophisticated initial condition generator
-   built in, and can output snapshots, power spectra and several kinds
-   of renders.
+CO\ *N*\ CEPT comes with a sophisticated initial condition generator built in,
+and can output snapshots, power spectra and several kinds of renders.
 
-   The `CLASS <http://class-code.net/>`_ code is fully
-   integrated into CO\ *N*\ CEPT, supplying the needed information for e.g.
-   initial condition generation and general relativistic corrections.
+The `CLASS <http://class-code.net/>`_ code is fully integrated into
+CO\ *N*\ CEPT, supplying the needed information for e.g. initial condition
+generation and general relativistic corrections.
 
 
 
 Contents
 --------
-Below you will find the complete table of contents.
-If you're new to CO\ *N*\ CEPT, start with the
+Below you will find the global table of contents for the documentation. If
+you're new to CO\ *N*\ CEPT, start with the
 :doc:`tutorial <tutorial/tutorial>`, which briefly covers installation before
 taking you on a guided tour through the CO\ *N*\ CEPT universe.
 
-
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    tutorial/tutorial
    installation
@@ -82,6 +84,4 @@ taking you on a guided tour through the CO\ *N*\ CEPT universe.
    under_the_hood
    troubleshooting
    publications
-
-
 

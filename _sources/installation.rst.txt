@@ -121,6 +121,7 @@ about 1.5 GB of storage. Should the installation process end prematurely
 will pick up from where it was.
 
 
+
 .. _optimal_network_performance_on_clusters:
 
 Optimal network performance on clusters
@@ -255,6 +256,7 @@ pytest Python package will be installed as well (needed for testing NumPy and
 SciPy).
 
 
+
 .. _command_line_options:
 
 Command-line options
@@ -360,6 +362,7 @@ use with remote jobs running on multiple nodes, as described
 :ref:`here<problems_when_using_multiple_nodes>`.
 
 
+
 .. _influential_environment_variables:
 
 Influential environment variables
@@ -385,147 +388,149 @@ or defining it as an environmet variable prior to the invocation;
 All other influential environment variables may be set in similar ways.
 
 
-.. topic:: Making use of preinstalled libraries
 
-   To make the ``installer`` make use of a preinstalled library rather than
-   installing it itself, you must set the corresponding ``*_dir`` variable.
-   The complete list of such variables is: ``blas_dir``, ``class_dir``,
-   ``concept_dir``, ``fftw_dir``, ``fftw_for_gadget_dir``, ``freetype_dir``,
-   ``gadget_dir``, ``gsl_dir``, ``hdf5_dir``, ``libffi_dir``, ``libpng_dir``,
-   ``mpi_dir``, ``ncurses_dir``, ``openssl_dir``, ``perl_dir``,
-   ``python_dir``, ``zlib_dir``.
+Making use of preinstalled libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To make the ``installer`` make use of a preinstalled library rather than
+installing it itself, you must set the corresponding ``*_dir`` variable. The
+complete list of such variables is: ``blas_dir``, ``class_dir``,
+``concept_dir``, ``fftw_dir``, ``fftw_for_gadget_dir``, ``freetype_dir``,
+``gadget_dir``, ``gsl_dir``, ``hdf5_dir``, ``libffi_dir``, ``libpng_dir``,
+``mpi_dir``, ``ncurses_dir``, ``openssl_dir``, ``perl_dir``,
+``python_dir``, ``zlib_dir``.
 
-   Note that if using a preinstalled Python distribution ---
-   ``python_dir=/path/to/python`` --- OpenSSL, libffi and ncurses are assumed
-   to be already installed and build into the Python distribution, as these
-   cannot be tacked on after Python is build. Also, Python should come with at
-   least pip built in. The ``installer`` will install any other missing Python
-   packages.
+Note that if using a preinstalled Python distribution ---
+``python_dir=/path/to/python`` --- OpenSSL, libffi and ncurses are assumed to
+be already installed and build into the Python distribution, as these cannot
+be tacked on after Python is build. Also, Python should come with at least pip
+built-in. The ``installer`` will install any other missing Python packages.
 
-   If e.g. ``mpi_dir`` is set, the value of ``mpi_version`` is not used.
-
-
-.. topic:: Specifying dependency versions
-
-   The version of each dependency (and CO\ *N*\ CEPT itself) to install is
-   specified near the top of the ``installer`` script (look for 'Specification
-   of software versions'). You may direct the ``installer`` to use other
-   versions through the ``*_version`` variables. As with the ``*_dir``
-   variables, these include ``blas_version``, ``class_version``,
-   ``concept_version``, ``fftw_version``, ``fftw_for_gadget_version``,
-   ``freetype_version``, ``gadget_version``, ``gsl_version``,
-   ``hdf5_version``, ``libffi_version``, ``libpng_version``, ``mpi_version``,
-   ``ncurses_version``, ``openssl_version``, ``perl_version``,
-   ``python_version``, ``zlib_version``. Furthermore, each Python package also
-   has a version, speficied by ``blessings_version``, ``cython_version``,
-   ``cythongsl_version``, ``h5py_version``, ``matplotlib_version``,
-   ``mpi4py_version``, ``numpy_version``, ``pip_version``, ``pytest_version``,
-   ``scipy_version``, ``setuptools_version``, ``sphinx_version``,
-   ``sphinx_copybutton_version``, ``sphinx_rtd_theme_version``,
-   ``wheel_version``.
+If e.g. ``mpi_dir`` is set, the value of ``mpi_version`` is not used.
 
 
-.. topic:: Choosing compiler precedence
 
-   At the beginning of the installation, the ``installer`` will locate the
-   various compilers on the system. Its findings are presented under the
-   'Compiler precedence' heading. If the installation of a given program
-   fails, the ``installer`` moves on to the next compiler and tries again,
-   and so on. This is part of the overall philosophy of the ``installer``
-   to "try, try again" if a particular choice of compiler/flags/etc. does not
-   succeed. This is one reason why the installation can be so time consuming.
-   It does however make the installation process very robust.
-
-   If you wish to have a say in the order in which the compilers are tried
-   out, you may define the ``compiler_precedence`` variable. To prefer e.g.
-   Intel compilers and then GNU compilers, set
-   ``compiler_precedence="intel gnu"``. Only compilers found on the system
-   will be taken into account. Also, say the system further has e.g. the
-   Clang compiler, this will be tried out also, but after any compilers
-   specified in ``compiler_precedence``.
-
-   The supported compilers --- written in order of default precedence --- are:
-
-   - ``specified_mpi``: Use the compilers included in the MPI library
-     specified by ``mpi_dir``.
-
-   - ``default``: Run as is, without altering the environment. If e.g. the
-     ``CC`` environment variable is set, this will probably be picked up by
-     the installation of the program.
-
-   - ``gnu``: The GNU compilers (gcc, g++, gfortran).
-
-   - ``clang``: The Clang compilers (clang, clang++).
-
-   - ``mpi``: MPI compilers found on the system (mpicc, mpicxx, mpifort, ...).
-
-   - ``intel``:  The Intel compilers (icc, icpc, ifort).
-
-   - ``cray``: The Cray compilers (craycc, crayCC, crayftn).
-
-   -  ``portland``: The Portland compilers (pgcc, pgCC, pgf77, pgf90).
-
-   - ``generic``: Non-specific compilers found on the system (cc, c++,
-     fortran).
-
-   - ``unset``: Explicitly unset environment variables such as ``CC``,
-     ``CXX``, ``FC``.
-
-   Many of the dependency programs do some compiler discovery of their own,
-   and so no guarantee of what compiler is actually used can be given.
+Specifying dependency versions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The version of each dependency (and CO\ *N*\ CEPT itself) to install is
+specified near the top of the ``installer`` script (look for 'Specification
+of software versions'). You may direct the ``installer`` to use other versions
+through the ``*_version`` variables. As with the ``*_dir`` variables, these
+include ``blas_version``, ``class_version``, ``concept_version``,
+``fftw_version``, ``fftw_for_gadget_version``, ``freetype_version``,
+``gadget_version``, ``gsl_version``, ``hdf5_version``, ``libffi_version``,
+``libpng_version``, ``mpi_version``, ``ncurses_version``, ``openssl_version``,
+``perl_version``, ``python_version``, ``zlib_version``. Furthermore, each
+Python package also has a version, speficied by ``blessings_version``,
+``cython_version``, ``cythongsl_version``, ``h5py_version``,
+``matplotlib_version``, ``mpi4py_version``, ``numpy_version``,
+``pip_version``, ``pytest_version``, ``scipy_version``,
+``setuptools_version``, ``sphinx_version``, ``sphinx_copybutton_version``,
+``sphinx_rtd_theme_version``, ``wheel_version``.
 
 
-.. topic:: Installing MPICH or OpenMPI
 
-   If you let the ``installer`` install its own MPI library (i.e. leave
-   ``mpi_dir`` unspecified), you may choose between MPICH and OpenMPI by
-   setting either ``mpi=mpich`` or ``mpi=openmpi``. If ``mpi`` is left unset,
-   MPICH is installed. Note that the same variable ``mpi_version`` thus refer
-   to both the version of MPICH and of OpenMPI.
+Choosing compiler precedence
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+At the beginning of the installation, the ``installer`` will locate the
+various compilers on the system. Its findings are presented under the
+'Compiler precedence' heading. If the installation of a given program fails,
+the ``installer`` moves on to the next compiler and tries again, and so on.
+This is part of the overall philosophy of the ``installer`` to "try, try
+again" if a particular choice of compiler/flags/etc. does not succeed. This is
+one reason why the installation can be so time consuming. It does however make
+the installation process very robust.
+
+If you wish to have a say in the order in which the compilers are tried out,
+you may define the ``compiler_precedence`` variable. To prefer e.g. Intel
+compilers and then GNU compilers, set ``compiler_precedence="intel gnu"``.
+Only compilers found on the system will be taken into account. Also, say the
+system further has e.g. the Clang compiler, this will be tried out also, but
+after any compilers specified in ``compiler_precedence``.
+
+The supported compilers --- written in order of default precedence --- are:
+
+- ``specified_mpi``: Use the compilers included in the MPI library
+  specified by ``mpi_dir``.
+
+- ``default``: Run as is, without altering the environment. If e.g. the ``CC``
+  environment variable is set, this will probably be picked up by the
+  installation of the program.
+
+- ``gnu``: The GNU compilers (gcc, g++, gfortran).
+
+- ``clang``: The Clang compilers (clang, clang++).
+
+- ``mpi``: MPI compilers found on the system (mpicc, mpicxx, mpifort, ...).
+
+- ``intel``:  The Intel compilers (icc, icpc, ifort).
+
+- ``cray``: The Cray compilers (craycc, crayCC, crayftn).
+
+-  ``portland``: The Portland compilers (pgcc, pgCC, pgf77, pgf90).
+
+- ``generic``: Non-specific compilers found on the system (cc, c++, fortran).
+
+- ``unset``: Explicitly unset environment variables such as ``CC``, ``CXX``,
+  ``FC``.
+
+Many of the dependency programs do some compiler discovery of their own, and
+so no guarantee of what compiler is actually used can be given.
 
 
-.. topic:: Parallel builds
 
-   Much of the installation process can be sped up if we allow the make
-   utility to build in parallel. This is controlled through the ``make_jobs``
-   variable. To enforce serial builds, set ``make_jobs="-j 1"``. To enforce
-   parallel builds using e.g. 2 processors, specify ``make_jobs="-j 2"``.
-   You can also specify an unlimited amount of available parallel processors
-   using just ``make_jobs="-j"``.
+Installing MPICH or OpenMPI
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If you let the ``installer`` install its own MPI library (i.e. leave
+``mpi_dir`` unspecified), you may choose between MPICH and OpenMPI by setting
+either ``mpi=mpich`` or ``mpi=openmpi``. If ``mpi`` is left unset, MPICH is
+installed. Note that the same variable ``mpi_version`` thus refer to both the
+version of MPICH and of OpenMPI.
 
-   By default, when ``make_jobs`` is not specified, unlimited parallel builds
-   are used if installing locally, while serial builds are used if working
-   remotely.
 
-.. topic:: Using the ``installer`` to install specific libraries but not CO\ *N*\ CEPT itself
 
-   The ``installer`` script may be used outside the context of CO\ *N*\ CEPT,
-   should you be in need of any of the dependencies for some other purpose.
-   Which programs to install is governed by ``*_install`` variables. By
-   default, ``concept_install=True``, which in turn sets ``*_install=True``
-   for its immidiate dependencies, which in turn sets ``*_install=True`` for
-   their dependencies, and so on. If you run the ``installer`` with
-   ``concept_install=False``, nothing will be installed.
+Parallel builds
+~~~~~~~~~~~~~~~
+Much of the installation process can be sped up if we allow the make utility
+to build in parallel. This is controlled through the ``make_jobs`` variable.
+To enforce serial builds, set ``make_jobs="-j 1"``. To enforce parallel builds
+using e.g. 2 processors, specify ``make_jobs="-j 2"``. You can also specify an
+unlimited amount of available parallel processors using just
+``make_jobs="-j"``.
 
-   To install e.g. just FFTW, use
+By default, when ``make_jobs`` is not specified, unlimited parallel builds are
+used if installing locally, while serial builds are used if working remotely.
 
-   .. code-block:: bash
 
-      concept_install=False fftw_install=True bash installer
 
-   possibly adding in a specific version (``fftw_version=...``) and an MPI
-   library (``mpi_dir=...`` or ``mpi_install=True``) to link against. As FFTW
-   does not absolutely need MPI, ``mpi_install`` is not set by having
-   ``fftw_install=True``.
+Using the ``installer`` to install specific libraries but not CONCEPT itself
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ``installer`` script may be used outside the context of CO\ *N*\ CEPT,
+should you be in need of any of the dependencies for some other purpose. Which
+programs to install is governed by ``*_install`` variables. By default,
+``concept_install=True``, which in turn sets ``*_install=True`` for its
+immidiate dependencies, which in turn sets ``*_install=True`` for their
+dependencies, and so on. If you run the ``installer`` with
+``concept_install=False``, nothing will be installed.
 
-   To install GADGET, use
+To install e.g. just FFTW, use
 
-   .. code-block:: bash
+.. code-block:: bash
 
-      concept_install=False gadget_install=True bash installer
+   concept_install=False fftw_install=True bash installer
 
-   This time, MPI, GSL and FFTW (2) will be installed as well, as these are hard
-   dependencies.
+possibly adding in a specific version (``fftw_version=...``) and an MPI
+library (``mpi_dir=...`` or ``mpi_install=True``) to link against. As FFTW
+does not absolutely need MPI, ``mpi_install`` is not set by having
+``fftw_install=True``.
+
+To install GADGET, use
+
+.. code-block:: bash
+
+   concept_install=False gadget_install=True bash installer
+
+This time, MPI, GSL and FFTW (2) will be installed as well, as these are hard
+dependencies.
 
 
 
@@ -547,135 +552,133 @@ You may draw inspiration from the current or older versions of the
 (look for 'Specification of software versions').
 
 
-.. topic:: Python dependencies
 
-   The CO\ *N*\ CEPT source depends explicitly on
-   `Python <https://www.python.org/>`_ version 3.6 or newer, together with the
-   following Python packages (many of which have heavy dependencies of their
-   own):
+Python dependencies
+...................
+The CO\ *N*\ CEPT source depends explicitly on
+`Python <https://www.python.org/>`_ version 3.6 or newer, together with the
+following Python packages (many of which have heavy dependencies of their
+own):
 
-   * `Cython <https://cython.org/>`_: Needed for transpilation
-     (*cythonization*) of the pure Python source code of CO\ *N*\ CEPT into
-     equivalent C code.
+* `Cython <https://cython.org/>`_: Needed for transpilation (*cythonization*)
+  of the pure Python source code of CO\ *N*\ CEPT into equivalent C code.
 
-   * `NumPy <https://www.numpy.org/>`_: Provides the basic array types used
-     for representing all primary data, together with various array/math
-     functions.
+* `NumPy <https://www.numpy.org/>`_: Provides the basic array types used for
+  representing all primary data, together with various array/math functions.
 
-   * `SciPy <https://www.scipy.org/>`_: Provides various numerical methods and
-     additional math functions.
+* `SciPy <https://www.scipy.org/>`_: Provides various numerical methods and
+  additional math functions.
 
-   * `Matplotlib <https://matplotlib.org/>`_: Provides plotting functionality
-     for 2D and 3D figures, as well as color transformations used for colored
-     terminal output.
+* `Matplotlib <https://matplotlib.org/>`_: Provides plotting functionality for
+  2D and 3D figures, as well as color transformations used for colored
+  terminal output.
 
-   * `MPI4Py <https://mpi4py.readthedocs.io/>`_: Provides Python bindings for
-     MPI, used for all inter-process communication.
+* `MPI4Py <https://mpi4py.readthedocs.io/>`_: Provides Python bindings for
+  MPI, used for all inter-process communication.
 
-   * `H5Py <https://www.h5py.org/>`_: Provides Python bindings for HDF5, used
-     for various binary input/output.
+* `H5Py <https://www.h5py.org/>`_: Provides Python bindings for HDF5, used for
+  various binary input/output.
 
-   * `CythonGSL <https://github.com/twiecki/CythonGSL>`_: Provides Cython
-     bindings for GSL, used for more performant replacements of some
-     NumPy/SciPy functionalities when running CO\ *N*\ CEPT in compiled mode.
+* `CythonGSL <https://github.com/twiecki/CythonGSL>`_: Provides Cython
+  bindings for GSL, used for more performant replacements of some NumPy/SciPy
+  functionalities when running CO\ *N*\ CEPT in compiled mode.
 
-   * `Blessings <https://github.com/erikrose/blessings>`_: Provides terminal
-     formatting.
+* `Blessings <https://github.com/erikrose/blessings>`_: Provides terminal
+  formatting.
 
-   In addition, the `Sphinx <http://www.sphinx-doc.org/>`_,
-   `sphinx-copybutton <https://sphinx-copybutton.readthedocs.io/>`_ and
-   `sphinx_rtd_theme <https://sphinx-rtd-theme.readthedocs.io/>`_ Python
-   packages are needed to build the documentation, but may otherwise be left
-   out.
+In addition, the `Sphinx <http://www.sphinx-doc.org/>`_,
+`sphinx-copybutton <https://sphinx-copybutton.readthedocs.io/>`_ and
+`sphinx_rtd_theme <https://sphinx-rtd-theme.readthedocs.io/>`_ Python packages
+are needed to build the documentation, but may otherwise be left out.
 
 
 
-.. topic:: Other primary dependencies
+Other primary dependencies
+..........................
+In addition to Python, the Python packages listed above and their respective
+dependencies, CO\ *N*\ CEPT further depends explicitly on
+`FFTW <http://www.fftw.org/>`_ 3 for its distributed FFT capabilities.
 
-   In addition to Python, the Python packages listed above and their
-   respective dependencies, CO\ *N*\ CEPT further depends explicitly on
-   `FFTW <http://www.fftw.org/>`_ 3 for its distributed FFT capabilities.
+.. note::
+   CO\ *N*\ CEPT does not make use of the Python bindings
+   `pyFFTW <https://github.com/pyFFTW/pyFFTW>`_ for FFTW, as these do not
+   include the distributed (MPI) FFT's needed. Instead, CO\ *N*\ CEPT provides
+   its own minimal wrapper, ``fft.c``. This is the only C file in the primary
+   CO\ *N*\ CEPT source code.
 
-   .. note::
-      CO\ *N*\ CEPT does not make use of the Python bindings
-      `pyFFTW <https://github.com/pyFFTW/pyFFTW>`_ for FFTW, as these do not
-      include the distributed (MPI) FFT's needed. Instead, CO\ *N*\ CEPT
-      provides its own minimal wrapper, ``fft.c``. This is the only C file in
-      the primary CO\ *N*\ CEPT source code.
+If building FFTW yourself, remember to link against an MPI library. The same
+goes for building HDF5 and installing MPI4Py and H5Py. Also, the MPI library
+has to conform to the MPI-3 standard.
 
-   If building FFTW yourself, remember to link against an MPI library.
-   The same goes for building HDF5 and installing MPI4Py and H5Py. Also, the
-   MPI library has to conform to the MPI-3 standard.
+For testing, CO\ *N*\ CEPT compares itself against
+`GADGET <https://wwwmpa.mpa-garching.mpg.de/gadget/>`_, specifically version
+2.0.7. If you do not care about running the CO\ *N*\ CEPT test suite, you do
+not have to install GADGET.
 
-   For testing, CO\ *N*\ CEPT compares itself against
-   `GADGET <https://wwwmpa.mpa-garching.mpg.de/gadget/>`_, specifically
-   version 2.0.7. If you do not care about running the CO\ *N*\ CEPT test
-   suite, you do not have to install GADGET.
+The last non-standard depenency of CO\ *N*\ CEPT is the
+`CLASS <http://class-code.net/>`_ code, along with its Python wrapper
+'classy'. When installing using the installation script, CLASS and classy are
+patched in order to enable larger and new kinds of output, fix bugs and
+improve interoperability with CO\ *N*\ CEPT. If installing without the use of
+the installation script, you will have to obtain the patched CLASS + classy by
+some other means. A good solution is to install everything else first,
+including CO\ *N*\ CEPT itself, and then make use of the CO\ *N*\ CEPT
+``update`` utility to install and patch CLASS + classy:
 
-   The last non-standard depenency of CO\ *N*\ CEPT is the
-   `CLASS <http://class-code.net/>`_ code, along with its Python wrapper
-   'classy'. When installing using the installation script, CLASS and classy
-   are patched in order to enable larger and new kinds of output, fix bugs and
-   improve interoperability with CO\ *N*\ CEPT. If installing without the use
-   of the installation script, you will have to obtain the patched
-   CLASS + classy by some other means. A good solution is to install
-   everything else first, including CO\ *N*\ CEPT itself, and then make use of
-   the CO\ *N*\ CEPT ``update`` utility to install and patch CLASS + classy:
+.. code-block:: bash
 
-   .. code-block:: bash
+   ./concept -u update --class <version>
 
-      ./concept -u update --class <version>
+Here, ``<version>`` should be replaced with the CO\ *N*\ CEPT version whose
+``installer`` script should be used to install and patch CLASS + classy.
 
-   Here, ``<version>`` should be replaced with the CO\ *N*\ CEPT version whose
-   ``installer`` script should be used to install and patch CLASS + classy.
 
 
 .. _system_dependencies:
 
-.. topic:: System dependencies
+System dependencies
+...................
+In addition to the many dependencies above, CO\ *N*\ CEPT further uses a lot
+of *system dependencies*, by which is meant programs that usually is installed
+system-wide. These include `Bash <https://www.gnu.org/software/bash/>`_ 3.0 or
+newer and the `GNU core utilities <https://www.gnu.org/software/coreutils/>`_,
+which are the only two dependencies not installed by the ``installer`` script.
 
-   In addition to the many dependencies above, CO\ *N*\ CEPT further uses
-   a lot of *system dependencies*, by which is meant programs that usually is
-   installed system-wide. These include
-   `Bash <https://www.gnu.org/software/bash/>`_ 3.0 or newer and the
-   `GNU core utilities <https://www.gnu.org/software/coreutils/>`_, which are
-   the only two dependencies not installed by the ``installer`` script.
+Other system dependencies needed for the core CO\ *N*\ CEPT functionality are
+awk, grep and sed. Also, the ``installer`` script and ``update`` utility
+further makes use of gzip, tar and wget. That is, you may run simulations
+without these last three components installed. If running the ``installer``
+script or ``update`` utility without these, you will be prompted for
+system-wide (root) installation.
 
-   Other system dependencies needed for the core CO\ *N*\ CEPT functionality
-   are awk, grep and sed. Also, the ``installer`` script and ``update``
-   utility further makes use of gzip, tar and wget. That is, you may run
-   simulations without these last three components installed. If running the
-   ``installer`` script or ``update`` utility without these, you will be
-   prompted for system-wide (root) installation.
+.. note::
 
-   .. note::
+   Several implementations exist for the above system dependencies.
+   CO\ *N*\ CEPT specifically needs the GNU implementations, i.e. what is
+   commonly found on Linux systems. The fact that macOS uses the BSD
+   implementations of these programs is the primary reason for CO\ *N*\ CEPT
+   not yet being ported to this platform.
 
-      Several implementations exist for the above system dependencies.
-      CO\ *N*\ CEPT specifically needs the GNU implementations, i.e. what
-      is commonly found on Linux systems. The fact that macOS uses the BSD
-      implementations of these programs is the primary reason for
-      CO\ *N*\ CEPT not yet being ported to this platform.
-
-   Lastly, CO\ *N*\ CEPT needs standard tools for compiling and linking C
-   (C99) code. An ``mpicc`` C compiler/linker should be bundled with the MPI
-   library used. The GNU make utility is also needed.
+Lastly, CO\ *N*\ CEPT needs standard tools for compiling and linking C (C99)
+code. An ``mpicc`` C compiler/linker should be bundled with the MPI library
+used. The GNU make utility is also needed.
 
 
 
 .. _the_paths_and_env_files:
 
-
 The ``.paths`` and ``.env`` files
 ---------------------------------
-The ``.paths`` file and the ``.env`` file are special files storing
-static information about the CO\ *N*\ CEPT installation. The ``.paths`` file
-store absolute paths to various files and directories, while the ``.env`` file
-store environment variables as they should be set when running CO\ *N*\ CEPT.
+The ``.paths`` file and the ``.env`` file are special files storing static
+information about the CO\ *N*\ CEPT installation. The ``.paths`` file store
+absolute paths to various files and directories, while the ``.env`` file store
+environment variables as they should be set when running CO\ *N*\ CEPT.
 
 Both of these files are generated by the ``installer`` during installation.
 Should you wish to not use the ``installer``, you should grab ``.paths`` and
 ``.env`` from the `online repository <https://github.com/jmd-dk/concept>`_ and
 edit them manually.
+
 
 
 The ``.paths`` file
@@ -723,6 +726,7 @@ You are free to define further paths (or even variables in general) in the
 via the ``paths`` ``dict``.
 
 
+
 The ``.env`` file
 .................
 This file is meant to set up the needed environment variables needed for
@@ -757,69 +761,67 @@ installation, you may add it yourself to the ``.env`` file, i.e. place
 somewhere in ``.env`` to make the variable ``name`` with value ``value`` be
 part of the global CO\ *N*\ CEPT environment.
 
-.. topic:: ``PATH``-like environment variables
 
-   Many environemnt variables (e.g. ``PATH``, ``LD_LIBRARY_PATH``) are
-   "``PATH``-like", meaning that their values are colon-separated substrings.
-   Such environemnt variables are potentially dangerous to overwrite, so
-   instead they are merely updated by either prepending or appending new
-   substrings to their present value, e.g.
 
-   .. code-block:: bash
+``PATH``-like environment variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Many environemnt variables (e.g. ``PATH``, ``LD_LIBRARY_PATH``) are
+"``PATH``-like", meaning that their values are colon-separated substrings.
+Such environemnt variables are potentially dangerous to overwrite, so
+instead they are merely updated by either prepending or appending new
+substrings to their present value, e.g.
 
-      export PATH="/some/new/path:${PATH}"  # prepending
-      export PATH="${PATH}:/some/new/path"  # appending
+.. code-block:: bash
 
-   The above syntax is allowed in ``.env``. Equivalently, the
-   ``pathenv_name_value_pairs_custom`` array variable may be used;
+   export PATH="/some/new/path:${PATH}"  # prepending
+   export PATH="${PATH}:/some/new/path"  # appending
 
-   .. code-block:: bash
+The above syntax is allowed in ``.env``. Equivalently, the
+``pathenv_name_value_pairs_custom`` array variable may be used;
 
-      pathenv_name_value_pairs_custom=(PATH "/some/new/path")
+.. code-block:: bash
 
-   which either prepends or appends ``/some/new/path`` to ``PATH``, depending
-   on whether the ``concatenate`` variable in ``.env`` is set to ``prepend``
-   or ``append``.
+   pathenv_name_value_pairs_custom=(PATH "/some/new/path")
 
-   Any such ``PATH``-like environment variables present during install time
-   will be placed in a similar array structure. Whether these are prepended or
-   appended to the preexisting values of the same ``PATH``-like environment
-   variables when building/running CO\ *N*\ CEPT is similarly determined by
-   ``concatenate``.
+which either prepends or appends ``/some/new/path`` to ``PATH``, depending on
+whether the ``concatenate`` variable in ``.env`` is set to ``prepend`` or
+``append``.
 
-.. topic:: The ``mpi_executor``
-
-   The ``mpi_executor`` variable determines which program is resonsible for
-   launching CO\ *N*\ CEPT as an MPI program, when submitted as a job on a
-   remote cluster. You may leave this empty or undefined in which case a
-   (hopefully) suitable value will be determined by the ``concept`` script.
-   After submitting a remote CO\ *N*\ CEPT job, see the ``jobscript`` for the
-   chosen value of ``mpi_executor``.
-
-   See "Choosing an MPI executor" under
-   :ref:`this<problems_when_running_remotely>` troubleshooting entry for
-   further details.
-
-.. topic:: The ``make_jobs`` environment variable
-
-   The ``make_jobs`` variable is not present in the ``.env`` file by default,
-   but may be set in order to specify whether CO\ *N*\ CEPT should be build
-   in parallel. The default behavior is to build in parallel when working
-   locally and serially when working remotely. To overrule this, add one of
-   e.g.
-
-   .. code-block:: bash
-
-      export make_jobs="-j 1"  # Always build serially
-      export make_jobs="-j 2"  # Always build in parallel, using 2 cores
-      export make_jobs="-j"    # Always build in parallel, using any number of cores
-
-   to ``.env``.
+Any such ``PATH``-like environment variables present during install time will
+be placed in a similar array structure. Whether these are prepended or
+appended to the preexisting values of the same ``PATH``-like environment
+variables when building/running CO\ *N*\ CEPT is similarly determined by
+``concatenate``.
 
 
 
+The ``mpi_executor``
+~~~~~~~~~~~~~~~~~~~~
+The ``mpi_executor`` variable determines which program is resonsible for
+launching CO\ *N*\ CEPT as an MPI program, when submitted as a job on a remote
+cluster. You may leave this empty or undefined in which case a (hopefully)
+suitable value will be determined by the ``concept`` script.
+
+After submitting a remote CO\ *N*\ CEPT job, see the ``jobscript`` for the
+chosen value of ``mpi_executor``.
+
+See :ref:`this<chosing_an_mpi_executor>` troubleshooting entry for further
+details.
 
 
 
+The ``make_jobs`` environment variable
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The ``make_jobs`` variable is not present in the ``.env`` file by default, but
+may be set in order to specify whether CO\ *N*\ CEPT should be built in
+parallel. The default behavior is to build in parallel when working locally
+and serially when working remotely. To overrule this, add one of e.g.
 
+.. code-block:: bash
+
+   export make_jobs="-j 1"  # Always build serially
+   export make_jobs="-j 2"  # Always build in parallel, using 2 cores
+   export make_jobs="-j"    # Always build in parallel, using any number of cores
+
+to ``.env``.
 

@@ -42,8 +42,11 @@ directory, where you'll find the power spectrum data and plot.
    last line of output
 
 
-Don't forget about gravity
-..........................
+
+.. raw:: html
+
+   <h2>Don't forget about gravity</h2>
+
 The above simulation should take about a minute to complete, with almost none
 of the time spent on the actual simulation (time stepping), but rather on the
 generation of initial conditions. The reason for this rapid time stepping is

@@ -134,39 +134,42 @@ will be ``'terminal resolution'`` (80) characters wide. Since the terminal
 render is constructed from the original 2D render, this does not show more
 details even though the resolution is higher (80 vs. 64).
 
-
 Also available through ``render2D_options`` is the colormap to use. Check out
 `this <https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html>`_
 for a list of available colormaps.
 
 
-.. topic:: The play utility
 
-   For this next trick, the simulation need to have finished, and we need to
-   know its job ID.
+.. raw:: html
 
-   .. tip::
-      To grab the job ID from a power spectra data file, you can do e.g.
+   <h3>The play utility</h3>
 
-      .. code-block:: bash
+For this next trick, the simulation need to have finished, and we need to know
+its job ID.
 
-         grep -o 'job [^ ]*' output/tutorial/powerspec_a=1.00
-
-   With the job ID at hand, try the following:
+.. tip::
+   To grab the job ID from a power spectra data file, you can do e.g.
 
    .. code-block:: bash
 
-      ./concept -u play <ID>  # replace <ID> with job ID number
+      grep -o 'job [^ ]*' output/tutorial/powerspec_a=1.00
 
-   You should see a nice animation of the evolution of the large-scale
-   structure, playing out right in the terminal (does it get any better?). The
-   animation is produced from the terminal images stored in the log file
-   ``logs/<ID>``. The ``-u`` option to the ``concept`` script signals
-   CO\ *N*\ CEPT to start up a *utility* rather than running a simulation.
-   These utilities are handy (or sometimes goofy) side programs baked into
-   CO\ *N*\ CEPT. Another such utility, the *info utility*, is encountered
-   just below, while a :doc:`complete section </tutorial/utilities>` of this
-   tutorial is dedicated to other utilities.
+With the job ID at hand, try the following:
+
+.. code-block:: bash
+
+   ./concept -u play <ID>  # replace <ID> with job ID number
+
+You should see a nice animation of the evolution of the large-scale structure,
+playing out right in the terminal!. The animation is produced from the
+terminal images stored in the log file ``logs/<ID>``.
+
+The ``-u`` option to the ``concept`` script signals CO\ *N*\ CEPT to start up
+a *utility* rather than running a simulation. These utilities are handy (or
+sometimes goofy) side programs baked into CO\ *N*\ CEPT. Another such utility,
+the *info utility*, is encountered just below, while a
+:doc:`complete section </tutorial/utilities>` of this tutorial is dedicated to
+more in-depth investigations of other utilities.
 
 
 
@@ -236,22 +239,23 @@ other simulation codes and tools. To use this snapshot format in place of the
 standard one, add ``snapshot_type = 'gadget2'`` to your parameter file.
 
 
-.. topic:: The info utility
 
-   We mentioned `ViTables <http://vitables.org/>`_ as a great way to peek
-   inside the default CO\ *N*\ CEPT (HDF5) snapshots. It would be nice to have
-   a general tool which worked for the supported GADGET-2 snapshots as well.
-   Luckily, CO\ *N*\ CEPT comes with just such a tool: the *info utility*.
-   To try it out, simply do
+.. raw:: html
 
-   .. code-block:: bash
+   <h3>The info utility</h3>
 
-      ./concept -u info output/tutorial
+We mentioned `ViTables <http://vitables.org/>`_ as a great way to peek inside
+the default CO\ *N*\ CEPT (HDF5) snapshots. It would be nice to have a general
+tool which worked for the supported GADGET-2 snapshots as well. Luckily,
+CO\ *N*\ CEPT comes with just such a tool: the *info utility*. To try it out,
+simply do
 
-   The content of all snapshots --- standard (HDF5) or GADGET-2 format --- in
-   the ``output/tutorial`` directory will now be printed to the screen. Should
-   you want information about just a specific snapshot, simply provide its
-   entire path.
+.. code-block:: bash
 
+   ./concept -u info output/tutorial
 
+The content of all snapshots --- standard (HDF5) or GADGET-2 format --- in the
+``output/tutorial`` directory will now be printed to the screen. Should you
+want information about just a specific snapshot, simply provide its entire
+path.
 

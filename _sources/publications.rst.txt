@@ -1,17 +1,3 @@
-.. raw:: html
-
-   <style type="text/css">
-     span.bolditalic {
-       font-weight: bold;
-       font-style: italic;
-     }
-   </style>
-
-.. role:: bolditalic
-   :class: bolditalic
-
-
-
 Publications
 ============
 This is a list of scientific papers produced using CO\ *N*\ CEPT.
