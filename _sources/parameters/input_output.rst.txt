@@ -1,14 +1,21 @@
 Input/output
 ------------
+The input/output parameter category contains parameters specifying the
+initial conditions as well as the wanted results to be outputted from the
+CO\ *N*\ CEPT run. You will find the complete list of such parameters below.
 
-.. raw:: html
+.. contents::
+   :local:
+   :depth: 1
 
-   <h3>
-     <code class="docutils literal notranslate"><span class="pre">
-       initial_conditions
-     </span></code>
-   </h3>
 
+
+______________________________________________________________________________
+
+
+
+``initial_conditions``
+......................
 === =============== =
 \ \ **Type**        ``list`` of ``dict``\ 's :math:`\ |\ ` ``str``
 --- --------------- -
@@ -92,14 +99,8 @@ Input/output
 
 
 
-.. raw:: html
-
-   <h3>
-     <code class="docutils literal notranslate"><span class="pre">
-       snapshot_type
-     </span></code>
-   </h3>
-
+``snapshot_type``
+.................
 === =============== =
 \ \ **Type**        ``str``
 --- --------------- -

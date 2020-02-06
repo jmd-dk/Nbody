@@ -11,9 +11,17 @@ If you have yet to play around with the the ``concept`` script (and thus
 CO\ *N*\ CEPT), you are advised to take the
 :doc:`tutorial </tutorial/first_simulations>`.
 
-The command-line options are grouped into the following categories:
+Most options has a short and a long format --- e.g. ``-h`` and ``--help`` ---
+which always does the same thing. Some however only has the long format. When
+using the long format, you do not have to spell out the entire option, as long
+as the first part uniquely identifies the full option. For example, ``--he``
+may be used in place of ``--help``.
 
-.. contents:: :local:
+The command-line options are grouped into four categories as listed below:
+
+.. contents::
+   :local:
+   :depth: 2
 
 
 
@@ -24,117 +32,162 @@ Basics
 The following basic command-line options are all you need to know in order for
 running CO\ *N*\ CEPT simulations locally.
 
-.. raw:: html
 
-   <h4>
-     Help:
-     <code class="docutils literal notranslate"><span class="pre">
-       -h
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --help
-     </span></code>
-   </h4>
 
+Help: ``-h``, ``--help``
+........................
 Displays a short description of each command-line option and exits. This is
 helpful if you forget the exact syntax. For learning about the usage of a
 given option, this page is much preferable.
 
 
-.. raw:: html
 
-   <h4>
-     Parameter file:
-     <code class="docutils literal notranslate"><span class="pre">
-       -p
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --params
-     </span></code>
-   </h4>
-
-The ``-p`` or ``--param`` option is used to specify the parameter file to use.
-Typically, parameter files are kept in the ``params`` directory. With the
-parameter file ``my_params`` located in this directory, specifying this
-parameter file would look like
+Parameter file: ``-p``, ``--params``
+....................................
+Specifies the parameter file to use. Typically, parameter files are kept in
+the ``params`` directory. With the parameter file ``my_params`` located in
+this directory, specifying this parameter file would look like
 
 .. code-block:: bash
 
    ./concept -p params/my_params
 
-The many possible parameters to put inside parameter files are listed
+The many possible parameters to put inside parameter files are each described
 :doc:`here</parameters/parameters>`. Parameters absent from the supplied
 parameter file will take on default values. Leaving out the ``-p`` parameter
 file specification when invoking ``concept``, *all* parameters take on their
-default values, which does not result in actual simulation as no output is
-then specified.
+default values, which does not result in an actual simulation as no output is
+specified by default.
 
 
 
-.. raw:: html
+Command-line parameters: ``-c``, ``--command-line-param``
+.........................................................
+Directly specifies parameters to use, without referring to a parameter file.
+E.g.
 
-   <h4>
-     Command-line parameters:
-     <code class="docutils literal notranslate"><span class="pre">
-       -c
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --command-line-param
-     </span></code>
-   </h4>
+.. code-block:: bash
 
-*Under construction!*
+   ./concept -c 'boxsize = 512*Mpc'
 
+Often this is used in combination with a parameter file, e.g. if a suite of
+similar simulations is to be run where only a few parameter values change
+between the simulations. E.g.
 
-.. raw:: html
+.. code-block:: bash
 
-   <h4>
-     Number of processes:
-     <code class="docutils literal notranslate"><span class="pre">
-       -n
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --nprocs
-     </span></code>
-   </h4>
+   ./concept -p params/my_params -c 'Ωb = 0.049' -c 'Ωcdm = 0.27'
 
-*Under construction!*
+Note that the ``-c`` option may be specified multiple times.
 
+Specifying command-line parameters while also making use of a parameter file
+is equivalent to having the command-line parameters defined *at the bottom* of
+the parameter file.
 
-.. raw:: html
-
-   <h4>
-     Utility:
-     <code class="docutils literal notranslate"><span class="pre">
-       -u
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --utility
-     </span></code>
-   </h4>
-
-*Under construction!*
+Be careful about trying to overwrite parameter values defined in a parameter
+file using ``-c``: The parameter/variable will take on the value as defined
+on the command-line from the top of the parameter file and down until the
+parameter/variable is (re)assigned. During the actual simulation, the value
+given by ``-c`` will be used. For a completely independent parameter there is
+then no danger in overwriting its value using ``-c``, but if other parameters
+are defined in terms of the first parameter, it is cleaner to just not have it
+be defined both in the parameter file and on the command-line.
 
 
-.. raw:: html
 
-   <h4>
-     Version:
-     <code class="docutils literal notranslate"><span class="pre">
-       -v
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --version
-     </span></code>
-   </h4>
+.. _number_of_processes:
 
-*Under construction!*
+Number of processes: ``-n``, ``--nprocs``
+.........................................
+Specifies the number of MPI processes to use, with each MPI process being
+mapped to its own CPU core. To e.g. run with 8 cores:
+
+.. code-block:: bash
+
+   ./concept -n 8
+
+If not specified, this defaults to 1.
+
+You may write the number of processes as an expression. All of these specifies
+that 8 processes should be used:
+
+.. code-block:: bash
+
+   ./concept -n 2*4
+   ./concept -n 2**3
+   ./concept -n '3 + 5'
+
+
+
+.. _specifying_multiple_nodes:
+
+Specifying multiple nodes
+~~~~~~~~~~~~~~~~~~~~~~~~~
+When running on a cluster with multiple compute nodes, you may also specify
+the number of nodes to be used. The following examples all specify 8 MPI
+processes distributed over 2 nodes each with 4 CPU cores:
+
+.. code-block:: bash
+
+   ./concept -n 2:4
+   ./concept -n 2:2*2
+   ./concept -n '2 2*2'
+   ./concept -n '1 + 1 : 2**2'
+
+Note that imhomogeneous layouts are not describable. If you leave out the node
+specification (i.e. only supply a single number to ``-n``) and the cluster is
+running Slurm, the specified total number of CPU cores may be distributed in
+any which way between the available nodes. If the cluster is running
+TORQUE/PBS, you must always explicitly specify the number of nodes as well as
+the number of CPU cores/node.
+
+
+
+Utility: ``-u``, ``--utility``
+..............................
+Signals that one of the CO\ *N*\ CEPT utilities is to be run instead of a
+simulation. To run e.g. the ``powerspec`` utility, do
+
+.. code-block:: bash
+
+   ./concept -u powerspec </path/to/snapshot>
+
+which will then produce a power spectrum of the snapshot file located at
+``</path/to/snapshot>``.
+
+Each utility comes with its own command-line options (for the ``powerspec``
+utility, a required path to a snapshot), which you should specify together
+with the normal ``concept`` command-line options. In the case of the
+``powerspec`` utility, this could look like one of
+
+.. code-block:: bash
+
+   ./concept -n 4 -u powerspec </path/to/snapshot>
+   ./concept -u powerspec </path/to/snapshot> -n 4
+
+both of which will produce a power spectrum of the snapshot using 4 CPU cores.
+Though not encouraged, you may even detach the utility options
+(``</path/to/snapshot>``) from the utility specification (``-u powerspec``),
+as in
+
+.. code-block:: bash
+
+   ./concept -n 4 </path/to/snapshot> -u powerspec
+   ./concept </path/to/snapshot> -n 4 -u powerspec
+   ./concept </path/to/snapshot> -u powerspec -n 4
+   ./concept -u powerspec -n 4 </path/to/snapshot>
+
+In short, do not worry about the order of ``concept`` and utility specific
+command-line options.
+
+You can read about the different utilities and their command-line interfaces
+in the :doc:`Utilities</utilities/utilities>` chapter.
+
+
+
+Version: ``-v``, ``--version``
+..............................
+Prints out the version of CO\ *N*\ CEPT that is installed.
 
 
 
@@ -142,80 +195,40 @@ then specified.
 
 Remote job submission
 ---------------------
-In addition to the :ref:`basic<basics>` options, the options below are used
-for additional resource specification when submitting remote jobs. Note that
-for remote jobs, additional possibilities for the ``-n`` option arise, as
-documented above.
+On top of the :ref:`basic<basics>` options, the options below are used for
+additional resource specification when submitting remote jobs. Note that
+additional possibilities arise for the ``-n`` option when running on a cluster
+with multple compute nodes, as documented
+:ref:`above<specifying_multiple_nodes>`.
 
-.. raw:: html
 
-   <h4>
-     Queue:
-     <code class="docutils literal notranslate"><span class="pre">
-       -q
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --queue
-     </span></code>
-   </h4>
 
+Queue: ``-q``, ``--queue``
+..........................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     Wall time:
-     <code class="docutils literal notranslate"><span class="pre">
-       -w
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --wall-time
-     </span></code>
-   </h4>
-
+Wall time: ``-w``, ``--wall-time``
+..................................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     Memory:
-     <code class="docutils literal notranslate"><span class="pre">
-       --memory
-     </span></code>
-   </h4>
-
+Memory: ``--memory``
+....................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     Job directive:
-     <code class="docutils literal notranslate"><span class="pre">
-       -j
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --job-directive
-     </span></code>
-   </h4>
-
+Job directive: ``-j``, ``--job-directive``
+..........................................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     No watching:
-     <code class="docutils literal notranslate"><span class="pre">
-       --no-watching
-     </span></code>
-   </h4>
-
+No watching: ``--no-watching``
+..............................
 *Under construction!*
 
 
@@ -234,63 +247,33 @@ remote job (which fails if you have not specified the ``-q``
 :ref:`option<remote_job_submission>`).
 
 
-.. raw:: html
 
-   <h4>
-     Local:
-     <code class="docutils literal notranslate"><span class="pre">
-       --local
-     </span></code>
-   </h4>
-
+Local: ``--local``
+...................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     Pure Python:
-     <code class="docutils literal notranslate"><span class="pre">
-       --pure-python
-     </span></code>
-   </h4>
-
+Pure Python: ``--pure-python``
+..............................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     No recompilation:
-     <code class="docutils literal notranslate"><span class="pre">
-       --no-recompilation
-     </span></code>
-   </h4>
-
+No recompilation: ``--no-recompilation``
+........................................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     No optimization:
-     <code class="docutils literal notranslate"><span class="pre">
-       --no-optimization
-     </span></code>
-   </h4>
-
+No optimization: ``--no-optimization``
+......................................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     Unsafe building:
-     <code class="docutils literal notranslate"><span class="pre">
-       --unsafe-build
-     </span></code>
-   </h4>
-
+Unsafe building: ``--unsafe-building``
+......................................
 *Under construction!*
 
 
@@ -299,53 +282,27 @@ remote job (which fails if you have not specified the ``-q``
 
 Specials
 --------
-The following special options are rarely used outside of development, though
-knowledge about them may come in handy as they are very powerful.
+The following special options are mostly useful for development. Even so,
+knowledge about them may come in handy outside of development, as they are
+very powerful.
 
-.. raw:: html
 
-   <h4>
-     Test:
-     <code class="docutils literal notranslate"><span class="pre">
-       -t
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --test
-     </span></code>
-   </h4>
 
+.. _test:
+
+Test: ``-t``, ``--test``
+........................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     Main entry point:
-     <code class="docutils literal notranslate"><span class="pre">
-       -m
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --main
-     </span></code>
-   </h4>
-
+Main entry point: ``-m``, ``--main``
+....................................
 *Under construction!*
 
 
-.. raw:: html
 
-   <h4>
-     Interactive:
-     <code class="docutils literal notranslate"><span class="pre">
-       -i
-     </span></code>
-     ,
-     <code class="docutils literal notranslate"><span class="pre">
-       --interactive
-     </span></code>
-   </h4>
-
+Interactive: ``-i``, ``--interactive``
+......................................
 *Under construction!*
 

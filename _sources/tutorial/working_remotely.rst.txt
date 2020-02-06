@@ -34,10 +34,10 @@ named ``params/tutorial`` using 8 cores then looks like
 
    ./concept -p params/tutorial -n 8 -q <queue>  # Replace <queue> with queue name
 
-The 8 cores may be distributed over several *nodes* of the cluster. If you
-wish to control the number of nodes and number of cores per node, use e.g.
-``-n 1:8`` to request 1 node with 8 cores, or ``-n 2:4`` to request 2 nodes
-each with 4 cores.
+The 8 cores may be distributed over several *(compute) nodes* of the cluster.
+If you wish to control the number of nodes and number of cores per node, use
+e.g. ``-n 1:8`` to request 1 node with 8 cores, or ``-n 2:4`` to request 2
+nodes each with 4 cores.
 
 .. note::
 

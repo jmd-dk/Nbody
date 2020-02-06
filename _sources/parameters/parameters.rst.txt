@@ -15,16 +15,17 @@ Below you will find the parameter categories, corresponding to the sections
 ahead. Besides bringing some organization to the large set of parameters,
 these categories have no meaning.
 
-   .. toctree::
+.. toctree::
+   :maxdepth: 1
 
-      input_output
-      numerical_parameters
-      cosmology
-      physics
-      simulation_options
-      graphics
-      system_of_units
-      debugging_options
+   input_output
+   numerical_parameters
+   cosmology
+   physics
+   simulation_options
+   graphics
+   system_of_units
+   debugging_options
 
 The rest of this page contains helpful information regarding parameter
 specification generally, independent of the specific parameters.

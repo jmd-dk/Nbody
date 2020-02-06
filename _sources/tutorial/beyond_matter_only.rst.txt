@@ -464,7 +464,6 @@ simulations take a long time however.
 
 Massive neutrinos
 .................
-
 The previous subsection demonstrated how simulations of matter can be made to
 agree extremely well with linear theory at linear scales, if we include the
 gravitational contributions from the otherwise missing species, which were
@@ -478,15 +477,21 @@ spectrum by another cancels out much of the numerical noise, this time we can
 obtain high accuracy without using any of the special tricks from the previous
 subsection.
 
+Our aim shall be to compute the effect on the matter power spectrum caused by
+neglecting the fact that neutrinos really do have mass, albeit small. If you
+wish to study the underlying theory for this in detail, we refer to the paper
+on
+":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations</publications>`".
+
 
 
 .. raw:: html
 
    <h3>Adding massive neutrinos to the background cosmology</h3>
 
-We wish to compute the effect on the matter power spectrum caused by
-neglecting the fact that neutrinos really do have mass. For this purpose, we
-shall make use of the below parameter file:
+To compute the effect on the matter power spectrum caused by neglecting the
+fact that neutrinos do have some mass, we shall make use of the below
+parameter file:
 
 .. code-block:: python3
 
@@ -653,7 +658,8 @@ this, you should make use of the following script:
        if P_lin is None:
            continue
        plt.semilogx(k, (P_lin/P_lins[0] - 1)*100, 'k--',
-           label=f'linear: mass = {mass} eV')
+           label=f'linear: mass = {mass} eV',
+       )
    plt.legend()
    plt.xlim(k[0], k[-1])
    plt.xlabel(r'$k$ $[\mathrm{Mpc}^{-1}]$')

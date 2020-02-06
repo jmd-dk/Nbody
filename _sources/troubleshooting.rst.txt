@@ -9,7 +9,9 @@ author at
 
 Entries on this page:
 
-.. contents:: :local:
+.. contents::
+   :local:
+   :depth: 1
 
 
 
@@ -176,54 +178,60 @@ changes, and/or make use of a preinstalled MPI library as described under
 :doc:`installation`. Once a CO\ *N*\ CEPT installation job has begun, you
 can follow the installation process by executing
 
+.. tabs::
+
+   .. group-tab:: Slurm
+
+      To submit a remote Slurm job for installing CO\ *N*\ CEPT, save the code
+      below to e.g. ``jobscript`` (replacing ``<queue>`` with the partition in
+      question) and execute ``sbatch jobscript``.
+
+      .. code-block:: bash
+
+         #!/usr/bin/env bash
+         #SBATCH --job-name=install_concept
+         #SBATCH --partition=<queue>
+         #SBATCH --nodes=1
+         #SBATCH --tasks-per-node=8
+         #SBATCH --mem-per-cpu=2000M
+         #SBATCH --time=12:00:00
+         #SBATCH --output=/dev/null
+         #SBATCH --error=/dev/null
+
+         concept_version=master
+         install_path="${HOME}/concept"
+
+         installer="https://raw.githubusercontent.com/jmd-dk/concept/${concept_version}/installer"
+         make_jobs="-j" bash <(wget -O- "${installer}") "${install_path}"
+
+   .. group-tab:: TORQUE/PBS
+
+      To submit a remote TORQUE/PBS job for installing CO\ *N*\ CEPT, save the
+      code below to e.g. ``jobscript`` (replacing ``<queue>`` with the queue
+      in question) and execute ``qsub jobscript``.
+
+      .. code-block:: bash
+
+         #!/usr/bin/env bash
+         #PBS -N install_concept
+         #PBS -q <queue>
+         #PBS -l nodes=1:ppn=8
+         #PBS -l walltime=12:00:00
+         #PBS -o /dev/null
+         #PBS -e /dev/null
+
+         concept_version=master
+         install_path="${HOME}/concept"
+
+         installer="https://raw.githubusercontent.com/jmd-dk/concept/${concept_version}/installer"
+         make_jobs="-j" bash <(wget -O- "${installer}") "${install_path}"
+
+Once a CO\ *N*\ CEPT installation job has begun, you can follow the
+installation process by executing
+
 .. code-block:: bash
 
    tail -f <install_path>/install_log
-
-
-.. topic:: Slurm
-
-   To submit a remote Slurm job for installing CO\ *N*\ CEPT, save the code
-   below to e.g. ``jobscript`` (replacing ``<queue>`` with the partition in
-   question) and execute ``sbatch jobscript``.
-
-   .. code-block:: bash
-
-      #!/usr/bin/env bash
-      #SBATCH --job-name=install_concept
-      #SBATCH --partition=<queue>
-      #SBATCH --nodes=1
-      #SBATCH --tasks-per-node=8
-      #SBATCH --mem-per-cpu=2000M
-      #SBATCH --time=12:00:00
-      #SBATCH --output=/dev/null
-      #SBATCH --error=/dev/null
-
-      concept_version=master
-      install_path="${HOME}/concept"
-
-      make_jobs="-j" bash <(wget -O- https://raw.githubusercontent.com/jmd-dk/concept/${concept_version}/installer) "${install_path}"
-
-.. topic:: TORQUE/PBS
-
-   To submit a remote TORQUE/PBS job for installing CO\ *N*\ CEPT, save the
-   code below to e.g. ``jobscript`` (replacing ``<queue>`` with the queue in
-   question) and execute ``qsub jobscript``.
-
-   .. code-block:: bash
-
-      #!/usr/bin/env bash
-      #PBS -N install_concept
-      #PBS -q <queue>
-      #PBS -l nodes=1:ppn=8
-      #PBS -l walltime=12:00:00
-      #PBS -o /dev/null
-      #PBS -e /dev/null
-
-      concept_version=master
-      install_path="${HOME}/concept"
-
-      make_jobs="-j" bash <(wget -O- https://raw.githubusercontent.com/jmd-dk/concept/${concept_version}/installer) "${install_path}"
 
 
 
@@ -240,94 +248,94 @@ To see which MPI executor is used when running remotely, check out the
 the MPI executor, overwrite the dedicated ``mpi_executor`` varaible in the
 ``.env`` file (located one directory level above the ``concept`` directory,
 i.e. at ``/path/to/concept_installation/.env``). Helpful suggestions for the
-choice of MPI executor depends on the job schedular in use.
+choice of MPI executor depends on the job schedular in use (Slurm or
+TORQUE/PBS).
 
-.. topic:: Using Slurm
+.. tabs::
 
-   .. note::
+   .. group-tab:: Slurm
 
-      Even if you are using Slurm, it may be that your MPI library is not
-      configured appropriately for ``srun`` to be able to correctly launch
-      CO\ *N*\ CEPT jobs. In particular, if you are using an MPI library that
-      was installed by the ``installer`` script, as opposed to an MPI library
-      configured and installed by the system administrator of the cluster,
-      ``mpiexec`` is probably your best choice.
+      .. note::
 
-   If Slurm is used as the job schedular and the MPI library used was not
-   installed by the ``installer`` script as part of the CO\ *N*\ CEPT
-   installation, the MPI executor will be set to ``srun --cpu_bind=none`` in
-   jobscripts by default (or possibly ``srun --cpu_bind=none --mpi=openmpi``
-   if OpenMPI is used). The first thing to try is to leave out
-   ``--cpu_bind=none``, i.e. setting
+         Even if you are using Slurm, it may be that your MPI library is not
+         configured appropriately for ``srun`` to be able to correctly launch
+         MPI jobs. This can happen e.g. if you are using an MPI library that
+         was installed by the CO\ *N*\ CEPT ``installer`` script, as opposed
+         to an MPI library configured and installed by a system administrator
+         of the cluster. If the below does not work, try setting the MPI
+         executor as though you were using TORQUE/PBS.
 
-   .. code-block:: bash
+      If Slurm is used as the job schedular and the MPI library used was not
+      installed by the ``installer`` script as part of the CO\ *N*\ CEPT
+      installation, the MPI executor will be set to ``srun --cpu_bind=none``
+      in jobscripts by default (or possibly
+      ``srun --cpu_bind=none --mpi=openmpi`` if OpenMPI is used). The first
+      thing to try is to leave out ``--cpu_bind=none``, i.e. setting
 
-      mpi_executor="srun"
+      .. code-block:: bash
 
-   in the ``.env`` file. Submit a new job, and you should see the manually
-   chosen MPI executor being respected by the ``jobscript``.
+         mpi_executor="srun"
 
-   If that did not fix the issue, try specyfing the MPI implementation in use,
-   using the ``--mpi`` option to ``srun``. E.g. for OpenMPI, set
+      in the ``.env`` file. Submit a new job, and you should see the manually
+      chosen MPI executor being respected by the ``jobscript``.
 
-   .. code-block:: bash
+      If that did not fix the issue, try specyfing the MPI implementation in
+      use, using the ``--mpi`` option to ``srun``. E.g. for OpenMPI, set
 
-      mpi_executor="srun --mpi=openmpi"
+      .. code-block:: bash
 
-   in the ``.env`` file. To see which MPI implementations ``srun`` supports,
-   run
+         mpi_executor="srun --mpi=openmpi"
 
-   .. code-block:: bash
+      in the ``.env`` file. To see which MPI implementations ``srun``
+      supports, run
 
-      srun --mpi=list
+      .. code-block:: bash
 
-   directly on the front-end. You may wish to try your luck on all supported
-   MPI implementations. If you find one that works, do remember to test if it
-   also works with the added ``--cpu_bind=none`` option, as this is preferred.
+         srun --mpi=list
 
-   If you are still unable to run remotely, you can try using ``mpiexec`` or
-   ``mpirun`` for the MPI executor, as one would do when using TORQUE/PBS.
+      directly on the front-end. You may wish to try your luck on all
+      supported MPI implementations. If you find one that works, do remember
+      to test if it also works with the added ``--cpu_bind=none`` option, as
+      this is preferred.
 
+   .. group-tab:: TORQUE/PBS
 
-.. topic:: Using TORQUE/PBS
+      When TORQUE or PBS is used as the job schedular, the MPI executor will be
+      set to one of ``mpiexec`` or ``mpirun`` by default, possibly with
+      additional options. The first thing to try is to leave out these options,
+      i.e. setting
 
-   When TORQUE or PBS is used as the job schedular, the MPI executor will be
-   set to one of ``mpiexec`` or ``mpirun`` by default, possibly with
-   additional options. The first thing to try is to leave out these options,
-   i.e. setting
+      .. code-block:: bash
 
-   .. code-block:: bash
+         mpi_executor="mpiexec"  # or "mpirun"
 
-      mpi_executor="mpiexec"  # or "mpirun"
+      in the ``.env`` file. Note that CO\ *N*\ CEPT sets the ``PATH`` so that
+      ``mpiexec``/``mpirun`` are guaranteed to be those belonging to the
+      correct MPI implementation (that specified in the ``.paths`` file). You
+      are however allowed to specify absolute paths as well.
 
-   in the ``.env`` file. Note that CO\ *N*\ CEPT sets the ``PATH`` so that
-   ``mpiexec``/``mpirun`` are guaranteed to be those belonging to the correct
-   MPI implementation (that specified in the ``.paths`` file). You are however
-   welcome to specify absolute paths as well.
+      Options to try out with ``mpiexec``/``mpirun`` include
 
-   Options to try out with ``mpiexec``/``mpirun`` include
+      .. code-block:: bash
 
-   .. code-block:: bash
+         mpi_executor="mpiexec --bind-to none"  # or "mpirun --bind-to none"
 
-      mpi_executor="mpiexec --bind-to none"  # or "mpirun --bind-to none"
+      and
 
-   and
+      .. code-block:: bash
 
-   .. code-block:: bash
+         mpi_executor="mpiexec -bind-to none"  # or "mpirun -bind-to none"
 
-      mpi_executor="mpiexec -bind-to none"  # or "mpirun -bind-to none"
+      (the difference being one or two dashes before ``bind``).
 
-   (the difference being one or two dashes before ``bind``).
+      If remote jobs still fail, you may look for other possible MPI executors,
+      e.g. by running
 
+      .. code-block:: bash
 
-   If remote jobs still fail, you may look for other possible MPI executors,
-   e.g. by running
+         (source concept && ls "${mpi_bindir}")
 
-   .. code-block:: bash
-
-      (source concept && ls "${mpi_bindir}")
-
-   (other possible MPI executors include ``mpiexec.hydra`` and ``orterun``).
+      (other possible MPI executors include ``mpiexec.hydra`` and ``orterun``).
 
 
 

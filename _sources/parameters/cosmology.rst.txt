@@ -1,14 +1,21 @@
 Cosmology
 ---------
+The cosmology parameter category contains parameters specifying the cosmology,
+as well as the starting time for the simulation. You will find the complete
+list of such parameters below.
 
-.. raw:: html
+.. contents::
+   :local:
+   :depth: 1
 
-   <h3>
-     <code class="docutils literal notranslate"><span class="pre">
-       class_params
-     </span></code>
-   </h3>
 
+
+______________________________________________________________________________
+
+
+
+``class_params``
+................
 === =============== =
 \ \  **Type**        ``dict``
 --- --------------- -
