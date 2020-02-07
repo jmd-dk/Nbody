@@ -36,12 +36,21 @@ installation log files for failed tests may then reveal something.
 Terminal color output looks weird
 ---------------------------------
 CO\ *N*\ CEPT includes a lot of color and other formatting in its terminal
-output. While all modern terminal emulators on Linux fully support this, the
-story is different on other platforms. If you run CO\ *N*\ CEPT from macOS
-(via ssh into a cluster) and the colors appear all wrong, try installing
-the superior `iTerm2 <https://www.iterm2.com/>`_ terminal emulator. If you
-are running CO\ *N*\ CEPT from Windows (through e.g. putty), no proper
+output. While all modern terminal emulators on Linux (e.g. Gnome Terminal)
+fully support this, the story is different on other platforms.
+
+If you are running CO\ *N*\ CEPT by ssh'ing into another machine from macOS
+and the colors and/or text display badly, try installing the superior
+`iTerm2 <https://www.iterm2.com/>`_ terminal emulator.
+
+If you are running CO\ *N*\ CEPT by ssh'ing into another machine from Windows
+(through e.g. putty) and the colors and/or text display badly, no proper
 solution is known.
+
+If you are running CO\ *N*\ CEPT through the Windows subsystem for Linux and
+the colors and/or text display badly, you can install a modern Linux terminal
+within the Linux subsystem. Note that this require a running X server on the
+*Windows* side.
 
 If you want to disable color and other formatted output alltogether, set
 
@@ -61,10 +70,10 @@ If the simulation hangs right at the beginning of the simulation, at the
    Calling CLASS in order to set the cosmic clock ...
 
 step, it is probably because you have specified a cosmology that CLASS cannot
-handle. When running CO\ *N*\ CEPT in compiled mode, CLASS hangs rather than
-exiting with an error message. To see the CLASS error message, run
+handle. When running CO\ *N*\ CEPT in compiled mode, CLASS may hang rather
+than exiting with an error message. To see the CLASS error message, run
 CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
-:ref:`command-line option<other_modes_of_building_running>`.
+:ref:`command-line option<pure_python>`.
 
 
 
@@ -102,7 +111,7 @@ behavior, try running the full CO\ *N*\ CEPT test suite via
 
    ./concept -t all
 
-If any test is unsuccessful and you are running a stable version of
+If any tests are unsuccessful and you are running a stable version of
 CO\ *N*\ CEPT (i.e. any release version, not 'master'), there is most probably
 a problem with your installation. You can try reinstalling CO\ *N*\ CEPT along
 with all of its dependencies, perhaps using compilers different from the ones
@@ -124,8 +133,8 @@ to handle the network optimally.
 Be sure to install CO\ *N*\ CEPT with
 :ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`.
 If you are observing bad network behavior even so, you should try changing the
-MPI executor, as described in :ref:`this<problems_when_running_remotely>`
-entry.
+MPI executor, as described :ref:`here<chosing_an_mpi_executor>`.
+
 
 
 .. _problems_when_running_remotely:
@@ -352,9 +361,8 @@ It is also possible that the cluster configuration just do not play nicely
 with the current MPI implementation in use. If you installed CO\ *N*\ CEPT
 using one of the MPI implementations present on the cluster, try again, using
 another preinstalled MPI library. If you let CO\ *N*\ CEPT install its own
-MPI, try switching from MPICH to OpenMPI or
-vice versa (i.e. set ``mpi=openmpi`` or ``mpi=mpich`` when installing
-CO\ *N*\ CEPT, as described :ref:`here<influential_environment_variables>`).
+MPI, try switching from MPICH to OpenMPI or vice versa, as described
+:ref:`here<installing_mpich_or_openmpi>`.
 
 When installing CO\ *N*\ CEPT, try having as few modules loaded as possible,
 in order to minimize the possibility of wrong MPI identification and linking.
@@ -368,8 +376,8 @@ Problems when using multiple nodes
 If you observe a wrong process binding (i.e. it appears as though several
 copies of CO\ *N*\ CEPT are running on top of each other, rather than all of
 the MPI processes working together as a collective) when running CO\ *N*\ CEPT
-across multiple nodes, you should try changing the MPI executor. See "choosing
-an MPI executor" under :ref:`this<problems_when_running_remotely>` entry.
+across multiple nodes, you should try
+:ref:`changing the MPI executor <chosing_an_mpi_executor>`.
 
 If you are able to run single-node CO\ *N*\ CEPT jobs remotely, but encounter
 problems as soon as you request multiple nodes, it may be a permission

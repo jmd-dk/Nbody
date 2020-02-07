@@ -214,9 +214,8 @@ parameters are ``h`` and ``Ων``:
 
 * ``Ων`` is the total density parameter :math:`\Omega_\nu` for all *massive*
   neutrino species. It is set based on the massive neutrino parameters defined
-  by the ``class_params`` parameter, described in the
-  :doc:`cosmology<cosmology>` section. As the computation of
-  :math:`\Omega_\nu` is non-trivial, this is nice to have available for
+  by the ``class_params`` :ref:`parameter<class_params>`. As the computation
+  of :math:`\Omega_\nu` is non-trivial, this is nice to have available for
   simulations with massive neutrinos where the sum
   :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu` is constrained. With e.g.
   :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu = 0.27`, one would set

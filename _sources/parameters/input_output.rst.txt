@@ -106,11 +106,12 @@ ______________________________________________________________________________
 --- --------------- -
 \ \ **Default**     ``'standard'``
 --- --------------- -
-\ \ **Description** Specifies the snapshot format to use when dumping snapshots.
-                    CO\ *N*\ CEPT currently understands two snapshot formats;
-                    ``'standard'``, which is its own, well-structured
-                    `HDF5 <https://www.hdfgroup.org/>`_ format, and
-                    ``'gadget2'``, which is the binary Fortran format of
+\ \ **Description** Specifies the snapshot format to use when dumping
+                    snapshots. CO\ *N*\ CEPT currently understands two
+                    snapshot formats; ``'standard'``, which is its own,
+                    well-structured
+                    `HDF5 <https://www.hdfgroup.org/solutions/hdf5/>`_ format,
+                    and ``'gadget2'``, which is the binary Fortran format of
                     `GADGET-2 <https://wwwmpa.mpa-garching.mpg.de/gadget/>`_,
                     specifically the *second* type (``SnapFormat = 2`` in
                     GADGET-2). Note that the value of ``snapshot_type`` does

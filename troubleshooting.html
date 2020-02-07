@@ -385,12 +385,18 @@ installation log files for failed tests may then reveal something.</p>
 <div class="section" id="terminal-color-output-looks-weird">
 <h2><a class="toc-backref" href="#id4">Terminal color output looks weird</a><a class="headerlink" href="#terminal-color-output-looks-weird" title="Permalink to this headline">¶</a></h2>
 <p>CO<em>N</em>CEPT includes a lot of color and other formatting in its terminal
-output. While all modern terminal emulators on Linux fully support this, the
-story is different on other platforms. If you run CO<em>N</em>CEPT from macOS
-(via ssh into a cluster) and the colors appear all wrong, try installing
-the superior <a class="reference external" href="https://www.iterm2.com/">iTerm2</a> terminal emulator. If you
-are running CO<em>N</em>CEPT from Windows (through e.g. putty), no proper
+output. While all modern terminal emulators on Linux (e.g. Gnome Terminal)
+fully support this, the story is different on other platforms.</p>
+<p>If you are running CO<em>N</em>CEPT by ssh’ing into another machine from macOS
+and the colors and/or text display badly, try installing the superior
+<a class="reference external" href="https://www.iterm2.com/">iTerm2</a> terminal emulator.</p>
+<p>If you are running CO<em>N</em>CEPT by ssh’ing into another machine from Windows
+(through e.g. putty) and the colors and/or text display badly, no proper
 solution is known.</p>
+<p>If you are running CO<em>N</em>CEPT through the Windows subsystem for Linux and
+the colors and/or text display badly, you can install a modern Linux terminal
+within the Linux subsystem. Note that this require a running X server on the
+<em>Windows</em> side.</p>
 <p>If you want to disable color and other formatted output alltogether, set</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">enable_terminal_formatting</span> <span class="o">=</span> <span class="kc">False</span>
 </pre></div>
@@ -405,10 +411,10 @@ a few elements are still formatted.</p>
 <div><p>Calling CLASS in order to set the cosmic clock …</p>
 </div></blockquote>
 <p>step, it is probably because you have specified a cosmology that CLASS cannot
-handle. When running CO<em>N</em>CEPT in compiled mode, CLASS hangs rather than
-exiting with an error message. To see the CLASS error message, run
+handle. When running CO<em>N</em>CEPT in compiled mode, CLASS may hang rather
+than exiting with an error message. To see the CLASS error message, run
 CO<em>N</em>CEPT in pure Python mode using the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code>
-<a class="reference internal" href="command_line_options.html#other-modes-of-building-running"><span class="std std-ref">command-line option</span></a>.</p>
+<a class="reference internal" href="command_line_options.html#pure-python"><span class="std std-ref">command-line option</span></a>.</p>
 </div>
 <div class="section" id="crashes-or-other-bad-behavior">
 <h2><a class="toc-backref" href="#id6">Crashes or other bad behavior</a><a class="headerlink" href="#crashes-or-other-bad-behavior" title="Permalink to this headline">¶</a></h2>
@@ -439,7 +445,7 @@ behavior, try running the full CO<em>N</em>CEPT test suite via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -t all
 </pre></div>
 </div>
-<p>If any test is unsuccessful and you are running a stable version of
+<p>If any tests are unsuccessful and you are running a stable version of
 CO<em>N</em>CEPT (i.e. any release version, not ‘master’), there is most probably
 a problem with your installation. You can try reinstalling CO<em>N</em>CEPT along
 with all of its dependencies, perhaps using compilers different from the ones
@@ -457,8 +463,7 @@ to handle the network optimally.</p>
 <p>Be sure to install CO<em>N</em>CEPT with
 <a class="reference internal" href="installation.html#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance on clusters</span></a>.
 If you are observing bad network behavior even so, you should try changing the
-MPI executor, as described in <a class="reference internal" href="#problems-when-running-remotely"><span class="std std-ref">this</span></a>
-entry.</p>
+MPI executor, as described <a class="reference internal" href="#chosing-an-mpi-executor"><span class="std std-ref">here</span></a>.</p>
 </div>
 <div class="section" id="problems-when-running-remotely">
 <span id="id1"></span><h2><a class="toc-backref" href="#id8">Problems when running remotely</a><a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
@@ -666,9 +671,8 @@ manually using <code class="docutils literal notranslate"><span class="pre">sbat
 with the current MPI implementation in use. If you installed CO<em>N</em>CEPT
 using one of the MPI implementations present on the cluster, try again, using
 another preinstalled MPI library. If you let CO<em>N</em>CEPT install its own
-MPI, try switching from MPICH to OpenMPI or
-vice versa (i.e. set <code class="docutils literal notranslate"><span class="pre">mpi=openmpi</span></code> or <code class="docutils literal notranslate"><span class="pre">mpi=mpich</span></code> when installing
-CO<em>N</em>CEPT, as described <a class="reference internal" href="installation.html#influential-environment-variables"><span class="std std-ref">here</span></a>).</p>
+MPI, try switching from MPICH to OpenMPI or vice versa, as described
+<a class="reference internal" href="installation.html#installing-mpich-or-openmpi"><span class="std std-ref">here</span></a>.</p>
 <p>When installing CO<em>N</em>CEPT, try having as few modules loaded as possible,
 in order to minimize the possibility of wrong MPI identification and linking.</p>
 </div>
@@ -678,8 +682,8 @@ in order to minimize the possibility of wrong MPI identification and linking.</p
 <p>If you observe a wrong process binding (i.e. it appears as though several
 copies of CO<em>N</em>CEPT are running on top of each other, rather than all of
 the MPI processes working together as a collective) when running CO<em>N</em>CEPT
-across multiple nodes, you should try changing the MPI executor. See “choosing
-an MPI executor” under <a class="reference internal" href="#problems-when-running-remotely"><span class="std std-ref">this</span></a> entry.</p>
+across multiple nodes, you should try
+<a class="reference internal" href="#chosing-an-mpi-executor"><span class="std std-ref">changing the MPI executor</span></a>.</p>
 <p>If you are able to run single-node CO<em>N</em>CEPT jobs remotely, but encounter
 problems as soon as you request multiple nodes, it may be a permission
 problem. For example, OpenMPI uses ssh to establish the connection between the

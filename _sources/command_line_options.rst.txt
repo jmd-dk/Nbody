@@ -203,6 +203,8 @@ with multple compute nodes, as documented
 
 
 
+.. _queue:
+
 Queue: ``-q``, ``--queue``
 ..........................
 *Under construction!*
@@ -244,7 +246,7 @@ recompiled using the ``Makefile``. With the compiled code ready, the requested
 CO\ *N*\ CEPT run is performed. In addition, when working on a remote server
 (through ssh), rather than starting the run directly, it is submitted as a
 remote job (which fails if you have not specified the ``-q``
-:ref:`option<remote_job_submission>`).
+:ref:`option<queue>`).
 
 
 
@@ -253,6 +255,8 @@ Local: ``--local``
 *Under construction!*
 
 
+
+.. _pure_python:
 
 Pure Python: ``--pure-python``
 ..............................

@@ -9,7 +9,7 @@ those covering how to obtain
 if you intend to install CO\ *N*\ CEPT on a cluster.
 
 The :ref:`standard<standard_installation>` way of installing CO\ *N*\ CEPT
-utilizes the ``installer`` script to installs CO\ *N*\ CEPT and all of its
+utilizes the ``installer`` script to install CO\ *N*\ CEPT and all of its
 dependencies. Many more details about how to use this script for more
 customized installation is available under the
 ':ref:`installer script in-depth<the_installer_script_in_depth>`' entry.
@@ -246,21 +246,23 @@ installed by the ``installer`` is given below:
     - **MPI4Py** (depends on MPI, Cython)
     - **H5Py** (depends on HDF5 and MPI)
     - **Sphinx**
-    - **sphinx-copybutton**
-    - **sphinx_rtd_theme**
+    - **sphinx-copybutton** (depends on Sphinx)
+    - **sphinx_rtd_theme** (depends on Sphinx)
+    - **sphinx-tabs** (depends on Sphinx)
 
 * **CLASS** + **classy** (depends on Cython, NumPy)
 
 Finally, CO\ *N*\ CEPT itself depends on MPI, FFTW (3), GADGET, Python,
 Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy,
-Sphinx, sphinx-copybutton, sphinx_rtd_theme.
+Sphinx, sphinx-copybutton, sphinx_rtd_theme, sphinx-tabs.
 
-The ``installer`` installs the `OpenBLAS <https://github.com/xianyi/OpenBLAS>`_
-library in order to provide both BLAS and LAPACK. For MPI, MPICH (default) or
-OpenMPI is installed. If tests are to be performed during the installation
-(see the ``--tests`` :ref:`command-line option<command_line_options>`), the
-pytest Python package will be installed as well (needed for testing NumPy and
-SciPy).
+The ``installer`` installs the
+`OpenBLAS <https://github.com/xianyi/OpenBLAS>`_ library in order to provide
+both BLAS and LAPACK. For MPI, `MPICH <https://www.mpich.org/>`_ (default) or
+`OpenMPI <https://www.open-mpi.org/>`_ is installed. If tests are to be
+performed during the installation (see the ``--tests``
+:ref:`command-line option<command_line_options>`), the pytest Python package
+will be installed as well (needed for testing NumPy and SciPy).
 
 
 
@@ -431,7 +433,7 @@ Python package also has a version, speficied by ``blessings_version``,
 ``matplotlib_version``, ``mpi4py_version``, ``numpy_version``,
 ``pip_version``, ``pytest_version``, ``scipy_version``,
 ``setuptools_version``, ``sphinx_version``, ``sphinx_copybutton_version``,
-``sphinx_rtd_theme_version``, ``wheel_version``.
+``sphinx_rtd_theme_version``, ``sphinx_tabs_version``, ``wheel_version``.
 
 
 
@@ -483,6 +485,8 @@ Many of the dependency programs do some compiler discovery of their own, and
 so no guarantee of what compiler is actually used can be given.
 
 
+
+.. _installing_mpich_or_openmpi:
 
 Installing MPICH or OpenMPI
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -582,19 +586,22 @@ own):
 * `MPI4Py <https://mpi4py.readthedocs.io/>`_: Provides Python bindings for
   MPI, used for all inter-process communication.
 
-* `H5Py <https://www.h5py.org/>`_: Provides Python bindings for HDF5, used for
-  various binary input/output.
+* `H5Py <https://www.h5py.org/>`_: Provides Python bindings for
+  `HDF5 <https://www.hdfgroup.org/solutions/hdf5/>`_, used for various binary
+  input/output.
 
 * `CythonGSL <https://github.com/twiecki/CythonGSL>`_: Provides Cython
-  bindings for GSL, used for more performant replacements of some NumPy/SciPy
-  functionalities when running CO\ *N*\ CEPT in compiled mode.
+  bindings for `GSL <https://www.gnu.org/software/gsl/>`_, used for more
+  performant replacements of some NumPy/SciPy functionalities when running
+  CO\ *N*\ CEPT in compiled mode.
 
 * `Blessings <https://github.com/erikrose/blessings>`_: Provides terminal
   formatting.
 
 In addition, the `Sphinx <http://www.sphinx-doc.org/>`_,
-`sphinx-copybutton <https://sphinx-copybutton.readthedocs.io/>`_ and
-`sphinx_rtd_theme <https://sphinx-rtd-theme.readthedocs.io/>`_ Python packages
+`sphinx-copybutton <https://sphinx-copybutton.readthedocs.io/>`_,
+`sphinx_rtd_theme <https://sphinx-rtd-theme.readthedocs.io/>`_ and
+`sphinx-tabs <https://github.com/djungelorm/sphinx-tabs/>`_ Python packages
 are needed to build the documentation, but may otherwise be left out.
 
 
@@ -660,14 +667,6 @@ further makes use of gzip, tar and wget. That is, you may run simulations
 without these last three components installed. If running the ``installer``
 script or ``update`` utility without these, you will be prompted for
 system-wide (root) installation.
-
-.. note::
-
-   Several implementations exist for the above system dependencies.
-   CO\ *N*\ CEPT specifically needs the GNU implementations, i.e. what is
-   commonly found on Linux systems. The fact that macOS uses the BSD
-   implementations of these programs is the primary reason for CO\ *N*\ CEPT
-   not yet being ported to this platform.
 
 Lastly, CO\ *N*\ CEPT needs standard tools for compiling and linking C (C99)
 code. An ``mpicc`` C compiler/linker should be bundled with the MPI library

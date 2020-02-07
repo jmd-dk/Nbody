@@ -103,7 +103,7 @@ energy density.
 
 The colors used (here ``'lime'`` and ``'black'``) may be any color recognized
 by `matplotlib <https://matplotlib.org/>`_. A list of named colors is available
-`here <https://matplotlib.org/3.1.1/gallery/color/named_colors.html>`_.
+`here <https://matplotlib.org/gallery/color/named_colors.html>`_.
 Alternatively, you may pass a 3-tuple of RGB values (e.g.
 ``render3D_bgcolor = (1, 0, 0)`` makes the background red).
 
