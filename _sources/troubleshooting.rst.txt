@@ -36,20 +36,21 @@ installation log files for failed tests may then reveal something.
 Terminal color output looks weird
 ---------------------------------
 CO\ *N*\ CEPT includes a lot of color and other formatting in its terminal
-output. While all modern terminal emulators on Linux (e.g. Gnome Terminal)
-fully support this, the story is different on other platforms.
+output. While most modern terminal emulators on Linux (GNOME Terminal,
+Terminator, xterm, etc.) fully support this, the story is different on other
+platforms.
 
 If you are running CO\ *N*\ CEPT by ssh'ing into another machine from macOS
 and the colors and/or text display badly, try installing the superior
 `iTerm2 <https://www.iterm2.com/>`_ terminal emulator.
 
 If you are running CO\ *N*\ CEPT by ssh'ing into another machine from Windows
-(through e.g. putty) and the colors and/or text display badly, no proper
+(through e.g. PuTTY) and the colors and/or text display badly, no proper
 solution is known.
 
 If you are running CO\ *N*\ CEPT through the Windows subsystem for Linux and
 the colors and/or text display badly, you can install a modern Linux terminal
-within the Linux subsystem. Note that this require a running X server on the
+within the Linux subsystem. Note that this requires a running X server on the
 *Windows* side.
 
 If you want to disable color and other formatted output alltogether, set

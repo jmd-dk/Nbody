@@ -1,3 +1,8 @@
+/* Dark orange theme color */
+.wy-side-nav-search, .wy-nav-top {
+    background: darkorange;
+}
+
 /* Black tab headings */
 .sphinx-tabs .sphinx-menu a.item {
     color: #000000 !important;
