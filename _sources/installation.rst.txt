@@ -350,7 +350,7 @@ and so may also be run at any time after the installation, whether or not the
 
 Assume "yes" as answer to all prompts and run non-interactively. Currently
 these include only the system-wide installations of system dependencies,
-should any be missing. Note that this require root access.
+should any be missing. Note that this requires root access.
 
 .. raw:: html
 
