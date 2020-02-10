@@ -12,7 +12,18 @@ new parameters. If you have no interest in any of this, feel free to skip this
 section, as it is rather lengthy and more technical than the other sections of
 this tutorial.
 
+Each subsection below tackles a separate species/subject. Though you might be
+interested in only one of these, it's highly recommended to go through them
+all in order, as they build upon each other. Though each subsection deals with
+a particular species in isolation, these may be mixed and matched at will.
 
+.. contents::
+   :local:
+   :depth: 1
+
+
+
+.. _radiation:
 
 Radiation
 .........
@@ -90,7 +101,7 @@ specified by the below parameter file:
    }
 
    # Non-parameter helper variable used to specify linear components.
-   # Should be supplied as a command-line argument.
+   # Should be supplied as a command-line parameter.
    _lin = ''
 
 As usual, save the parameters in e.g. ``params/tutorial`` and run the
@@ -105,7 +116,8 @@ possibly with the addition of ``-n 4`` or some other number of processes.
 .. note::
 
    The remainder of this tutorial leaves out explicit mention of the ``-n``
-   option to ``concept`` invocations. Feel free to add this yourself.
+   option to ``concept`` invocations. Please add whatever number of processes
+   you would like yourself.
 
 A relatively large number of particles :math:`N = 192^3` is used in order to
 increase the precision of the simulation. Our goal is to investigate the
@@ -172,9 +184,9 @@ plotting script:
    axes[0].set_xlim(k_min, 0.5*k_max)
    axes[0].set_ylim(0.9*np.nanmin(P_lin), 1.1*np.nanmax(P_lin))
    axes[1].set_ylim(-1, 1)
-   axes[1].set_xlabel(r'$k$ $[\mathrm{Mpc}^{-1}]$')
-   axes[0].set_ylabel(r'$P\,[\mathrm{Mpc}^3]$')
-   axes[1].set_ylabel(r'$P_{\mathrm{sim}}/P_{\mathrm{lin}}-1\,[\%]$')
+   axes[1].set_xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
+   axes[0].set_ylabel(r'$P\, [\mathrm{Mpc}^3]$')
+   axes[1].set_ylabel(r'$P_{\mathrm{sim}}/P_{\mathrm{lin}} - 1\, [\%]$')
    axes[0].tick_params('x', direction='inout', which='both')
    axes[0].set_zorder(np.inf)
    fig.tight_layout()
@@ -299,7 +311,7 @@ with the inclusion of linear photons, run
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_lin = "photons"'
+   ./concept -p params/tutorial -c "_lin = 'photons'"
 
 .. tip::
 
@@ -324,7 +336,7 @@ include both linear photons and linear massless neutrinos:
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_lin = "photons, massless neutrinos"'
+   ./concept -p params/tutorial -c "_lin = 'photons, massless neutrinos'"
 
 To our horror, including the neutrinos made the disagreement between the
 simulation and linear theory even larger!
@@ -361,7 +373,7 @@ photons and neutrinos in their entirety, run
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_lin = "photons, massless neutrinos, metric"'
+   ./concept -p params/tutorial -c "_lin = 'photons, massless neutrinos, metric'"
 
 Replotting, you should see a much better behaved simulation power spectrum.
 
@@ -398,7 +410,7 @@ directly at the command-line using
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_lin = "photons + massless neutrinos + metric"'
+   ./concept -p params/tutorial -c "_lin = 'photons + massless neutrinos + metric'"
 
 This idea of combining species is embraced fully by CO\ *N*\ CEPT. As such,
 the species ``'photons + massless neutrinos'`` may be collectively referred to
@@ -406,7 +418,7 @@ simply as ``'radiation'``. Thus,
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_lin = "radiation + metric"'
+   ./concept -p params/tutorial -c "_lin = 'radiation + metric'"
 
 works just as well. You should run one of the above and check that you obtain
 the same result as before.
@@ -479,8 +491,8 @@ subsection.
 
 Our aim shall be to compute the effect on the matter power spectrum caused by
 neglecting the fact that neutrinos really do have mass, albeit small. If you
-wish to study the underlying theory for this in detail, we refer to the paper
-on
+wish to study the underlying theory as well as the implementation in
+CO\ *N*\ CEPT, we refer to the paper on
 ":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations</publications>`".
 
 
@@ -554,9 +566,9 @@ parameter file:
    }
 
    # Non-parameter helper variables which should
-   # be supplied as command-line arguments.
-   _mass = 0  # Sum of neutrino masses in eV
-   _lin = ''  # Linear species to include
+   # be supplied as command-line parameters.
+   _mass = 0   # Sum of neutrino masses in eV
+   _lin  = ''  # Linear species to include
 
 You may want to save this and get a simulation going (without supplying any
 command-line parameters, for now) while you read on.
@@ -582,7 +594,7 @@ The new elements appearing in the parameter file are:
      ``class_params``.
 
   Of interest to us now are ``'N_ur'`` and ``'N_ncdm'``; the number of
-  **u**\ n\ **r**\ elativistic species (massless neutrinos) and
+  **u**\ ltra-\ **r**\ elativistic species (massless neutrinos) and
   **n**\ on-\ **c**\ old **d**\ ark **m**\ atter species (massive neutrinos).
   In the above parameter specifications we switch out the default use of
   massless neutrinos with one (``'N_ncdm': 1``) 3-times degenerate
@@ -623,7 +635,7 @@ the usual ``params/tutorial``:
 
 .. code-block:: bash
 
-    ./concept -p params/tutorial -c '_mass = 0.1'
+    ./concept -p params/tutorial -c "_mass = 0.1"
 
 With both simulations done, we can plot their relative power spectrum. To do
 this, you should make use of the following script:
@@ -662,8 +674,8 @@ this, you should make use of the following script:
        )
    plt.legend()
    plt.xlim(k[0], k[-1])
-   plt.xlabel(r'$k$ $[\mathrm{Mpc}^{-1}]$')
-   plt.ylabel(r'$P_{\Sigma m_\nu > 0}/P_{\Sigma m_\nu = 0}-1\,[\%]$')
+   plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
+   plt.ylabel(r'$P_{\Sigma m_\nu > 0}/P_{\Sigma m_\nu = 0} - 1\, [\%]$')
    plt.tight_layout()
    plt.savefig(f'{this_dir}/plot.png')
 
@@ -707,7 +719,7 @@ a Bash for-loop:
        ./concept \
            -p params/tutorial \
            -c "_mass = $mass" \
-           -c '_lin = "photons + neutrinos + metric"'
+           -c "_lin = 'photons + neutrinos + metric'"
    done
 
 Once completed, redo the plot. You should find that including the linear
@@ -750,7 +762,322 @@ showing excellent agreement with the linear prediction.
 
 Dynamical dark energy
 .....................
-*Under construction!*
+This subsection investigates how to perform simulations where dark energy is
+dynamic, specifically using the equation of state
+:math:`w(a) = w_0 + (1 - a)w_a`. Beyond just changing the background
+evolution, having :math:`w \neq -1` also causes perturbations within the dark
+energy. If you're interested in the physics of dark energy perturbations as
+well as their implementation in CO\ *N*\ CEPT, we refer to the paper on
+":doc:`Dark energy perturbations in 𝘕-body simulations</publications>`".
+
+
+
+.. raw:: html
+
+   <h3>Cosmological constant <span class="math notranslate nohighlight">\(\Lambda\)</span></h3>
+
+So far this tutorial has mentioned nothing about dark energy, but really it
+has been there all along, as a cosmological constant :math:`\Lambda` affecting
+the background evolution.
+
+CO\ *N*\ CEPT always assumes the universe to be flat;
+:math:`\sum_\alpha \Omega_\alpha = 1`, :math:`\alpha` running over all
+species. Written out in the standard cosmologies we have looked at thus far,
+this looks like
+
+.. math::
+
+   \Omega_{\text{b}} + \Omega_{\text{cdm}} + \Omega_{\gamma}
+   + \Omega_{\nu} + \Omega_{\Lambda} = 1\,,
+
+where :math:`\Omega_{\text{b}}` and :math:`\Omega_{\text{cdm}}` are defined
+through the ``Ωb`` and ``Ωcdm`` CO\ *N*\ CEPT parameters, while
+:math:`\Omega_{\gamma}` (photons) and :math:`\Omega_{\nu}` (massless and
+massive neutrinos) are defined through CLASS parameters (typically,
+:math:`\Omega_{\gamma}` is defined implicitly through the CMB temperature
+``class_params['T_cmb']`` while :math:`\Omega_{\nu}` is defined implicitly
+through the number of massless neutrino species ``class_params['N_ur']``, the
+number of massive neutrino species ``class_params['N_ncdm']`` and
+``class_params['deg_ncdm']`` as well as the neutrino masses
+``class_params['m_ncdm']``). The remaining dark energy density
+:math:`\Omega_{\Lambda}` is simply chosen as to ensure a flat universe.
+
+Though :math:`\Lambda` is present, it does not tug on the matter (or anything
+else) as it remains completely homogeneous throughout time, which is why we
+never need to include it as a linear species.
+
+
+
+.. raw:: html
+
+   <h3>Dynamical dark energy</h3>
+
+We can set :math:`w_0` and :math:`w_a` thorugh the CLASS parameters
+``'w0_fld'`` and ``'wa_fld'``. In CLASS, the cosmological constant is
+implemented as a seperate species, rather than as the special case
+:math:`w_0 = -1`, :math:`w_a = 0` of the dynamical dark energy species (in
+CLASS called 'fld' for dark enery **fl**\ ui\ **d**). To disable the
+cosmological constant, set the ``'Omega_Lambda'`` CLASS parameter to ``0``. In
+total, specifying dynamical dark energy could then look like e.g.
+
+.. code-block:: python3
+
+   class_params = {
+       # Disable cosmological constant
+       'Omega_Lambda': 0,
+       # Dark energy fluid parameters
+       'w0_fld': -0.7,
+       'wa_fld': 0,
+   }
+
+To test the effect on the matter from switching from :math:`\Lambda` to
+dynamical dark energy (here :math:`w_0 = -1\, \rightarrow\, w_0 = -0.7`), we
+shall make use of the following parameter file, which you should save as e.g.
+``params/tutorial``:
+
+.. code-block:: python3
+
+   # Non-parameter helper variable used to control the size of the simulation
+   _size = 128
+
+   # Input/output
+   initial_conditions = [
+       # Non-linear matter particles
+       {
+           'species': 'matter',
+           'N'      : _size**3,
+       },
+   ]
+   for _species in _lin.split(','):
+       if not _species:
+           continue
+       initial_conditions.append(
+           # Linear fluid component
+           {
+               'species'        : _species.strip(),
+               'gridsize'       : _size,
+               'boltzmann order': -1,
+           }
+       )
+   output_dirs = {
+       'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
+   }
+   output_bases = {
+       'powerspec': f'powerspec_de={_de}_lin={_lin}'.replace(' ', ''),
+   }
+   output_times = {
+       'powerspec': 1,
+   }
+   powerspec_select = {
+       'matter': {'data': True, 'plot': False},
+   }
+
+   # Numerical parameters
+   boxsize = 3*Gpc
+
+   # Cosmology
+   H0      = 67*km/(s*Mpc)
+   Ωb      = 0.049
+   Ωcdm    = 0.27
+   a_begin = 0.1
+   if _de != 'Lambda':
+       class_params = {
+           # Disable cosmological constant
+           'Omega_Lambda': 0,
+           # Dark energy fluid parameters
+           'w0_fld' : -0.7,
+           'wa_fld' : 0,
+           'cs2_fld': 0.01,
+       }
+
+   # Physics
+   select_forces = {
+       'particles': {'gravity': ('p3m', 2*_size)},
+       'fluid'    : {'gravity': 'pm'},
+   }
+
+   # Simulation options
+   Δt_base_background_factor = 2
+   Δt_base_nonlinear_factor  = 2
+   N_rungs                   = 1
+
+   # Non-parameter helper variables which should
+   # be supplied as command-line parameters.
+   _de  = 'Lambda'  # Type of dark energy
+   _lin = ''        # Linear species to include
+
+The parameter file is setup to use :math:`\Lambda` by default, while dynamical
+dark energy is enabled by suppling ``-c "_de = 'dynamical'"``. One can also
+supply ``-c "_de = 'Lambda'"`` to explicitly select :math:`\Lambda`. Perform a
+simulation using both types of dark energy using
+
+.. code-block:: bash
+
+   for de in Lambda dynamical; do
+       ./concept -p params/tutorial -c "_de = '$de'"
+   done
+
+The parameter specifications ``Δt_base_background_factor = 2`` and
+``Δt_base_nonlinear_factor = 2`` double the allowable time step size (as
+described at the end of the :ref:`Radiation <radiation>` subsection), while
+``N_rungs = 1`` effectively disables the adaptive time stepping. In addition,
+we start the simulation rather late at ``a_begin = 0.1``, as the effects from
+dark energy only show up at late times. All of this is just to speed up the
+simulations, as we do not require excellent precision.
+
+.. note::
+
+   The adaptive particle time stepping is a feature enabled by default when
+   using the P³M method, which assigns separate time step sizes to the
+   different particles, allowing for small time steps in dense regions and
+   large time steps in less dense regions, achieving both accuracy and
+   numerical efficiency. The possible particle time step sizes are exatly the
+   base time step size divided by :math:`2^n`, where
+   :math:`n \in \{0, 1, 2, \dots\}` is referred to as the *rung*. The number
+   of available rungs (and thus the minimum allowed particle time step) is
+   determined through the ``N_rungs`` parameter. With ``N_rungs = 1``, all
+   particles are kept fixed at rung 0, i.e. the base time step, and so no
+   adaptive time stepping takes place. The distribution of particles across
+   all rungs is printed at the start of each time step, for ``N_rungs ≠ 1``.
+
+To make the usual plot of the relative power spectrum --- this time comparing
+the matter spectrum within a cosmology with a cosmological constant
+(:math:`w = -1`) to one with dynamical dark energy (here :math:`w = -0.7`) ---
+we shall make use of the following plotting script:
+
+.. code-block:: python3
+
+   import glob, os, re
+   import numpy as np
+   import matplotlib.pyplot as plt
+
+   this_dir = os.path.dirname(os.path.realpath(__file__))
+   P_sims, P_lins = {}, {}
+   for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
+       match = re.search(r'powerspec_de=(.*)_lin=(.*)_a=[\d.]+$', filename)
+       if not match:
+           continue
+       de = match.group(1)
+       lin = match.group(2).replace(',', ', ').replace('+', ' + ')
+       k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
+       mask = ~np.isnan(P_lin)
+       P_sims[de, lin] = P_sim[mask]
+       P_lins[de] = P_lin[mask]
+   k = k[mask]
+   lin_counter = 0
+   for (de, lin), P_sim in P_sims.items():
+       if de == 'Lambda':
+           continue
+       lin_Λ = lin.replace('darkenergy', '').replace('+  +', '+').strip(' +')
+       keys = [('Lambda', lin_Λ)] if lin_Λ else []
+       if set(lin.replace('+', '').split()) <= {'darkenergy', 'metric'}:
+           keys.append(('Lambda', ''))
+       for key in keys:
+           if key not in P_sims:
+               continue
+           plt.semilogx(k, (P_sim/P_sims[key] - 1)*100,
+               ('-', '--', '-.', ':')[lin_counter%4],
+               label=(
+                   f'simulation: lin = {lin} (dynamical sim only)'
+                   if lin not in {'', 'darkenergy'} and not key[1] else
+                   f'simulation: lin = {lin}'
+               ),
+           )
+           if lin:
+               lin_counter += 1
+       P_lin = P_lins.pop(de, None)
+       if P_lin is None:
+           continue
+       plt.semilogx(k, (P_lin/P_lins['Lambda'] - 1)*100, 'k--', label=f'linear')
+   plt.legend()
+   plt.xlim(k[0], k[-1])
+   plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
+   plt.ylabel(r'$P_{\mathrm{dynamical}}/P_{\Lambda}-1\, [\%]$')
+   plt.tight_layout()
+   plt.savefig(f'{this_dir}/plot.png')
+
+Save this to e.g. ``output/tutorial/plot.py`` and run it using
+
+.. code-block:: bash
+
+   ./concept -m output/tutorial/plot.py
+
+The generated plot should show that the matter power is reduced quite a bit
+when switching to using the dynamical dark energy. At large :math:`k`, we see
+the usual non-linear supression dip. At low/linear :math:`k`, the power
+suppresion is larger in the simulation power spectrum than in the linear one.
+This is due to inhomogeneities forming in the dark energy species itself, the
+tug on matter we have not incorporated into the simulation. This effect is
+enlarged as we have specified a low dark energy sound speed ``'cs2_fld'``
+(given in units of the speed of light squared, :math:`c^2`).
+
+
+
+.. raw:: html
+
+   <h3>Adding gravitation from dark energy perturbations</h3>
+
+As usual, the missing gravity can be incorporated into the simulation by
+including the missing species in the simulation as a linear component. The
+parameter file has once again been set up to be able to do this via the
+``_lin`` command-line parameter. To run both cosmologies again, this time
+including all linear species, do e.g.
+
+.. code-block:: bash
+
+   for de in Lambda dynamical; do
+       lin="photons + neutrinos + metric"
+       [ $de == dynamical ] && lin+=" + dark energy"
+       ./concept -p params/tutorial -c "_de = '$de'" -c "_lin = '$lin'"
+   done
+
+Notice that we do not include 'dark energy' when running with :math:`\Lambda`,
+as here there are no dark energy perturbations.
+
+After re-plotting, you should see that the simulation spectrum now matches
+the linear prediction at low :math:`k`.
+
+Though including all species --- i.e. also photons and neutrinos --- is what
+should be done for serious simulations, it can be educational to run with
+fewer linear species, to separate out their individual effects on the matter
+spectrum. Besides being small, the effects from photons and neutrinos should
+be very close to identical between the two cosmologies, as they have identical
+initial conditions and background evolutions. We thus expect effects from
+photons and neutrinos to be completely negligible for the relative power
+spectrum. To test this, perform a simulation with dynamical dark energy,
+including only dark energy as a linear species:
+
+.. code-block::
+
+   ./concept -p params/tutorial -c "_de = 'dynamical'" -c "_lin = 'dark energy'"
+
+If you now redo the plot, a relative spectrum between the newly run simulation
+and the :math:`\Lambda` simulation without any linear species will be added.
+You will see that though it's close, it has a bit too much power suppression
+at low :math:`k`.
+
+The missing power is not due to the missing photons and neutrinos, but rather
+the missing gravity from the rather large pressure perturbations in the dark
+energy, which is accounted for by the fictitious metric species. Performing
+a simulation inlcuding the metric as well,
+
+.. code-block::
+
+   ./concept -p params/tutorial -c "_de = 'dynamical'" -c "_lin = 'dark energy + metric'"
+
+and re-plotting, we see that we indeed achieve the same result as when running
+with photons and neutrinos.
+
+.. note::
+
+   As the metric always contains the total gravitational contribution from
+   momentum, pressure and shear perturbations of all species, it is not
+   possible to completely separate out the gravitational effects from each
+   species. For example, the last simulation above *do* include some photon
+   and neutrino gravity, since the metric still contains contributions from
+   their momentum, pressure and shear perturbations. The :math:`\Lambda`
+   simulation with which it is paired up for the plot does not, however, as
+   here the simulation is performed without including the metric.
 
 
 

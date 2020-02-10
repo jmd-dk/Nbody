@@ -376,6 +376,10 @@ possible. If the
 for some inexplicable reason, you may try looking for a clue in the logged
 installation output (of which there are a lot), in the <code class="docutils literal notranslate"><span class="pre">install_log</span></code> and
 <code class="docutils literal notranslate"><span class="pre">install_log_err</span></code> files.</p>
+<p>One possible source of trouble is corrupted downloads. The <code class="docutils literal notranslate"><span class="pre">installer</span></code>
+script downloads the source code of every primary dependency into a directory
+named <code class="docutils literal notranslate"><span class="pre">tmp</span></code>. If you suspect a corrupt download, you can try deleting this
+entire directory, which will trigger re-downloads.</p>
 <p>It may happen that some dependency program fails to install due to some other
 dependency not working correctly. You may try adding the <code class="docutils literal notranslate"><span class="pre">--test</span></code> option
 when invoking the <code class="docutils literal notranslate"><span class="pre">installer</span></code>, which test most of the dependency programs

@@ -52,7 +52,7 @@ Now run a simulation using these parameters, by executing
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_sim = "A"'
+   ./concept -p params/tutorial -c "_sim = 'A'"
 
 and optionally specifying whatever number of CPU cores you'd like with the
 ``-n`` option.
@@ -108,7 +108,7 @@ a new simulation, this time using
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_sim = "B"'
+   ./concept -p params/tutorial -c "_sim = 'B'"
 
 Visually comparing ``powerspec_A_a=1.00.png`` to ``powerspec_B_a=1.00.png``,
 we see that the two simulations were indeed exactly the same.
@@ -124,7 +124,7 @@ by doubling the size (resolution) of the potential grid (in each direction):
        'matter': {'gravity': ('pm', 2*_size)},
    }
 
-Try this out, using ``_sim = "C"``.
+Try this out, using ``-c "_sim = 'C'"``.
 
 Comparing the plots of simulation B and C, it's clear that the choice of grid
 size affects the result. What isn't clear is which result to trust.

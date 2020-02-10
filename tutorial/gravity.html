@@ -390,7 +390,7 @@ to the ones encountered in the previous section. Save these in
 </pre></div>
 </div>
 <p>Now run a simulation using these parameters, by executing</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_sim = &quot;A&quot;&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s2">&quot;_sim = &#39;A&#39;&quot;</span>
 </pre></div>
 </div>
 <p>and optionally specifying whatever number of CPU cores you’d like with the
@@ -434,7 +434,7 @@ the box into smaller cells.</p>
 <p>To test whether this really amounts to the default gravitational set-up,
 update <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> in <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> according to the above and run
 a new simulation, this time using</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s1">&#39;_sim = &quot;B&quot;&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s2">&quot;_sim = &#39;B&#39;&quot;</span>
 </pre></div>
 </div>
 <p>Visually comparing <code class="docutils literal notranslate"><span class="pre">powerspec_A_a=1.00.png</span></code> to <code class="docutils literal notranslate"><span class="pre">powerspec_B_a=1.00.png</span></code>,
@@ -448,7 +448,7 @@ by doubling the size (resolution) of the potential grid (in each direction):</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Try this out, using <code class="docutils literal notranslate"><span class="pre">_sim</span> <span class="pre">=</span> <span class="pre">&quot;C&quot;</span></code>.</p>
+<p>Try this out, using <code class="docutils literal notranslate"><span class="pre">-c</span> <span class="pre">&quot;_sim</span> <span class="pre">=</span> <span class="pre">'C'&quot;</span></code>.</p>
 <p>Comparing the plots of simulation B and C, it’s clear that the choice of grid
 size affects the result. What isn’t clear is which result to trust.</p>
 </div>

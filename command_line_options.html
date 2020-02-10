@@ -425,13 +425,13 @@ specified by default.</p>
 <h3><a class="toc-backref" href="#id9">Command-line parameters: <code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--command-line-param</span></code></a><a class="headerlink" href="#command-line-parameters-c-command-line-param" title="Permalink to this headline">¶</a></h3>
 <p>Directly specifies parameters to use, without referring to a parameter file.
 E.g.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -c <span class="s1">&#39;boxsize = 512*Mpc&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -c <span class="s2">&quot;boxsize = 512*Mpc&quot;</span>
 </pre></div>
 </div>
 <p>Often this is used in combination with a parameter file, e.g. if a suite of
 similar simulations is to be run where only a few parameter values change
 between the simulations. E.g.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/my_params -c <span class="s1">&#39;Ωb = 0.049&#39;</span> -c <span class="s1">&#39;Ωcdm = 0.27&#39;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/my_params -c <span class="s2">&quot;Ωb = 0.049&quot;</span> -c <span class="s2">&quot;Ωcdm = 0.27&quot;</span>
 </pre></div>
 </div>
 <p>Note that the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option may be specified multiple times.</p>
@@ -459,7 +459,7 @@ mapped to its own CPU core. To e.g. run with 8 cores:</p>
 that 8 processes should be used:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -n <span class="m">2</span>*4
 ./concept -n <span class="m">2</span>**3
-./concept -n <span class="s1">&#39;3 + 5&#39;</span>
+./concept -n <span class="s2">&quot;3 + 5&quot;</span>
 </pre></div>
 </div>
 <div class="section" id="specifying-multiple-nodes">
@@ -469,8 +469,8 @@ the number of nodes to be used. The following examples all specify 8 MPI
 processes distributed over 2 nodes each with 4 CPU cores:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -n <span class="m">2</span>:4
 ./concept -n <span class="m">2</span>:2*2
-./concept -n <span class="s1">&#39;2 2*2&#39;</span>
-./concept -n <span class="s1">&#39;1 + 1 : 2**2&#39;</span>
+./concept -n <span class="s2">&quot;2 2*2&quot;</span>
+./concept -n <span class="s2">&quot;1 + 1 : 2**2&quot;</span>
 </pre></div>
 </div>
 <p>Note that imhomogeneous layouts are not describable. If you leave out the node

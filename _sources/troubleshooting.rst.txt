@@ -25,6 +25,11 @@ for some inexplicable reason, you may try looking for a clue in the logged
 installation output (of which there are a lot), in the ``install_log`` and
 ``install_log_err`` files.
 
+One possible source of trouble is corrupted downloads. The ``installer``
+script downloads the source code of every primary dependency into a directory
+named ``tmp``. If you suspect a corrupt download, you can try deleting this
+entire directory, which will trigger re-downloads.
+
 It may happen that some dependency program fails to install due to some other
 dependency not working correctly. You may try adding the ``--test`` option
 when invoking the ``installer``, which test most of the dependency programs

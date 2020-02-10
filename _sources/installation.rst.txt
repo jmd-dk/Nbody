@@ -283,7 +283,6 @@ will not prompt you for an installation directory but instead use the supplied
 
 Other command-line options to ``installer`` are listed below.
 
-
 .. raw:: html
 
    <h6>
@@ -303,7 +302,7 @@ and then exits. Generally though, this documentation page is much preferable.
 .. raw:: html
 
    <h6>
-     Test:
+     Tests:
      <code class="docutils literal notranslate"><span class="pre">
        -t
      </span></code>

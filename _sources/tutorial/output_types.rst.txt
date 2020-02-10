@@ -152,7 +152,7 @@ its job ID.
 
    .. code-block:: bash
 
-      grep -o 'job [^ ]*' output/tutorial/powerspec_a=1.00
+      grep -o "job [^ ]*" output/tutorial/powerspec_a=1.00
 
 With the job ID at hand, try the following:
 
@@ -227,7 +227,8 @@ produce such an initial snapshot, simply set
 exit right after the snapshot has been dumped at the initial time, without
 doing any simulation. Also, the whole purpose of having the ``ICs`` directory
 is to hold such initial condition snapshots. To dump snapshots to this
-directory, set the ``'snapshot'`` entry in ``output_dirs`` to ``paths['ics_dir']``.
+directory, set the ``'snapshot'`` entry in ``output_dirs`` to
+``paths['ics_dir']``.
 
 You may also want to use CO\ *N*\ CEPT purely as an initial condition
 generator, and perform the actual simulation using some other code. If so, the

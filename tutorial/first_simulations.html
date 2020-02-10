@@ -366,9 +366,9 @@ CO<em>N</em>CEPT jobs when <a class="reference internal" href="working_remotely.
 <p>As we did not provide any parameters to CO<em>N</em>CEPT, it shut down
 immediately. We can add parameters using the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option, like so:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
-    -c <span class="s1">&#39;initial_conditions = {&quot;species&quot;: &quot;matter&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;a_begin = 0.02&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;output_times = {&quot;powerspec&quot;: 1}&#39;</span>
+    -c <span class="s2">&quot;initial_conditions = {&#39;species&#39;: &#39;matter&#39;, &#39;N&#39;: 64**3}&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;a_begin = 0.02&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;output_times = {&#39;powerspec&#39;: 1}&quot;</span>
 </pre></div>
 </div>
 <p>A simulation with <span class="math notranslate nohighlight">\(N = 64^3\)</span> matter particles will now be run, with
@@ -391,10 +391,10 @@ do include the effects of gravity), both of which are shown in
 <p>Let’s try again, this time explicitly stating that the <code class="docutils literal notranslate"><span class="pre">&quot;matter&quot;</span></code> species
 is under the influence of gravity:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
-    -c <span class="s1">&#39;initial_conditions = {&quot;species&quot;: &quot;matter&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;a_begin = 0.02&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;output_times = {&quot;powerspec&quot;: 1}&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;select_forces = {&quot;matter&quot;: &quot;gravity&quot;}&#39;</span>
+    -c <span class="s2">&quot;initial_conditions = {&#39;species&#39;: &#39;matter&#39;, &#39;N&#39;: 64**3}&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;a_begin = 0.02&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;output_times = {&#39;powerspec&#39;: 1}&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;select_forces = {&#39;matter&#39;: &#39;gravity&#39;}&quot;</span>
 </pre></div>
 </div>
 <p>The simulation time will increase somewhat. Once done, take a look at the
@@ -403,10 +403,10 @@ simulated power spectrum has catched up to the linear one.</p>
 <p>To cut down on the computation time we may make use of multiple CPU cores. To
 run with e.g. 4 CPU cores, execute</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
-    -c <span class="s1">&#39;initial_conditions = {&quot;species&quot;: &quot;matter&quot;, &quot;N&quot;: 64**3}&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;a_begin = 0.02&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;output_times = {&quot;powerspec&quot;: 1}&#39;</span> <span class="se">\</span>
-    -c <span class="s1">&#39;select_forces = {&quot;matter&quot;: &quot;gravity&quot;}&#39;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;initial_conditions = {&#39;species&#39;: &#39;matter&#39;, &#39;N&#39;: 64**3}&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;a_begin = 0.02&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;output_times = {&#39;powerspec&#39;: 1}&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;select_forces = {&#39;matter&#39;: &#39;gravity&#39;}&quot;</span> <span class="se">\</span>
     -n <span class="m">4</span>
 </pre></div>
 </div>

@@ -28,9 +28,9 @@ immediately. We can add parameters using the ``-c`` option, like so:
 .. code-block:: bash
 
    ./concept \
-       -c 'initial_conditions = {"species": "matter", "N": 64**3}' \
-       -c 'a_begin = 0.02' \
-       -c 'output_times = {"powerspec": 1}'
+       -c "initial_conditions = {'species': 'matter', 'N': 64**3}" \
+       -c "a_begin = 0.02" \
+       -c "output_times = {'powerspec': 1}"
 
 A simulation with :math:`N = 64^3` matter particles will now be run, with
 initial conditions generated at a scale factor of :math:`a = 0.02` and a power
@@ -62,10 +62,10 @@ is under the influence of gravity:
 .. code-block:: bash
 
    ./concept \
-       -c 'initial_conditions = {"species": "matter", "N": 64**3}' \
-       -c 'a_begin = 0.02' \
-       -c 'output_times = {"powerspec": 1}' \
-       -c 'select_forces = {"matter": "gravity"}'
+       -c "initial_conditions = {'species': 'matter', 'N': 64**3}" \
+       -c "a_begin = 0.02" \
+       -c "output_times = {'powerspec': 1}" \
+       -c "select_forces = {'matter': 'gravity'}"
 
 The simulation time will increase somewhat. Once done, take a look at the
 output ``output/powerspec_a=1.00.png`` again, and you should see that the
@@ -77,10 +77,10 @@ run with e.g. 4 CPU cores, execute
 .. code-block:: bash
 
    ./concept \
-       -c 'initial_conditions = {"species": "matter", "N": 64**3}' \
-       -c 'a_begin = 0.02' \
-       -c 'output_times = {"powerspec": 1}' \
-       -c 'select_forces = {"matter": "gravity"}' \
+       -c "initial_conditions = {'species': 'matter', 'N': 64**3}" \
+       -c "a_begin = 0.02" \
+       -c "output_times = {'powerspec': 1}" \
+       -c "select_forces = {'matter': 'gravity'}" \
        -n 4
 
 To see a complete list of possible options to the ``concept`` script, invoke

@@ -68,7 +68,7 @@ E.g.
 
 .. code-block:: bash
 
-   ./concept -c 'boxsize = 512*Mpc'
+   ./concept -c "boxsize = 512*Mpc"
 
 Often this is used in combination with a parameter file, e.g. if a suite of
 similar simulations is to be run where only a few parameter values change
@@ -76,7 +76,7 @@ between the simulations. E.g.
 
 .. code-block:: bash
 
-   ./concept -p params/my_params -c 'Ωb = 0.049' -c 'Ωcdm = 0.27'
+   ./concept -p params/my_params -c "Ωb = 0.049" -c "Ωcdm = 0.27"
 
 Note that the ``-c`` option may be specified multiple times.
 
@@ -115,7 +115,7 @@ that 8 processes should be used:
 
    ./concept -n 2*4
    ./concept -n 2**3
-   ./concept -n '3 + 5'
+   ./concept -n "3 + 5"
 
 
 
@@ -131,8 +131,8 @@ processes distributed over 2 nodes each with 4 CPU cores:
 
    ./concept -n 2:4
    ./concept -n 2:2*2
-   ./concept -n '2 2*2'
-   ./concept -n '1 + 1 : 2**2'
+   ./concept -n "2 2*2"
+   ./concept -n "1 + 1 : 2**2"
 
 Note that imhomogeneous layouts are not describable. If you leave out the node
 specification (i.e. only supply a single number to ``-n``) and the cluster is

@@ -471,7 +471,7 @@ its job ID.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>To grab the job ID from a power spectra data file, you can do e.g.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>grep -o <span class="s1">&#39;job [^ ]*&#39;</span> output/tutorial/powerspec_a<span class="o">=</span><span class="m">1</span>.00
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>grep -o <span class="s2">&quot;job [^ ]*&quot;</span> output/tutorial/powerspec_a<span class="o">=</span><span class="m">1</span>.00
 </pre></div>
 </div>
 </div>
@@ -539,7 +539,8 @@ produce such an initial snapshot, simply set
 exit right after the snapshot has been dumped at the initial time, without
 doing any simulation. Also, the whole purpose of having the <code class="docutils literal notranslate"><span class="pre">ICs</span></code> directory
 is to hold such initial condition snapshots. To dump snapshots to this
-directory, set the <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code> entry in <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code> to <code class="docutils literal notranslate"><span class="pre">paths['ics_dir']</span></code>.</p>
+directory, set the <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code> entry in <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code> to
+<code class="docutils literal notranslate"><span class="pre">paths['ics_dir']</span></code>.</p>
 <p>You may also want to use CO<em>N</em>CEPT purely as an initial condition
 generator, and perform the actual simulation using some other code. If so, the
 standard CO<em>N</em>CEPT snapshot format is of little use. To this end,

@@ -115,7 +115,7 @@ code:
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c '_size = 64' -n 4
+   ./concept -p params/tutorial -c "_size = 64" -n 4
 
 If you forget to specify ``_size`` --- or any other variable used in the
 parameter file --- CO\ *N*\ CEPT will exit with an error, letting you know.
