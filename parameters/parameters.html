@@ -391,11 +391,11 @@ for e.g. testing against other simulation codes that use some other,
 fixed system of units.</p>
 </div>
 <h3>Parameter files as Python scripts</h3><p>You may think of parameter files as Python scripts, and use any valid Python 3
-statements to formulate or compute your parameters. Even without any explicit
-<code class="docutils literal notranslate"><span class="pre">import</span></code> statement present in the parameter file, all of <code class="docutils literal notranslate"><span class="pre">numpy</span></code> is
-readily available. As an example, consider the following specification of 7
-power spectra output placed logarithmically equidistant in scale factor
-<span class="math notranslate nohighlight">\(a\)</span>, from <span class="math notranslate nohighlight">\(a = 0.01\)</span> to <span class="math notranslate nohighlight">\(a = 1\)</span>:</p>
+statements to formulate or compute your parameters, including <code class="docutils literal notranslate"><span class="pre">print()</span></code> for
+debugging. Even without any explicit <code class="docutils literal notranslate"><span class="pre">import</span></code> statement present in the
+parameter file, all of <code class="docutils literal notranslate"><span class="pre">numpy</span></code> is readily available. As an example, consider
+the following specification of 7 power spectra output placed logarithmically
+equidistant in scale factor <span class="math notranslate nohighlight">\(a\)</span>, from <span class="math notranslate nohighlight">\(a = 0.01\)</span> to <span class="math notranslate nohighlight">\(a = 1\)</span>:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="n">logspace</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.01</span><span class="p">),</span> <span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">7</span><span class="p">)}</span>
 </pre></div>
 </div>

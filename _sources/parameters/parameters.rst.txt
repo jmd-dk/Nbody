@@ -70,11 +70,11 @@ A vast set of units are understood, like ``km``, ``pc``, ``kpc``, ``Mpc``,
    <h3>Parameter files as Python scripts</h3>
 
 You may think of parameter files as Python scripts, and use any valid Python 3
-statements to formulate or compute your parameters. Even without any explicit
-``import`` statement present in the parameter file, all of ``numpy`` is
-readily available. As an example, consider the following specification of 7
-power spectra output placed logarithmically equidistant in scale factor
-:math:`a`, from :math:`a = 0.01` to :math:`a = 1`:
+statements to formulate or compute your parameters, including ``print()`` for
+debugging. Even without any explicit ``import`` statement present in the
+parameter file, all of ``numpy`` is readily available. As an example, consider
+the following specification of 7 power spectra output placed logarithmically
+equidistant in scale factor :math:`a`, from :math:`a = 0.01` to :math:`a = 1`:
 
 .. code-block:: python3
 

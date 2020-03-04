@@ -372,7 +372,7 @@ file:</p>
     <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
 <span class="p">}</span>
 <span class="n">render2D_select</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>  <span class="s1">&#39;terminal image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;terminal image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
 <span class="p">}</span>
 
 <span class="c1"># Numerical parameters</span>
@@ -499,6 +499,14 @@ format, which is simply a well-structured HDF5 file.</p>
 <p>For a great graphical tool to explore HDF5 files in general, check out
 <a class="reference external" href="http://vitables.org/">ViTables</a>. If you encounter problems viewing HDF5
 files produced by CO<em>N</em>CEPT, try upgrading to ViTables 3.</p>
+<p>You can install ViTables as part of the CO<em>N</em>CEPT installation via</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> <span class="nv">$python</span> -m pip install <span class="nv">pyqt5</span><span class="o">==</span><span class="m">5</span>.14 vitables<span class="o">)</span>
+</pre></div>
+</div>
+<p>after which you can run it by e.g. doing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> <span class="nv">$python</span> -m vitables<span class="o">)</span> <span class="p">&amp;</span>
+</pre></div>
+</div>
 </div>
 <p>Such snapshots are useful if you want to process the raw data using some
 external program. You can also initialize a simulation from a snapshot, instead

@@ -91,7 +91,7 @@ You may manually run the watch utility at any later time, like so:
 
    ./concept -u watch <ID>  # Replace <ID> with job ID of remote running job
 
-The job ID --- and hence log filename --- of submitted jobs is determined by
+The job ID --- and hence log file name --- of submitted jobs is determined by
 the job schedular, and is printed as soon as the job is submitted. You may
 also leave out any job ID when running the ``watch`` utility, in which case
 the latest submitted, running job will be watched. Again, to exit, simply

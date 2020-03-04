@@ -73,7 +73,7 @@ specifications. In doing so, we've made use of several helpful tricks:
   ``'/path/to/concept_installation/concept/output'``. Looking up
   ``paths['params']`` is somewhat different, as ``params`` is not in the
   ``.paths`` file. Instead, this dynamically maps to the full path of the
-  parameter file itself. To get the filename only (i.e. ``'tutorial'``),
+  parameter file itself. To get the file name only (i.e. ``'tutorial'``),
   we use the ``basename`` function. In total, the power spectrum output
   directory gets set to
   ``'/path/to/concept_installation/concept/output/tutorial'``. We could have
@@ -128,9 +128,10 @@ parameter file --- CO\ *N*\ CEPT will exit with an error, letting you know.
 
 The printed output of all CO\ *N*\ CEPT runs gets logged in the ``logs``
 directory. Each run (or *job*) gets a unique integer ID, which is also used as
-the filename for the logged output. The log filename of any CO\ *N*\ CEPT run
-is stated when the program starts, and the job ID is written again at the end.
-Also, the job ID is included in the header of the power spectrum data files.
+the file name for the logged output. The log file name of any CO\ *N*\ CEPT
+run is stated when the program starts, and the job ID is written again at the
+end. Also, the job ID is included in the header of the power spectrum data
+files.
 
 .. tip::
    To view the logged output of e.g. CO\ *N*\ CEPT run 1 with proper
@@ -147,16 +148,18 @@ parameter file in use. As this is included in the log file, you can always go
 back and check the parameters used by a given run. However, this information
 isn't reliable, as we may have modified the parameter file since its original
 use. To this end, a complete copy of the parameter file is made upon every
-invocation of CO\ *N*\ CEPT, and stored in the ``params`` directory. The name
-of this copy is written together with the name of the original parameter file
-when CO\ *N*\ CEPT starts.
+invocation of CO\ *N*\ CEPT, and stored in the ``params`` directory. The file
+name of this copy is written together with the name of the original parameter
+file when CO\ *N*\ CEPT starts. The name is generated from the current time
+and has the format ``.YYYYMMDDhhmmssSSS`` (year, month, day, hour, minute,
+second, milli second).
 
 When mixing ``-p`` and ``-c``, the combined parameters are what's stored in the
 copied parameter file.
 
 As an exercise, get the job ID of the latest simulation from the header of one
 of the power spectrum data files (e.g. ``output/tutorial/powerspec_a=1.00``),
-find the filename of the parameter file copy from the corresponding log file,
+find the file name of the parameter file copy from the corresponding log file,
 and check that the parameters specified are as you expect. Any command-line
 parameters will be placed at the bottom.
 

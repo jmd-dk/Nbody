@@ -30,7 +30,7 @@ file:
        'matter': {'data': True, 'plot': False},
    }
    render2D_select = {
-       'matter': {'data': False, 'image': True,  'terminal image': True},
+       'matter': {'data': False, 'image': True, 'terminal image': True},
    }
 
    # Numerical parameters
@@ -183,6 +183,18 @@ format, which is simply a well-structured HDF5 file.
    For a great graphical tool to explore HDF5 files in general, check out
    `ViTables <http://vitables.org/>`_. If you encounter problems viewing HDF5
    files produced by CO\ *N*\ CEPT, try upgrading to ViTables 3.
+
+   You can install ViTables as part of the CO\ *N*\ CEPT installation via
+
+   .. code-block:: bash
+
+      (source concept && $python -m pip install pyqt5==5.14 vitables)
+
+   after which you can run it by e.g. doing
+
+   .. code-block:: bash
+
+      (source concept && $python -m vitables) &
 
 Such snapshots are useful if you want to process the raw data using some
 external program. You can also initialize a simulation from a snapshot, instead
