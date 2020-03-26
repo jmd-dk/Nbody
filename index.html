@@ -128,6 +128,7 @@
 <li class="toctree-l3"><a class="reference internal" href="installation.html#optimal-network-performance-on-clusters">Optimal network performance on clusters</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#cloning-with-git">Cloning with Git</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#command-line-options">Command-line options</a></li>
@@ -236,6 +237,7 @@
 <li class="toctree-l1"><a class="reference internal" href="utilities/utilities.html">Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utilities/class.html">The CLASS utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/convert.html">The convert utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/gadget.html">The gadget utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/info.html">The info utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/play.html">The play utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/powerspec.html">The powerspec utility</a></li>
@@ -250,6 +252,7 @@
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#error-messages-containing-errno-38">Error messages containing ‘errno = 38’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
@@ -355,7 +358,7 @@
 </tr>
 <tr class="field-odd field"><th class="field-name">Web Site:</th><td class="field-body"><a class="reference external" href="https://github.com/jmd-dk/concept/">https://github.com/jmd-dk/concept/</a></td>
 </tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Mar 04, 2020</td>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Mar 26, 2020</td>
 </tr>
 </tbody>
 </table><p>This is the documentation for CO<em>N</em>CEPT, the <strong>CO</strong>smological
@@ -402,6 +405,7 @@ taking you on a guided tour through the CO<em>N</em>CEPT universe.</p>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#supported-platforms">Supported platforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#standard-installation">Standard installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#cloning-with-git">Cloning with Git</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#the-installer-script-in-depth">The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script in-depth</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#the-paths-and-env-files">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> and <code class="docutils literal notranslate"><span class="pre">.env</span></code> files</a></li>
@@ -428,6 +432,7 @@ taking you on a guided tour through the CO<em>N</em>CEPT universe.</p>
 <li class="toctree-l1"><a class="reference internal" href="utilities/utilities.html">Utilities</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utilities/class.html">The CLASS utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/convert.html">The convert utility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities/gadget.html">The gadget utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/info.html">The info utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/play.html">The play utility</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utilities/powerspec.html">The powerspec utility</a></li>
@@ -442,6 +447,7 @@ taking you on a guided tour through the CO<em>N</em>CEPT universe.</p>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#error-messages-containing-errno-38">Error messages containing ‘errno = 38’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>

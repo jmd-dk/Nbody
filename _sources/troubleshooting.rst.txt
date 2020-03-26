@@ -83,6 +83,26 @@ CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
 
 
 
+Error messages containing 'errno = 38'
+--------------------------------------
+If you see error messages of the format
+
+   Read -1, expected <int>, errno = 38
+
+whenever you run CO\ *N*\ CEPT using more than a single process, it is likely
+a problem with OpenMPI, more specifically vader/CMA. If CO\ *N*\ CEPT
+otherwise produces correct results, you can silence these messages by placing
+
+.. code-block:: bash
+
+   export OMPI_MCA_btl_vader_single_copy_mechanism=none
+
+in the ``.env`` file (located one directory level above the ``concept``
+directory, i.e. at ``/path/to/concept_installation/.env``) of your
+CO\ *N*\ CEPT installation.
+
+
+
 Crashes or other bad behavior
 -----------------------------
 This entry is concerned with problems encountered when using CO\ *N*\ CEPT

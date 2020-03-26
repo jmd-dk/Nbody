@@ -152,7 +152,7 @@ invocation of CO\ *N*\ CEPT, and stored in the ``params`` directory. The file
 name of this copy is written together with the name of the original parameter
 file when CO\ *N*\ CEPT starts. The name is generated from the current time
 and has the format ``.YYYYMMDDhhmmssSSS`` (year, month, day, hour, minute,
-second, milli second).
+second, millisecond).
 
 When mixing ``-p`` and ``-c``, the combined parameters are what's stored in the
 copied parameter file.

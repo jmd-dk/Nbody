@@ -17,6 +17,7 @@ The available utilities are as follows:
 
    class
    convert
+   gadget
    info
    play
    powerspec
