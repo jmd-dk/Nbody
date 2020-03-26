@@ -25,16 +25,15 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script type="text/javascript" src="_static/clipboard.min.js"></script>
-        <script type="text/javascript" src="_static/copybutton.js"></script>
-        <script type="text/javascript" src="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.js"></script>
-        <script type="text/javascript" src="_static/sphinx_tabs/tabs.js"></script>
-        <script type="text/javascript">var copybuttonSkipText = '>>> ';</script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+        <script src="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.js"></script>
+        <script src="_static/sphinx_tabs/tabs.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -160,6 +159,7 @@
 <li class="toctree-l3"><a class="reference internal" href="installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="installation.html#eliminating-interference-from-foreign-python-installations">Eliminating interference from foreign Python installations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
 </ul>
@@ -259,6 +259,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#error-messages-containing-errno-38">Error messages containing ‘errno = 38’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
@@ -364,11 +365,12 @@ author at
 <li><p><a class="reference internal" href="#installation-failed" id="id3">Installation failed</a></p></li>
 <li><p><a class="reference internal" href="#terminal-color-output-looks-weird" id="id4">Terminal color output looks weird</a></p></li>
 <li><p><a class="reference internal" href="#the-simulation-hangs-when-calling-class" id="id5">The simulation hangs when calling CLASS</a></p></li>
-<li><p><a class="reference internal" href="#error-messages-containing-errno-38" id="id6">Error messages containing ‘errno = 38’</a></p></li>
-<li><p><a class="reference internal" href="#crashes-or-other-bad-behavior" id="id7">Crashes or other bad behavior</a></p></li>
-<li><p><a class="reference internal" href="#bad-performance-when-using-multiple-processes-nodes" id="id8">Bad performance when using multiple processes/nodes</a></p></li>
-<li><p><a class="reference internal" href="#problems-when-running-remotely" id="id9">Problems when running remotely</a></p></li>
-<li><p><a class="reference internal" href="#problems-when-using-multiple-nodes" id="id10">Problems when using multiple nodes</a></p></li>
+<li><p><a class="reference internal" href="#problems-related-to-python-libraries-and-packages" id="id6">Problems related to Python libraries and packages</a></p></li>
+<li><p><a class="reference internal" href="#error-messages-containing-errno-38" id="id7">Error messages containing ‘errno = 38’</a></p></li>
+<li><p><a class="reference internal" href="#crashes-or-other-bad-behavior" id="id8">Crashes or other bad behavior</a></p></li>
+<li><p><a class="reference internal" href="#bad-performance-when-using-multiple-processes-nodes" id="id9">Bad performance when using multiple processes/nodes</a></p></li>
+<li><p><a class="reference internal" href="#problems-when-running-remotely" id="id10">Problems when running remotely</a></p></li>
+<li><p><a class="reference internal" href="#problems-when-using-multiple-nodes" id="id11">Problems when using multiple nodes</a></p></li>
 </ul>
 </div>
 <div class="section" id="installation-failed">
@@ -425,8 +427,23 @@ than exiting with an error message. To see the CLASS error message, run
 CO<em>N</em>CEPT in pure Python mode using the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code>
 <a class="reference internal" href="command_line_options.html#pure-python"><span class="std std-ref">command-line option</span></a>.</p>
 </div>
+<div class="section" id="problems-related-to-python-libraries-and-packages">
+<h2><a class="toc-backref" href="#id6">Problems related to Python libraries and packages</a><a class="headerlink" href="#problems-related-to-python-libraries-and-packages" title="Permalink to this headline">¶</a></h2>
+<p>If Python itself fails to start or raises <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> when loading certain
+packages, it may be due to improper configuration of the Python environment.
+In particular the <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>, <code class="docutils literal notranslate"><span class="pre">PYTHONHOME</span></code> and <code class="docutils literal notranslate"><span class="pre">PYTHONNOUSERSITE</span></code>
+environment variables should be set (or unset) appropriately. If CO<em>N</em>CEPT
+has its own dedicated Python installation, one safe choice is to follow
+<a class="reference internal" href="installation.html#eliminating-interference-from-foreign-python-installations"><span class="std std-ref">this</span></a>, which
+isolate the dedicated Python installation so that other Python installations
+on the system has no chance of interfering.</p>
+<p>Note that if you have instaled CO<em>N</em>CEPT using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> and not
+explicitly made use of a pre-existing Python installation, a dedicated Python
+has been installation and the Python environment has already been set up
+appropriately (see the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file).</p>
+</div>
 <div class="section" id="error-messages-containing-errno-38">
-<h2><a class="toc-backref" href="#id6">Error messages containing ‘errno = 38’</a><a class="headerlink" href="#error-messages-containing-errno-38" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id7">Error messages containing ‘errno = 38’</a><a class="headerlink" href="#error-messages-containing-errno-38" title="Permalink to this headline">¶</a></h2>
 <p>If you see error messages of the format</p>
 <blockquote>
 <div><p>Read -1, expected &lt;int&gt;, errno = 38</p>
@@ -442,7 +459,7 @@ directory, i.e. at <code class="docutils literal notranslate"><span class="pre">
 CO<em>N</em>CEPT installation.</p>
 </div>
 <div class="section" id="crashes-or-other-bad-behavior">
-<h2><a class="toc-backref" href="#id7">Crashes or other bad behavior</a><a class="headerlink" href="#crashes-or-other-bad-behavior" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id8">Crashes or other bad behavior</a><a class="headerlink" href="#crashes-or-other-bad-behavior" title="Permalink to this headline">¶</a></h2>
 <p>This entry is concerned with problems encountered when using CO<em>N</em>CEPT
 <em>locally</em>. If your problem occurs only for remote jobs, please see the
 ‘<a class="reference internal" href="#id1">Problems when running remotely</a>’ entry instead.</p>
@@ -479,7 +496,7 @@ used the first time around.</p>
 you may have found a bug. Please report this.</p>
 </div>
 <div class="section" id="bad-performance-when-using-multiple-processes-nodes">
-<h2><a class="toc-backref" href="#id8">Bad performance when using multiple processes/nodes</a><a class="headerlink" href="#bad-performance-when-using-multiple-processes-nodes" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9">Bad performance when using multiple processes/nodes</a><a class="headerlink" href="#bad-performance-when-using-multiple-processes-nodes" title="Permalink to this headline">¶</a></h2>
 <p>If you are running CO<em>N</em>CEPT on a cluster and experiences a significant
 drop in performance as you increase the number of processes from e.g. 1 to 2
 or 2 to 4, or when using 2 nodes instead of 1 with the same total number of
@@ -491,7 +508,7 @@ If you are observing bad network behavior even so, you should try changing the
 MPI executor, as described <a class="reference internal" href="#chosing-an-mpi-executor"><span class="std std-ref">here</span></a>.</p>
 </div>
 <div class="section" id="problems-when-running-remotely">
-<span id="id1"></span><h2><a class="toc-backref" href="#id9">Problems when running remotely</a><a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id10">Problems when running remotely</a><a class="headerlink" href="#problems-when-running-remotely" title="Permalink to this headline">¶</a></h2>
 <p>This entry is concerned with problems encountered specifically with remote
 CO<em>N</em>CEPT jobs. If you have not tried out CO<em>N</em>CEPT locally, please do
 this first. If you encounter problems here as well, please see the
@@ -703,7 +720,7 @@ in order to minimize the possibility of wrong MPI identification and linking.</p
 </div>
 </div>
 <div class="section" id="problems-when-using-multiple-nodes">
-<span id="id2"></span><h2><a class="toc-backref" href="#id10">Problems when using multiple nodes</a><a class="headerlink" href="#problems-when-using-multiple-nodes" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2><a class="toc-backref" href="#id11">Problems when using multiple nodes</a><a class="headerlink" href="#problems-when-using-multiple-nodes" title="Permalink to this headline">¶</a></h2>
 <p>If you observe a wrong process binding (i.e. it appears as though several
 copies of CO<em>N</em>CEPT are running on top of each other, rather than all of
 the MPI processes working together as a collective) when running CO<em>N</em>CEPT

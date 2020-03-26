@@ -25,14 +25,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script type="text/javascript" src="../_static/clipboard.min.js"></script>
-        <script type="text/javascript" src="../_static/copybutton.js"></script>
-        <script type="text/javascript">var copybuttonSkipText = '>>> ';</script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -154,6 +153,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#eliminating-interference-from-foreign-python-installations">Eliminating interference from foreign Python installations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
 </ul>
@@ -253,6 +253,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#error-messages-containing-errno-38">Error messages containing ‘errno = 38’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
@@ -316,7 +317,7 @@
         
           <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
         
-      <li>5. Other kinds of output</li>
+      <li><span class="section-number">5. </span>Other kinds of output</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -347,7 +348,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="other-kinds-of-output">
-<h1>5. Other kinds of output<a class="headerlink" href="#other-kinds-of-output" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">5. </span>Other kinds of output<a class="headerlink" href="#other-kinds-of-output" title="Permalink to this headline">¶</a></h1>
 <p>So far, the result of any simulation has been power spectra, though several
 other types of output are available, as exemplified by the below parameter
 file:</p>
@@ -429,7 +430,7 @@ outputs spaced logarithmically equidistant between
 <p>Among the new parameters introduced are <code class="docutils literal notranslate"><span class="pre">powerspec_select</span></code>, in which we have
 specified that we only want the data files as output, not plots of this data.</p>
 <div class="section" id="d-renders">
-<h2>5.1. 3D renders<a class="headerlink" href="#d-renders" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.1. </span>3D renders<a class="headerlink" href="#d-renders" title="Permalink to this headline">¶</a></h2>
 <p>Looking in the output directory, among other things you’ll find image files
 with names starting with <code class="docutils literal notranslate"><span class="pre">render3D</span></code>. These are — unsurprisingly — the 3D
 renders. The colors are controlled through the <code class="docutils literal notranslate"><span class="pre">render3D_colors</span></code> and
@@ -445,7 +446,7 @@ Alternatively, you may pass a 3-tuple of RGB values (e.g.
 <code class="docutils literal notranslate"><span class="pre">render3D_bgcolor</span> <span class="pre">=</span> <span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></code> makes the background red).</p>
 </div>
 <div class="section" id="id1">
-<h2>5.2. 2D renders<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.2. </span>2D renders<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>The 2D renders show the particle configuration projected along one of the axes
 of the box. These can often be prettier than their 3D counterparts, as a
 colormap is used to visualise the density field, rather than just a single
@@ -493,7 +494,7 @@ the <em>info utility</em>, is encountered just below, while a
 more in-depth investigations of other utilities.</p>
 </div>
 <div class="section" id="snapshots">
-<h2>5.3. Snapshots<a class="headerlink" href="#snapshots" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">5.3. </span>Snapshots<a class="headerlink" href="#snapshots" title="Permalink to this headline">¶</a></h2>
 <p>Snapshots are raw dumps of the total system, in this case the position and
 momenta of all <span class="math notranslate nohighlight">\(64^3\)</span> particles. CO<em>N</em>CEPT uses its own snapshot
 format, which is simply a well-structured HDF5 file.</p>

@@ -83,6 +83,24 @@ CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
 
 
 
+Problems related to Python libraries and packages
+-------------------------------------------------
+If Python itself fails to start or raises ``ImportError`` when loading certain
+packages, it may be due to improper configuration of the Python environment.
+In particular the ``PYTHONPATH``, ``PYTHONHOME`` and ``PYTHONNOUSERSITE``
+environment variables should be set (or unset) appropriately. If CO\ *N*\ CEPT
+has its own dedicated Python installation, one safe choice is to follow
+:ref:`this<eliminating_interference_from_foreign_Python_installations>`, which
+isolate the dedicated Python installation so that other Python installations
+on the system has no chance of interfering.
+
+Note that if you have instaled CO\ *N*\ CEPT using the ``installer`` and not
+explicitly made use of a pre-existing Python installation, a dedicated Python
+has been installation and the Python environment has already been set up
+appropriately (see the ``.env`` file).
+
+
+
 Error messages containing 'errno = 38'
 --------------------------------------
 If you see error messages of the format

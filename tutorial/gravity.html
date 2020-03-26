@@ -25,14 +25,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script type="text/javascript" src="../_static/clipboard.min.js"></script>
-        <script type="text/javascript" src="../_static/copybutton.js"></script>
-        <script type="text/javascript">var copybuttonSkipText = '>>> ';</script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -154,6 +153,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-paths-file">The <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../installation.html#the-env-file">The <code class="docutils literal notranslate"><span class="pre">.env</span></code> file</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../installation.html#path-like-environment-variables"><code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../installation.html#eliminating-interference-from-foreign-python-installations">Eliminating interference from foreign Python installations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../installation.html#the-mpi-executor">The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../installation.html#the-make-jobs-environment-variable">The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable</a></li>
 </ul>
@@ -253,6 +253,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#error-messages-containing-errno-38">Error messages containing ‘errno = 38’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
@@ -316,7 +317,7 @@
         
           <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
         
-      <li>4. Mastering gravity</li>
+      <li><span class="section-number">4. </span>Mastering gravity</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -347,7 +348,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="mastering-gravity">
-<h1>4. Mastering gravity<a class="headerlink" href="#mastering-gravity" title="Permalink to this headline">¶</a></h1>
+<h1><span class="section-number">4. </span>Mastering gravity<a class="headerlink" href="#mastering-gravity" title="Permalink to this headline">¶</a></h1>
 <p>The fact that gravity is extremely important for the particle evolution has
 already been demonstrated. We would like our simulation to be able to compute
 gravity in a manner that is both accurate and efficient, but in practice one
@@ -371,7 +372,7 @@ to the ones encountered in the previous section. Save these in
     <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
 <span class="p">}</span>
 <span class="n">output_bases</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="n">f</span><span class="s1">&#39;powerspec_</span><span class="si">{_sim}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;powerspec_</span><span class="si">{</span><span class="n">_sim</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 <span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
@@ -415,7 +416,7 @@ different value of <code class="docutils literal notranslate"><span class="pre">
 <span class="math notranslate nohighlight">\(a=1\)</span>, along with the corresponding plot
 <code class="docutils literal notranslate"><span class="pre">output/tutorial/powerspec_A_a=1.00.png</span></code>.</p>
 <div class="section" id="the-pm-method">
-<h2>4.1. The PM method<a class="headerlink" href="#the-pm-method" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.1. </span>The PM method<a class="headerlink" href="#the-pm-method" title="Permalink to this headline">¶</a></h2>
 <p>Without further specification, CO<em>N</em>CEPT solves gravity using the
 particle-mesh (PM) method. We may also specify this choice explicitly using</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
@@ -456,7 +457,7 @@ by doubling the size (resolution) of the potential grid (in each direction):</p>
 size affects the result. What isn’t clear is which result to trust.</p>
 </div>
 <div class="section" id="the-p3m-method">
-<h2>4.2. The P³M method<a class="headerlink" href="#the-p3m-method" title="Permalink to this headline">¶</a></h2>
+<h2><span class="section-number">4.2. </span>The P³M method<a class="headerlink" href="#the-p3m-method" title="Permalink to this headline">¶</a></h2>
 <p>A different gravitational method is the particle-particle-particle-mesh (P³M)
 method. This method also makes use of a potential grid, but here the grid is
 used only to get the gravitational force between particles separated by a
@@ -500,20 +501,20 @@ script below:</p>
 
 <span class="n">this_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{this_dir}</span><span class="s1">/powerspec*&#39;</span><span class="p">)):</span>
+<span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">this_dir</span><span class="si">}</span><span class="s1">/powerspec*&#39;</span><span class="p">)):</span>
     <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;powerspec_(.+)_a=[\d.]+$&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">match</span><span class="p">:</span>
         <span class="k">continue</span>
     <span class="n">sim</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">P_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">linetype</span> <span class="o">=</span> <span class="s1">&#39;--&#39;</span> <span class="k">if</span> <span class="n">sim</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">}</span> <span class="k">else</span> <span class="s1">&#39;-&#39;</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">linetype</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">f</span><span class="s1">&#39;simulation </span><span class="si">{sim}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">linetype</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;simulation </span><span class="si">{</span><span class="n">sim</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_lin</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$k$ $[\mathrm</span><span class="si">{Mpc}</span><span class="s1">^{-1}]$&#39;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;power $[\mathrm</span><span class="si">{Mpc}</span><span class="s1">^3]$&#39;</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{this_dir}</span><span class="s1">/plot.png&#39;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">this_dir</span><span class="si">}</span><span class="s1">/plot.png&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>To use the above script, save the code to a file in the <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code>

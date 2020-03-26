@@ -814,7 +814,7 @@ sourcing or module loading does not have to be repeated manually before
 running CO\ *N*\ CEPT.
 
 If you are installing CO\ *N*\ CEPT without the use of the ``installer`` or
-some crucial part of the environemnt was not picked up during the
+some crucial part of the environment was not picked up during the
 installation, you may add it yourself to the ``.env`` file, i.e. place
 
 .. code-block:: bash
@@ -828,9 +828,9 @@ part of the global CO\ *N*\ CEPT environment.
 
 ``PATH``-like environment variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Many environemnt variables (e.g. ``PATH``, ``LD_LIBRARY_PATH``) are
+Many environment variables (e.g. ``PATH``, ``LD_LIBRARY_PATH``) are
 "``PATH``-like", meaning that their values are colon-separated substrings.
-Such environemnt variables are potentially dangerous to overwrite, so
+Such environment variables are potentially dangerous to overwrite, so
 instead they are merely updated by either prepending or appending new
 substrings to their present value, e.g.
 
@@ -850,11 +850,34 @@ which either prepends or appends ``/some/new/path`` to ``PATH``, depending on
 whether the ``concatenate`` variable in ``.env`` is set to ``prepend`` or
 ``append``.
 
-Any such ``PATH``-like environment variables present during install time will
-be placed in a similar array structure. Whether these are prepended or
-appended to the preexisting values of the same ``PATH``-like environment
-variables when building/running CO\ *N*\ CEPT is similarly determined by
-``concatenate``.
+When using the ``installer``, any such ``PATH``-like environment variables
+present during install time will be placed in a similar array structure.
+Whether these are prepended or appended to the preexisting values of the same
+``PATH``-like environment variables when building/running CO\ *N*\ CEPT is
+similarly determined by ``concatenate``.
+
+
+
+.. _eliminating_interference_from_foreign_Python_installations:
+
+Eliminating interference from foreign Python installations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When using the ``installer`` and Python is installed as part of the
+CO\ *N*\ CEPT installation (the default), the following lines are placed in
+``.env`` (see the
+`Python documentation <https://docs.python.org/3/using/cmdline.html#environment-variables>`_
+for details):
+
+.. code-block:: bash
+
+   unset PYTHONPATH
+   unset PYTHONHOME
+   export PYTHONNOUSERSITE="True"
+
+This is to eliminate any chance of interference from other Python
+installations on the system. If you have installed CO\ *N*\ CEPT manually and
+experience problems with Python (e.g. ``ImportError``), try adding the above
+lines to the ``.env`` file yourself.
 
 
 
