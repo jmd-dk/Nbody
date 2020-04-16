@@ -38,6 +38,105 @@ installation log files for failed tests may then reveal something.
 
 
 
+Compilation failed
+------------------
+Compilation of the CO\ *N*\ CPET code takes place as the last essential step
+during :ref:`standard installation<standard_installation>`, as well as when
+invoking ``concept`` after changes have been made to the source files. This
+process may fail for several reasons, solutions to some are described in this
+entry.
+
+To check whether the problem is confined to the compilation process, run the
+code in pure Python mode. From within the ``concept`` directory, do
+
+.. code-block:: bash
+
+   ./concept --pure-python --local
+
+If this simple invocation of ``concept`` fails, the problem is not with the
+compilation process itself, in which case this troubleshooting entry cannot
+help you.
+
+
+
+.. _insufficient_memory:
+
+Insufficient memory
+...................
+The minimum memory needed in order for compilation of the code to succeed is
+about 5 GB, though the exact number depends on the system. If you suspect the
+cause of compilation errors might be insufficient memory, try out the below
+steps from within the ``concept`` directory. Before attempting each step, run
+
+.. code-block:: bash
+
+   (source concept && make clean)
+
+in order to clean up from the last, failed compilation attempt.
+
+* Standard (parallel) compilation:
+
+  .. code-block:: bash
+
+     ./concept --local
+
+* Compile each module in serial:
+
+  .. code-block:: bash
+
+     make_jobs="-j 1" ./concept --local
+
+* Add extra swap memory: If you have root privileges on the system, you can
+  temporarily increase the available memory by adding a swap file:
+
+  .. code-block:: bash
+
+     n=8
+     sudo dd if=/dev/zero of=swapfile bs=1024 count=$((n*2**20))
+     sudo chmod 600 swapfile
+     sudo mkswap swapfile
+     sudo swapon swapfile
+
+  This will add an additional 8 GB of swap memory (taken from available disk
+  space), which is plenty. If you do not have that much free disk space, you
+  may try with a lower value of ``n``. With this increased amount of memory,
+  try compiling the code again. If it still fails even when compiling
+  serially, memory is not the problem. To clean up the swap file, do
+
+  .. code-block:: bash
+
+     sudo swapoff swapfile
+     sudo rm -f swapfile
+
+After successful compilation, CO\ *N*\ CEPT will run just as performant as had
+the compilation taken place without trouble.
+
+
+
+Dangerous optimizations
+.......................
+If the compilation errors were not due to
+:ref:`insufficient memory<insufficient_memory>`, it may be that one or more of
+the applied optimization flags causes trouble. Try compiling without any
+optimizations:
+
+.. code-block:: bash
+
+   (source concept && make clean)  # cleanup
+   ./concept --no-optimization --local
+
+If this works, the problem is definately with some of the optimization flags.
+You should however not run CO\ *N*\ CEPT simulations with the compiled code in
+a completely unoptimized state, as this reduces performance drastically.
+Instead, experiment with removing individual optimization flags added to the
+``optimizations`` variable within the ``Makefile``. Substitute the ``-O3``
+flag with ``-O2``, then ``-O1``, then ``-O0``, before removing it completely.
+For each attempt, recompile CO\ *N*\ CEPT with*out* ``--no-optimization``.
+Also, remember to clean up the old compilation before attempting anew.
+
+
+
+
 Terminal color output looks weird
 ---------------------------------
 CO\ *N*\ CEPT includes a lot of color and other formatting in its terminal
@@ -69,20 +168,6 @@ a few elements are still formatted.
 
 
 
-The simulation hangs when calling CLASS
----------------------------------------
-If the simulation hangs right at the beginning of the simulation, at the
-
-   Calling CLASS in order to set the cosmic clock ...
-
-step, it is probably because you have specified a cosmology that CLASS cannot
-handle. When running CO\ *N*\ CEPT in compiled mode, CLASS may hang rather
-than exiting with an error message. To see the CLASS error message, run
-CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
-:ref:`command-line option<pure_python>`.
-
-
-
 Problems related to Python libraries and packages
 -------------------------------------------------
 If Python itself fails to start or raises ``ImportError`` when loading certain
@@ -94,18 +179,18 @@ has its own dedicated Python installation, one safe choice is to follow
 isolate the dedicated Python installation so that other Python installations
 on the system has no chance of interfering.
 
-Note that if you have instaled CO\ *N*\ CEPT using the ``installer`` and not
+Note that if you have installed CO\ *N*\ CEPT using the ``installer`` and not
 explicitly made use of a pre-existing Python installation, a dedicated Python
 has been installation and the Python environment has already been set up
 appropriately (see the ``.env`` file).
 
 
 
-Error messages containing 'errno = 38'
---------------------------------------
+Error messages containing 'Read -1'
+-----------------------------------
 If you see error messages of the format
 
-   Read -1, expected <int>, errno = 38
+   Read -1, expected <int>, errno = <int>
 
 whenever you run CO\ *N*\ CEPT using more than a single process, it is likely
 a problem with OpenMPI, more specifically vader/CMA. If CO\ *N*\ CEPT
@@ -121,30 +206,28 @@ CO\ *N*\ CEPT installation.
 
 
 
+The simulation hangs when calling CLASS
+---------------------------------------
+If the simulation hangs right at the beginning of the simulation, at the
+
+   Calling CLASS in order to set the cosmic clock ...
+
+step, it is probably because you have specified a cosmology that CLASS cannot
+handle. When running CO\ *N*\ CEPT in compiled mode, CLASS may hang rather
+than exiting with an error message. To see the CLASS error message, run
+CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
+:ref:`command-line option<pure_python>`.
+
+
+
 Crashes or other bad behavior
 -----------------------------
 This entry is concerned with problems encountered when using CO\ *N*\ CEPT
 *locally*. If your problem occurs only for remote jobs, please see the
 '`Problems when running remotely`_' entry instead.
 
-If you are unable to run or even compile CO\ *N*\ CEPT, try running in pure
-Python mode by supplying the ``--pure-python`` flag to the ``concept`` script.
-If this works, you are probably dealing with an erroneous compilation. Next,
-remove the ``--pure-python`` flag and instead use ``--no-optimization``. This
-runs CO\ *N*\ CEPT in compiled mode, but without any optimizations.
-
-.. tip::
-   To force a recompilation, you must first clean the code directory. You can
-   do this by
-
-   .. code-block:: bash
-
-       (source concept && make clean)
-
-If CO\ *N*\ CEPT is able to run without optimizations, it might be worth to
-manually edit the ``Makefile`` and remove/alter the exact optimization(s) that
-leads to trouble, allowing for successful runs without necessarily disabling
-*all* optimizations with the ``--no-optimization`` option.
+If you are unable to even compile CO\ *N*\ CEPT, see the
+'`Compilation failed`_' entry.
 
 If you are able to start CO\ *N*\ CEPT runs, but they crash, hang, yield
 obviously wrong results, or exhibit other bad behavior, it may be due to
@@ -163,21 +246,6 @@ used the first time around.
 
 If all tests passes despite the observed (and reproducible!) bad behavior,
 you may have found a bug. Please report this.
-
-
-
-Bad performance when using multiple processes/nodes
----------------------------------------------------
-If you are running CO\ *N*\ CEPT on a cluster and experiences a significant
-drop in performance as you increase the number of processes from e.g. 1 to 2
-or 2 to 4, or when using 2 nodes instead of 1 with the same total number of
-processes, the problem is likely that the MPI library used is not configured
-to handle the network optimally.
-
-Be sure to install CO\ *N*\ CEPT with
-:ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`.
-If you are observing bad network behavior even so, you should try changing the
-MPI executor, as described :ref:`here<chosing_an_mpi_executor>`.
 
 
 
@@ -226,10 +294,10 @@ reinstall CO\ *N*\ CEPT --- including all of its dependencies --- from that
 node. You may either do this by ssh'ing into the node and run the installation
 manually, or you may submit the installation as a remote job. Below you will
 find examples of Slurm and TORQUE/PBS job scripts for installing CO\ *N*\ CEPT.
-In both cases, you may wish to add loading of modules or other environment
-changes, and/or make use of a preinstalled MPI library as described under
-:doc:`installation`. Once a CO\ *N*\ CEPT installation job has begun, you
-can follow the installation process by executing
+In both cases you may wish to change ``concept_version`` and ``install_path``,
+load modules or perform other environment changes, and/or make use of a
+preinstalled MPI library as described
+:ref:`here<optimal_network_performance_on_clusters>`.
 
 .. tabs::
 
@@ -410,6 +478,21 @@ MPI, try switching from MPICH to OpenMPI or vice versa, as described
 
 When installing CO\ *N*\ CEPT, try having as few modules loaded as possible,
 in order to minimize the possibility of wrong MPI identification and linking.
+
+
+
+Bad performance when using multiple processes/nodes
+---------------------------------------------------
+If you are running CO\ *N*\ CEPT on a cluster and experiences a significant
+drop in performance as you increase the number of processes from e.g. 1 to 2
+or 2 to 4, or when using 2 nodes instead of 1 with the same total number of
+processes, the problem is likely that the MPI library used is not configured
+to handle the network optimally.
+
+Be sure to install CO\ *N*\ CEPT with
+:ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`.
+If you are observing bad network behavior even so, you should try changing the
+MPI executor, as described :ref:`here<chosing_an_mpi_executor>`.
 
 
 
