@@ -264,14 +264,20 @@ Pure Python: ``--pure-python``
 
 
 
-No recompilation: ``--no-recompilation``
+Native optimizations: ``--native-optimizations``
+................................................
+*Under construction!*
+
+
+
+No optimizations: ``--no-optimizations``
 ........................................
 *Under construction!*
 
 
 
-No optimization: ``--no-optimization``
-......................................
+No recompilation: ``--no-recompilation``
+........................................
 *Under construction!*
 
 

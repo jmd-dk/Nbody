@@ -186,8 +186,9 @@
 <li class="toctree-l2"><a class="reference internal" href="#other-modes-of-building-running">Other modes of building/running</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#local-local">Local: <code class="docutils literal notranslate"><span class="pre">--local</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#pure-python-pure-python">Pure Python: <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#native-optimizations-native-optimizations">Native optimizations: <code class="docutils literal notranslate"><span class="pre">--native-optimizations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#no-optimizations-no-optimizations">No optimizations: <code class="docutils literal notranslate"><span class="pre">--no-optimizations</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#no-recompilation-no-recompilation">No recompilation: <code class="docutils literal notranslate"><span class="pre">--no-recompilation</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#no-optimization-no-optimization">No optimization: <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="#unsafe-building-unsafe-building">Unsafe building: <code class="docutils literal notranslate"><span class="pre">--unsafe-building</span></code></a></li>
 </ul>
 </li>
@@ -262,8 +263,8 @@
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#it-still-does-not-work">It <em>still</em> does not work!</a></li>
 </ul>
 </li>
@@ -391,16 +392,17 @@ may be used in place of <code class="docutils literal notranslate"><span class="
 <ul>
 <li><p><a class="reference internal" href="#local-local" id="id20">Local: <code class="docutils literal notranslate"><span class="pre">--local</span></code></a></p></li>
 <li><p><a class="reference internal" href="#pure-python-pure-python" id="id21">Pure Python: <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code></a></p></li>
-<li><p><a class="reference internal" href="#no-recompilation-no-recompilation" id="id22">No recompilation: <code class="docutils literal notranslate"><span class="pre">--no-recompilation</span></code></a></p></li>
-<li><p><a class="reference internal" href="#no-optimization-no-optimization" id="id23">No optimization: <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code></a></p></li>
-<li><p><a class="reference internal" href="#unsafe-building-unsafe-building" id="id24">Unsafe building: <code class="docutils literal notranslate"><span class="pre">--unsafe-building</span></code></a></p></li>
+<li><p><a class="reference internal" href="#native-optimizations-native-optimizations" id="id22">Native optimizations: <code class="docutils literal notranslate"><span class="pre">--native-optimizations</span></code></a></p></li>
+<li><p><a class="reference internal" href="#no-optimizations-no-optimizations" id="id23">No optimizations: <code class="docutils literal notranslate"><span class="pre">--no-optimizations</span></code></a></p></li>
+<li><p><a class="reference internal" href="#no-recompilation-no-recompilation" id="id24">No recompilation: <code class="docutils literal notranslate"><span class="pre">--no-recompilation</span></code></a></p></li>
+<li><p><a class="reference internal" href="#unsafe-building-unsafe-building" id="id25">Unsafe building: <code class="docutils literal notranslate"><span class="pre">--unsafe-building</span></code></a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#specials" id="id25">Specials</a></p>
+<li><p><a class="reference internal" href="#specials" id="id26">Specials</a></p>
 <ul>
-<li><p><a class="reference internal" href="#test-t-test" id="id26">Test: <code class="docutils literal notranslate"><span class="pre">-t</span></code>, <code class="docutils literal notranslate"><span class="pre">--test</span></code></a></p></li>
-<li><p><a class="reference internal" href="#main-entry-point-m-main" id="id27">Main entry point: <code class="docutils literal notranslate"><span class="pre">-m</span></code>, <code class="docutils literal notranslate"><span class="pre">--main</span></code></a></p></li>
-<li><p><a class="reference internal" href="#interactive-i-interactive" id="id28">Interactive: <code class="docutils literal notranslate"><span class="pre">-i</span></code>, <code class="docutils literal notranslate"><span class="pre">--interactive</span></code></a></p></li>
+<li><p><a class="reference internal" href="#test-t-test" id="id27">Test: <code class="docutils literal notranslate"><span class="pre">-t</span></code>, <code class="docutils literal notranslate"><span class="pre">--test</span></code></a></p></li>
+<li><p><a class="reference internal" href="#main-entry-point-m-main" id="id28">Main entry point: <code class="docutils literal notranslate"><span class="pre">-m</span></code>, <code class="docutils literal notranslate"><span class="pre">--main</span></code></a></p></li>
+<li><p><a class="reference internal" href="#interactive-i-interactive" id="id29">Interactive: <code class="docutils literal notranslate"><span class="pre">-i</span></code>, <code class="docutils literal notranslate"><span class="pre">--interactive</span></code></a></p></li>
 </ul>
 </li>
 </ul>
@@ -573,34 +575,38 @@ remote job (which fails if you have not specified the <code class="docutils lite
 <span id="pure-python"></span><h3><a class="toc-backref" href="#id21">Pure Python: <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code></a><a class="headerlink" href="#pure-python-pure-python" title="Permalink to this headline">¶</a></h3>
 <p><em>Under construction!</em></p>
 </div>
-<div class="section" id="no-recompilation-no-recompilation">
-<h3><a class="toc-backref" href="#id22">No recompilation: <code class="docutils literal notranslate"><span class="pre">--no-recompilation</span></code></a><a class="headerlink" href="#no-recompilation-no-recompilation" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="native-optimizations-native-optimizations">
+<h3><a class="toc-backref" href="#id22">Native optimizations: <code class="docutils literal notranslate"><span class="pre">--native-optimizations</span></code></a><a class="headerlink" href="#native-optimizations-native-optimizations" title="Permalink to this headline">¶</a></h3>
 <p><em>Under construction!</em></p>
 </div>
-<div class="section" id="no-optimization-no-optimization">
-<h3><a class="toc-backref" href="#id23">No optimization: <code class="docutils literal notranslate"><span class="pre">--no-optimization</span></code></a><a class="headerlink" href="#no-optimization-no-optimization" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="no-optimizations-no-optimizations">
+<h3><a class="toc-backref" href="#id23">No optimizations: <code class="docutils literal notranslate"><span class="pre">--no-optimizations</span></code></a><a class="headerlink" href="#no-optimizations-no-optimizations" title="Permalink to this headline">¶</a></h3>
+<p><em>Under construction!</em></p>
+</div>
+<div class="section" id="no-recompilation-no-recompilation">
+<h3><a class="toc-backref" href="#id24">No recompilation: <code class="docutils literal notranslate"><span class="pre">--no-recompilation</span></code></a><a class="headerlink" href="#no-recompilation-no-recompilation" title="Permalink to this headline">¶</a></h3>
 <p><em>Under construction!</em></p>
 </div>
 <div class="section" id="unsafe-building-unsafe-building">
-<h3><a class="toc-backref" href="#id24">Unsafe building: <code class="docutils literal notranslate"><span class="pre">--unsafe-building</span></code></a><a class="headerlink" href="#unsafe-building-unsafe-building" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id25">Unsafe building: <code class="docutils literal notranslate"><span class="pre">--unsafe-building</span></code></a><a class="headerlink" href="#unsafe-building-unsafe-building" title="Permalink to this headline">¶</a></h3>
 <p><em>Under construction!</em></p>
 </div>
 </div>
 <div class="section" id="specials">
-<span id="id5"></span><h2><a class="toc-backref" href="#id25">Specials</a><a class="headerlink" href="#specials" title="Permalink to this headline">¶</a></h2>
+<span id="id5"></span><h2><a class="toc-backref" href="#id26">Specials</a><a class="headerlink" href="#specials" title="Permalink to this headline">¶</a></h2>
 <p>The following special options are mostly useful for development. Even so,
 knowledge about them may come in handy outside of development, as they are
 very powerful.</p>
 <div class="section" id="test-t-test">
-<span id="test"></span><h3><a class="toc-backref" href="#id26">Test: <code class="docutils literal notranslate"><span class="pre">-t</span></code>, <code class="docutils literal notranslate"><span class="pre">--test</span></code></a><a class="headerlink" href="#test-t-test" title="Permalink to this headline">¶</a></h3>
+<span id="test"></span><h3><a class="toc-backref" href="#id27">Test: <code class="docutils literal notranslate"><span class="pre">-t</span></code>, <code class="docutils literal notranslate"><span class="pre">--test</span></code></a><a class="headerlink" href="#test-t-test" title="Permalink to this headline">¶</a></h3>
 <p><em>Under construction!</em></p>
 </div>
 <div class="section" id="main-entry-point-m-main">
-<h3><a class="toc-backref" href="#id27">Main entry point: <code class="docutils literal notranslate"><span class="pre">-m</span></code>, <code class="docutils literal notranslate"><span class="pre">--main</span></code></a><a class="headerlink" href="#main-entry-point-m-main" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id28">Main entry point: <code class="docutils literal notranslate"><span class="pre">-m</span></code>, <code class="docutils literal notranslate"><span class="pre">--main</span></code></a><a class="headerlink" href="#main-entry-point-m-main" title="Permalink to this headline">¶</a></h3>
 <p><em>Under construction!</em></p>
 </div>
 <div class="section" id="interactive-i-interactive">
-<h3><a class="toc-backref" href="#id28">Interactive: <code class="docutils literal notranslate"><span class="pre">-i</span></code>, <code class="docutils literal notranslate"><span class="pre">--interactive</span></code></a><a class="headerlink" href="#interactive-i-interactive" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id29">Interactive: <code class="docutils literal notranslate"><span class="pre">-i</span></code>, <code class="docutils literal notranslate"><span class="pre">--interactive</span></code></a><a class="headerlink" href="#interactive-i-interactive" title="Permalink to this headline">¶</a></h3>
 <p><em>Under construction!</em></p>
 </div>
 </div>
