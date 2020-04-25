@@ -43,6 +43,9 @@ Supported platforms
 .. |macos| image:: /_static/macos.png
    :height: 35px
 
+.. |docker| image:: /_static/docker.png
+   :height: 35px
+
 .. tabs::
 
    .. tab:: |linux| :math:`\,\,` Linux
@@ -53,26 +56,30 @@ Supported platforms
 
    .. tab:: |windows| :math:`\,\,` Windows
 
-      Though CO\ *N*\ CEPT does not run on native Windows, support is obtained
-      via the
+      Though CO\ *N*\ CEPT does not run natively on Windows, support is
+      obtained via the
       `Windows Subsytem for Linux <https://docs.microsoft.com/en-us/windows/wsl/about>`_.
       If installing CO\ *N*\ CEPT on Windows this way, make sure to install it
       into a proper Linux directory (e.g. your home directory ``~``) and not a
       Windows directory (e.g. ``/mnt/c/...``).
 
       The more traditional approach of installing Linux in a virtual machine
-      within Windows of course works too.
+      within Windows, or running CO\ *N*\ CEPT through Docker, of course works
+      too.
 
    .. tab:: |macos| :math:`\,\,` macOS
 
-      Currently the only means of running CO\ *N*\ CEPT on a mac is by
-      installing it within a virtual Linux machine.
+      Currently the only means of running CO\ *N*\ CEPT on a mac are either to
+      install it within a virtual Linux machine or run it through Docker.
 
       Though much of the POSIX infrastructure needed to install and run
       CO\ *N*\ CEPT is available to macOS via `Homebrew <https://brew.sh/>`_,
       numerous incompatibilities between the GNU and BSD tools make the
       porting to macOS non-trivial.
 
+   .. tab:: |docker| :math:`\,\,` Docker
+
+      *Under construction!*
 
 
 
@@ -290,13 +297,13 @@ installed by the ``installer`` is given below:
     - **CythonGSL** (depends on Cython, GSL)
     - **NumPy** (depends on BLAS, LAPACK)
     - **SciPy** (depends on BLAS, LAPACK)
-    - **matplotlib** (depends on libpng, FreeType)
+    - **Matplotlib** (depends on libpng, FreeType)
     - **MPI4Py** (depends on MPI, Cython)
     - **H5Py** (depends on HDF5 and MPI)
     - **Sphinx**
-    - **sphinx-copybutton** (depends on Sphinx)
-    - **sphinx_rtd_theme** (depends on Sphinx)
-    - **sphinx-tabs** (depends on Sphinx)
+    - **Sphinx-copybutton** (depends on Sphinx)
+    - **Sphinx_rtd_theme** (depends on Sphinx)
+    - **Sphinx-tabs** (depends on Sphinx)
 
 * **CLASS** + **classy** (depends on Cython, NumPy)
 

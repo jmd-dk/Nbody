@@ -429,6 +429,11 @@ the <code class="docutils literal notranslate"><span class="pre">.paths</span></
 <p><img alt="macos" src="_images/macos.png" style="height: 35px;" /> <span class="math notranslate nohighlight">\(\,\,\)</span> macOS</p>
 </div>
 </div>
+<div class="item sphinx-data-tab-0-3 docutils container">
+<div class="docutils container">
+<p><img alt="docker" src="_images/docker.png" style="height: 35px;" /> <span class="math notranslate nohighlight">\(\,\,\)</span> Docker</p>
+</div>
+</div>
 </div>
 <div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-0-0 active docutils container">
 <p>CO<em>N</em>CEPT should be trivial to install on all major Linux
@@ -436,22 +441,26 @@ distributions. The system may be a laptop, a workstation, a massively
 parallel computer cluster, a Raspberry Pi, a virtual machine, etc.</p>
 </div>
 <div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-0-1 docutils container">
-<p>Though CO<em>N</em>CEPT does not run on native Windows, support is obtained
-via the
+<p>Though CO<em>N</em>CEPT does not run natively on Windows, support is
+obtained via the
 <a class="reference external" href="https://docs.microsoft.com/en-us/windows/wsl/about">Windows Subsytem for Linux</a>.
 If installing CO<em>N</em>CEPT on Windows this way, make sure to install it
 into a proper Linux directory (e.g. your home directory <code class="docutils literal notranslate"><span class="pre">~</span></code>) and not a
 Windows directory (e.g. <code class="docutils literal notranslate"><span class="pre">/mnt/c/...</span></code>).</p>
 <p>The more traditional approach of installing Linux in a virtual machine
-within Windows of course works too.</p>
+within Windows, or running CO<em>N</em>CEPT through Docker, of course works
+too.</p>
 </div>
 <div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-0-2 docutils container">
-<p>Currently the only means of running CO<em>N</em>CEPT on a mac is by
-installing it within a virtual Linux machine.</p>
+<p>Currently the only means of running CO<em>N</em>CEPT on a mac are either to
+install it within a virtual Linux machine or run it through Docker.</p>
 <p>Though much of the POSIX infrastructure needed to install and run
 CO<em>N</em>CEPT is available to macOS via <a class="reference external" href="https://brew.sh/">Homebrew</a>,
 numerous incompatibilities between the GNU and BSD tools make the
 porting to macOS non-trivial.</p>
+</div>
+<div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-0-3 docutils container">
+<p><em>Under construction!</em></p>
 </div>
 </div>
 </div>
@@ -634,13 +643,13 @@ needed to install the Python packages below:</p>
 <li><p><strong>CythonGSL</strong> (depends on Cython, GSL)</p></li>
 <li><p><strong>NumPy</strong> (depends on BLAS, LAPACK)</p></li>
 <li><p><strong>SciPy</strong> (depends on BLAS, LAPACK)</p></li>
-<li><p><strong>matplotlib</strong> (depends on libpng, FreeType)</p></li>
+<li><p><strong>Matplotlib</strong> (depends on libpng, FreeType)</p></li>
 <li><p><strong>MPI4Py</strong> (depends on MPI, Cython)</p></li>
 <li><p><strong>H5Py</strong> (depends on HDF5 and MPI)</p></li>
 <li><p><strong>Sphinx</strong></p></li>
-<li><p><strong>sphinx-copybutton</strong> (depends on Sphinx)</p></li>
-<li><p><strong>sphinx_rtd_theme</strong> (depends on Sphinx)</p></li>
-<li><p><strong>sphinx-tabs</strong> (depends on Sphinx)</p></li>
+<li><p><strong>Sphinx-copybutton</strong> (depends on Sphinx)</p></li>
+<li><p><strong>Sphinx_rtd_theme</strong> (depends on Sphinx)</p></li>
+<li><p><strong>Sphinx-tabs</strong> (depends on Sphinx)</p></li>
 </ul>
 </li>
 </ul>
