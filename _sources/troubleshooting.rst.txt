@@ -177,9 +177,9 @@ packages, it may be due to improper configuration of the Python environment.
 In particular the ``PYTHONPATH``, ``PYTHONHOME`` and ``PYTHONNOUSERSITE``
 environment variables should be set (or unset) appropriately. If CO\ *N*\ CEPT
 has its own dedicated Python installation, one safe choice is to follow
-:ref:`this<eliminating_interference_from_foreign_Python_installations>`, which
-isolate the dedicated Python installation so that other Python installations
-on the system has no chance of interfering.
+:ref:`this <eliminating_interference_from_foreign_Python_installations>`,
+which isolate the dedicated Python installation so that other Python
+installations on the system has no chance of interfering.
 
 Note that if you have installed CO\ *N*\ CEPT using the ``installer`` and not
 explicitly made use of a pre-existing Python installation, a dedicated Python
@@ -404,7 +404,7 @@ optimizations via the ``--no-optimizations`` option to the ``concept`` script,
 just to see what happens. Remember to clean the code directory before running
 with ``--no-optimizations``, to force recompilation. If this works, you should
 experiment with the ``Makefile`` as described
-:ref:`here<dangerous_optimizations>`, as running in a completely unoptimized
+:ref:`here <dangerous_optimizations>`, as running in a completely unoptimized
 state is far from ideal.
 
 To really ensure compatibility with the architecture of a given node,
@@ -415,7 +415,7 @@ find examples of Slurm and TORQUE/PBS job scripts for installing CO\ *N*\ CEPT.
 In both cases you may wish to change ``concept_version`` and ``install_path``,
 load modules or perform other environment changes, and/or make use of a
 preinstalled MPI library as described
-:ref:`here<optimal_network_performance_on_clusters>`.
+:ref:`here <optimal_network_performance_on_clusters>`.
 
 .. tabs::
 
@@ -488,7 +488,7 @@ with the current MPI implementation in use. If you installed CO\ *N*\ CEPT
 using one of the MPI implementations present on the cluster, try again, using
 another preinstalled MPI library. If you let CO\ *N*\ CEPT install its own
 MPI, try switching from MPICH to OpenMPI or vice versa, as described
-:ref:`here<installing_mpich_or_openmpi>`.
+:ref:`here <installing_mpich_or_openmpi>`.
 
 When installing CO\ *N*\ CEPT, try having as few modules loaded as possible,
 in order to minimize the possibility of wrong MPI identification and linking.
@@ -506,7 +506,7 @@ to handle the network optimally.
 Be sure to install CO\ *N*\ CEPT with
 :ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`.
 If you are observing bad network behavior even so, you should try changing the
-MPI executor, as described :ref:`here<chosing_an_mpi_executor>`.
+MPI executor, as described :ref:`here <chosing_an_mpi_executor>`.
 
 
 

@@ -436,9 +436,10 @@ the <code class="docutils literal notranslate"><span class="pre">.paths</span></
 </div>
 </div>
 <div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-0-0 active docutils container">
-<p>CO<em>N</em>CEPT should be trivial to install on all major Linux
-distributions. The system may be a laptop, a workstation, a massively
-parallel computer cluster, a Raspberry Pi, a virtual machine, etc.</p>
+<p>CO<em>N</em>CEPT should be <a class="reference internal" href="#standard-installation"><span class="std std-ref">trivial to install</span></a>
+on all major Linux distributions. The system may be a laptop, a
+workstation, a massively parallel computer cluster, a Raspberry Pi,
+a virtual machine, etc.</p>
 </div>
 <div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-0-1 docutils container">
 <p>Though CO<em>N</em>CEPT does not run natively on Windows, support is
@@ -460,7 +461,30 @@ numerous incompatibilities between the GNU and BSD tools make the
 porting to macOS non-trivial.</p>
 </div>
 <div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-0-3 docutils container">
-<p><em>Under construction!</em></p>
+<p>You may wish to run CO<em>N</em>CEPT through one of the provided
+<a class="reference external" href="https://hub.docker.com/r/jmddk/concept/">Docker images</a>, freeing you
+from the installation process entirely (assuming you have
+<a class="reference external" href="https://www.docker.com/">Docker</a> already installed).</p>
+<p>To start a Docker container based on the latest CO<em>N</em>CEPT Docker
+image, do e.g.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker run --rm -it -v <span class="s2">&quot;</span><span class="si">${</span><span class="nv">PWD</span><span class="si">}</span><span class="s2">&quot;</span>:/concept/concept/output jmddk/concept
+</pre></div>
+</div>
+<p>Any files dumped in the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">output</span></code> directory will then
+persist in your current directory after the Docker container is stopped.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you run Docker Desktop/Toolbox on Windows or macOS, some
+configuration is needed for the mounting (<code class="docutils literal notranslate"><span class="pre">-v</span></code>) to actually point
+to your native Windows/macOS directory.</p>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>While running CO<em>N</em>CEPT via Docker is great for experimental use,
+<a class="reference internal" href="#standard-installation"><span class="std std-ref">proper installation</span></a> on a Linux host is
+preferable for running large simulations, ensuring maximum
+performance.</p>
+</div>
 </div>
 </div>
 </div>
@@ -468,8 +492,9 @@ porting to macOS non-trivial.</p>
 <span id="id1"></span><h2><a class="toc-backref" href="#id12">Standard installation</a><a class="headerlink" href="#standard-installation" title="Permalink to this headline">¶</a></h2>
 <p>The easiest way to install CO<em>N</em>CEPT along with all of its dependencies is
 to use the CO<em>N</em>CEPT <code class="docutils literal notranslate"><span class="pre">installer</span></code> Bash script. This script is part of the
-CO<em>N</em>CEPT source code, and so if you have CO<em>N</em>CEPT already downloaded,
-you may find and run this script:</p>
+CO<em>N</em>CEPT source code, and so if you have CO<em>N</em>CEPT already
+<a class="reference external" href="https://github.com/jmd-dk/concept">downloaded</a>, you may find and run this
+script:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash installer
 </pre></div>
 </div>

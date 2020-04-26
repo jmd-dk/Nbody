@@ -58,7 +58,7 @@ A vast set of units are understood, like ``km``, ``pc``, ``kpc``, ``Mpc``,
    The actual numerical value resulting from e.g. ``512*Mpc`` depends on the
    internal unit system employed by CO\ *N*\ CEPT. The unit system itself is
    not statically defined, but specified on a per-simulation basis via
-   :doc:`parameters<system_of_units>`. Though the vast majority of users
+   :doc:`parameters <system_of_units>`. Though the vast majority of users
    have no need to manually specify the internal unit system, it is useful
    for e.g. testing against other simulation codes that use some other,
    fixed system of units.
@@ -214,7 +214,7 @@ parameters are ``h`` and ``Ων``:
 
 * ``Ων`` is the total density parameter :math:`\Omega_\nu` for all *massive*
   neutrino species. It is set based on the massive neutrino parameters defined
-  by the ``class_params`` :ref:`parameter<class_params>`. As the computation
+  by the ``class_params`` :ref:`parameter <class_params>`. As the computation
   of :math:`\Omega_\nu` is non-trivial, this is nice to have available for
   simulations with massive neutrinos where the sum
   :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu` is constrained. With e.g.

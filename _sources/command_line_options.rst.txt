@@ -53,7 +53,7 @@ this directory, specifying this parameter file would look like
    ./concept -p params/my_params
 
 The many possible parameters to put inside parameter files are each described
-:doc:`here</parameters/parameters>`. Parameters absent from the supplied
+:doc:`here </parameters/parameters>`. Parameters absent from the supplied
 parameter file will take on default values. Leaving out the ``-p`` parameter
 file specification when invoking ``concept``, *all* parameters take on their
 default values, which does not result in an actual simulation as no output is
@@ -181,7 +181,7 @@ In short, do not worry about the order of ``concept`` and utility specific
 command-line options.
 
 You can read about the different utilities and their command-line interfaces
-in the :doc:`Utilities</utilities/utilities>` chapter.
+in the :doc:`Utilities </utilities/utilities>` chapter.
 
 
 
@@ -195,11 +195,11 @@ Prints out the version of CO\ *N*\ CEPT that is installed.
 
 Remote job submission
 ---------------------
-On top of the :ref:`basic<basics>` options, the options below are used for
+On top of the :ref:`basic <basics>` options, the options below are used for
 additional resource specification when submitting remote jobs. Note that
 additional possibilities arise for the ``-n`` option when running on a cluster
 with multple compute nodes, as documented
-:ref:`above<specifying_multiple_nodes>`.
+:ref:`above <specifying_multiple_nodes>`.
 
 
 
@@ -246,7 +246,7 @@ recompiled using the ``Makefile``. With the compiled code ready, the requested
 CO\ *N*\ CEPT run is performed. In addition, when working on a remote server
 (through ssh), rather than starting the run directly, it is submitted as a
 remote job (which fails if you have not specified the ``-q``
-:ref:`option<queue>`).
+:ref:`option <queue>`).
 
 
 
