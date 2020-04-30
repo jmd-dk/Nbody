@@ -115,7 +115,11 @@ regular Python scripts. The additional super powers are described below.
 
 Parameters may be defined in terms of each other. Unlike regular variables,
 the definition order does not matter (i.e. you may reference a variable
-"before" it is defined).
+*before* it is defined). The magic that makes this work is cyclic execution of
+the parameter file, so that a variable that is needed on some line but only
+defined by some later line, is correctly set at the second execution. This
+non-linear variable dependence may continue arbitrarily, requiring many more
+execution passes.
 
 
 

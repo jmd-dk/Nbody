@@ -811,7 +811,7 @@ below:
 
 In CO\ *N*\ CEPT parameter files, all variables defined in the ``.paths``
 file are available through the ``paths`` ``dict``. Thus, to e.g. get the
-absoute path to the the ``output`` directory, you may use
+absoute path to the ``output`` directory, you may use
 
 .. code-block:: python3
 

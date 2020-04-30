@@ -6,7 +6,7 @@ section.
 If you are running CO\ *N*\ CEPT on a remote machine, i.e. logged in to a
 server/cluster via ``ssh``, you've so far had to supply the additional
 ``--local`` option to the ``concept`` script. This is because CO\ *N*\ CEPT
-has built-in support for submission of jobs to a job schedular / queueing system
+has built-in support for submission of jobs to a job scheduler / queueing system
 / resource manager (specifically Slurm, TORQUE and PBS), and this is the
 default behavior when working remotely. If you are working remotely but do not
 intend to use a job shedular, keep using ``--local`` and skip the rest of this
@@ -23,7 +23,8 @@ into a remote server, CO\ *N*\ CEPT will error out immediately, letting you
 know that it has created an almost complete *job script*, simply called
 ``jobscript`` and placed in the ``concept`` directory. This job script is a
 great starting point if you want to control the job submission yourself. All
-that needs to be changed/added are the directives at the top of the jobscript.
+that needs to be changed/added are the directives at the top of the job
+script.
 
 To automatically submit a complete job script, you need to specify the *queue*
 (called *partition* in Slurm) in which to submit the job using the ``-q``
@@ -50,10 +51,10 @@ nodes. Examples of legal memory specifications include ``--memory 8192MB``,
 ``--memory 8192M``, ``--memory 8G``, ``--memory 2*4G``, which all specify 8
 gigabytes, i.e. 1 gigabyte per core for ``-n 8`` or ``-n 2:4``.
 
-To specify a walltime limit, i.e. a maximum time within which the simulation
-is expected to be completed, further supply the ``-w <walltime>`` option.
-Examples of legal walltime specifications include ``-w 60min``, ``-w 60m``,
-``-w 1hr``, ``-w 1h``, which all request one hour of walltime.
+To specify a wall time limit, i.e. a maximum time within which the simulation
+is expected to be completed, further supply the ``-w <wall-time>`` option.
+Examples of legal wall time specifications include ``-w 60min``, ``-w 60m``,
+``-w 1hr``, ``-w 1h``, which all request one hour of wall time.
 
 A complete CO\ *N*\ CEPT job submission could then look like
 
@@ -75,11 +76,12 @@ A complete CO\ *N*\ CEPT job submission could then look like
    <h3>The watch utility</h3>
 
 Once a job is submitted, CO\ *N*\ CEPT will notify you that you may now kill
-(``Ctrl`` + ``C``) the process. If you don't, the submitted job is continually
-monitored, and its output will be printed to the screen once it starts
-running, as if you were running the simulation locally. This is handled by the
-*watch utility*, which is automatically called after job submission. It works
-by continually printing out updates to the log file in close to real time.
+(``Ctrl``\ +\ ``C``) the process. If you don't, the submitted job is
+continually monitored, and its output will be printed to the screen once it
+starts running, as if you were running the simulation locally. This is handled
+by the *watch utility*, which is automatically called after job submission. It
+works by continually printing out updates to the log file in close to real
+time.
 
 If you don't want to watch the job after submission, you may supply the
 ``--no-watching`` option to ``concept`` instead of having to kill the process
@@ -92,10 +94,10 @@ You may manually run the watch utility at any later time, like so:
    ./concept -u watch <ID>  # Replace <ID> with job ID of remote running job
 
 The job ID --- and hence log file name --- of submitted jobs is determined by
-the job schedular, and is printed as soon as the job is submitted. You may
+the job scheduler, and is printed as soon as the job is submitted. You may
 also leave out any job ID when running the ``watch`` utility, in which case
 the latest submitted, running job will be watched. Again, to exit, simply
-press ``Ctrl`` + ``C``.
+press ``Ctrl``\ +\ ``C``.
 
 
 

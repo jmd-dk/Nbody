@@ -166,7 +166,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#basics">Basics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#help-h-help">Help: <code class="docutils literal notranslate"><span class="pre">-h</span></code>, <code class="docutils literal notranslate"><span class="pre">--help</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#parameter-file-p-params">Parameter file: <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">--params</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#command-line-parameters-c-command-line-param">Command-line parameters: <code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--command-line-param</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#command-line-parameters-c-command-line-params">Command-line parameters: <code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--command-line-params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#number-of-processes-n-nprocs">Number of processes: <code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--nprocs</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="../command_line_options.html#specifying-multiple-nodes">Specifying multiple nodes</a></li>
 </ul>
@@ -186,8 +186,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../command_line_options.html#other-modes-of-building-running">Other modes of building/running</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#local-local">Local: <code class="docutils literal notranslate"><span class="pre">--local</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#pure-python-pure-python">Pure Python: <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#native-optimizations-native-optimizations">Native optimizations: <code class="docutils literal notranslate"><span class="pre">--native-optimizations</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#no-optimizations-no-optimizations">No optimizations: <code class="docutils literal notranslate"><span class="pre">--no-optimizations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#native-optimizations-native-optimizations">Native optimizations: <code class="docutils literal notranslate"><span class="pre">--native-optimizations</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#no-recompilation-no-recompilation">No recompilation: <code class="docutils literal notranslate"><span class="pre">--no-recompilation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="../command_line_options.html#unsafe-building-unsafe-building">Unsafe building: <code class="docutils literal notranslate"><span class="pre">--unsafe-building</span></code></a></li>
 </ul>
@@ -360,7 +360,7 @@ section.</p>
 <p>If you are running CO<em>N</em>CEPT on a remote machine, i.e. logged in to a
 server/cluster via <code class="docutils literal notranslate"><span class="pre">ssh</span></code>, you’ve so far had to supply the additional
 <code class="docutils literal notranslate"><span class="pre">--local</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script. This is because CO<em>N</em>CEPT
-has built-in support for submission of jobs to a job schedular / queueing system
+has built-in support for submission of jobs to a job scheduler / queueing system
 / resource manager (specifically Slurm, TORQUE and PBS), and this is the
 default behavior when working remotely. If you are working remotely but do not
 intend to use a job shedular, keep using <code class="docutils literal notranslate"><span class="pre">--local</span></code> and skip the rest of this
@@ -370,7 +370,8 @@ into a remote server, CO<em>N</em>CEPT will error out immediately, letting you
 know that it has created an almost complete <em>job script</em>, simply called
 <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> and placed in the <code class="docutils literal notranslate"><span class="pre">concept</span></code> directory. This job script is a
 great starting point if you want to control the job submission yourself. All
-that needs to be changed/added are the directives at the top of the jobscript.</p>
+that needs to be changed/added are the directives at the top of the job
+script.</p>
 <p>To automatically submit a complete job script, you need to specify the <em>queue</em>
 (called <em>partition</em> in Slurm) in which to submit the job using the <code class="docutils literal notranslate"><span class="pre">-q</span></code>
 option to <code class="docutils literal notranslate"><span class="pre">concept</span></code>. Submitting a simulation using e.g. a parameter file
@@ -392,10 +393,10 @@ nodes each with 4 cores.</p>
 nodes. Examples of legal memory specifications include <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8192MB</span></code>,
 <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8192M</span></code>, <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">8G</span></code>, <code class="docutils literal notranslate"><span class="pre">--memory</span> <span class="pre">2*4G</span></code>, which all specify 8
 gigabytes, i.e. 1 gigabyte per core for <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">8</span></code> or <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">2:4</span></code>.</p>
-<p>To specify a walltime limit, i.e. a maximum time within which the simulation
-is expected to be completed, further supply the <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">&lt;walltime&gt;</span></code> option.
-Examples of legal walltime specifications include <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60min</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60m</span></code>,
-<code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1hr</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1h</span></code>, which all request one hour of walltime.</p>
+<p>To specify a wall time limit, i.e. a maximum time within which the simulation
+is expected to be completed, further supply the <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">&lt;wall-time&gt;</span></code> option.
+Examples of legal wall time specifications include <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60min</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">60m</span></code>,
+<code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1hr</span></code>, <code class="docutils literal notranslate"><span class="pre">-w</span> <span class="pre">1h</span></code>, which all request one hour of wall time.</p>
 <p>A complete CO<em>N</em>CEPT job submission could then look like</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">8</span> -q somequeue --mem 8G -w 1h
 </pre></div>
@@ -408,11 +409,12 @@ option to <code class="docutils literal notranslate"><span class="pre">concept</
 are supplied does not matter.</p>
 </div>
 <h3>The watch utility</h3><p>Once a job is submitted, CO<em>N</em>CEPT will notify you that you may now kill
-(<code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + <code class="docutils literal notranslate"><span class="pre">C</span></code>) the process. If you don’t, the submitted job is continually
-monitored, and its output will be printed to the screen once it starts
-running, as if you were running the simulation locally. This is handled by the
-<em>watch utility</em>, which is automatically called after job submission. It works
-by continually printing out updates to the log file in close to real time.</p>
+(<code class="docutils literal notranslate"><span class="pre">Ctrl</span></code>+<code class="docutils literal notranslate"><span class="pre">C</span></code>) the process. If you don’t, the submitted job is
+continually monitored, and its output will be printed to the screen once it
+starts running, as if you were running the simulation locally. This is handled
+by the <em>watch utility</em>, which is automatically called after job submission. It
+works by continually printing out updates to the log file in close to real
+time.</p>
 <p>If you don’t want to watch the job after submission, you may supply the
 <code class="docutils literal notranslate"><span class="pre">--no-watching</span></code> option to <code class="docutils literal notranslate"><span class="pre">concept</span></code> instead of having to kill the process
 after submission.</p>
@@ -421,10 +423,10 @@ after submission.</p>
 </pre></div>
 </div>
 <p>The job ID — and hence log file name — of submitted jobs is determined by
-the job schedular, and is printed as soon as the job is submitted. You may
+the job scheduler, and is printed as soon as the job is submitted. You may
 also leave out any job ID when running the <code class="docutils literal notranslate"><span class="pre">watch</span></code> utility, in which case
 the latest submitted, running job will be watched. Again, to exit, simply
-press <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> + <code class="docutils literal notranslate"><span class="pre">C</span></code>.</p>
+press <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code>+<code class="docutils literal notranslate"><span class="pre">C</span></code>.</p>
 <h3>Using a pre-installed MPI library</h3><p>The <a class="reference internal" href="installation.html"><span class="doc">installation procedure</span></a> described in this
 tutorial installed CO<em>N</em>CEPT along with every dependency, with no regard
 for possibly preinstalled libraries. Though generally recommended, for running

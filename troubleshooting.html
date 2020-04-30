@@ -172,7 +172,7 @@
 <li class="toctree-l2"><a class="reference internal" href="command_line_options.html#basics">Basics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#help-h-help">Help: <code class="docutils literal notranslate"><span class="pre">-h</span></code>, <code class="docutils literal notranslate"><span class="pre">--help</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#parameter-file-p-params">Parameter file: <code class="docutils literal notranslate"><span class="pre">-p</span></code>, <code class="docutils literal notranslate"><span class="pre">--params</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="command_line_options.html#command-line-parameters-c-command-line-param">Command-line parameters: <code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--command-line-param</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="command_line_options.html#command-line-parameters-c-command-line-params">Command-line parameters: <code class="docutils literal notranslate"><span class="pre">-c</span></code>, <code class="docutils literal notranslate"><span class="pre">--command-line-params</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#number-of-processes-n-nprocs">Number of processes: <code class="docutils literal notranslate"><span class="pre">-n</span></code>, <code class="docutils literal notranslate"><span class="pre">--nprocs</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="command_line_options.html#specifying-multiple-nodes">Specifying multiple nodes</a></li>
 </ul>
@@ -192,8 +192,8 @@
 <li class="toctree-l2"><a class="reference internal" href="command_line_options.html#other-modes-of-building-running">Other modes of building/running</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#local-local">Local: <code class="docutils literal notranslate"><span class="pre">--local</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#pure-python-pure-python">Pure Python: <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="command_line_options.html#native-optimizations-native-optimizations">Native optimizations: <code class="docutils literal notranslate"><span class="pre">--native-optimizations</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#no-optimizations-no-optimizations">No optimizations: <code class="docutils literal notranslate"><span class="pre">--no-optimizations</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="command_line_options.html#native-optimizations-native-optimizations">Native optimizations: <code class="docutils literal notranslate"><span class="pre">--native-optimizations</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#no-recompilation-no-recompilation">No recompilation: <code class="docutils literal notranslate"><span class="pre">--no-recompilation</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="command_line_options.html#unsafe-building-unsafe-building">Unsafe building: <code class="docutils literal notranslate"><span class="pre">--unsafe-building</span></code></a></li>
 </ul>
@@ -588,7 +588,7 @@ executable used to launch MPI programs.</p>
 the MPI executor, overwrite the dedicated <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> varaible in the
 <code class="docutils literal notranslate"><span class="pre">.env</span></code> file (located one directory level above the <code class="docutils literal notranslate"><span class="pre">concept</span></code> directory,
 i.e. at <code class="docutils literal notranslate"><span class="pre">/path/to/concept_installation/.env</span></code>). Helpful suggestions for the
-choice of MPI executor depends on the job schedular in use (Slurm or
+choice of MPI executor depends on the job scheduler in use (Slurm or
 TORQUE/PBS).</p>
 <div class="sphinx-tabs docutils container">
 <div class="ui top attached tabular menu sphinx-menu docutils container">
@@ -614,10 +614,10 @@ to an MPI library configured and installed by a system administrator
 of the cluster. If the below does not work, try setting the MPI
 executor as though you were using TORQUE/PBS.</p>
 </div>
-<p>If Slurm is used as the job schedular and the MPI library used was not
+<p>If Slurm is used as the job scheduler and the MPI library used was not
 installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script as part of the CO<em>N</em>CEPT
 installation, the MPI executor will be set to <code class="docutils literal notranslate"><span class="pre">srun</span> <span class="pre">--cpu_bind=none</span></code>
-in jobscripts by default (or possibly
+in job scripts by default (or possibly
 <code class="docutils literal notranslate"><span class="pre">srun</span> <span class="pre">--cpu_bind=none</span> <span class="pre">--mpi=openmpi</span></code> if OpenMPI is used). The first
 thing to try is to leave out <code class="docutils literal notranslate"><span class="pre">--cpu_bind=none</span></code>, i.e. setting</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;srun&quot;</span>
@@ -641,7 +641,7 @@ to test if it also works with the added <code class="docutils literal notranslat
 this is preferred.</p>
 </div>
 <div style="padding-bottom: 0;" class="ui bottom attached sphinx-tab tab segment sphinx-data-tab-VE9SUVVFL1BCUw== docutils container">
-<p>When TORQUE or PBS is used as the job schedular, the MPI executor will be
+<p>When TORQUE or PBS is used as the job scheduler, the MPI executor will be
 set to one of <code class="docutils literal notranslate"><span class="pre">mpiexec</span></code> or <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> by default, possibly with
 additional options. The first thing to try is to leave out these options,
 i.e. setting</p>
@@ -775,7 +775,7 @@ installation process by executing</p>
 <p>If you are still struggling, in particular if CO<em>N</em>CEPT does launch but
 the MPI process binding/affinity is wrong, try removing some of the added
 environment variables that gets set in the <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> (under the
-‘Environment variables’ heading). After altering the jobscript, submit it
+‘Environment variables’ heading). After altering the job script, submit it
 manually using <code class="docutils literal notranslate"><span class="pre">sbatch</span> <span class="pre">jobscript</span></code> (Slurm) or <code class="docutils literal notranslate"><span class="pre">qsub</span> <span class="pre">jobscript</span></code>
 (TORQUE/PBS).</p>
 <p>It is also possible that the cluster configuration just do not play nicely
@@ -809,7 +809,7 @@ across multiple nodes, you should try
 <a class="reference internal" href="#chosing-an-mpi-executor"><span class="std std-ref">changing the MPI executor</span></a>.</p>
 <p>If you are able to run single-node CO<em>N</em>CEPT jobs remotely, but encounter
 problems as soon as you request multiple nodes, it may be a permission
-problem. For example, OpenMPI uses ssh to establish the connection between the
+problem. For example, OpenMPI uses SSH to establish the connection between the
 nodes, and so your local <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code> directory need to be configured properly.
 Note that when using an MPI implementation preinstalled on the cluster, such
 additional configuration from the user ought not to be necessary.</p>
@@ -822,7 +822,7 @@ multi-node communication. Currently this feature resides as part of the
 <p>Note that this will move all existing content of <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code> to
 <code class="docutils literal notranslate"><span class="pre">~/.ssh_backup</span></code>. Also, any configuration you might have done will not be
 reflected in the new content of <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code>. If this indeed fixes the
-multi-node problem and you want to preserve your original ssh configuration,
+multi-node problem and you want to preserve your original SSH configuration,
 you must properly merge the original content of <code class="docutils literal notranslate"><span class="pre">~/.ssh_backup</span></code> back in with
 the new content of <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code>.</p>
 </div>

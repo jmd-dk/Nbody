@@ -282,7 +282,7 @@ To see which MPI executor is used when running remotely, check out the
 the MPI executor, overwrite the dedicated ``mpi_executor`` varaible in the
 ``.env`` file (located one directory level above the ``concept`` directory,
 i.e. at ``/path/to/concept_installation/.env``). Helpful suggestions for the
-choice of MPI executor depends on the job schedular in use (Slurm or
+choice of MPI executor depends on the job scheduler in use (Slurm or
 TORQUE/PBS).
 
 .. tabs::
@@ -299,10 +299,10 @@ TORQUE/PBS).
          of the cluster. If the below does not work, try setting the MPI
          executor as though you were using TORQUE/PBS.
 
-      If Slurm is used as the job schedular and the MPI library used was not
+      If Slurm is used as the job scheduler and the MPI library used was not
       installed by the ``installer`` script as part of the CO\ *N*\ CEPT
       installation, the MPI executor will be set to ``srun --cpu_bind=none``
-      in jobscripts by default (or possibly
+      in job scripts by default (or possibly
       ``srun --cpu_bind=none --mpi=openmpi`` if OpenMPI is used). The first
       thing to try is to leave out ``--cpu_bind=none``, i.e. setting
 
@@ -334,7 +334,7 @@ TORQUE/PBS).
 
    .. group-tab:: TORQUE/PBS
 
-      When TORQUE or PBS is used as the job schedular, the MPI executor will be
+      When TORQUE or PBS is used as the job scheduler, the MPI executor will be
       set to one of ``mpiexec`` or ``mpirun`` by default, possibly with
       additional options. The first thing to try is to leave out these options,
       i.e. setting
@@ -479,7 +479,7 @@ It *still* does not work!
 If you are still struggling, in particular if CO\ *N*\ CEPT does launch but
 the MPI process binding/affinity is wrong, try removing some of the added
 environment variables that gets set in the ``jobscript`` (under the
-'Environment variables' heading). After altering the jobscript, submit it
+'Environment variables' heading). After altering the job script, submit it
 manually using ``sbatch jobscript`` (Slurm) or ``qsub jobscript``
 (TORQUE/PBS).
 
@@ -522,7 +522,7 @@ across multiple nodes, you should try
 
 If you are able to run single-node CO\ *N*\ CEPT jobs remotely, but encounter
 problems as soon as you request multiple nodes, it may be a permission
-problem. For example, OpenMPI uses ssh to establish the connection between the
+problem. For example, OpenMPI uses SSH to establish the connection between the
 nodes, and so your local ``~/.ssh`` directory need to be configured properly.
 Note that when using an MPI implementation preinstalled on the cluster, such
 additional configuration from the user ought not to be necessary.
@@ -538,7 +538,7 @@ multi-node communication. Currently this feature resides as part of the
 Note that this will move all existing content of ``~/.ssh`` to
 ``~/.ssh_backup``. Also, any configuration you might have done will not be
 reflected in the new content of ``~/.ssh``. If this indeed fixes the
-multi-node problem and you want to preserve your original ssh configuration,
+multi-node problem and you want to preserve your original SSH configuration,
 you must properly merge the original content of ``~/.ssh_backup`` back in with
 the new content of ``~/.ssh``.
 

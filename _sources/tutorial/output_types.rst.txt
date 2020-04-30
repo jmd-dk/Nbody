@@ -161,8 +161,8 @@ With the job ID at hand, try the following:
    ./concept -u play <ID>  # replace <ID> with job ID number
 
 You should see a nice animation of the evolution of the large-scale structure,
-playing out right in the terminal!. The animation is produced from the
-terminal images stored in the log file ``logs/<ID>``.
+playing out right in the terminal! The animation is produced from the terminal
+images stored in the log file ``logs/<ID>``.
 
 The ``-u`` option to the ``concept`` script signals CO\ *N*\ CEPT to start up
 a *utility* rather than running a simulation. These utilities are handy (or
