@@ -1,21 +1,33 @@
+.. raw:: html
+
+   <style type="text/css">
+     span.bolditalic {
+       font-weight: bold;
+       font-style: italic;
+     }
+   </style>
+
+
+
 Beyond matter-only simulations
 ------------------------------
 If you've followed this tutorial so far, you're now fully capable of using
-CO\ *N*\ CEPT for running matter-only simulations. More fancy simulations ---
-taking other species into account --- are also possible, as this section will
-demonstrate.
+CO\ *N*\ CEPT for running matter-only simulations. More exotic simulations ---
+taking additional species into account --- are also possible, as this section
+will demonstrate.
 
 To assess the effects resulting from including non-matter species, we shall
 perform a slew of simulations throughout this section. As most effects are
-small, we shall also learn how to crank up the precision, introducing several
-new parameters. If you have no interest in any of this, feel free to skip this
-section, as it is rather lengthy and more technical than the other sections of
-this tutorial.
+small, we shall also learn how to improve the precision in different
+circumstances, introducing several new parameters. If you have no interest in
+any of this, feel free to skip this section, as it is rather lengthy and more
+technical than the other sections of this tutorial.
 
 Each subsection below tackles a separate species/subject. Though you might be
 interested in only one of these, it's highly recommended to go through them
 all in order, as they build upon each other. Though each subsection deals with
-a particular species in isolation, these may be mixed and matched at will.
+a particular species in isolation, these may be mixed and matched at will when
+running simulations.
 
 .. contents::
    :local:
@@ -43,15 +55,17 @@ field from all species but matter to the *N*-body simulation, applying the
 otherwise missing gravity as an external force.
 
 CO\ *N*\ CEPT uses the `CLASS <http://class-code.net/>`_ code to solve the
-linear perturbation equations. For details on how the linear perturbations
-are applied to the *N*-body particles during the simulation, we refer to the
-paper on
-":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations</publications>`".
+equations of linear perturbation theory. For details on how the linear
+perturbations are applied to the *N*-body particles during the simulation, we
+refer to the paper on
+":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations </publications>`".
 
 We begin our exploration by performing a standard matter-only simulation, as
 specified by the below parameter file:
 
 .. code-block:: python3
+   :caption: params/tutorial :math:`\,` (radiation)
+   :name: params-radiation
 
    # Non-parameter helper variable used to control the size of the simulation
    _size = 192
@@ -70,7 +84,7 @@ specified by the below parameter file:
        initial_conditions.append(
            # Linear fluid component
            {
-               'species'        : _species.strip(),
+               'species'        : _species,
                'gridsize'       : _size,
                'boltzmann order': -1,
            }
@@ -79,7 +93,8 @@ specified by the below parameter file:
        'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
    }
    output_bases = {
-       'powerspec': f'powerspec_lin={_lin}'.replace(' ', ''),
+       'powerspec': f'powerspec{_lin=}'
+           .replace(' ', '').replace('"', '').replace("'", ''),
    }
    output_times = {
        'powerspec': 2*a_begin,
@@ -104,8 +119,22 @@ specified by the below parameter file:
    # Should be supplied as a command-line parameter.
    _lin = ''
 
-As usual, save the parameters in e.g. ``params/tutorial`` and run the
-simulation via
+As usual, save the parameters as e.g. ``params/tutorial``.
+
+.. note::
+   Before running simulations, it's best to ensure that the output directory
+   ``output/tutorial`` is empty (or non-existent), so that old output does not
+   get mixed in with the new. Plotting scripts in this section may not
+   function properly if run from a directory containing "old" output.
+
+   To not loose your simulation results, you may of course save the output
+   from a previous tutorial (sub)section, e.g.
+
+   .. code-block:: bash
+
+      mv output/tutorial output/tutorial_6
+
+With a clean ``output/tutorial`` directory, run the simulation:
 
 .. code-block:: bash
 
@@ -114,7 +143,6 @@ simulation via
 possibly with the addition of ``-n 4`` or some other number of processes.
 
 .. note::
-
    The remainder of this tutorial leaves out explicit mention of the ``-n``
    option to ``concept`` invocations. Please add whatever number of processes
    you would like yourself.
@@ -159,39 +187,53 @@ simulation. To better see this difference, we shall make use of the below
 plotting script:
 
 .. code-block:: python3
+   :caption: output/tutorial/plot.py :math:`\,` (radiation)
+   :name: plot-radiation
 
    import glob, os, re
    import numpy as np
    import matplotlib.pyplot as plt
 
+   # Read in data
    this_dir = os.path.dirname(os.path.realpath(__file__))
-   fig, axes = plt.subplots(2, sharex=True)
-   for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
-       match = re.search(r'powerspec_lin=(.*)_a=[\d.]+$', filename)
-       if not match:
+   P_sims = {}
+   for filename in sorted(glob.glob(f'{this_dir}/powerspec*'), key=os.path.getmtime):
+       matches = re.findall(r'(?=_(.*?)=(.*?)_)', filename)
+       if not matches or filename.endswith('.png'):
            continue
-       lin = match.group(1).replace(',', ', ').replace('+', ' + ')
+       for var, val in matches:
+           exec(f'{var} = "{val}"')
        k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
-       linestyle, zorder = ('--', 1) if '+' in lin else ('-', 0)
-       axes[0].loglog(k, P_sim, linestyle, zorder=zorder,
-           label=f'simulation: lin = {lin}',
-       )
-       axes[1].semilogx(k, (P_sim/P_lin - 1)*100, linestyle, zorder=zorder)
-   axes[0].loglog(k, P_lin, 'k--', label='linear')
-   axes[1].semilogx(k, (P_lin/P_lin - 1)*100, 'k--')
-   axes[0].legend()
-   k_min, k_max = k[~np.isnan(P_lin)][[0, -1]]
-   axes[0].set_xlim(k_min, 0.5*k_max)
-   axes[0].set_ylim(0.9*np.nanmin(P_lin), 1.1*np.nanmax(P_lin))
-   axes[1].set_ylim(-1, 1)
-   axes[1].set_xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
-   axes[0].set_ylabel(r'$P\, [\mathrm{Mpc}^3]$')
-   axes[1].set_ylabel(r'$P_{\mathrm{sim}}/P_{\mathrm{lin}} - 1\, [\%]$')
-   axes[0].tick_params('x', direction='inout', which='both')
-   axes[0].set_zorder(np.inf)
+       mask = ~np.isnan(P_lin)
+       P_sims[lin] = P_sim[mask]
+   P_lin = P_lin[mask]
+   k = k[mask]
+
+   # Plot
+   fig, axes = plt.subplots(2, sharex=True)
+   ax = axes[0]
+   for lin, P_sim in P_sims.items():
+       linestyle, zorder = (':', np.inf) if '+' in lin else ('-', None)
+       ax.loglog(k, P_sim, linestyle, label=f'simulation: {lin = }', zorder=zorder)
+   ax.loglog(k, P_lin, 'k--', label='linear', linewidth=1, zorder=np.inf)
+   k_max = 0.5*k[-1]
+   ax.set_xlim(k[0], k_max)
+   ax.set_ylim(0.95*min(P_lin[k < k_max]), 1.05*max(P_lin[k < k_max]))
+   ax.set_ylabel(r'$P\, [\mathrm{Mpc}^3]$')
+   ax.legend(fontsize=9)
+   ax.tick_params('x', direction='inout', which='both')
+   ax.set_zorder(np.inf)
+   ax = axes[1]
+   for lin, P_sim in P_sims.items():
+       linestyle, zorder = (':', np.inf) if '+' in lin else ('-', None)
+       ax.semilogx(k, (P_sim/P_lin - 1)*100, linestyle, zorder=zorder)
+   ax.semilogx(k, (P_lin/P_lin - 1)*100, 'k--', linewidth=1, zorder=np.inf)
+   ax.set_ylim(-1, 1)
+   ax.set_xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
+   ax.set_ylabel(r'$P_{\mathrm{simulation}}/P_{\mathrm{linear}} - 1\, [\%]$')
    fig.tight_layout()
    fig.subplots_adjust(hspace=0)
-   fig.savefig(f'{this_dir}/plot.png')
+   fig.savefig(f'{this_dir}/plot.png', dpi=150)
 
 Save the script as e.g. ``output/tutorial/plot.py`` and run it using
 
@@ -291,12 +333,11 @@ shall illuminate this concept:
   still act with a force on other, non-linear components during the simulation.
 
 .. note::
-
    Though higher Boltzmann orders are well-defined, the largest Boltzmann
    order currently implemnted in CO\ *N*\ CEPT is 1.
 
 We shall look into Boltzmann orders different from -1 in the subsection on
-:ref:`non-linear massive neutrinos<nonlinear_massive_neutrinos>`. For now we
+:ref:`non-linear massive neutrinos <nonlinear_massive_neutrinos>`. For now we
 shall keep to the purely linear case of Boltzmann order -1.
 
 For two components to have any affect on each other, they must both be
@@ -314,7 +355,6 @@ with the inclusion of linear photons, run
    ./concept -p params/tutorial -c "_lin = 'photons'"
 
 .. tip::
-
    Note that the ``_lin`` helper variable is defined at the bottom of the
    parameter file to have an empty value (leading to no linear species being
    included). As this is placed after all actual parameters, this defines a
@@ -332,7 +372,7 @@ code. Though we have specified :math:`H_0`, :math:`\Omega_{\text{b}}` and
 parameters are still left unspecified. Here the default CLASS parameters are
 used, which in addition to baryons, cold dark matter and photons also contain
 massless neutrinos. With our hope renewed, let's run a simulation which
-include both linear photons and linear massless neutrinos:
+includes both linear photons and linear massless neutrinos:
 
 .. code-block:: bash
 
@@ -351,22 +391,21 @@ relativistic correction, we shall refer to it as the *metric* contribution.
 That is, we invent a new numerical species, the metric, containing the
 collective non-Newtonian gravitational effects due to all physical species. As
 demonstrated in the paper on
-":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations</publications>`",
+":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations </publications>`",
 this metric species might be numerically realized as a (fictitious) linear
 energy density field, the *Newtonian* gravity from which implements exactly
-the missing general relativistic corrections!
+the missing general relativistic corrections.
 
 .. note::
-
    For the metric species to be able to supply the correct force, the entire
    simulation must be performed in a particular gauge; the *N*-body gauge.
    That is, initial conditions for non-linear species as well as linear input
    during the simulation must all be in this gauge. This is the default (and
    only) mode of CO\ *N*\ CEPT. Note that all outputs are similarly in this
-   gauge, including linear (CLASS) power spectra. Direct comparison to output
-   from other *N*-body codes (which usually do not define a gauge at all) is
-   perfectly doable, as the choice of gauge only becomes aparrent at very
-   large scales.
+   gauge, including non-linear (CO\ *N*\ CEPT) and linear (CLASS) power
+   spectra. Direct comparison to output from other *N*-body codes (which
+   usually do not define a gauge at all) is perfectly doable, as the choice of
+   gauge only becomes aparrent at very large scales.
 
 To finally run a simulation which include the gravitational effects from
 photons and neutrinos in their entirety, run
@@ -405,8 +444,8 @@ normally write e.g.
        },
    ]
 
-Using our clever parameter file however, we may of course specify this
-directly at the command-line using
+Using our clever parameter file however, we may specify this directly at the
+command-line using
 
 .. code-block:: bash
 
@@ -427,13 +466,12 @@ You are in fact already very familiar with the idea of combining species, as
 ``'matter'`` really means ``'baryons + cold dark matter'``.
 
 .. tip::
-
    When performing simulaitons in a cosmology without massless neutrinos,
    specifying ``'photons + massless neutrinos'`` as the species of a component
    will produce an error. However, specfying ``'radiation'`` is always safe,
    as this dynamically maps to the set of all radiation species present in the
    current cosmology, whatever this may be. Similarly, ``'matter'`` is safe to
-   use even in a cosmology without
+   use even in a cosmology without e.g. cold dark matter.
 
 
 
@@ -479,7 +517,7 @@ Massive neutrinos
 The previous subsection demonstrated how simulations of matter can be made to
 agree extremely well with linear theory at linear scales, if we include the
 gravitational contributions from the otherwise missing species, which were
-treated linearly. It did this by comparing the simulated power spectrum
+treated linearly. We did this by comparing the simulated power spectrum
 directly to the linear one, for the same cosmology.
 
 With confidence in the strategy of including linear species, let's now look at
@@ -493,7 +531,7 @@ Our aim shall be to compute the effect on the matter power spectrum caused by
 neglecting the fact that neutrinos really do have mass, albeit small. If you
 wish to study the underlying theory as well as the implementation in
 CO\ *N*\ CEPT, we refer to the paper on
-":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations</publications>`".
+":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations </publications>`".
 
 
 
@@ -506,6 +544,8 @@ fact that neutrinos do have some mass, we shall make use of the below
 parameter file:
 
 .. code-block:: python3
+   :caption: params/tutorial :math:`\,` (massive neutrinos)
+   :name: params-massive-neutrinos
 
    # Non-parameter helper variable used to control the size of the simulation
    _size = 128
@@ -524,7 +564,7 @@ parameter file:
        initial_conditions.append(
            # Linear fluid component
            {
-               'species'        : _species.strip(),
+               'species'        : _species,
                'gridsize'       : _size,
                'boltzmann order': -1,
            }
@@ -533,7 +573,8 @@ parameter file:
        'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
    }
    output_bases = {
-       'powerspec': f'powerspec_mass={_mass}eV_lin={_lin}'.replace(' ', ''),
+       'powerspec': f'powerspec{_mass=}{_lin=}'
+           .replace(' ', '').replace('"', '').replace("'", ''),
    }
    output_times = {
        'powerspec': 1,
@@ -570,8 +611,14 @@ parameter file:
    _mass = 0   # Sum of neutrino masses in eV
    _lin  = ''  # Linear species to include
 
-You may want to save this and get a simulation going (without supplying any
-command-line parameters, for now) while you read on.
+You may want to save this as e.g. ``params/tutorial`` and get a simulation
+going --- of course using
+
+.. code-block:: bash
+
+    ./concept -p params/tutorial
+
+--- while you read on.
 
 The new elements appearing in the parameter file are:
 
@@ -581,16 +628,15 @@ The new elements appearing in the parameter file are:
   cosmology used within the CO\ *N*\ CEPT simulation away from the default
   cosmology as defined by CLASS.
 
-  As for CO\ *N*\ CEPT itself, a vast number of CLASS parameters exist. The
+  As with CO\ *N*\ CEPT itself, a vast number of CLASS parameters exist. The
   best source for exploring these is probably the
   `explanatory.ini <https://github.com/lesgourg/class_public/blob/master/explanatory.ini>`_
   example CLASS parameter file, which also lists default values.
 
   .. caution::
-
      As :math:`H_0` (``H0``), :math:`\Omega_{\text{b}}` (``Ωb``) and
-     :math:`\Omega_{\text{cdm}}` (``Ωcdm``) already exist as stand-alone
-     CO\ *N*\ CEPT parameters, these should never be supplied explicitly to
+     :math:`\Omega_{\text{cdm}}` (``Ωcdm``) already exist as CO\ *N*\ CEPT
+     parameters, these should never be specified explicitly within
      ``class_params``.
 
   Of interest to us now are ``'N_ur'`` and ``'N_ncdm'``; the number of
@@ -630,8 +676,7 @@ The new elements appearing in the parameter file are:
 
 Once the first simulation --- with a cosmology including three neutrinos of
 zero mass --- is done, run a simulation with e.g.
-:math:`\sum m_\nu = 0.1\,\text{eV}`. Assuming the parameter file is stored as
-the usual ``params/tutorial``:
+:math:`\sum m_\nu = 0.1\, \text{eV}`:
 
 .. code-block:: bash
 
@@ -641,43 +686,55 @@ With both simulations done, we can plot their relative power spectrum. To do
 this, you should make use of the following script:
 
 .. code-block:: python3
+   :caption: output/tutorial/plot.py :math:`\,` (massive neutrinos)
+   :name: plot-massive-neutrinos
 
    import glob, os, re
    import numpy as np
    import matplotlib.pyplot as plt
 
+   # Read in data
    this_dir = os.path.dirname(os.path.realpath(__file__))
    P_sims, P_lins = {}, {}
-   for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
-       match = re.search(r'powerspec_mass=(.+)eV_lin=(.*)_a=[\d.]+$', filename)
-       if not match:
+   for filename in sorted(glob.glob(f'{this_dir}/powerspec*'), key=os.path.getmtime):
+       matches = re.findall(r'(?=_(.*?)=(.*?)_)', filename)
+       if not matches or filename.endswith('.png'):
            continue
-       mass = float(match.group(1))
-       lin = match.group(2).replace(',', ', ').replace('+', ' + ')
+       for var, val in matches:
+           try:
+               exec(f'{var} = {val}')
+           except:
+               exec(f'{var} = "{val}"')
        k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
        mask = ~np.isnan(P_lin)
        P_sims[mass, lin] = P_sim[mask]
        P_lins[mass] = P_lin[mask]
    k = k[mask]
+
+   # Plot
    for (mass, lin), P_sim in P_sims.items():
        if not mass:
            continue
-       plt.semilogx(k, (P_sim/P_sims[0, lin] - 1)*100,
-           '-' if lin else '--',
-           label=f'simulation: mass = {mass} eV, lin = {lin}',
-       )
-       P_lin = P_lins.pop(mass, None)
-       if P_lin is None:
-           continue
-       plt.semilogx(k, (P_lin/P_lins[0] - 1)*100, 'k--',
-           label=f'linear: mass = {mass} eV',
-       )
-   plt.legend()
+       mass_nonzero = mass
+       P_sim_ref = P_sims.get((0, lin))
+       if P_sim_ref is not None:
+           plt.semilogx(k, (P_sim/P_sim_ref - 1)*100,
+               label=f'simulation: {mass = } eV, {lin = }',
+           )
+   plt.semilogx(k, (P_lins[mass_nonzero]/P_lins[0] - 1)*100, 'k--',
+       label='linear',
+       linewidth=1,
+       zorder=np.inf,
+   )
    plt.xlim(k[0], k[-1])
    plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
-   plt.ylabel(r'$P_{\Sigma m_\nu > 0}/P_{\Sigma m_\nu = 0} - 1\, [\%]$')
+   plt.ylabel(
+       f r'$P_{{\Sigma m_\nu = {mass_nonzero}\, \mathrm{{eV}}}}'
+       f r'/P_{{\Sigma m_\nu = 0}} - 1\, [\%]$'
+   )
+   plt.legend(fontsize=9)
    plt.tight_layout()
-   plt.savefig(f'{this_dir}/plot.png')
+   plt.savefig(f'{this_dir}/plot.png', dpi=150)
 
 As usual, to run the script, save it as e.g. ``output/tutorial/plot.py`` and
 invoke
@@ -692,7 +749,7 @@ spectrum. At intermediary :math:`k` the simulation and linear relative power
 spectra agrees, whereas they do not for the smallest and largest :math:`k`.
 In the case of large :math:`k`, you should see that the non-linear solution
 forms a trough below the linear one, before rising up above it near the
-largest :math:`k` shown. This is the well-known non-linear supression dip,
+largest :math:`k` shown. This is the well-known non-linear suppression dip,
 the low-:math:`k` end of which marks the beginning of the truly non-linear
 regime. We thus trust the simulated results at the high-:math:`k` end of the
 plot, while we trust the linear results at the low-:math:`k` end.
@@ -768,7 +825,7 @@ dynamic, specifically using the equation of state
 evolution, having :math:`w \neq -1` also causes perturbations within the dark
 energy. If you're interested in the physics of dark energy perturbations as
 well as their implementation in CO\ *N*\ CEPT, we refer to the paper on
-":doc:`Dark energy perturbations in 𝘕-body simulations</publications>`".
+":doc:`Dark energy perturbations in 𝘕-body simulations </publications>`".
 
 
 
@@ -787,8 +844,12 @@ this looks like
 
 .. math::
 
-   \Omega_{\text{b}} + \Omega_{\text{cdm}} + \Omega_{\gamma}
-   + \Omega_{\nu} + \Omega_{\Lambda} = 1\,,
+     \Omega_{\text{b}}
+   + \Omega_{\text{cdm}}
+   + \Omega_{\gamma}
+   + \Omega_{\nu}
+   + \Omega_{\Lambda}
+   = 1\, ,
 
 where :math:`\Omega_{\text{b}}` and :math:`\Omega_{\text{cdm}}` are defined
 through the ``Ωb`` and ``Ωcdm`` CO\ *N*\ CEPT parameters, while
@@ -796,11 +857,12 @@ through the ``Ωb`` and ``Ωcdm`` CO\ *N*\ CEPT parameters, while
 massive neutrinos) are defined through CLASS parameters (typically,
 :math:`\Omega_{\gamma}` is defined implicitly through the CMB temperature
 ``class_params['T_cmb']`` while :math:`\Omega_{\nu}` is defined implicitly
-through the number of massless neutrino species ``class_params['N_ur']``, the
-number of massive neutrino species ``class_params['N_ncdm']`` and
-``class_params['deg_ncdm']`` as well as the neutrino masses
-``class_params['m_ncdm']``). The remaining dark energy density
-:math:`\Omega_{\Lambda}` is simply chosen as to ensure a flat universe.
+through the effective number of massless neutrino species
+``class_params['N_ur']``, the number of massive neutrino species
+``class_params['N_ncdm']`` and ``class_params['deg_ncdm']``, their masses
+``class_params['m_ncdm']`` and temperatures ``class_params['T_ncdm']``). The
+remaining dark energy density :math:`\Omega_{\Lambda}` is simply chosen as to
+ensure a flat universe.
 
 Though :math:`\Lambda` is present, it does not tug on the matter (or anything
 else) as it remains completely homogeneous throughout time, which is why we
@@ -812,13 +874,13 @@ never need to include it as a linear species.
 
    <h3>Dynamical dark energy</h3>
 
-We can set :math:`w_0` and :math:`w_a` thorugh the CLASS parameters
+We can set :math:`w_0` and :math:`w_a` through the CLASS parameters
 ``'w0_fld'`` and ``'wa_fld'``. In CLASS, the cosmological constant is
 implemented as a seperate species, rather than as the special case
 :math:`w_0 = -1`, :math:`w_a = 0` of the dynamical dark energy species (in
 CLASS called 'fld' for dark enery **fl**\ ui\ **d**). To disable the
 cosmological constant, set the ``'Omega_Lambda'`` CLASS parameter to ``0``. In
-total, specifying dynamical dark energy could then look like e.g.
+total, specifying dynamical dark energy could then look like
 
 .. code-block:: python3
 
@@ -836,6 +898,8 @@ shall make use of the following parameter file, which you should save as e.g.
 ``params/tutorial``:
 
 .. code-block:: python3
+   :caption: params/tutorial :math:`\,` (dynamical dark energy)
+   :name: params-dynamical-dark-energy
 
    # Non-parameter helper variable used to control the size of the simulation
    _size = 128
@@ -854,7 +918,7 @@ shall make use of the following parameter file, which you should save as e.g.
        initial_conditions.append(
            # Linear fluid component
            {
-               'species'        : _species.strip(),
+               'species'        : _species,
                'gridsize'       : _size,
                'boltzmann order': -1,
            }
@@ -863,7 +927,8 @@ shall make use of the following parameter file, which you should save as e.g.
        'powerspec': paths['output_dir'] + '/' + basename(paths['params'])
    }
    output_bases = {
-       'powerspec': f'powerspec_de={_de}_lin={_lin}'.replace(' ', ''),
+       'powerspec': f'powerspec{_de=}{_lin=}'
+           .replace(' ', '').replace('"', '').replace("'", ''),
    }
    output_times = {
        'powerspec': 1,
@@ -906,10 +971,10 @@ shall make use of the following parameter file, which you should save as e.g.
    _de  = 'Lambda'  # Type of dark energy
    _lin = ''        # Linear species to include
 
-The parameter file is setup to use :math:`\Lambda` by default, while dynamical
-dark energy is enabled by suppling ``-c "_de = 'dynamical'"``. One can also
-supply ``-c "_de = 'Lambda'"`` to explicitly select :math:`\Lambda`. Perform a
-simulation using both types of dark energy using
+The parameter file is set up to use :math:`\Lambda` by default, while
+dynamical dark energy is enabled by supplying ``-c "_de = 'dynamical'"``. One
+can also supply ``-c "_de = 'Lambda'"`` to explicitly select :math:`\Lambda`.
+Perform a simulation using both types of dark energy using
 
 .. code-block:: bash
 
@@ -922,11 +987,10 @@ The parameter specifications ``Δt_base_background_factor = 2`` and
 described at the end of the :ref:`Radiation <radiation>` subsection), while
 ``N_rungs = 1`` effectively disables the adaptive time stepping. In addition,
 we start the simulation rather late at ``a_begin = 0.1``, as the effects from
-dark energy only show up at late times. All of this is just to speed up the
+dark energy show up only at late times. All of this is just to speed up the
 simulations, as we do not require excellent precision.
 
 .. note::
-
    The adaptive particle time stepping is a feature enabled by default when
    using the P³M method, which assigns separate time step sizes to the
    different particles, allowing for small time steps in dense regions and
@@ -946,55 +1010,59 @@ the matter spectrum within a cosmology with a cosmological constant
 we shall make use of the following plotting script:
 
 .. code-block:: python3
+   :caption: output/tutorial/plot.py :math:`\,` (dynamical dark energy)
+   :name: plot-dynamical-dark-energy
 
    import glob, os, re
    import numpy as np
    import matplotlib.pyplot as plt
 
+   # Read in data
    this_dir = os.path.dirname(os.path.realpath(__file__))
    P_sims, P_lins = {}, {}
-   for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
-       match = re.search(r'powerspec_de=(.*)_lin=(.*)_a=[\d.]+$', filename)
-       if not match:
+   for filename in sorted(glob.glob(f'{this_dir}/powerspec*'), key=os.path.getmtime):
+       matches = re.findall(r'(?=_(.*?)=(.*?)_)', filename)
+       if not matches or filename.endswith('.png'):
            continue
-       de = match.group(1)
-       lin = match.group(2).replace(',', ', ').replace('+', ' + ')
+       for var, val in matches:
+           exec(f'{var} = "{val}"')
        k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
        mask = ~np.isnan(P_lin)
        P_sims[de, lin] = P_sim[mask]
        P_lins[de] = P_lin[mask]
    k = k[mask]
-   lin_counter = 0
+
+   # Plot
    for (de, lin), P_sim in P_sims.items():
        if de == 'Lambda':
            continue
-       lin_Λ = lin.replace('darkenergy', '').replace('+  +', '+').strip(' +')
-       keys = [('Lambda', lin_Λ)] if lin_Λ else []
-       if set(lin.replace('+', '').split()) <= {'darkenergy', 'metric'}:
-           keys.append(('Lambda', ''))
-       for key in keys:
-           if key not in P_sims:
-               continue
-           plt.semilogx(k, (P_sim/P_sims[key] - 1)*100,
-               ('-', '--', '-.', ':')[lin_counter%4],
-               label=(
-                   f'simulation: lin = {lin} (dynamical sim only)'
-                   if lin not in {'', 'darkenergy'} and not key[1] else
-                   f'simulation: lin = {lin}'
-               ),
+       lin_ref = lin
+       for lin_ignore in ('darkenergy', 'fld'):
+           lin_ref = (lin_ref.replace(lin_ignore, '')
+               .replace('++', '+').replace(',,', ',')
+               .replace('+,', ',').replace(',+', ',')
+               .strip('+,')
            )
-           if lin:
-               lin_counter += 1
-       P_lin = P_lins.pop(de, None)
-       if P_lin is None:
-           continue
-       plt.semilogx(k, (P_lin/P_lins['Lambda'] - 1)*100, 'k--', label=f'linear')
-   plt.legend()
+       P_sim_ref = P_sims.get(('Lambda', lin_ref))
+       linestyle, zorder = '-', None
+       label = f'simulation: {lin = }'
+       if P_sim_ref is None:
+           P_sim_ref = P_sims['Lambda', '']
+           linestyle, zorder = ':', np.inf
+           label += ' (dynamical sim only)'
+       plt.semilogx(k, (P_sim/P_sim_ref - 1)*100, linestyle,
+           label=label, zorder=zorder)
+   plt.semilogx(k, (P_lins['dynamical']/P_lins['Lambda'] - 1)*100, 'k--',
+       label='linear',
+       linewidth=1,
+       zorder=np.inf,
+   )
    plt.xlim(k[0], k[-1])
    plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
-   plt.ylabel(r'$P_{\mathrm{dynamical}}/P_{\Lambda}-1\, [\%]$')
+   plt.ylabel(r'$P_{\mathrm{dynamical}}/P_{\Lambda} - 1\, [\%]$')
+   plt.legend(fontsize=10)
    plt.tight_layout()
-   plt.savefig(f'{this_dir}/plot.png')
+   plt.savefig(f'{this_dir}/plot.png', dpi=150)
 
 Save this to e.g. ``output/tutorial/plot.py`` and run it using
 
@@ -1004,7 +1072,7 @@ Save this to e.g. ``output/tutorial/plot.py`` and run it using
 
 The generated plot should show that the matter power is reduced quite a bit
 when switching to using the dynamical dark energy. At large :math:`k`, we see
-the usual non-linear supression dip. At low/linear :math:`k`, the power
+the usual non-linear suppression dip. At low/linear :math:`k`, the power
 suppresion is larger in the simulation power spectrum than in the linear one.
 This is due to inhomogeneities forming in the dark energy species itself, the
 tug on matter we have not incorporated into the simulation. This effect is
@@ -1041,9 +1109,8 @@ Though including all species --- i.e. also photons and neutrinos --- is what
 should be done for serious simulations, it can be educational to run with
 fewer linear species, to separate out their individual effects on the matter
 spectrum. Besides being small, the effects from photons and neutrinos should
-be very close to identical between the two cosmologies, as they have identical
-initial conditions and background evolutions. We thus expect effects from
-photons and neutrinos to be completely negligible for the relative power
+be very close to identical between the two cosmologies. We thus expect effects
+from photons and neutrinos to be completely negligible for the relative power
 spectrum. To test this, perform a simulation with dynamical dark energy,
 including only dark energy as a linear species:
 
@@ -1069,7 +1136,6 @@ and re-plotting, we see that we indeed achieve the same result as when running
 with photons and neutrinos.
 
 .. note::
-
    As the metric always contains the total gravitational contribution from
    momentum, pressure and shear perturbations of all species, it is not
    possible to completely separate out the gravitational effects from each
@@ -1083,7 +1149,487 @@ with photons and neutrinos.
 
 Decaying cold dark matter
 .........................
-*Under construction!*
+This subsection deals with the case of :bolditalic:`d`\ *ecaying* **c**\ old
+**d**\ ark **m**\ atter ('dcdm'), in particular the scenario where it decays
+to some new form of massless non-interacting radiation; what we might call
+**d**\ ark **r**\ adiation or **d**\ ecay **r**\ adiation ('dr'). While
+the decay radiation is handled in exactly the same way as was done for other
+linear species in the previous subsections, the decaying cold dark matter
+itself is simulated using particles. To keep things general, we allow for
+having both stable and unstable cold dark matter within the same simulation,
+and so we think of dcdm as an entirely new species, separate from the usual,
+stable cdm.
+
+If you're interested in the details of the physics of decaying cold dark
+matter as well as its implementation in CO\ *N*\ CEPT, we refer to the paper
+on
+":doc:`Fully relativistic treatment of decaying cold dark matter in 𝘕-body simulations </publications>`".
+
+
+
+.. raw:: html
+
+   <h3>Particle-only simulations</h3>
+
+We denote the rate of decay for the new decaying cold dark matter species by
+:math:`\Gamma_{\text{dcdm}}`. We further wish to specify the amount of dcdm
+today, :math:`\Omega_{\text{dcdm}}`, but as this depends highly on the decay
+rate :math:`\Gamma_{\text{dcdm}}`, this is not a good parameter. Instead we
+make use of :math:`\widetilde{\Omega}_{\text{dcdm}}`, which we define to be
+the energy density parameter that dcdm *would* have had, had
+:math:`\Gamma_{\text{dcdm}} = 0` (in which case dcdm and cdm would be
+indistinguishable). Finally, rather than specifying
+:math:`\Omega_{\text{cdm}}` and :math:`\widetilde{\Omega}_{\text{dcdm}}`
+separately, we reparameterize these as the *total* (stable and decaying) cold
+dark matter energy density
+:math:`(\Omega_{\text{cdm}} + \widetilde{\Omega}_{\text{dcdm}})`, as well as
+the fraction of this which is of the decaying kind;
+
+.. math::
+
+   f_{\text{dcdm}} \equiv
+         \frac{\widetilde{\Omega}_{\text{dcdm}}}{\Omega_{\text{cdm}}
+       + \widetilde{\Omega}_{\text{dcdm}}}\, .
+
+Below you'll find a parameter file set up to run simulations with dcdm, which
+you should save as e.g. ``params/tutorial``:
+
+.. code-block:: python3
+   :caption: params/tutorial :math:`\,` (decaying cold dark matter)
+   :name: params-decaying-cold-dark-matter
+
+   # Non-parameter helper variable used to control the size of the simulation
+   _size = 96
+
+   # Non-parameter variables used to control the dcdm cosmology
+   _Ω_cdm_plus_dcdm = 0.27  # Total amount of stable and decaying cold dark matter
+   _Γ = 80*km/(s*Mpc)       # Decay rate
+
+   # Input/output
+   if _combine:
+       initial_conditions = [
+           # Non-linear (total) matter particles
+           {
+               'name'   : 'total matter',
+               'species': 'baryons + cold dark matter'
+                              + (' + decaying cold dark matter' if _frac else ''),
+               'N'      : _size**3,
+           }
+       ]
+   else:
+       # Assume 0 < _frac < 1
+       initial_conditions = [
+           # Non-linear baryons and (stable) cold dark matter particles
+           {
+               'name'   : 'stable matter',
+               'species': 'baryons + cold dark matter',
+               'N'      : _size**3,
+           },
+           # Non-linear decaying cold dark matter particles
+           {
+               'name'   : 'decaying matter',
+               'species': 'decaying cold dark matter',
+               'N'      : _size**3,
+           },
+       ]
+   for _species in _lin.split(','):
+       if not _species:
+           continue
+       initial_conditions.append(
+           # Linear fluid component
+           {
+               'species'        : _species,
+               'gridsize'       : _size,
+               'boltzmann order': -1,
+           }
+       )
+   output_dirs = {
+       'powerspec': paths['output_dir'] + '/' + basename(paths['params']),
+   }
+   output_bases = {
+       'powerspec': f'powerspec_{boxsize=}{_frac=}{_lin=}{_combine=}'
+           .replace(' ', '').replace('"', '').replace("'", ''),
+   }
+   output_times = {
+       'powerspec': 1,
+   }
+   powerspec_select = {
+       'total matter': {'data': True, 'plot': False},
+       ('stable matter', 'decaying matter'): ...,
+   }
+
+   # Numerical parameters
+   boxsize = 1*Gpc
+
+   # Cosmology
+   H0      = 67*km/(s*Mpc)
+   Ωb      = 0.049
+   Ωcdm    = (1 - _frac)*_Ω_cdm_plus_dcdm
+   a_begin = 0.02
+   if _frac:
+       class_params = {
+           # Decaying cold dark matter parameters
+           'Omega_ini_dcdm': _frac*_Ω_cdm_plus_dcdm,
+           'Gamma_dcdm'    : _Γ/(km/(s*Mpc)),
+       }
+
+   # Physics
+   select_forces = {
+       'particles': {'gravity': ('p3m', 2*_size)},
+       'fluid'    : {'gravity': 'pm'},
+       **(
+           {
+               'decaying matter': 'lapse',
+               'total matter'   : ...,
+           }
+           if 'lapse' in _lin else {}
+       ),
+   }
+
+   # Simulation options
+   primordial_amplitude_fixed = True
+
+   # Non-parameter helper variables which should
+   # be supplied as command-line parameters.
+   _lin     = ''    # Linear species to include
+   _frac    = 0     # Fraction of total cold dark matter which is decaying
+   _combine = True  # Combine decaying and stable matter into a single component?
+
+Begin by running this without any additional command-line parameters;
+
+.. code-block:: bash
+
+   ./concept -p params/tutorial
+
+which performs a standard simulation with just stable matter (baryons and cold
+dark matter).
+
+In the parameter file, the dcdm parameters :math:`\Gamma_{\text{dcdm}}`,
+:math:`(\Omega_{\text{cdm}} + \widetilde{\Omega}_{\text{dcdm}})` and
+:math:`f_{\text{dcdm}}` are called ``_Γ``, ``_Ω_cdm_plus_dcdm`` and
+``_frac``, respectively. A rather extreme value of
+:math:`\Gamma_{\text{dcdm}} = 80\, \text{km}\, \text{s}^{-1}\, \text{Mpc}^{-1}`
+is used, corresponding to a dcdm mean particle lifetime
+:math:`1/\Gamma_{\text{dcdm}}` comparable to the age of the universe, meaning
+that the majority of the primordial dcdm population has decayed away at
+:math:`a = 1`.
+
+To run a simulation where some of the cold dark matter is decaying, say 70%,
+specify ``_frac``:
+
+.. code-block:: bash
+
+   ./concept -p params/tutorial -c "_frac = 0.7"
+
+This new simulation still consists of just a single particle component, now
+with a species of
+``'baryons + cold dark matter + decaying cold dark matter'``. The decay is
+taken into effect by continuously reducing the mass of each *N*-body particle
+according to the decay rate, without changing the particle velocity. As the
+component now represents three fundamental species, the effective "*N*-body
+decay rate" used is
+
+.. math::
+
+   \Gamma_{\text{b}+\text{cdm}+\text{dcdm}}(a) =
+       \frac{\bar{\rho}_{\text{dcdm}}(a)\Gamma_{\text{dcdm}}}{
+             \bar{\rho}_{\text{b}}(a)
+           + \bar{\rho}_{\text{cdm}}(a)
+           + \bar{\rho}_{\text{dcdm}}(a)
+       }\, .
+
+To plot the usual relative power spectrum, this time between a cosmology with
+and without decaying cold dark matter, make use of the below script:
+
+.. code-block:: python3
+   :caption: output/tutorial/plot.py :math:`\,` (decaying cold dark matter)
+   :name: plot-decaying-cold-dark-matter
+
+   import glob, os, re
+   import numpy as np
+   import matplotlib.pyplot as plt
+
+   # Read in data
+   this_dir = os.path.dirname(os.path.realpath(__file__))
+   ks, P_sims, P_lins = {}, {}, {}
+   for filename in sorted(glob.glob(f'{this_dir}/powerspec*'), key=os.path.getmtime):
+       matches = re.findall(r'(?=_(.*?)=(.*?)_)', filename)
+       if not matches or filename.endswith('.png'):
+           continue
+       for var, val in matches:
+           try:
+               exec(f'{var} = {val}')
+           except:
+               exec(f'{var} = "{val}"')
+       k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
+       mask = ~np.isnan(P_lin)
+       ks[boxsize] = k[mask]
+       P_sims[boxsize, frac, lin, combine] = P_sim[mask]
+       P_lins[boxsize, frac              ] = P_lin[mask]
+
+   # Plot
+   colors, linear_plotted = dict(), set()
+   k_min = y_min = +np.inf
+   k_max = y_max = -np.inf
+   for (boxsize, frac, lin, combine), P_sim in P_sims.items():
+       if frac == 0:
+           continue
+       frac_nonzero = frac
+       lin_ref = lin
+       for lin_ignore in (*['decayradiation', 'darkradiation', 'dr'], 'lapse'):
+           lin_ref = (lin_ref.replace(lin_ignore, '')
+               .replace('++', '+').replace(',,', ',')
+               .replace('+,', ',').replace(',+', ',')
+               .strip('+,')
+           )
+       P_sim_ref = P_sims.get((boxsize, 0, lin_ref, True))
+       if P_sim_ref is None:
+           continue
+       color = colors.get((lin, combine))
+       label = None
+       if color is None:
+           color = colors[lin, combine] = f'C{len(colors)%10}'
+           label = f'simulation: {lin = }, {combine = }'
+       k = ks[boxsize]
+       y = (P_sim/P_sim_ref - 1)*100
+       plt.semilogx(k, y, f'{color}-', label=label)
+       k_min, k_max = min(k[0], k_min), max(k[-1], k_max)
+       if combine:
+           y_min, y_max = min(min(y), y_min), max(max(y), y_max)
+       if boxsize in linear_plotted:
+           continue
+       y = (P_lins[boxsize, frac]/P_lins[boxsize, 0] - 1)*100
+       plt.semilogx(k, y, 'k--',
+           label=(None if linear_plotted else 'linear'),
+           linewidth=1,
+           zorder=np.inf,
+       )
+       y_min, y_max = min(min(y), y_min), max(max(y), y_max)
+       linear_plotted.add(boxsize)
+   plt.xlim(k_min, k_max)
+   plt.ylim(
+       y_min - 0.05*(y_max - y_min),
+       y_max + 0.05*(y_max - y_min),
+   )
+   plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
+   plt.ylabel(
+       f r'$P_{{f_{{\mathrm{{dcdm}}}} = {frac_nonzero}}}'
+       f r'/P_{{f_{{\mathrm{{dcdm}}}} = 0}} - 1\, [\%]$'
+   )
+   plt.legend(fontsize=8)
+   plt.tight_layout()
+   plt.savefig(f'{this_dir}/plot.png', dpi=150)
+
+Save this script as e.g. ``output/tutorial/plot.py`` and run it using
+
+.. code-block:: bash
+
+   ./concept -m output/tutorial/plot.py
+
+The resulting ``plot.png`` should show prominently the familiar non-linear
+suppression dip on top of an already substantial drop in power from the
+decayed matter.
+
+
+
+.. raw:: html
+
+   <h3>Decay radiation</h3>
+
+The plot resulting from the first two simulations show a familiar discrepancy
+between the linear and non-linear result at low :math:`k`. As usual, we may
+try to fix this by including the missing species as linear components during
+the simulation:
+
+.. code-block:: bash
+
+   for frac in 0 0.7; do
+       ./concept \
+           -p params/tutorial \
+           -c "_lin = 'photons + neutrinos + metric'" \
+           -c "_frac = $frac"
+   done
+
+Once the above two simulations are complete, redo the plot. Adding the
+photons, neutrinos and metric perturbations supplied about half of the missing
+large-scale power needed to reach agreement with the linear prediction.
+
+The remaining missing power should be supplied by further including the decay
+radiation, of course only applicable for the dcdm simulation:
+
+.. code-block:: bash
+
+   ./concept \
+       -p params/tutorial \
+       -c "_lin = 'photons + neutrinos + decay radiation + metric'" \
+       -c "_frac = 0.7"
+
+Replotting after running the above, you should now see excellent agreement
+with the linear result at large scales.
+
+Studying the parameter file, we see that the ``'species'`` of the matter
+component gets set to ``'baryons + cold dark matter'`` when ``_frac`` equals 0
+(corresponding to unset) and
+``'baryons + cold dark matter + decaying cold dark matter'`` otherwise. (Do
+not worry about the case of the variable ``_combine`` being falsy. We shall
+make use of this special flag later.) We are used to ``'matter'`` being an
+alias for ``'baryons + cold dark matter'``, but really it functions as a
+stand-in for *all* matter within the given cosmology, including decaying cold
+dark matter. Go ahead and replace this needlessly complicated expression for
+``'species'`` in the parameter file with just ``'matter'``. Likewise,
+``'radiation'`` includes not just ``'photons'`` and (massless)
+``'neutrinos'``, but also ``'decay radiation'``, when present. With the
+aforementioned change to the parameter file in place, try rerunning both
+the dcdm and the reference simulation using simply
+
+.. code-block:: bash
+
+   for frac in 0 0.7; do
+       ./concept \
+           -p params/tutorial \
+           -c "_lin = 'radiation + metric'" \
+           -c "_frac = $frac"
+   done
+
+Updating the plot, we see that the new simulation results are indeed identical
+to the previous ones.
+
+
+
+.. raw:: html
+
+   <h3>Additional general relativistic effects and multiple particle components</h3>
+
+For most work involving dcdm simulations, the story ends here. For simulations
+using very large boxes, or possibly extreme values of :math:`f_{\text{dcdm}}`
+and :math:`\Gamma_{\text{dcdm}}`, additional effects from general relativity
+show up, which one might wish to include in the simulations.
+
+To begin the exploration of this extreme regime, run the same dcdm and
+reference simulation as before, but in a much larger box:
+
+.. code-block:: bash
+
+   for frac in 0 0.7; do
+       ./concept \
+           -p params/tutorial \
+           -c "boxsize = 30*Gpc" \
+           -c "_lin = 'radiation + metric'" \
+           -c "_frac = $frac"
+   done
+
+Rerunning ``plot.py``, we see that having the cold dark matter decay actually
+leads to an *in*\ crease in power at very large scales. This increase in power
+is replicated by the new dcdm simulation, though not quite enough to match the
+linear result.
+
+The continuous decay of all *N*-body particles happen in unison, according to
+the set decay rate and the flow of cosmic time. Really though, each particle
+should decay away in accordance with their own individually experienced flow
+of proper time, which is affected by the local gravitational field. At linear
+order, this general relativistic effect may be implemented as a correction
+force applied to all decaying particles, with a strength proportional to the
+decay rate. This force arise from a potential, which in CO\ *N*\ EPT is
+implemented as an energy density field from a fictitious species --- much like
+the metric species --- called the *lapse* species. For details on the physics
+of this lapse potential, see the paper on
+":doc:`Fully relativistic treatment of decaying cold dark matter in 𝘕-body simulations </publications>`".
+
+Just like the metric species needs to be assigned to a linear fluid component
+in order to exist during the simulation, so does the lapse species. Simply
+appending ``'+ lapse'`` to our ``_lin`` string of linear species is no good
+though, as this would include the lapse potential as part of gravity, making
+the requirement of a proportionality to the decay rate impossible to satisfy.
+Instead, what we need is to let lapse be its own separate linear fluid
+component. As we've seen before, the parameter file has been set up to allow
+separating linear components using '``,``', i.e.
+``_lin = 'radiation + metric, lapse'``.
+
+We further need to assign the new lapse force to the decaying matter
+component. Studying the specification of ``select_forces`` in the parameter
+file, we see that the lapse force is already being assigned whenever ``_lin``
+contains the substring ``'lapse'``. To run the large-box dcdm simulation with
+the lapse force included then, simply do
+
+.. code-block:: bash
+
+   ./concept \
+       -p params/tutorial \
+       -c "boxsize = 30*Gpc" \
+       -c "_lin = 'radiation + metric, lapse'" \
+       -c "_frac = 0.7"
+
+Replotting after completion of the above run, we see that the lapse force
+indeed managed to supply the necessary power boost, and only at very large
+scales, as required.
+
+Being perhaps overly critical, we may conclude that the lapse force in fact
+overdid its job, with the spectrum from the dcdm simulation now having
+slightly too much power at very large scales. This small error arises from our
+choice of combining the dcdm species together with the stable matter species
+into a single particle component. Doing so in fact introduces new general
+relativistic correction terms into the equations of motion for the particles,
+which are not incorporated into CO\ *N*\ CEPT. For the physics of these
+additional correction terms, we once again refer to the paper on
+":doc:`Fully relativistic treatment of decaying cold dark matter in 𝘕-body simulations </publications>`".
+
+To tackle this problem --- or at least confirm that it is indeed caused by
+combining decaying and stable matter --- we may run a simulation which makes
+use of two separate particle components; one for stable matter
+(``'baryons + cold dark matter'``) and one for decaying matter
+(``'decaying cold dark matter'``). This is done simply by listing each
+particle component separately in the ``initial_conditions`` parameter in the
+parameter file. Specifying ``_combine = False``, we see that our parameter
+file does exactly this. We further want the produced power spectrum data file
+to contain the combined power of the two particle components, rather than
+simply listing the power spectra of each component separately. Looking at the
+specification of ``powerspec_select`` in the parameter file, we see that power
+spectra are to be produced of ``'total matter'`` and
+``('stable matter', 'decaying matter')``. We are used to having these
+specifications refer to our non-linear component through its species (usually
+``'matter'``), but here we've chosen to refer by *name*, where each
+(arbitrary) name is set as part of the component specification within
+``initial_conditions``. The tuple syntax
+``(<component 0>, <component 1>, ...)`` used within ``powerspec_select``
+specifies the combined, total power spectrum of the listed components. The
+same use of name referencing is also used when assigning the lapse force
+within ``select_forces``, as here we do not wish to also assign this force to
+``'stable matter'``. It was this use of name referencing which earlier enabled
+us to reformulate the ``'species'`` of the total matter component, without
+this having any effect on the component selections within the parameter file.
+
+As everything is already handled within the parameter file, running the
+two-particle-component simulation is then as simple as
+
+.. code-block:: bash
+
+   ./concept \
+       -p params/tutorial \
+       -c "boxsize = 30*Gpc" \
+       -c "_lin = 'radiation + metric, lapse'" \
+       -c "_frac = 0.7" \
+       -c "_combine = False"
+
+This of course increases the computation time drastically, as we now have
+twice the number of particles and several times the number of force
+evaluations. Once completed, update the plot one last time. You should now see
+better agreement with linear theory on very large scales, but at the cost of
+noise at "small" (relative to the large box) scales.
+
+.. note::
+   The noise is believed to stem from the use of grid pre-initial conditions,
+   i.e. the initialization of the particle positions at Cartesian grid points,
+   followed by a displacement according to the Zel'dovich approximation
+   (really the full general relativistic transfer functions). When having
+   multiple particle components, sticking to bare grid pre-initial conditions
+   is far from optimal. In fact, CO\ *N*\ CEPT currently makes use of
+   *interleaved* pre-initial condition grids (relatively shifted by half a
+   grid cell) when running with two particle components, without which the
+   results would be a lot worse. As a future enhancement of CO\ *N*\ CEPT, we
+   hope to build in the option of using *glass* pre-initial conditions, which
+   should allow for seamless mixing of any number of particle components, even
+   with individual (and not even necessarily cubic) numbers of particles
+   :math:`N`.
 
 
 

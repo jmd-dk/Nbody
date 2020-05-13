@@ -359,6 +359,8 @@
 quickly becomes tiresome. A better solution is to write all parameters in a
 file, say <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> (the <code class="docutils literal notranslate"><span class="pre">params</span></code> directory already exists).
 Copy the content below to such a file:</p>
+<div class="literal-block-wrapper docutils container" id="params-parameter-files">
+<div class="code-block-caption"><span class="caption-text">params/tutorial</span><a class="headerlink" href="#params-parameter-files" title="Permalink to this code">¶</a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter helper variable used to control the size of the simulation</span>
 <span class="n">_size</span> <span class="o">=</span> <span class="mi">64</span>
 
@@ -388,6 +390,7 @@ Copy the content below to such a file:</p>
     <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
+</div>
 </div>
 <p>To run CO<em>N</em>CEPT using these parameters, do</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">4</span>
@@ -443,8 +446,8 @@ similar increase in the number of particles by a factor <span class="math notran
 <p>No default units are ever assumed by CO<em>N</em>CEPT when it reads parameters,
 and so it’s critical that you explicitly tack on units on all parameters
 that are not unitless. For <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>, the extra fancy unit of
-<span class="math notranslate nohighlight">\(\mathrm{Mpc}/h\)</span> is used above, with
-<span class="math notranslate nohighlight">\(h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})\)</span>
+<span class="math notranslate nohighlight">\(\text{Mpc}/h\)</span> is used above, with
+<span class="math notranslate nohighlight">\(h \equiv H_0/(100\, \text{km}\, \text{s}^{-1}\, \text{Mpc}^{-1})\)</span>
 inferred dynamically from the Hubble constant <code class="docutils literal notranslate"><span class="pre">H0</span></code> set further down.</p>
 </li>
 <li><p>The parameters <code class="docutils literal notranslate"><span class="pre">Ωb</span></code> and <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> of course set the amount of baryons and

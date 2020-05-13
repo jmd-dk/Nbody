@@ -355,6 +355,13 @@
             
   <div class="section" id="effortless-installation">
 <h1><span class="section-number">1. </span>Effortless installation<a class="headerlink" href="#effortless-installation" title="Permalink to this headline">¶</a></h1>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you just want to quickly try out CO<em>N</em>CEPT and are familiar with
+Docker, you may choose to run the code off of a provided Docker image,
+bypassing the below installation. See the Docker tab
+<a class="reference internal" href="../installation.html#supported-platforms"><span class="std std-ref">here</span></a>.</p>
+</div>
 <p>If this is your first time trying out CO<em>N</em>CEPT, it is advised to do the
 installation on your local machine, not on a remote cluster.</p>
 <div class="admonition note">
@@ -363,7 +370,7 @@ installation on your local machine, not on a remote cluster.</p>
 </div>
 <p>To install the newest version of CO<em>N</em>CEPT along with all of its
 dependencies, open a terminal and invoke</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash &lt;<span class="o">(</span>wget -O- https://raw.githubusercontent.com/jmd-dk/concept/master/installer<span class="o">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash &lt;<span class="o">(</span>wget -O- --no-check-certificate https://raw.githubusercontent.com/jmd-dk/concept/master/installer<span class="o">)</span>
 </pre></div>
 </div>
 <p>You will be prompted for an installation directory.</p>

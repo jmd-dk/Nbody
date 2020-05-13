@@ -41,7 +41,6 @@ e.g. ``-n 1:8`` to request 1 node with 8 cores, or ``-n 2:4`` to request 2
 nodes each with 4 cores.
 
 .. note::
-
    If remote CO\ *N*\ CEPT jobs mysteriously fail, check out the
    ':ref:`problems_when_running_remotely`' troubleshooting entry.
 
@@ -63,7 +62,6 @@ A complete CO\ *N*\ CEPT job submission could then look like
    ./concept -p params/tutorial -n 8 -q somequeue --mem 8G -w 1h
 
 .. tip::
-
    Note that in the above, ``--memory`` is shortened to ``--mem``. Generally,
    as long as no conflict occurs with other options, you may shorten any
    option to ``concept`` in this manner. Also, the order in which the options
@@ -105,10 +103,10 @@ press ``Ctrl``\ +\ ``C``.
 
    <h3>Using a pre-installed MPI library</h3>
 
-The :doc:`installation procedure</tutorial/installation>` described in this
+The :doc:`installation procedure </tutorial/installation>` described in this
 tutorial installed CO\ *N*\ CEPT along with every dependency, with no regard
 for possibly preinstalled libraries. Though generally recommended, for running
 serious, multi-node simulations one should make use of an MPI library native
 to the cluster, in order to ensure
-:ref:`optimal network performance<optimal_network_performance_on_clusters>`.
+:ref:`optimal network performance <optimal_network_performance_on_clusters>`.
 

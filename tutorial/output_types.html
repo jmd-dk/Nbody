@@ -358,6 +358,8 @@
 <p>So far, the result of any simulation has been power spectra, though several
 other types of output are available, as exemplified by the below parameter
 file:</p>
+<div class="literal-block-wrapper docutils container" id="params-output-types">
+<div class="code-block-caption"><span class="caption-text">params/tutorial</span><a class="headerlink" href="#params-output-types" title="Permalink to this code">¶</a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter variable used to control the size of the simulation</span>
 <span class="n">_size</span> <span class="o">=</span> <span class="mi">64</span>
 
@@ -418,6 +420,7 @@ file:</p>
 <span class="n">render3D_resolution</span> <span class="o">=</span> <span class="mi">640</span>
 </pre></div>
 </div>
+</div>
 <p>Run a simulation using these parameters, e.g. by saving them to
 <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> and executing</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">4</span>
@@ -432,7 +435,7 @@ the same directory.</p>
 types, while <code class="docutils literal notranslate"><span class="pre">'render3D'</span></code> is set to use the same times as the output just
 above it, i.e. that of <code class="docutils literal notranslate"><span class="pre">'powerspec'</span></code>. For <code class="docutils literal notranslate"><span class="pre">'render2D'</span></code>, we’ve specified 15
 outputs spaced logarithmically equidistant between
-<span class="math notranslate nohighlight">\(a=a_{\mathrm{begin}}=0.02\)</span> and <span class="math notranslate nohighlight">\(a=1\)</span>.</p>
+<span class="math notranslate nohighlight">\(a = a_{\text{begin}} = 0.02\)</span> and <span class="math notranslate nohighlight">\(a = 1\)</span>.</p>
 <p>Among the new parameters introduced are <code class="docutils literal notranslate"><span class="pre">powerspec_select</span></code>, in which we have
 specified that we only want the data files as output, not plots of this data.</p>
 <div class="section" id="d-renders">
@@ -510,7 +513,7 @@ format, which is simply a well-structured HDF5 file.</p>
 <a class="reference external" href="http://vitables.org/">ViTables</a>. If you encounter problems viewing HDF5
 files produced by CO<em>N</em>CEPT, try upgrading to ViTables 3.</p>
 <p>You can install ViTables as part of the CO<em>N</em>CEPT installation via</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> <span class="nv">$python</span> -m pip install <span class="nv">pyqt5</span><span class="o">==</span><span class="m">5</span>.14 vitables<span class="o">)</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> <span class="nv">$python</span> -m pip install vitables<span class="o">)</span>
 </pre></div>
 </div>
 <p>after which you can run it by e.g. doing</p>

@@ -15,6 +15,8 @@ to the ones encountered in the previous section. Save these in
 
 
 .. code-block:: python3
+   :caption: params/tutorial
+   :name: params-gravity
 
    # Non-parameter helper variable used to control the size of the simulation
    _size = 64
@@ -58,9 +60,8 @@ and optionally specifying whatever number of CPU cores you'd like with the
 ``-n`` option.
 
 .. note::
-
    Note that a choice of e.g. ``-n 3`` is illegal as
-   :math:`N=64^3` is not divisible by :math:`3`. More of such
+   :math:`N = 64^3` is not divisible by :math:`3`. More of such
    restrictions exist. If an illegal number of processes is chosen, this will
    be detected and a helpful error message is shown.
 
@@ -72,7 +73,7 @@ different value of ``_sim`` for each run.
 
 The result of the simulation will be a data file
 ``output/tutorial/powerspec_A_a=1.00`` of the matter power spectrum at
-:math:`a=1`, along with the corresponding plot
+:math:`a = 1`, along with the corresponding plot
 ``output/tutorial/powerspec_A_a=1.00.png``.
 
 
@@ -137,7 +138,7 @@ A different gravitational method is the particle-particle-particle-mesh (P³M)
 method. This method also makes use of a potential grid, but here the grid is
 used only to get the gravitational force between particles separated by a
 distance much greater than the potential cell size, minimizing discretization
-errors. The remaning --- so-called short-range --- component of gravity
+errors. The remaning --- so-called *short-range* --- component of gravity
 between nearby particles is then computed separately, by directly pairing up
 particles and computing the force between them (no potential grid required).
 
@@ -180,30 +181,39 @@ your favourite plotting program, or --- for your convenience --- using the
 script below:
 
 .. code-block:: python3
+   :caption: output/tutorial/plot.py
+   :name: plot
 
    import glob, os, re
    import numpy as np
    import matplotlib.pyplot as plt
 
+   # Read in data
+   P_sims = {}
    this_dir = os.path.dirname(os.path.realpath(__file__))
-   fig, ax = plt.subplots()
-   for filename in sorted(glob.glob(f'{this_dir}/powerspec*')):
-       match = re.search(r'powerspec_(.+)_a=[\d.]+$', filename)
-       if not match:
+   for filename in sorted(glob.glob(f'{this_dir}/powerspec*'), key=os.path.getmtime):
+       match = re.search(r'powerspec_(.+)_', filename)
+       if not match or filename.endswith('.png'):
            continue
        sim = match.group(1)
-       k, P_sim, P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
-       linetype = '--' if sim in {'B', 'E'} else '-'
-       ax.loglog(k, P_sim, linetype, label=f'simulation {sim}')
-   ax.loglog(k, P_lin, 'k--', label='linear')
-   ax.legend()
-   ax.set_xlabel(r'$k$ $[\mathrm{Mpc}^{-1}]$')
-   ax.set_ylabel(r'power $[\mathrm{Mpc}^3]$')
-   fig.tight_layout()
-   fig.savefig(f'{this_dir}/plot.png')
+       k, P_sims[sim], P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
 
-To use the above script, save the code to a file in the ``output/tutorial``
-directory, say ``output/tutorial/plot.py``, then do
+   # Plot
+   for sim, P_sim in P_sims.items():
+       linestyle, zorder = (':', np.inf) if sim in {'B', 'E'} else ('-', None)
+       plt.loglog(k, P_sim, linestyle, label=f'simulation {sim}', zorder=zorder)
+   plt.loglog(k, P_lin, 'k--', label='linear', linewidth=1, zorder=np.inf)
+   plt.xlim(k[0], k[-1])
+   plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
+   plt.ylabel(r'$P\, [\mathrm{Mpc}^3]$')
+   plt.legend()
+   plt.tight_layout()
+   plt.savefig(f'{this_dir}/plot.png', dpi=150)
+
+Do not feel bad about using this plotting script --- and others to come later
+on in the tutorial --- without studying it in any detail. To run the script,
+save the above code to a file in the ``output/tutorial`` directory, say
+``output/tutorial/plot.py``, then do
 
 .. code-block:: bash
 
@@ -235,12 +245,12 @@ be essentially exact).
 Though inadequate for precise particle simulations, the PM method is still a
 valuable tool, as sometimes the benefits of rapid simulations outweigh the
 drawbacks from loss of precision. Also, as we shall
-:doc:`delve into later<beyond_matter_only>`, PM gravity is as accurate as
+:doc:`delve into later <beyond_matter_only>`, PM gravity is as accurate as
 can be for fluid (i.e. non-particle) components, used to model species
 different from matter. Finally --- though sticking to default values are
 generally recommended --- you should be aware that the details about the PM
 and P³M methods can be further specified using
-:doc:`various parameters</parameters/numerical_parameters>`, affecting the
+:doc:`various parameters </parameters/numerical_parameters>`, affecting the
 performance and accuracy.
 
 

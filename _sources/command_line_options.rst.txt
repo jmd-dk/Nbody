@@ -102,7 +102,6 @@ available both during the simulation *and* to the other parameters in the
 parameter file during read-in.
 
 .. caution::
-
    Be careful about trying to overwrite parameter values defined in a
    parameter file using ``-c``. As stated above, specifying a command-line
    parameter with ``-c`` is equivalent to defining it at the bottom of the
@@ -347,7 +346,6 @@ in the case of TORQUE/PBS (the specific example of ``--constraint``
 does not mean anything to TORQUE/PBS, though).
 
 .. caution::
-
    Since the value ``--constraint=AMD`` starts with '``-``', using
    ``-j --constraint=AMD`` or ``-j "--constraint=AMD"`` is not legal as the
    parser registres ``--constraint=AMD`` as a whole new (and non-existent)
@@ -360,8 +358,8 @@ The ``-j`` option may be specified multiple times.
 No watching: ``--no-watching``
 ..............................
 After submitting a remote job, rather than put you back at the system prompt,
-CO\ *N*\ CEPT will run the :doc:`watch utility</utilities/watch>` in order for
-you to follow the progression of the job. This have no effect on the job
+CO\ *N*\ CEPT will run the :doc:`watch utility </utilities/watch>` in order
+for you to follow the progression of the job. This have no effect on the job
 itself, and you may stop watching its printout using ``Ctrl``\ +\ ``C``.
 
 If you have no desire to watch the job progression, you may specify this
@@ -438,7 +436,6 @@ do so by supplying this option:
    ./concept --no-optimizations
 
 .. note::
-
    If CO\ *N*\ CEPT is already in a compiled state (built with or without
    optimizations), it will not be recompiled. To recompile without
    optimizations, you first have to remove the compiled files:
@@ -468,7 +465,6 @@ percent performance increase out of the compilation:
 Specifically, this adds the ``-march=native`` compiler optimization.
 
 .. note::
-
    If CO\ *N*\ CEPT is already in a compiled state (built with or without
    (native) optimizations), it will not be recompiled. To recompile with
    native optimizations, you first have to remove the compiled files:
@@ -506,7 +502,6 @@ are ignored during compilation:
    ./concept --unsafe-building
 
 .. caution::
-
    This option really *is* unsafe and may very well lead to a buggy build. To
    clean up after an unsuccessful build, do
 
@@ -599,6 +594,7 @@ As an example, consider the ``hubble.py`` script below:
 
 .. code-block:: python
    :caption: hubble.py
+   :name: hubble
 
    from commons import *  # import everyting from the CO𝘕CEPT commons module
 

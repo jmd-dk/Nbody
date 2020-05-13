@@ -486,15 +486,15 @@ explicitly specified themselves. Currently, the only two such <em>inferred</em>
 parameters are <code class="docutils literal notranslate"><span class="pre">h</span></code> and <code class="docutils literal notranslate"><span class="pre">Ων</span></code>:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">h</span></code> is simply defined through
-<span class="math notranslate nohighlight">\(h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})\)</span>,
+<span class="math notranslate nohighlight">\(h \equiv H_0/(100\, \text{km}\, \text{s}^{-1}\, \text{Mpc}^{-1})\)</span>,
 with the Hubble constant <span class="math notranslate nohighlight">\(H_0\)</span> being a normal parameter, <code class="docutils literal notranslate"><span class="pre">H0</span></code>,
 defined as e.g.</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">H0</span> <span class="o">=</span> <span class="mi">67</span><span class="o">*</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">Mpc</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>in which case <code class="docutils literal notranslate"><span class="pre">h</span></code> is set equal to <code class="docutils literal notranslate"><span class="pre">0.67</span></code>. Having <code class="docutils literal notranslate"><span class="pre">h</span></code> available is
-useful if you want to use the common unit of <span class="math notranslate nohighlight">\(\mathrm{Mpc}/h\)</span>, e.g.
-when defining the box size:</p>
+useful if you want to use the common unit of <span class="math notranslate nohighlight">\(\text{Mpc}/h\)</span>, e.g. when
+defining the box size:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">boxsize</span> <span class="o">=</span> <span class="mi">256</span><span class="o">*</span><span class="n">Mpc</span><span class="o">/</span><span class="n">h</span>
 </pre></div>
 </div>
@@ -504,8 +504,8 @@ neutrino species. It is set based on the massive neutrino parameters defined
 by the <code class="docutils literal notranslate"><span class="pre">class_params</span></code> <a class="reference internal" href="cosmology.html#class-params"><span class="std std-ref">parameter</span></a>. As the computation
 of <span class="math notranslate nohighlight">\(\Omega_\nu\)</span> is non-trivial, this is nice to have available for
 simulations with massive neutrinos where the sum
-<span class="math notranslate nohighlight">\(\Omega_{\mathrm{cdm}} + \Omega_\nu\)</span> is constrained. With e.g.
-<span class="math notranslate nohighlight">\(\Omega_{\mathrm{cdm}} + \Omega_\nu = 0.27\)</span>, one would set</p>
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}} + \Omega_\nu\)</span> is constrained. With e.g.
+<span class="math notranslate nohighlight">\(\Omega_{\text{cdm}} + \Omega_\nu = 0.27\)</span>, one would set</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">Ωcdm</span> <span class="o">=</span> <span class="mf">0.27</span> <span class="o">-</span> <span class="n">Ων</span>
 </pre></div>
 </div>

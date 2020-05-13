@@ -54,7 +54,6 @@ A vast set of units are understood, like ``km``, ``pc``, ``kpc``, ``Mpc``,
 ``Gpc``, ``s``, ``yr``, to name a few.
 
 .. note::
-
    The actual numerical value resulting from e.g. ``512*Mpc`` depends on the
    internal unit system employed by CO\ *N*\ CEPT. The unit system itself is
    not statically defined, but specified on a per-simulation basis via
@@ -200,7 +199,7 @@ explicitly specified themselves. Currently, the only two such *inferred*
 parameters are ``h`` and ``Ων``:
 
 * ``h`` is simply defined through
-  :math:`h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})`,
+  :math:`h \equiv H_0/(100\, \text{km}\, \text{s}^{-1}\, \text{Mpc}^{-1})`,
   with the Hubble constant :math:`H_0` being a normal parameter, ``H0``,
   defined as e.g.
 
@@ -209,8 +208,8 @@ parameters are ``h`` and ``Ων``:
      H0 = 67*km/(s*Mpc)
 
   in which case ``h`` is set equal to ``0.67``. Having ``h`` available is
-  useful if you want to use the common unit of :math:`\mathrm{Mpc}/h`, e.g.
-  when defining the box size:
+  useful if you want to use the common unit of :math:`\text{Mpc}/h`, e.g. when
+  defining the box size:
 
   .. code-block:: python3
 
@@ -221,8 +220,8 @@ parameters are ``h`` and ``Ων``:
   by the ``class_params`` :ref:`parameter <class_params>`. As the computation
   of :math:`\Omega_\nu` is non-trivial, this is nice to have available for
   simulations with massive neutrinos where the sum
-  :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu` is constrained. With e.g.
-  :math:`\Omega_{\mathrm{cdm}} + \Omega_\nu = 0.27`, one would set
+  :math:`\Omega_{\text{cdm}} + \Omega_\nu` is constrained. With e.g.
+  :math:`\Omega_{\text{cdm}} + \Omega_\nu = 0.27`, one would set
 
   .. code-block:: python3
 

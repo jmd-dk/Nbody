@@ -19,7 +19,7 @@ Installation failed
 -------------------
 We strive for a trivial installation process on as many Linux systems as
 possible. If the
-:ref:`standard installation process<standard_installation>`
+:ref:`standard installation process <standard_installation>`
 (with every dependency allowed to be installed from scratch) keeps failing
 for some inexplicable reason, you may try looking for a clue in the logged
 installation output (of which there are a lot), in the ``install_log`` and
@@ -41,7 +41,7 @@ installation log files for failed tests may then reveal something.
 Compilation failed
 ------------------
 Compilation of the CO\ *N*\ CPET code takes place as the last essential step
-during :ref:`standard installation<standard_installation>`, as well as when
+during :ref:`standard installation <standard_installation>`, as well as when
 invoking ``concept`` after changes have been made to the source files. This
 process may fail for several reasons, solutions to some are described in this
 entry.
@@ -118,8 +118,8 @@ the compilation taken place without trouble.
 Dangerous optimizations
 .......................
 If the compilation errors were not due to
-:ref:`insufficient memory<insufficient_memory>`, it may be that one or more of
-the applied optimization flags causes trouble. Try compiling without any
+:ref:`insufficient memory <insufficient_memory>`, it may be that one or more
+of the applied optimization flags causes trouble. Try compiling without any
 optimizations:
 
 .. code-block:: bash
@@ -218,7 +218,7 @@ step, it is probably because you have specified a cosmology that CLASS cannot
 handle. When running CO\ *N*\ CEPT in compiled mode, CLASS may hang rather
 than exiting with an error message. To see the CLASS error message, run
 CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
-:ref:`command-line option<pure_python>`.
+:ref:`command-line option <pure_python>`.
 
 
 
@@ -290,7 +290,6 @@ TORQUE/PBS).
    .. group-tab:: Slurm
 
       .. note::
-
          Even if you are using Slurm, it may be that your MPI library is not
          configured appropriately for ``srun`` to be able to correctly launch
          MPI jobs. This can happen e.g. if you are using an MPI library that
@@ -383,7 +382,7 @@ switch to using a different remote queue/partition with nodes that have
 similar architecture to that of the front-end.
 
 If you have installed CO\ *N*\ CEPT using the
-:ref:`standard installation process<standard_installation>`, CO\ *N*\ CEPT
+:ref:`standard installation process <standard_installation>`, CO\ *N*\ CEPT
 itself and all of its dependencies have been built in a somewhat portable
 manner, meaning that CO\ *N*\ CEPT should run fine on architectures different
 from that on the front-end, as long as its not *too* different.
@@ -504,7 +503,7 @@ processes, the problem is likely that the MPI library used is not configured
 to handle the network optimally.
 
 Be sure to install CO\ *N*\ CEPT with
-:ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`.
+:ref:`optimal network performance on clusters <optimal_network_performance_on_clusters>`.
 If you are observing bad network behavior even so, you should try changing the
 MPI executor, as described :ref:`here <chosing_an_mpi_executor>`.
 

@@ -5,21 +5,21 @@ along with its many dependencies. Unless you have some special need, it is
 recommended to just follow the simple,
 :ref:`standard installation <standard_installation>` instructions, including
 those covering how to obtain
-:ref:`optimal network performance<optimal_network_performance_on_clusters>`
+:ref:`optimal network performance <optimal_network_performance_on_clusters>`
 if you intend to install CO\ *N*\ CEPT on a cluster.
 
 The :ref:`standard <standard_installation>` way of installing CO\ *N*\ CEPT
 utilizes the ``installer`` script to install CO\ *N*\ CEPT and all of its
 dependencies. Many more details about how to use this script for more
 customized installation is available under the
-':ref:`installer script in-depth<the_installer_script_in_depth>`' entry.
+':ref:`installer script in-depth <the_installer_script_in_depth>`' entry.
 
 Though not recommended, you may choose to not make use of the ``installer``
 script, in which case you need to install all of the
 :ref:`dependencies <dependencies>` yourself. After
 `downloading <https://github.com/jmd-dk/concept>`_ the CO\ *N*\ CEPT source
 code, you then need to
-:ref:`specify environment information<the_paths_and_env_files>` by editing
+:ref:`specify environment information <the_paths_and_env_files>` by editing
 the ``.paths`` and ``.env`` files.
 
 
@@ -30,6 +30,8 @@ Entries on this page:
    :depth: 2
 
 
+
+.. _supported_platforms:
 
 Supported platforms
 -------------------
@@ -50,7 +52,7 @@ Supported platforms
 
    .. tab:: |linux| :math:`\,\,` Linux
 
-      CO\ *N*\ CEPT should be :ref:`trivial to install<standard_installation>`
+      CO\ *N*\ CEPT should be :ref:`trivial to install <standard_installation>`
       on all major Linux distributions. The system may be a laptop, a
       workstation, a massively parallel computer cluster, a Raspberry Pi,
       a virtual machine, etc.
@@ -96,13 +98,11 @@ Supported platforms
       persist in your current directory after the Docker container is stopped.
 
       .. note::
-
          If you run Docker Desktop/Toolbox on Windows or macOS, some
          configuration is needed for the mounting (``-v``) to actually point
          to your native Windows/macOS directory.
 
       .. caution::
-
          While running CO\ *N*\ CEPT via Docker is great for experimental use,
          :ref:`proper installation <standard_installation>` on a Linux host is
          preferable for running large simulations, ensuring maximum
@@ -144,12 +144,18 @@ release versions, or use ``concept_version=master`` for the absolute newest
    shell
 
 .. note::
+   Your system may fail to verify the certificate of the domain name
+   (``raw.githubusercontent.com``), causing ``wget`` to refuse the download.
+   If you encounter this issue, you can supply ``--no-check-certificate`` as a
+   further option to ``wget``.
+
+.. note::
    For the remainder of this page, we shall make us of the shorter
    ``bash installer`` syntax, but here the local file "``installer``" may
    always be substituted with the online "``<(wget ...)``" version.
 
 The ``installer`` will prompt you for an installation directory, as well as
-for permission to install each :ref:`system dependency<system_dependencies>`,
+for permission to install each :ref:`system dependency <system_dependencies>`,
 should any be missing. At the very beginning of the installation, a table of
 software to be installed will be shown.
 
@@ -196,7 +202,6 @@ Note that you *will* have to reinstall CO\ *N*\ CEPT and its dependencies in
 their entirety, if you want to swap out the MPI library.
 
 .. tip::
-
    If you have ``/path/to/mpi/bin`` already in your ``PATH`` you may use
    simply
 
@@ -224,7 +229,7 @@ If however you wish to work with a full clone of the CO\ *N*\ CEPT
 `code repository <https://github.com/jmd-dk/concept/>`_, the easiest way to do
 so is to fist install the master version of CO\ *N*\ CEPT *without* Git,
 following the
-:ref:`standard installation instructions<standard_installation>`. Once
+:ref:`standard installation instructions <standard_installation>`. Once
 CO\ *N*\ CEPT is installed, ``git clone`` the online CO\ *N*\ CEPT repository
 into a temporary directory and simply drop the ``.git`` subdirectory into the
 root of your CO\ *N*\ CEPT installation.
@@ -253,7 +258,6 @@ changes:
    git commit -a -m "customized .paths and .env for $(whoami)"
 
 .. note::
-
    If you ``git checkout`` to another branch/tag/commit, your ``.paths`` and
    ``.env`` files will be switched out for the ones in the online repository.
    For CO\ *N*\ CEPT to run, you should then replace these with your own
@@ -345,7 +349,7 @@ Perl) in order to provide both BLAS and LAPACK. For MPI,
 `MPICH <https://www.mpich.org/>`_ (default) or
 `OpenMPI <https://www.open-mpi.org/>`_ is installed (both depend on Perl). If
 tests are to be performed during the installation (see the ``--tests``
-:ref:`command-line option<command_line_options>`), the pytest Python package
+:ref:`command-line option <command_line_options>`), the pytest Python package
 will be installed as well (needed for testing NumPy and SciPy).
 
 
@@ -460,7 +464,7 @@ Influential environment variables
 .................................
 The behavior of the ``installer`` is governed by a large set of environment
 variables. An example is the ``mpi_dir`` variable described in
-':ref:`optimal network performance on clusters<optimal_network_performance_on_clusters>`',
+':ref:`optimal network performance on clusters <optimal_network_performance_on_clusters>`',
 through which we can let the ``installer`` make use of a preinstalled MPI
 library, rather than letting it install one itself. We can specify ``mpi_dir``
 either directly in the invocation of ``installler``;
@@ -832,7 +836,6 @@ building and running CO\ *N*\ CEPT. It is sourced by the ``concept`` script
 before building and running the code.
 
 .. tip::
-
    Should you want the environment of your interactive shell to be populated
    with the environment variables defined in ``.env``, it is recommended to
    source the ``concept`` script, rather than the ``.env`` file. This is

@@ -5,6 +5,8 @@ other types of output are available, as exemplified by the below parameter
 file:
 
 .. code-block:: python3
+   :caption: params/tutorial
+   :name: params-output-types
 
    # Non-parameter variable used to control the size of the simulation
    _size = 64
@@ -83,7 +85,7 @@ For the ``output_times``, different values are given for three of the output
 types, while ``'render3D'`` is set to use the same times as the output just
 above it, i.e. that of ``'powerspec'``. For ``'render2D'``, we've specified 15
 outputs spaced logarithmically equidistant between
-:math:`a=a_{\mathrm{begin}}=0.02` and :math:`a=1`.
+:math:`a = a_{\text{begin}} = 0.02` and :math:`a = 1`.
 
 Among the new parameters introduced are ``powerspec_select``, in which we have
 specified that we only want the data files as output, not plots of this data.
@@ -188,7 +190,7 @@ format, which is simply a well-structured HDF5 file.
 
    .. code-block:: bash
 
-      (source concept && $python -m pip install pyqt5==5.14 vitables)
+      (source concept && $python -m pip install vitables)
 
    after which you can run it by e.g. doing
 

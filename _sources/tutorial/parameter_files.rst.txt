@@ -6,6 +6,8 @@ file, say ``params/tutorial`` (the ``params`` directory already exists).
 Copy the content below to such a file:
 
 .. code-block:: python3
+   :caption: params/tutorial
+   :name: params-parameter-files
 
    # Non-parameter helper variable used to control the size of the simulation
    _size = 64
@@ -98,8 +100,8 @@ specifications. In doing so, we've made use of several helpful tricks:
   No default units are ever assumed by CO\ *N*\ CEPT when it reads parameters,
   and so it's critical that you explicitly tack on units on all parameters
   that are not unitless. For ``boxsize``, the extra fancy unit of
-  :math:`\mathrm{Mpc}/h` is used above, with
-  :math:`h \equiv H_0/(100\,\mathrm{km}\,\mathrm{s}^{-1}\,\mathrm{Mpc}^{-1})`
+  :math:`\text{Mpc}/h` is used above, with
+  :math:`h \equiv H_0/(100\, \text{km}\, \text{s}^{-1}\, \text{Mpc}^{-1})`
   inferred dynamically from the Hubble constant ``H0`` set further down.
 
 * The parameters ``Ωb`` and ``Ωcdm`` of course set the amount of baryons and
