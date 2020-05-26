@@ -139,7 +139,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#command-line-options">Command-line options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#influential-environment-variables">Influential environment variables</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#making-use-of-preinstalled-libraries">Making use of preinstalled libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#making-use-of-pre-installed-libraries">Making use of pre-installed libraries</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#specifying-dependency-versions">Specifying dependency versions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#choosing-compiler-precedence">Choosing compiler precedence</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#installing-mpich-or-openmpi">Installing MPICH or OpenMPI</a></li>
@@ -357,7 +357,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="installation">
+  <style type="text/css">
+  span.bolditalic {
+    font-weight: bold;
+    font-style: italic;
+  }
+</style><div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>This page contains detailed information about how to install CO<em>N</em>CEPT
 along with its many dependencies. Unless you have some special need, it is
@@ -622,7 +627,7 @@ versions (available on the <code class="docutils literal notranslate"><span clas
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> script may be run with additional options or influential
 environment variables, which can be used to e.g. request for a specific
 version of a dependency to be installed, or to skip the installation of a
-particular dependency and instead make use of a preinstalled version of the
+particular dependency and instead make use of a pre-installed version of the
 same library. Before discussing such features, it is good to know exactly
 what dependencies are installed.</p>
 <div class="section" id="programs-installed">
@@ -741,24 +746,76 @@ results in a non-functioning CO<em>N</em>CEPT, but it is unknown which of the
 many dependencies does not function correctly. Generally though, this option
 is not recommended as it increases the installation time by a couple of hours.</p>
 <p>The tests performed on the CO<em>N</em>CEPT code itself are those of</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">concept</span> <span class="o">-</span><span class="n">t</span> <span class="nb">all</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -t all
 </pre></div>
 </div>
 <p>and so may also be run at any time after the installation, whether or not the
 <code class="docutils literal notranslate"><span class="pre">--tests</span></code> option was used for th installation. See the <code class="docutils literal notranslate"><span class="pre">concept</span></code>
 <a class="reference internal" href="command_line_options.html#test"><span class="std std-ref">test</span></a> option for further details.</p>
 <h6>
-  Yes:
+  Yes to defaults:
   <code class="docutils literal notranslate"><span class="pre">
     -y
   </span></code>
   ,
   <code class="docutils literal notranslate"><span class="pre">
-    --yes
+    --yes-to-defaults
   </span></code>
-</h6><p>Assume “yes” as answer to all prompts and run non-interactively. Currently
-these include only the system-wide installations of system dependencies,
-should any be missing. Note that this requires root access.</p>
+</h6><p>Assume “yes” as answer to all prompts (accept defaults) and run
+non-interactively. These include system-wide installations of system
+dependencies (should any be missing), which require root access.</p>
+<h6>
+  Native optimizations:
+  <code class="docutils literal notranslate"><span class="pre">
+    --native-optimizations
+  </span></code>
+</h6><p>This passes the
+<a class="reference internal" href="command_line_options.html#native-optimizations"><span class="std std-ref">--native-optimizations flag</span></a> on to the
+CO<em>N</em>CEPT compilation.</p>
+<h6>
+  Slim:
+  <code class="docutils literal notranslate"><span class="pre">
+    --slim
+  </span></code>
+</h6><p>This produces a trimmed down installation with uncritical content removed,
+both from CO<em>N</em>CEPT itself and its dependency programs. This brings the
+size of the installation down from about 1.5 GB to about 0.5 GB. Though
+CO<em>N</em>CEPT itself remains fully functional in such a slim installation,
+some features of the dependency programs will be broken. Debugging any issues
+encountered will also generally be much harder.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The provided CO<em>N</em>CEPT <a class="reference internal" href="#supported-platforms"><span class="std std-ref">Docker images</span></a> are
+built using a slim installation</p>
+</div>
+<p>Below we list the exact changes caused by the <code class="docutils literal notranslate"><span class="pre">--slim</span></code> option.</p>
+<ul class="simple">
+<li><p><strong>Fewer license and acknowledgement files</strong>: During normal installation, all
+recognized license and acknowledgement files for the various dependencies
+(and CO<em>N</em>CEPT itself) are copied over to the respective installation
+directories. This is now skipped.</p></li>
+<li><p><strong>Less documentation</strong>: Most documentation (full-blown documentation,
+README’s, changelogs, etc.) for the dependency programs will be removed. The
+documentation for CO<em>N</em>CEPT itself (these pages) will not be built but
+remains available as source.</p></li>
+<li><p><strong>Fewer example and test files</strong>: Example files demonstrating how to use the
+various dependency programs, as well as test suites for demonstrating their
+correctness, will be removed.</p></li>
+<li><p><strong>Fewer configuration files</strong>: The majority of configuration files
+describing the installation of the dependencies will be removed.</p></li>
+<li><p><strong>No cached Python files</strong>: All bytecode files compiled and cached by Python
+during installation will be removed.</p></li>
+<li><p><strong>No compilation artifacts from CO</strong><span class="bolditalic">N</span><strong>CEPT and CLASS</strong>:
+Only the final shared object files (as well as the bare source) resulting
+from compilation of CO<em>N</em>CEPT and CLASS will be present after
+installation.</p></li>
+<li><p><strong>No symbols in binaries</strong>: The majority of all binary files will have their
+symbol table stripped (for debug as well as other symbols).</p></li>
+<li><p><strong>Fewer dependency programs</strong>: Some dependency programs are only strictly
+needed during installation of the dependency stack, not for running
+CO<em>N</em>CEPT itself. These will be completely removed. The dependencies in
+question are: Perl, zlib.</p></li>
+</ul>
 <h6>
   Fix ssh:
   <code class="docutils literal notranslate"><span class="pre">
@@ -778,7 +835,7 @@ use with remote jobs running on multiple nodes, as described
 <p>The behavior of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> is governed by a large set of environment
 variables. An example is the <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code> variable described in
 ‘<a class="reference internal" href="#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance on clusters</span></a>’,
-through which we can let the <code class="docutils literal notranslate"><span class="pre">installer</span></code> make use of a preinstalled MPI
+through which we can let the <code class="docutils literal notranslate"><span class="pre">installer</span></code> make use of a pre-installed MPI
 library, rather than letting it install one itself. We can specify <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code>
 either directly in the invocation of <code class="docutils literal notranslate"><span class="pre">installler</span></code>;</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi bash installer
@@ -790,16 +847,16 @@ bash installer
 </pre></div>
 </div>
 <p>All other influential environment variables may be set in similar ways.</p>
-<div class="section" id="making-use-of-preinstalled-libraries">
-<h4>Making use of preinstalled libraries<a class="headerlink" href="#making-use-of-preinstalled-libraries" title="Permalink to this headline">¶</a></h4>
-<p>To make the <code class="docutils literal notranslate"><span class="pre">installer</span></code> make use of a preinstalled library rather than
+<div class="section" id="making-use-of-pre-installed-libraries">
+<h4>Making use of pre-installed libraries<a class="headerlink" href="#making-use-of-pre-installed-libraries" title="Permalink to this headline">¶</a></h4>
+<p>To make the <code class="docutils literal notranslate"><span class="pre">installer</span></code> make use of a pre-installed library rather than
 installing it itself, you must set the corresponding <code class="docutils literal notranslate"><span class="pre">*_dir</span></code> variable. The
 complete list of such variables is: <code class="docutils literal notranslate"><span class="pre">blas_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">class_dir</span></code>,
 <code class="docutils literal notranslate"><span class="pre">concept_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_for_gadget_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">freetype_dir</span></code>,
 <code class="docutils literal notranslate"><span class="pre">gadget_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">gsl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">libffi_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">libpng_dir</span></code>,
 <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">ncurses_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">openssl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">perl_dir</span></code>,
 <code class="docutils literal notranslate"><span class="pre">python_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">zlib_dir</span></code>.</p>
-<p>Note that if using a preinstalled Python distribution —
+<p>Note that if using a pre-installed Python distribution —
 <code class="docutils literal notranslate"><span class="pre">python_dir=/path/to/python</span></code> — OpenSSL, libffi and ncurses are assumed to
 be already installed and build into the Python distribution, as these cannot
 be tacked on after Python is build. Also, Python should come with at least pip
@@ -1002,7 +1059,7 @@ installed system-wide. These include
 <a class="reference external" href="https://www.gnu.org/software/findutils/">GNU Find Utilities</a>, which are the
 only three that cannot be installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code>. The GNU Find
 Utilities are only used for building the documentation and may be left out.
-That said, all three of these system dependencies comes preinstalled on the
+That said, all three of these system dependencies comes pre-installed on the
 vast majority of Linux distributions.</p>
 <p>Other system dependencies needed for the core CO<em>N</em>CEPT functionality are
 awk, grep and sed. Also, the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script and <code class="docutils literal notranslate"><span class="pre">update</span></code> utility

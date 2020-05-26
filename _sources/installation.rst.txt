@@ -1,3 +1,14 @@
+.. raw:: html
+
+   <style type="text/css">
+     span.bolditalic {
+       font-weight: bold;
+       font-style: italic;
+     }
+   </style>
+
+
+
 Installation
 ============
 This page contains detailed information about how to install CO\ *N*\ CEPT
@@ -272,7 +283,7 @@ The ``installer`` script in-depth
 The ``installer`` script may be run with additional options or influential
 environment variables, which can be used to e.g. request for a specific
 version of a dependency to be installed, or to skip the installation of a
-particular dependency and instead make use of a preinstalled version of the
+particular dependency and instead make use of a pre-installed version of the
 same library. Before discussing such features, it is good to know exactly
 what dependencies are installed.
 
@@ -413,7 +424,7 @@ is not recommended as it increases the installation time by a couple of hours.
 
 The tests performed on the CO\ *N*\ CEPT code itself are those of
 
-.. code:: python3
+.. code:: bash
 
    ./concept -t all
 
@@ -421,23 +432,91 @@ and so may also be run at any time after the installation, whether or not the
 ``--tests`` option was used for th installation. See the ``concept``
 :ref:`test <test>` option for further details.
 
-
 .. raw:: html
 
    <h6>
-     Yes:
+     Yes to defaults:
      <code class="docutils literal notranslate"><span class="pre">
        -y
      </span></code>
      ,
      <code class="docutils literal notranslate"><span class="pre">
-       --yes
+       --yes-to-defaults
      </span></code>
    </h6>
 
-Assume "yes" as answer to all prompts and run non-interactively. Currently
-these include only the system-wide installations of system dependencies,
-should any be missing. Note that this requires root access.
+Assume "yes" as answer to all prompts (accept defaults) and run
+non-interactively. These include system-wide installations of system
+dependencies (should any be missing), which require root access.
+
+.. raw:: html
+
+   <h6>
+     Native optimizations:
+     <code class="docutils literal notranslate"><span class="pre">
+       --native-optimizations
+     </span></code>
+   </h6>
+
+This passes the
+:ref:`\\\\-\\\\-native-optimizations flag <native_optimizations>` on to the
+CO\ *N*\ CEPT compilation.
+
+.. raw:: html
+
+   <h6>
+     Slim:
+     <code class="docutils literal notranslate"><span class="pre">
+       --slim
+     </span></code>
+   </h6>
+
+This produces a trimmed down installation with uncritical content removed,
+both from CO\ *N*\ CEPT itself and its dependency programs. This brings the
+size of the installation down from about 1.5 GB to about 0.5 GB. Though
+CO\ *N*\ CEPT itself remains fully functional in such a slim installation,
+some features of the dependency programs will be broken. Debugging any issues
+encountered will also generally be much harder.
+
+.. note::
+
+   The provided CO\ *N*\ CEPT :ref:`Docker images <supported_platforms>` are
+   built using a slim installation
+
+Below we list the exact changes caused by the ``--slim`` option.
+
+* **Fewer license and acknowledgement files**: During normal installation, all
+  recognized license and acknowledgement files for the various dependencies
+  (and CO\ *N*\ CEPT itself) are copied over to the respective installation
+  directories. This is now skipped.
+
+* **Less documentation**: Most documentation (full-blown documentation,
+  README's, changelogs, etc.) for the dependency programs will be removed. The
+  documentation for CO\ *N*\ CEPT itself (these pages) will not be built but
+  remains available as source.
+
+* **Fewer example and test files**: Example files demonstrating how to use the
+  various dependency programs, as well as test suites for demonstrating their
+  correctness, will be removed.
+
+* **Fewer configuration files**: The majority of configuration files
+  describing the installation of the dependencies will be removed.
+
+* **No cached Python files**: All bytecode files compiled and cached by Python
+  during installation will be removed.
+
+* **No compilation artifacts from CO**\ :bolditalic:`N`\ **CEPT and CLASS**:
+  Only the final shared object files (as well as the bare source) resulting
+  from compilation of CO\ *N*\ CEPT and CLASS will be present after
+  installation.
+
+* **No symbols in binaries**: The majority of all binary files will have their
+  symbol table stripped (for debug as well as other symbols).
+
+* **Fewer dependency programs**: Some dependency programs are only strictly
+  needed during installation of the dependency stack, not for running
+  CO\ *N*\ CEPT itself. These will be completely removed. The dependencies in
+  question are: Perl, zlib.
 
 .. raw:: html
 
@@ -465,7 +544,7 @@ Influential environment variables
 The behavior of the ``installer`` is governed by a large set of environment
 variables. An example is the ``mpi_dir`` variable described in
 ':ref:`optimal network performance on clusters <optimal_network_performance_on_clusters>`',
-through which we can let the ``installer`` make use of a preinstalled MPI
+through which we can let the ``installer`` make use of a pre-installed MPI
 library, rather than letting it install one itself. We can specify ``mpi_dir``
 either directly in the invocation of ``installler``;
 
@@ -484,9 +563,9 @@ All other influential environment variables may be set in similar ways.
 
 
 
-Making use of preinstalled libraries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-To make the ``installer`` make use of a preinstalled library rather than
+Making use of pre-installed libraries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To make the ``installer`` make use of a pre-installed library rather than
 installing it itself, you must set the corresponding ``*_dir`` variable. The
 complete list of such variables is: ``blas_dir``, ``class_dir``,
 ``concept_dir``, ``fftw_dir``, ``fftw_for_gadget_dir``, ``freetype_dir``,
@@ -494,7 +573,7 @@ complete list of such variables is: ``blas_dir``, ``class_dir``,
 ``mpi_dir``, ``ncurses_dir``, ``openssl_dir``, ``perl_dir``,
 ``python_dir``, ``zlib_dir``.
 
-Note that if using a preinstalled Python distribution ---
+Note that if using a pre-installed Python distribution ---
 ``python_dir=/path/to/python`` --- OpenSSL, libffi and ncurses are assumed to
 be already installed and build into the Python distribution, as these cannot
 be tacked on after Python is build. Also, Python should come with at least pip
@@ -751,7 +830,7 @@ installed system-wide. These include
 `GNU Find Utilities <https://www.gnu.org/software/findutils/>`_, which are the
 only three that cannot be installed by the ``installer``. The GNU Find
 Utilities are only used for building the documentation and may be left out.
-That said, all three of these system dependencies comes preinstalled on the
+That said, all three of these system dependencies comes pre-installed on the
 vast majority of Linux distributions.
 
 Other system dependencies needed for the core CO\ *N*\ CEPT functionality are

@@ -139,7 +139,7 @@
 <li class="toctree-l3"><a class="reference internal" href="installation.html#programs-installed">Programs installed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#command-line-options">Command-line options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#influential-environment-variables">Influential environment variables</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="installation.html#making-use-of-preinstalled-libraries">Making use of preinstalled libraries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="installation.html#making-use-of-pre-installed-libraries">Making use of pre-installed libraries</a></li>
 <li class="toctree-l4"><a class="reference internal" href="installation.html#specifying-dependency-versions">Specifying dependency versions</a></li>
 <li class="toctree-l4"><a class="reference internal" href="installation.html#choosing-compiler-precedence">Choosing compiler precedence</a></li>
 <li class="toctree-l4"><a class="reference internal" href="installation.html#installing-mpich-or-openmpi">Installing MPICH or OpenMPI</a></li>
@@ -706,7 +706,7 @@ manually, or you may submit the installation as a remote job. Below you will
 find examples of Slurm and TORQUE/PBS job scripts for installing CO<em>N</em>CEPT.
 In both cases you may wish to change <code class="docutils literal notranslate"><span class="pre">concept_version</span></code> and <code class="docutils literal notranslate"><span class="pre">install_path</span></code>,
 load modules or perform other environment changes, and/or make use of a
-preinstalled MPI library as described
+pre-installed MPI library as described
 <a class="reference internal" href="installation.html#optimal-network-performance-on-clusters"><span class="std std-ref">here</span></a>.</p>
 <div class="sphinx-tabs docutils container">
 <div class="ui top attached tabular menu sphinx-menu docutils container">
@@ -781,7 +781,7 @@ manually using <code class="docutils literal notranslate"><span class="pre">sbat
 <p>It is also possible that the cluster configuration just do not play nicely
 with the current MPI implementation in use. If you installed CO<em>N</em>CEPT
 using one of the MPI implementations present on the cluster, try again, using
-another preinstalled MPI library. If you let CO<em>N</em>CEPT install its own
+another pre-installed MPI library. If you let CO<em>N</em>CEPT install its own
 MPI, try switching from MPICH to OpenMPI or vice versa, as described
 <a class="reference internal" href="installation.html#installing-mpich-or-openmpi"><span class="std std-ref">here</span></a>.</p>
 <p>When installing CO<em>N</em>CEPT, try having as few modules loaded as possible,
@@ -811,7 +811,7 @@ across multiple nodes, you should try
 problems as soon as you request multiple nodes, it may be a permission
 problem. For example, OpenMPI uses SSH to establish the connection between the
 nodes, and so your local <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code> directory need to be configured properly.
-Note that when using an MPI implementation preinstalled on the cluster, such
+Note that when using an MPI implementation pre-installed on the cluster, such
 additional configuration from the user ought not to be necessary.</p>
 <p>CO<em>N</em>CEPT comes with the ability to set up the <code class="docutils literal notranslate"><span class="pre">~/.ssh</span></code> as needed for
 multi-node communication. Currently this feature resides as part of the

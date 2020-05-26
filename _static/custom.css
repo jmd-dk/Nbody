@@ -8,3 +8,14 @@
     color: #000000 !important;
 }
 
+/* Reduce vertical spacing below smaller headings */
+h4 {
+  margin-bottom: 1.17em;
+}
+h5 {
+  margin-bottom: 1.17em;
+}
+h6 {
+  margin-bottom: 1.17em;
+}
+

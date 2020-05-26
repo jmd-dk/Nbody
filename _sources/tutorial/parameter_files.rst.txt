@@ -110,7 +110,7 @@ specifications. In doing so, we've made use of several helpful tricks:
   to be ``'matter'`` in the ``initial_conditions`` implies that these
   particles will represent both the cold dark and the bayonic matter.
 
-The ``-p`` parameter file option can be mixed with the ``-c`` command line
+The ``-p`` parameter file option can be mixed with the ``-c`` command-line
 parameter option. As an example, consider leaving out the definition of
 ``_size`` from the parameter file and instead supplying it when running the
 code:

@@ -105,8 +105,8 @@ press ``Ctrl``\ +\ ``C``.
 
 The :doc:`installation procedure </tutorial/installation>` described in this
 tutorial installed CO\ *N*\ CEPT along with every dependency, with no regard
-for possibly preinstalled libraries. Though generally recommended, for running
-serious, multi-node simulations one should make use of an MPI library native
-to the cluster, in order to ensure
+for possibly pre-installed libraries. Though generally recommended, for
+running serious, multi-node simulations one should make use of an MPI library
+native to the cluster, in order to ensure
 :ref:`optimal network performance <optimal_network_performance_on_clusters>`.
 

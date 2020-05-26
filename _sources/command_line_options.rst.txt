@@ -446,6 +446,8 @@ do so by supplying this option:
 
 
 
+.. _native_optimizations:
+
 Native optimizations: ``--native-optimizations``
 ................................................
 The default optimizations performed during compilation are all portable, so

@@ -413,7 +413,7 @@ manually, or you may submit the installation as a remote job. Below you will
 find examples of Slurm and TORQUE/PBS job scripts for installing CO\ *N*\ CEPT.
 In both cases you may wish to change ``concept_version`` and ``install_path``,
 load modules or perform other environment changes, and/or make use of a
-preinstalled MPI library as described
+pre-installed MPI library as described
 :ref:`here <optimal_network_performance_on_clusters>`.
 
 .. tabs::
@@ -485,7 +485,7 @@ manually using ``sbatch jobscript`` (Slurm) or ``qsub jobscript``
 It is also possible that the cluster configuration just do not play nicely
 with the current MPI implementation in use. If you installed CO\ *N*\ CEPT
 using one of the MPI implementations present on the cluster, try again, using
-another preinstalled MPI library. If you let CO\ *N*\ CEPT install its own
+another pre-installed MPI library. If you let CO\ *N*\ CEPT install its own
 MPI, try switching from MPICH to OpenMPI or vice versa, as described
 :ref:`here <installing_mpich_or_openmpi>`.
 
@@ -523,7 +523,7 @@ If you are able to run single-node CO\ *N*\ CEPT jobs remotely, but encounter
 problems as soon as you request multiple nodes, it may be a permission
 problem. For example, OpenMPI uses SSH to establish the connection between the
 nodes, and so your local ``~/.ssh`` directory need to be configured properly.
-Note that when using an MPI implementation preinstalled on the cluster, such
+Note that when using an MPI implementation pre-installed on the cluster, such
 additional configuration from the user ought not to be necessary.
 
 CO\ *N*\ CEPT comes with the ability to set up the ``~/.ssh`` as needed for
