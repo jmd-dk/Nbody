@@ -196,7 +196,7 @@ format, which is simply a well-structured HDF5 file.
 
    .. code-block:: bash
 
-      (source concept && $python -m vitables) &
+      (source concept && $python -m vitables &)
 
 Such snapshots are useful if you want to process the raw data using some
 external program. You can also initialize a simulation from a snapshot, instead

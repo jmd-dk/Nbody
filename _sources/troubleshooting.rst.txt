@@ -146,18 +146,17 @@ output. While most modern terminal emulators on Linux (GNOME Terminal,
 Terminator, xterm, etc.) fully support this, the story is different on other
 platforms.
 
-If you are running CO\ *N*\ CEPT by ssh'ing into another machine from macOS
-and the colors and/or text display badly, try installing the superior
-`iTerm2 <https://www.iterm2.com/>`_ terminal emulator.
+* **Windows**: If you are running CO\ *N*\ CEPT through the Windows subsystem
+  for Linux and the terminal formatting appears suboptimal, you can install a
+  modern Linux terminal within the Linux subsystem. Note that this requires a
+  running X server on the *Windows* side.
 
-If you are running CO\ *N*\ CEPT by ssh'ing into another machine from Windows
-(through e.g. PuTTY) and the colors and/or text display badly, no proper
-solution is known.
+  If you are running CO\ *N*\ CEPT from Windows locally through Docker or
+  remotely via SSH (through e.g. PuTTY), no solution is known.
 
-If you are running CO\ *N*\ CEPT through the Windows subsystem for Linux and
-the colors and/or text display badly, you can install a modern Linux terminal
-within the Linux subsystem. Note that this requires a running X server on the
-*Windows* side.
+* **macOS**: If you are running CO\ *N*\ CEPT from macOS (locally through
+  Docker or remotely via SSH) and the terminal formatting appears suboptimal,
+  try using the superior `iTerm2 <https://www.iterm2.com/>`_ terminal emulator.
 
 If you want to disable color and other formatted output alltogether, set
 
@@ -408,13 +407,13 @@ state is far from ideal.
 
 To really ensure compatibility with the architecture of a given node,
 reinstall CO\ *N*\ CEPT --- including all of its dependencies --- from that
-node. You may either do this by ssh'ing into the node and run the installation
-manually, or you may submit the installation as a remote job. Below you will
-find examples of Slurm and TORQUE/PBS job scripts for installing CO\ *N*\ CEPT.
-In both cases you may wish to change ``concept_version`` and ``install_path``,
-load modules or perform other environment changes, and/or make use of a
-pre-installed MPI library as described
-:ref:`here <optimal_network_performance_on_clusters>`.
+node. You may either do this by ``ssh``'ing into the node and run the
+installation manually, or you may submit the installation as a remote job.
+Below you will find examples of Slurm and TORQUE/PBS job scripts for
+installing CO\ *N*\ CEPT. In both cases you may wish to change
+``concept_version`` and ``install_path``, load modules or perform other
+environment changes, and/or make use of a pre-installed MPI library as
+described :ref:`here <optimal_network_performance_on_clusters>`.
 
 .. tabs::
 

@@ -521,7 +521,7 @@ Below we list the exact changes caused by the ``--slim`` option.
 .. raw:: html
 
    <h6>
-     Fix ssh:
+     Fix SSH:
      <code class="docutils literal notranslate"><span class="pre">
        --fix-ssh
      </span></code>
