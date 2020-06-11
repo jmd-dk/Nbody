@@ -1104,6 +1104,8 @@ for test in sorted_tests:
         for test_name in ${tests}; do
             echo "    ${test_name}"
         done
+        echo
+        (cd "${concept_dir}" && make clean_tests)
         for test_name in ${tests}; do
             start_time_test=$("${python}" -B -c "import time; print(time.time())")
             colorprint "\nRunning ${test_name} test" "yellow"

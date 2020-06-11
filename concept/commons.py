@@ -1984,7 +1984,7 @@ cython.declare(
     ewald_gridsize='Py_ssize_t',
     shortrange_params=dict,
     R_tophat='double',
-    modes_per_decade='double',
+    k_modes_per_decade=dict,
     # Cosmology
     H0='double',
     Ωcdm='double',
@@ -2398,8 +2398,20 @@ for force, d in shortrange_params.items():
 user_params['shortrange_params'] = shortrange_params
 R_tophat = float(user_params.get('R_tophat', -1))  # Default value will be set later
 user_params['R_tophat'] = R_tophat
-modes_per_decade = float(user_params.get('modes_per_decade', 30))
-user_params['modes_per_decade'] = modes_per_decade
+if isinstance(user_params.get('k_modes_per_decade', {}), (int, float)):
+    k_modes_per_decade = {1: user_params['k_modes_per_decade']}
+else:
+    k_modes_per_decade = dict(user_params.get('k_modes_per_decade', {}))
+    if not k_modes_per_decade:
+        k_modes_per_decade = {
+            3e-3*units.Mpc**(-1): 10,
+            3e-2*units.Mpc**(-1): 30,
+            3e-1*units.Mpc**(-1): 30,
+            1e+0*units.Mpc**(-1): 10,
+        }
+if len(k_modes_per_decade) == 1:
+    k_modes_per_decade.update({(key + 1):value for key, value in k_modes_per_decade.items()})
+user_params['k_modes_per_decade'] = k_modes_per_decade
 # Cosmology
 H0 = float(user_params.get('H0', 67*units.km/(units.s*units.Mpc)))
 user_params['H0'] = H0
@@ -3310,6 +3322,8 @@ def call_class(extra_params=None, sleep_time=0.1, mode='single node', class_call
     # Class C code. Thus we need to skip to the line below the progress
     # message itself in order not to mess up the first line of these
     # status updates.
+    if class_call_reason:
+        class_call_reason = class_call_reason.strip() + ' '
     masterprint(f'Calling CLASS {class_call_reason}...')
     if compute_perturbations:
         masterprint('\n', end='')
@@ -3324,7 +3338,12 @@ def call_class(extra_params=None, sleep_time=0.1, mode='single node', class_call
     # local node), as well as the progress message to write during
     # perturbation computation.
     message = ''
-    if 'k_output_values' in params_specialized:
+    k_output_values_str = params_specialized.get('k_output_values')
+    if k_output_values_str:
+        significant_figures = 4
+        if master and 'e' in k_output_values_str:
+            significant_figures = len(k_output_values_str[:k_output_values_str.index('e')]) - 1
+        significant_figures = bcast(significant_figures)
         if master:
             modes_max = np.max([
                 len(k_output_values_other_node)
@@ -3333,7 +3352,7 @@ def call_class(extra_params=None, sleep_time=0.1, mode='single node', class_call
             inserts = [
                 '%{}d'.format(len(str(nnodes - 1))),
                 '%{}d'.format(len(str(np.max(nprocs_nodes) - 1))),
-                '%.3e',
+                '%.{}e'.format(significant_figures - 1),
                 *(2*['%{}d'.format(len(str(modes_max + 1)))]),
             ]
             message = 'Node {}, thread {}: Evolving mode k = {}/Mpc ({}/{})\n'.format(*inserts)

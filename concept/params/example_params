@@ -126,8 +126,13 @@ shortrange_params = {  # Short-range force parameters for each short-range force
         'subtiling': 'automatic',              # Subtile decomposition
     },
 }
-R_tophat = 8*Mpc/h     # Radius of tophat used to compute the rms density variation from power spectra
-modes_per_decade = 30  # Number of linear k modes per decade computed by CLASS
+R_tophat = 8*Mpc/h  # Radius of tophat used to compute the rms density variation from power spectra
+k_modes_per_decade = {  # Number of k modes per decade in CLASS computations
+    3e-3/Mpc: 10,
+    3e-2/Mpc: 30,
+    3e-1/Mpc: 30,
+    1   /Mpc: 10,
+}
 
 # Cosmology
 H0 = 67*km/(s*Mpc)  # The Hubble constant

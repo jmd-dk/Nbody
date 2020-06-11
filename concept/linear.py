@@ -2309,7 +2309,7 @@ def find_critical_times():
     if not enable_class_background:
         return asarray(a_criticals)
     # Get the CLASS background
-    cosmoresults = compute_cosmo(class_call_reason=f'in order to find critical times ')
+    cosmoresults = compute_cosmo(class_call_reason=f'in order to find critical times')
     background = cosmoresults.background
     a = background['a']
     # Compute radiation background density
@@ -2367,9 +2367,7 @@ def find_critical_times():
 # from before the initial simulation time and until the present.
 @cython.pheader(
     # Arguments
-    k_min='double',
-    k_max='double',
-    k_gridsize='Py_ssize_t',
+    gridsize='Py_ssize_t',
     gauge=str,
     filename=str,
     class_call_reason=str,
@@ -2381,25 +2379,22 @@ def find_critical_times():
     params_specialized=dict,
     returns=object,  # CosmoResults
 )
-def compute_cosmo(k_min=-1, k_max=-1, k_gridsize=-1,
-    gauge='synchronous', filename='', class_call_reason=''):
+def compute_cosmo(gridsize=-1, gauge='synchronous', filename='', class_call_reason=''):
     """All calls to CLASS should be done through this function.
     If no arguments are supplied, CLASS will be run with the parameters
     stored in class_params. The return type is CosmoResults, which
     stores the result of the CLASS computation.
-    If k_min, k_max are given, a more in-depth computation will be
-    carried out by CLASS, where transfer functions and perturbations
-    are also computed.
+    If gridsize is given, a more in-depth computation will be carried
+    out by CLASS, where perturbations are also computed.
     All results from calls to this function are cached (using the
-    global variable cosmoresults_archive), so you can safely call this
+    global variable cosmoresults_cache), so you can safely call this
     function multiple times with the same arguments without it having
     to do the same CLASS computation over and over again.
-    The k_min and k_max arguments specify the |k| interval on which
-    the physical quantities should be tabulated. The k_gridsize specify
-    the (maximum) number of |k| values at which to do this tabulation.
-    The |k| values will be distributed logarithmically.
+    The gridsize argument specify the |k| distribution on which the
+    perturbations should be tabulated, as defined by get_k_magnitudes().
     The gauge of the transfer functions can be specified by
-    the gauge argument, which can be any valid CLASS gauge.
+    the gauge argument, which can be any valid CLASS gauge. Note that
+    N-body gauge is not implemented in CLASS.
     If a filename is given, CLASS results are loaded from this file.
     """
     # If a gauge is given explicitly as a CLASS parameter in the
@@ -2417,74 +2412,35 @@ def compute_cosmo(k_min=-1, k_max=-1, k_gridsize=-1,
             f'In compute_cosmo, gauge was set to "{gauge}" but must be '
             f'either "synchronous" or "Newtonian"'
         )
-    # Shrink down k_gridsize if it is too large to be handled by CLASS.
-    # Also use the largest allowed value as the default value,
-    # when no k_gridsize is given.
-    if k_gridsize > k_gridsize_max:
-        masterwarn(
-            f'Reducing number of k modes from {k_gridsize} to {k_gridsize_max}. '
-            f'If you really want more k modes, you need to increase the CLASS macro '
-            f'_ARGUMENT_LENGTH_MAX_ in include/parser.h.'
-        )
-        k_gridsize = k_gridsize_max
-    elif k_gridsize == -1:
-        k_gridsize = k_gridsize_max
     # If this exact CLASS computation has already been carried out,
     # return the stored results.
-    cosmoresults = cosmoresults_archive.get((k_min, k_max, k_gridsize, gauge))
+    cosmoresults = cosmoresults_cache.get((gridsize, gauge))
     if cosmoresults is not None:
         return cosmoresults
     # Determine whether to run CLASS "quickly" or "fully",
-    # where only the latter computes the  perturbations.
-    if k_min == -1 == k_max:
+    # where only the latter computes the perturbations.
+    if gridsize == -1:
         # A quick CLASS computation should be carried out,
-        # using only the minial set of parameters.
+        # using only the minimal set of parameters.
         extra_params = {}
         k_magnitudes = None
-    elif k_min == -1 or k_max == -1:
-        abort(f'compute_cosmo was called with k_min = {k_min}, k_max = {k_max}')
     else:
         # A full CLASS computation should be carried out.
         # Array of |k| values at which to tabulate the perturbations,
-        # in both floating and str representation.
-        # This explicit stringification is needed because we have to
-        # know the exact str representation of each |k| value passed to
-        # CLASS, so we may turn it back into a numerical array,
-        # ensuring that the values of |k| are identical
-        # in both CLASS and CO𝘕CEPT.
-        k_magnitudes = logspace(log10((1 - 1e-2)*k_min/units.Mpc**(-1)),
-                                log10((1 + 1e-2)*k_max/units.Mpc**(-1)),
-                                k_gridsize)
-        with disable_numpy_summarization():
-            k_magnitudes_str = np.array2string(k_magnitudes, max_line_width=ထ,
-                                                             formatter={'float': k_float2str},
-                                                             separator=',',
-                                                             ).strip('[]')
-        k_magnitudes = np.fromstring(k_magnitudes_str, sep=',')*units.Mpc**(-1)
-        if len(set(k_magnitudes)) != k_gridsize:
-            masterwarn(
-                'It looks like you have requested too dense a k grid. '
-                'Some of the CLASS perturbations will be computed at the same k.'
-            )
+        # in both float and str representation.
+        k_magnitudes, k_magnitudes_str = get_k_magnitudes(gridsize)
         # Specify the extra parameters with which CLASS should be run
-        extra_params = {# The |k| values to tabulate the perturbations.
-                        # The transfer functions computed directly by
-                        # CLASS will be on a slightly denser |k| grid.
-                        'k_output_values': k_magnitudes_str,
-                        # Needed for perturbations
-                        'output': 'dTk vTk',
-                        # This is used to minimize the number of extra
-                        # k values inserted automatically by CLASS.
-                        # With 'P_k_max_1/Mpc' set to 0, only a single
-                        # additional k mode is inserted, and this at
-                        # a very small k value.
-                        # One could also set 'k_per_decade_for_pk' and
-                        # 'k_per_decade_for_bao' to small values.
-                        'P_k_max_1/Mpc': 0,
-                        # Set the gauge. Note that N-body gauge
-                        # is not implemented in CLASS.
-                        'gauge': gauge,
-                        }
+        extra_params = {
+            'k_output_values': k_magnitudes_str,
+            'gauge': gauge,
+            # Needed for perturbation output
+            'output': 'dTk vTk',
+            # This is used to minimize the number of extra k values
+            # inserted automatically by CLASS. With 'P_k_max_1/Mpc' set
+            # to 0, only a single additional k mode is inserted,
+            # and this at a very small k value.
+            'P_k_max_1/Mpc': 0,
+        }
     # Merge global and extra CLASS parameters
     params_specialized = class_params.copy()
     params_specialized.update(extra_params)
@@ -2501,26 +2457,20 @@ def compute_cosmo(k_min=-1, k_max=-1, k_gridsize=-1,
         filename=filename,
         class_call_reason=class_call_reason,
     )
-    # Add the CosmoResults object to the global dict
-    cosmoresults_archive[k_min, k_max, k_gridsize, gauge] = cosmoresults
+    # Add the CosmoResults object to the cache
+    cosmoresults_cache[gridsize, gauge] = cosmoresults
     return cosmoresults
-# Dict with keys of the form (k_min, k_max, k_gridsize, gauge),
-# storing the results of calls to the above function as
-# CosmoResults instances.
-cython.declare(cosmoresults_archive=dict)
-cosmoresults_archive = {}
-# Helper function used in compute_cosmo
-def k_float2str(k):
-    return f'{k:.3e}'.replace('+0', '+').replace('-0', '-').replace('e+0', '')
+# Dict with keys of the form (gridsize, gauge), storing the results
+# of calls to the above function as CosmoResults instances.
+cython.declare(cosmoresults_cache=dict)
+cosmoresults_cache = {}
 
 # Function for computing transfer functions as function of k
 @cython.pheader(
     # Arguments
     component='Component',
     variable=object,  # str or int
-    k_min='double',
-    k_max='double',
-    k_gridsize='Py_ssize_t',
+    gridsize='Py_ssize_t',
     specific_multi_index=object,  # tuple, int-like or str
     a='double',
     a_next='double',
@@ -2534,6 +2484,7 @@ def k_float2str(k):
     class_species_present_list=list,
     cosmoresults=object,  # CosmoResults
     k='Py_ssize_t',
+    k_gridsize='Py_ssize_t',
     k_magnitudes='double[::1]',
     source='double',
     transfer='double[::1]',
@@ -2550,9 +2501,8 @@ def k_float2str(k):
     returns=tuple,  # (Spline, CosmoResults)
 )
 def compute_transfer(
-    component, variable, k_min, k_max,
-    k_gridsize=-1, specific_multi_index=None, a=-1, a_next=-1,
-    gauge='N-body', get='spline', weight=None,
+    component, variable, gridsize,
+    specific_multi_index=None, a=-1, a_next=-1, gauge='N-body', get='spline', weight=None,
 ):
     """This function calls compute_cosmo which produces a CosmoResults
     instance which can talk to CLASS. Using the δ, θ, etc. methods on
@@ -2560,8 +2510,7 @@ def compute_transfer(
     automatically created. All this function really implements
     are then the optional gauge transformations.
     The return value is either (spline, cosmoresults) (get == 'spline')
-    or (array, cosmoresults) (get == 'array'), where spline is a Spline
-    object of the array.
+    or (array, cosmoresults) (get == 'array').
     """
     # Argument processing
     var_index = component.varnames2indices(variable, single=True)
@@ -2583,15 +2532,11 @@ def compute_transfer(
     # implemented in CLASS, the synchronous gauge is used in its place.
     # We do the transformation from synchronous to N-body gauge later.
     cosmoresults = compute_cosmo(
-        k_min,
-        k_max,
-        k_gridsize,
+        gridsize,
         'synchronous' if gauge == 'nbody' else gauge,
-        class_call_reason=f'in order to get perturbations of {component.name} ',
+        class_call_reason=f'in order to get perturbations of {component.name}',
     )
     k_magnitudes = cosmoresults.k_magnitudes
-    # Update k_gridsize to be what ever value was settled on
-    # by the compute_cosmo function.
     k_gridsize = k_magnitudes.shape[0]
     # Get the requested transfer function
     # and transform to N-body gauge if requested.
@@ -2708,62 +2653,108 @@ def compute_transfer(
     elif get == 'array':
         return transfer, cosmoresults
 
-# Function which given a gridsize computes k_min, k_max and k_gridsize
-# which can be supplied to e.g. compute_transfer().
+# Function which given a gridsize computes an array of k values
+# based on the boxsize and the k_modes_per_decade parameter.
 @cython.header(
     # Arguments
     gridsize='Py_ssize_t',
     # Locals
+    cached=object,  # FloatStr
+    k_magnitudes_str=str,
     k_gridsize='Py_ssize_t',
+    k_magnitudes='double[::1]',
     k_max='double',
     k_min='double',
-    n_decades='double',
-    returns=tuple,
+    logk='double',
+    logk_magnitudes=list,
+    logk_max='double',
+    logk_min='double',
+    returns=object,  # FloatStr
 )
-def get_default_k_parameters(gridsize):
+def get_k_magnitudes(gridsize):
+    # Cache lookup
+    cached = k_magnitudes_cache.get(gridsize)
+    if cached is not None:
+        return cached
+    if gridsize < 2:
+        abort(f'get_k_magnitudes() got gridsize = {gridsize} < 2')
+    # Minimum and maximum k
     k_min = ℝ[2*π/boxsize]
-    k_max = ℝ[2*π/boxsize]*sqrt(3*(gridsize//2)**2)
-    n_decades = log10(k_max/k_min)
-    k_gridsize = int(round(modes_per_decade*n_decades))
-    # Shrink down k_gridsize if it is too large to be handled by CLASS
+    k_max = k_min*sqrt(3*(gridsize//2)**2)
+    logk_min = log10(k_min)
+    logk_max = log10(k_max)
+    # Starting from log10(k_min), append new log10(k)
+    # using a running number of modes/decade.
+    logk = logk_min
+    logk_magnitudes = [logk]
+    while logk < logk_max:
+        logk += 1/logk_modes_per_decade_interp(logk)
+        logk_magnitudes.append(logk)
+    k_gridsize = len(logk_magnitudes)
     if k_gridsize > k_gridsize_max:
-        masterwarn(
-            f'Reducing number of k modes from {k_gridsize} to {k_gridsize_max}. '
-            f'If you really want more k modes, you need to increase the CLASS macro '
+        abort(
+            f'Too many k modes ({k_gridsize}, for gridsize = {gridsize}) for CLASS to handle. '
+            f'To allow for more k modes, you may increase the CLASS macro '
             f'_ARGUMENT_LENGTH_MAX_ in include/parser.h.'
         )
-        k_gridsize = k_gridsize_max
-    return k_min, k_max, k_gridsize
-
-# Like get_default_k_parameters(), but effectively changes gridsize
-# if such a result is already stored in cosmoresults_archive.
-@cython.header(
-    # Arguments
-    gridsize='Py_ssize_t',
-    allow_decrease='bint',
-    # Locals
-    cosmoresults=object,  # CosmoResults
-    k_gridsize='Py_ssize_t',
-    k_gridsize_archive='Py_ssize_t',
-    k_max='double',
-    k_max_archive='double',
-    k_max_default='double',
-    k_min='double',
-    k_min_archive='double',
-    returns=tuple,
+    # Adjust the last two points so that the last point is at
+    # log10(k_max) and the second last point is right in the middle of
+    # its neighbour poins.
+    logk_magnitudes[k_gridsize - 1] = logk_max
+    if k_gridsize > 2:
+        logk_magnitudes[k_gridsize - 2] = 0.5*(logk_magnitudes[k_gridsize - 3] + logk_max)
+    # Construct the |k| array
+    k_magnitudes = 10**asarray(logk_magnitudes)
+    # Widen the boundaries slightly
+    k_magnitudes[0             ] *= 1 - k_safety_factor
+    k_magnitudes[k_gridsize - 1] *= 1 + k_safety_factor
+    # Convert to CLASS units, i.e. Mpc, which shall be the unit
+    # used for the str representation of k_magnitudes.
+    k_magnitudes = asarray(k_magnitudes)/units.Mpc**(-1)
+    # Limit the number of decimals on each |k|,
+    # also producing the str representation.
+    with disable_numpy_summarization():
+        k_magnitudes_str = np.array2string(
+            k_magnitudes,
+            max_line_width=ထ,
+            formatter={'float': k_float2str},
+            separator=',',
+        ).strip('[]')
+    k_magnitudes = np.fromstring(k_magnitudes_str, sep=',')
+    if len(set(k_magnitudes)) != k_gridsize:
+        abort(
+            'The requested k sampling is too dense; '
+            'you should lower the k_modes_per_decade parameter. '
+            'Alternatively, you can lower the linear.k_safety_factor variable.'
+        )
+    # Convert back to the current CO𝘕CEPT unit system
+    k_magnitudes = asarray(k_magnitudes)*units.Mpc**(-1)
+    # Cache and return both the float and str representation
+    k_magnitudes_cache[gridsize] = (k_magnitudes, k_magnitudes_str)
+    return k_magnitudes_cache[gridsize]
+# Cache and helper objects  used by the get_k_magnitudes() function
+cython.declare(
+    k_magnitudes_cache=dict,
+    k_str_n_decimals='int',
+    k_safety_factor='double',
 )
-def get_archived_k_parameters(gridsize, allow_decrease=False):
-    k_min, k_max_default, k_gridsize = get_default_k_parameters(gridsize)
-    k_max = -1
-    for k_min_archive, k_max_archive, k_gridsize_archive, cosmoresults in cosmoresults_archive:
-        if k_min_archive != k_min:
-            continue
-        if k_max_archive > k_max:
-            k_max = k_max_archive
-            k_gridsize = k_gridsize_archive
-    if k_max == -1 or (not allow_decrease and k_max < k_max_default):
-        k_min, k_max, k_gridsize = get_default_k_parameters(gridsize)
-    return k_min, k_max, k_gridsize
+k_magnitudes_cache = {}
+logk_modes_per_decade_interp = lambda logk, f=scipy.interpolate.interp1d(
+    np.log10(tuple(k_modes_per_decade.keys())),
+    tuple(k_modes_per_decade.values()),
+    'linear',
+    bounds_error=False,
+    fill_value=(
+        k_modes_per_decade[np.min(tuple(k_modes_per_decade.keys()))],
+        k_modes_per_decade[np.max(tuple(k_modes_per_decade.keys()))],
+    ),
+): float(f(logk))
+def k_float2str(k_float):
+    k_str = 𝕊['{{:.{}e}}'.format(k_str_n_decimals)].format(k_float)
+    k_str = k_str.replace('+0', '+').replace('-0', '-').replace('e+0', '')
+    return k_str
+k_str_n_decimals = int(ceil(log10(1 + np.max(tuple(k_modes_per_decade.values())))))
+k_safety_factor = 2*10**float(-k_str_n_decimals)
 
 # Function which realises a given variable on a component
 # from a supplied transfer function.
@@ -2806,12 +2797,9 @@ def get_archived_k_parameters(gridsize, allow_decrease=False):
     j_global='Py_ssize_t',
     k='Py_ssize_t',
     k_factor='double',
-    k_gridsize='Py_ssize_t',
     k_gridvec='Py_ssize_t*',
     k_gridvec_arr='Py_ssize_t[::1]',
     k_magnitude='double',
-    k_max='double',
-    k_min='double',
     k2='Py_ssize_t',
     k2_max='Py_ssize_t',
     ki='Py_ssize_t',
@@ -3108,10 +3096,7 @@ def realize(
         # When using the non-linear structure of δϱ to do
         # the realizations, we need the transfer function of δϱ,
         # which is just ϱ_bar times the transfer function of δ.
-        k_min, k_max, k_gridsize = get_archived_k_parameters(gridsize)
-        transfer_spline_δ, cosmoresults_δ = compute_transfer(
-            component, 0, k_min, k_max, k_gridsize, a=a,
-        )
+        transfer_spline_δ, cosmoresults_δ = compute_transfer(component, 0, gridsize, a=a)
     for k2 in range(1, k2_max + 1):
         k_magnitude = ℝ[2*π/boxsize]*sqrt(k2)
         transfer = transfer_spline.eval(k_magnitude)
@@ -3786,15 +3771,12 @@ def generate_primordial_noise(slab):
     component='Component',
     components=list,
     cosmoresults=object,  # CosmoResults
+    gauge_cached=str,
     gridsize='Py_ssize_t',
+    gridsize_max='Py_ssize_t',
     i='Py_ssize_t',
-    k_gridsize='Py_ssize_t',
-    k_gridsize_archive='Py_ssize_t',
     k_magnitude='double',
     k_max='double',
-    k_max_archive='double',
-    k_min='double',
-    k_min_archive='double',
     linear_component='Component',
     δ='double',
     δ_spline='Spline',
@@ -3809,6 +3791,7 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
         components = [component_or_components]
     if a == -1:
         a = universals.a
+    gauge = gauge.replace('-', '').lower()
     # Instantiate fake component with the CLASS species defined
     # as the sum of all CLASS species of the passed components.
     component = components[0]
@@ -3819,17 +3802,22 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
         class_species='+'.join([component.class_species for component in components])
     )
     linear_component.name = 'linear power spectrum'
-    # Get k_min, k_max and k_gridsize for the transfer function spline
-    # tabulation. Here we use the correct k_min, but choose k_max and
-    # k_gridsize from the largest k_max in cosmoresults_archive. This
-    # means that we may not be able to compute the linear power for all
-    # the k's in k_magnitudes, but hopefully we do not have to
-    # rerun CLASS.
-    gridsize = np.max([component.powerspec_gridsize for component in components])
-    k_min, k_max, k_gridsize = get_archived_k_parameters(gridsize, allow_decrease=True)
+    # Get gridsize for linear perturbation computation. In an attempt to
+    # not rerun CLASS, we reuse any existing CosmoResults object, even
+    # if this has too small a gridsize, in which case the largest k
+    # modes will be filled with NaN values.
+    gridsize_max = -1
+    for (gridsize, gauge_cached), cosmoresults in cosmoresults_cache.items():
+        if gauge_cached != 𝕊['synchronous' if gauge == 'nbody' else gauge]:
+            continue
+        if gridsize > gridsize_max:
+            gridsize_max = gridsize
+    gridsize = gridsize_max
+    if gridsize == -1:
+        gridsize = np.max([component.powerspec_gridsize for component in components])
     # Get spline of δ transfer function for the fake component
     δ_spline, cosmoresults = compute_transfer(
-        linear_component, 0, k_min, k_max, k_gridsize, a=a, gauge=gauge,
+        linear_component, 0, gridsize, a=a, gauge=gauge,
     )
     # Only the master process will return the linear power spectrum
     if not master:
@@ -3837,6 +3825,7 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
     # Compute linear power (ζ*δ)**2
     if power is None:
         power = empty(k_magnitudes.shape[0], dtype=C2np['double'])
+    k_max = δ_spline.x[len(δ_spline.x) - 1]
     for i in range(k_magnitudes.shape[0]):
         k_magnitude = k_magnitudes[i]
         δ = (δ_spline.eval(k_magnitude) if k_magnitude <= k_max else NaN)

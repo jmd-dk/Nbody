@@ -121,9 +121,9 @@ def plot_powerspec(powerspec_declaration, filename):
         # The odd case of no power at all
         ax.semilogx(k_bin_centers, power, '-', label='simulation')
     # Also plot linear CLASS power spectra, if specified
-    if powerspec_include_linear:
+    if power_linear is not None:
         ylim = ax.get_ylim()
-        if np.any(power_linear):
+        if np.any(power_linear) and np.any(~np.isnan(power_linear)):
             ax.loglog(k_bin_centers, power_linear, 'k--', label='linear')
         else:
             # The odd case of no power at all

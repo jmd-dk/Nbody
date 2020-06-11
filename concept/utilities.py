@@ -38,7 +38,6 @@ cimport(
     '    class_extra_perturbations_class, '
     '    compute_cosmo,                   '
     '    compute_transfer,                '
-    '    get_archived_k_parameters,       '
     '    transferfunctions_registered,    '
 )
 cimport('from mesh import convert_particles_to_fluid')
@@ -709,8 +708,6 @@ def info():
     index='Py_ssize_t',
     k_gridsize='Py_ssize_t',
     k_magnitudes='double[::1]',
-    k_max='double',
-    k_min='double',
     ntimes='Py_ssize_t',
     other_rank='int',
     perturbations=object,  # PerturbationDict
@@ -757,18 +754,15 @@ def CLASS():
             )
     # Do CLASS computation
     if compute_perturbations:
-        k_min, k_max, k_gridsize = get_archived_k_parameters(powerspec_gridsize)
         gauge = special_params['gauge'].replace('-', '').lower()
         cosmoresults = compute_cosmo(
-            k_min,
-            k_max,
-            k_gridsize,
+            powerspec_gridsize,
             'synchronous' if gauge == 'nbody' else gauge,
-            class_call_reason='in order to get perturbations ',
+            class_call_reason='in order to get perturbations',
         )
         k_magnitudes = cosmoresults.k_magnitudes
     else:
-        cosmoresults = compute_cosmo(class_call_reason='in order to get background ')
+        cosmoresults = compute_cosmo(class_call_reason='in order to get background')
     cosmoresults.load_everything()
     # Store all CLASS parameters, the unit system in use,
     # the processed background and a few convenience attributes
@@ -1017,7 +1011,7 @@ def CLASS():
         'nbody'    : 'N-body',
     }.get(gauge, gauge)
     if master:
-        transfer = empty((all_a_values.shape[0], k_gridsize), dtype=C2np['double'])
+        transfer = empty((all_a_values.shape[0], k_magnitudes.shape[0]), dtype=C2np['double'])
     for component, variable_specifications in component_variables.items():
         if component is None:
             class_species = 'tot'
@@ -1038,8 +1032,7 @@ def CLASS():
                     transfer_of_k = getattr(cosmoresults, var_name)(a)
                 else:
                     transfer_of_k, _ = compute_transfer(
-                        component, variable, k_min, k_max,
-                        k_gridsize, specific_multi_index, a,
+                        component, variable, powerspec_gridsize, specific_multi_index, a,
                         -1, # The a_next argument
                         gauge, get='array',
                     )

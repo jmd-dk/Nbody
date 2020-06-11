@@ -63,16 +63,15 @@ def powerspec(components, filename):
         # If specified, also compute the linear power spectrum. The
         # result is stored in powerspec_declaration.linear_power. Only
         # the master process holds the linear power spectrum.
-        with unswitch:
-            if powerspec_include_linear:
-                compute_powerspec_linear(powerspec_declaration)
+        if powerspec_declaration.power_linear is not None:
+            compute_powerspec_linear(powerspec_declaration)
     # Saving and plotting the power spectra is solely up to the master
     if not master:
         return
     # Dump power spectra to collective data file
     save_powerspec(powerspec_declarations, filename)
     # Dump power spectra to individual image files
-    plot_powerspec(powerspec_declaration, filename)
+    plot_powerspec(powerspec_declarations, filename)
 
 # Function for getting declarations for all needed power spectra,
 # given a list of components.

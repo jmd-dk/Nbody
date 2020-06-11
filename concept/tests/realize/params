@@ -10,7 +10,7 @@ powerspec_include_linear = False
 _size = 128
 boxsize             = 8*Gpc
 powerspec_gridsizes = {'all': _size}
-modes_per_decade    = 50
+k_modes_per_decade  = 30
 
 # Cosmology
 H0      = 70*km/(s*Mpc)

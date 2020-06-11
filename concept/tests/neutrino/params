@@ -58,7 +58,12 @@ shortrange_params = {
         'subtiling': 'automatic',
     },
 }
-modes_per_decade = 30
+k_modes_per_decade = {
+    3e-3/Mpc: 10,
+    3e-2/Mpc: 30,
+    3e-1/Mpc: 30,
+    1   /Mpc: 10,
+}
 
 # Cosmology
 H0      = 70*km/s/Mpc

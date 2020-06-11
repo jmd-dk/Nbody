@@ -969,7 +969,7 @@ def init_time(reinitialize=False):
             # commons module.
             # Note that only the master have access to the results
             # from the CLASS computation.
-            cosmo = call_class(class_call_reason='in order to set the cosmic clock ')
+            cosmo = call_class(class_call_reason='in order to set the cosmic clock')
             background = cosmo.get_background()
             # What we need to store is the cosmic time t and the Hubble
             # parametert H, both as functions of the scale factor a.

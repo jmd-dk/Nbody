@@ -35,7 +35,7 @@ cimport('from fluid import maccormack, maccormack_internal_sources, '
     'kurganov_tadmor, kurganov_tadmor_internal_sources'
 )
 cimport('from integration import Spline, cosmic_time, scale_factor, ȧ')
-cimport('from linear import compute_cosmo, compute_transfer, get_archived_k_parameters, realize')
+cimport('from linear import compute_cosmo, compute_transfer, realize')
 
 
 
@@ -1724,7 +1724,7 @@ class Component:
         if self._ϱ_bar == -1:
             if enable_class_background:
                 cosmoresults = compute_cosmo(
-                    class_call_reason=f'in order to determine ̅ϱ of {self.name} ',
+                    class_call_reason=f'in order to determine ̅ϱ of {self.name}',
                 )
                 self._ϱ_bar = cosmoresults.ρ_bar(1, self.class_species)
             elif self.representation == 'particles':
@@ -1778,7 +1778,7 @@ class Component:
             # We cannot compute Γ without the CLASS background
             return 0
         # Compute CLASS background
-        cosmoresults = compute_cosmo(class_call_reason=f'in order to determine Γ of {self.name} ')
+        cosmoresults = compute_cosmo(class_call_reason=f'in order to determine Γ of {self.name}')
         # Sum up ρ_bar and Γ*ρ_bar
         ρ_bar = Γρ_bar = 0
         for class_species in self.class_species.split('+'):
@@ -2155,10 +2155,6 @@ class Component:
         # momenta should be realized before positions.
         if self.representation == 'particles' and variables == [0, 1]:
             variables = [1, 0]
-        # Prepare arguments to compute_transfer,
-        # if no transfer_spline is passed.
-        if transfer_spline is None:
-            k_min, k_max, k_gridsize = get_archived_k_parameters(gridsize)
         # Realize each of the variables in turn
         options_passed = options.copy()
         for variable in variables:
@@ -2276,7 +2272,7 @@ class Component:
                 transfer_spline, cosmoresults = compute_transfer(
                     self,
                     variable_transfer,
-                    k_min, k_max, k_gridsize,
+                    gridsize,
                     specific_multi_index,
                     a,
                     a_next,
@@ -3438,7 +3434,7 @@ class Component:
                 )
             self.w_type = 'tabulated (a)'
             cosmoresults = compute_cosmo(
-                class_call_reason=f'in order to determine w(a) of {self.name} ',
+                class_call_reason=f'in order to determine w(a) of {self.name}',
             )
             background = cosmoresults.background
             i_tabulated = background['a']
@@ -3695,7 +3691,7 @@ class Component:
         else:
             a_min = -1
         cosmoresults = compute_cosmo(
-            class_call_reason=f'in order to determine w_eff(a) of {self.name} ',
+            class_call_reason=f'in order to determine w_eff(a) of {self.name}',
         )
         if a_min == -1:
             a_tabulated = cosmoresults.background['a']
