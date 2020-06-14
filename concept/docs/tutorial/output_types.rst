@@ -183,7 +183,7 @@ format, which is simply a well-structured HDF5 file.
 
 .. tip::
    For a great graphical tool to explore HDF5 files in general, check out
-   `ViTables <http://vitables.org/>`_. If you encounter problems viewing HDF5
+   `ViTables <https://vitables.org/>`_. If you encounter problems viewing HDF5
    files produced by CO\ *N*\ CEPT, try upgrading to ViTables 3.
 
    You can install ViTables as part of the CO\ *N*\ CEPT installation via
@@ -259,7 +259,7 @@ standard one, add ``snapshot_type = 'gadget2'`` to your parameter file.
 
    <h3>The info utility</h3>
 
-We mentioned `ViTables <http://vitables.org/>`_ as a great way to peek inside
+We mentioned `ViTables <https://vitables.org/>`_ as a great way to peek inside
 the default CO\ *N*\ CEPT (HDF5) snapshots. It would be nice to have a general
 tool which worked for the supported GADGET-2 snapshots as well. Luckily,
 CO\ *N*\ CEPT comes with just such a tool: the *info utility*. To try it out,

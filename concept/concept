@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CO𝘕CEPT. If not, see http://www.gnu.org/licenses/
+# along with CO𝘕CEPT. If not, see https://www.gnu.org/licenses/
 #
 # The author of CO𝘕CEPT can be contacted at dakin(at)phys.au.dk
 # The latest version of CO𝘕CEPT is available at
@@ -140,9 +140,6 @@ done
 
 # A bug in HDF5 makes the code crash on certain file systems.
 # A workaround is to set an environment variable as below.
-# The bug is documented here:
-# http://www.nersc.gov/users/data-analytics
-# /data-management/i-o-libraries/hdf5-2/hdf5/
 export HDF5_USE_FILE_LOCKING=FALSE
 
 # The MPI executables and libraries should be

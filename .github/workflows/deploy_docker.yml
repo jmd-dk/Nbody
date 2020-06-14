@@ -9,7 +9,7 @@ on:
 
 jobs:
     deploy_docker:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Deploy to Docker Hub 🚀
             env:
@@ -25,4 +25,5 @@ jobs:
                     -p ${{ secrets.DOCKER_PASSWORD }} \
                     2>/dev/null
                 docker push ${{ secrets.DOCKER_USERNAME }}/concept:latest
+                docker logout
 

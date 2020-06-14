@@ -12,7 +12,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CO𝘕CEPT. If not, see http://www.gnu.org/licenses/
+# along with CO𝘕CEPT. If not, see https://www.gnu.org/licenses/
 #
 # The author of CO𝘕CEPT can be contacted at dakin(at)phys.au.dk
 # The latest version of CO𝘕CEPT is available at
@@ -1820,16 +1820,18 @@ class DictWithCounter(dict):
 # Note that the previously defined user_params is overwritten.
 user_params = DictWithCounter(construct_user_params_namespace('inferrables'))
 # Additional things which should be available when defining parameters
-user_params.update({# Units from the units struct
-                    **units_dict,
-                    # Physical constants
-                    'light_speed': light_speed,
-                    'ħ'          : ħ,
-                    'h_bar'      : ħ,
-                    'G_Newton'   : G_Newton,
-                    # Inferred parameters (values not yet inferred)
-                    **inferred_params,
-                    })
+user_params.update({
+    # Units from the units struct
+    **units_dict,
+    'units': types.SimpleNamespace(**units_dict),
+    # Physical constants
+    'light_speed': light_speed,
+    'ħ'          : ħ,
+    'h_bar'      : ħ,
+    'G_Newton'   : G_Newton,
+    # Inferred parameters (values not yet inferred)
+    **inferred_params,
+})
 # At this point, user_params does not contain actual parameters.
 # Mark all items in user_params as used.
 user_params.useall()
@@ -2410,7 +2412,7 @@ else:
             1e+0*units.Mpc**(-1): 10,
         }
 if len(k_modes_per_decade) == 1:
-    k_modes_per_decade.update({(key + 1):value for key, value in k_modes_per_decade.items()})
+    k_modes_per_decade.update({(key + 1): val for key, val in k_modes_per_decade.items()})
 user_params['k_modes_per_decade'] = k_modes_per_decade
 # Cosmology
 H0 = float(user_params.get('H0', 67*units.km/(units.s*units.Mpc)))

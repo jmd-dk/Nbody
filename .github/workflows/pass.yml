@@ -11,159 +11,159 @@ on:
 jobs:
     # Test entire build
     build:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     # Test docs
     test_docs:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     # Test suite
     test_basic:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_friedmann:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_realize:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_powerspec:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_gadget:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_drift_nohubble:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_drift:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_kick_pp_without_ewald:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_kick_pp_with_ewald:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_nprocs_pp:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_pure_python_pp:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_concept_vs_gadget_pp:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_nprocs_pm:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_pure_python_pm:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_concept_vs_class_pm:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_nprocs_p3m:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_pure_python_p3m:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_concept_vs_gadget_p3m:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_multicomponent:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_drift_rigid_nohubble:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_drift_rigid:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_gravity_nohubble:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_gravity:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_vacuum:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_vs_particles:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_pressure:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_neutrino:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_optimizations:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0
     test_render:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Pass
             run: exit 0

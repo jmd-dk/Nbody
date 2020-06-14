@@ -10,7 +10,7 @@ on:
 
 jobs:
     test_docs:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -20,15 +20,19 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Build docs 📖
             run: |
                 docker run \
-                -v ${GITHUB_WORKSPACE}:/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && (cd "${concept_dir}" && make docs) \
-                '
+                    -v ${GITHUB_WORKSPACE}:/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && (cd "${concept_dir}" && make docs) \
+                    '
 

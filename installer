@@ -3,7 +3,7 @@
 # This file is part of CO𝘕CEPT, the cosmological 𝘕-body code in Python.
 # Copyright © 2015–2020 Jeppe Mosgaard Dakin.
 #
-# CO𝘕CEPT is free software: You can redistribute it and/or modifypath
+# CO𝘕CEPT is free software: You can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
@@ -14,7 +14,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with CO𝘕CEPT. If not, see http://www.gnu.org/licenses/
+# along with CO𝘕CEPT. If not, see https://www.gnu.org/licenses/
 #
 # The author of CO𝘕CEPT can be contacted at dakin(at)phys.au.dk
 # The latest version of CO𝘕CEPT is available at
@@ -269,9 +269,15 @@ if [ -z "${mpi}" ]; then
     # If mpi_dir is specified,
     # try to determine whether MPICH or OpenMPI is used.
     if [ -n "${mpi_dir}" ]; then
-        if [ -f "${mpi_dir}/bin/mpichversion" ]; then
+        if     [ -f "${mpi_dir}/bin/mpichversion" ]                           \
+            || [ -f "$(dirname "${mpi_dir}")/bin/mpichversion" ]              \
+            || [ -f "$(dirname "$(dirname "${mpi_dir}")")/bin/mpichversion" ] \
+        ; then
             mpi="mpich"
-        elif [ -f "${mpi_dir}/bin/ompi_info" ]; then
+        elif   [ -f "${mpi_dir}/bin/ompi_info" ]                           \
+            || [ -f "$(dirname "${mpi_dir}")/bin/ompi_info" ]              \
+            || [ -f "$(dirname "$(dirname "${mpi_dir}")")/bin/ompi_info" ] \
+        ; then
             mpi="openmpi"
         else
             mpi="unknown"
@@ -286,9 +292,15 @@ Will use MPICH" >&2
     mpi="mpich"
 fi
 mpi="$(echo "${mpi}" | tr '[:upper:]' '[:lower:]')"
+mpi_formatted="${mpi}"
+if [ "${mpi_formatted}" == "mpich" ]; then
+    mpi_formatted="MPICH"
+elif [ "${mpi_formatted}" == "openmpi" ]; then
+    mpi_formatted="OpenMPI"
+fi
 # This function sets the variables "name_dir" (if not set already)
 # and "name_preinstalled".
-set_dir(){
+set_dir() {
     # Arguments: Program name, install directory.
     # Set "name_preinstalled" if "name_dir" is already set
     eval "${1}_preinstalled=True"
@@ -302,36 +314,37 @@ set_dir(){
 # The install_explicit_only environment variable, when set to "True",
 # disables all implicit installations.
 if [ "${install_explicit_only}" == "True" ]; then
-    for progname in "concept"           \
-                    "blas"              \
-                    "class"             \
-                    "fftw"              \
-                    "fftw_for_gadget"   \
-                    "freetype"          \
-                    "gadget"            \
-                    "gsl"               \
-                    "hdf5"              \
-                    "libffi"            \
-                    "libpng"            \
-                    "mpi"               \
-                    "ncurses"           \
-                    "openssl"           \
-                    "perl"              \
-                    "python"            \
-                    "zlib"              \
-                    "blessings"         \
-                    "cython"            \
-                    "cythongsl"         \
-                    "h5py"              \
-                    "matplotlib"        \
-                    "mpi4py"            \
-                    "numpy"             \
-                    "pytest"            \
-                    "scipy"             \
-                    "sphinx"            \
-                    "sphinx_copybutton" \
-                    "sphinx_rtd_theme"  \
-                    "sphinx_tabs"       \
+    for progname in         \
+        "concept"           \
+        "blas"              \
+        "class"             \
+        "fftw"              \
+        "fftw_for_gadget"   \
+        "freetype"          \
+        "gadget"            \
+        "gsl"               \
+        "hdf5"              \
+        "libffi"            \
+        "libpng"            \
+        "mpi"               \
+        "ncurses"           \
+        "openssl"           \
+        "perl"              \
+        "python"            \
+        "zlib"              \
+        "blessings"         \
+        "cython"            \
+        "cythongsl"         \
+        "h5py"              \
+        "matplotlib"        \
+        "mpi4py"            \
+        "numpy"             \
+        "pytest"            \
+        "scipy"             \
+        "sphinx"            \
+        "sphinx_copybutton" \
+        "sphinx_rtd_theme"  \
+        "sphinx_tabs"       \
     ; do
         eval "[ -n \"\${${progname}_install}\" ] || ${progname}_install=\"False\""
     done
@@ -363,7 +376,7 @@ paths_file="__top_dir__/.paths"
 # For pre-installed software, set "name_version" to "pre-installed".
 # If a third argument is given, this is the version to fall back to,
 # in case of unsuccessful retrievel of the link to the first version.
-set_version(){
+set_version() {
     # Arguments: Program name, version, [fallback version]
     eval "[ -z \"\${${1}_version}\" ] || ${1}_version_specifiedbyuser=\"True\""
     eval "[ -n \"\${${1}_version}\" ] || ${1}_version=\"${2}\""
@@ -395,7 +408,7 @@ set_version "libpng"            "1.6.37"  "1.6.37"
 if [ "${mpi}" == "mpich" ]; then
     set_version "mpi"           "3.3.2"   "3.3.2"
 elif [ "${mpi}" == "openmpi" ]; then
-    set_version "mpi"           "4.0.3"
+    set_version "mpi"           "4.0.4"
 fi
 set_version "ncurses"           "6.2"     "6.2"
 set_version "openssl"           "1.1.1g"  "1.1.1f"
@@ -404,7 +417,7 @@ set_version "python"            "3.8.3"
 set_version "zlib"              "1.2.11"  "1.2.11"
 # Python packages
 set_version "blessings"         "1.7"
-set_version "cython"            "0.29.19"
+set_version "cython"            "0.29.20"
 set_version "cythongsl"         "0.2.2"
 set_version "h5py"              "2.10.0"
 set_version "matplotlib"        "3.2.1"
@@ -414,7 +427,7 @@ set_version "pip"               "20.1.1"
 set_version "pytest"            "5.4.3"
 set_version "scipy"             "1.4.1"
 set_version "setuptools"        "47.1.1"
-set_version "sphinx"            "3.0.4"
+set_version "sphinx"            "3.1.0"
 set_version "sphinx_copybutton" "0.2.11"
 set_version "sphinx_rtd_theme"  "0.4.3"
 set_version "sphinx_tabs"       "1.1.13"
@@ -429,13 +442,13 @@ set_version "wheel"             "0.34.2"
 # Initial setup #
 #################
 # Set up error trapping
-ctrl_c(){
+ctrl_c() {
     current_step="aborting"
     sleep 0.5
     kill -9 -- -$$ > /dev/null 2>&1 || :
     exit 2
 }
-abort(){
+abort() {
     sleep 0.5
     kill -9 -- -$$ > /dev/null 2>&1 || :
     exit 1
@@ -513,17 +526,17 @@ esc_erase="${esc}[K"
 # Special characters
 en_quad="\xE2\x80\x80"
 # Functions for pretty printing text
-heading(){
+heading() {
     printf "\n${esc_bold}${esc_yellow}${1}${esc_normal}\n"
 }
-error(){
+error() {
     printf "\n${esc_bold}${esc_red}${1}${esc_normal}\n\n" >&2
 }
 
 # Print out welcome message
 if [ "${say_welcome}" != "False" ]; then
-    heading "${esc_bold}${esc_yellow}This is the installation script for ${esc_concept},
-the cosmological ${esc_italic}N${esc_no_italic}-body code in Python${esc_normal}"
+    printf "\n${esc_bold}This is the installation script for ${esc_concept},
+the cosmological ${esc_italic}N${esc_no_italic}-body code in Python${esc_normal}\n"
 fi
 
 # Status control sequenses
@@ -537,6 +550,7 @@ status_off="off"
 status_visible="${status_on}"
 status_finish="finish_successfully"
 status_installpid="installpid="
+status_setvar="setvar:"
 
 # Set test_success variables
 blas_test_success="True"
@@ -716,7 +730,7 @@ for env_var_name in "${env_var_names[@]}"; do
 done
 # Function that resets all above environment
 # variables to their initial state.
-reset_environment(){
+reset_environment() {
     for env_var_name in "${env_var_names[@]}"; do
         eval "env_var_set=\"\${${env_var_name}_set}\""
         if [ "${env_var_set}" == "True" ]; then
@@ -731,7 +745,7 @@ reset_environment(){
 
 # Function for converting a path to its absolute form
 initial_dir="$(pwd)"  # It is crucial that this line is before any cd
-convert_to_abs_path(){
+convert_to_abs_path() {
     # Arguments: path
     current_dir="$(pwd)"
     cd "${initial_dir}"
@@ -799,7 +813,7 @@ fi
 # known function, the input command is printed as is. If the command
 # cannot be found at all, nothing is printed and an exit code of 1
 # is returned.
-get_command(){
+get_command() {
     command_name="${1}"
     # Use the type builtin to locate the command
     local path="$(type "${command_name}" 2>/dev/null || :)"
@@ -875,11 +889,27 @@ if [ "${top_dir_is_sane}" == "False" ]; then
     error "\nThe installation path \"${top_dir}\" cannot be created."
     exit 1
 fi
-printf "\nThe code will be installed in \"${top_dir}\"\n"
+cd "${top_dir}"
+
+# Print out values of common installation options
+heading "Installation options"
+echo "Path                  \"${top_dir}\""
+if [[ "${mpi_dir}" == "__top_dir__"* ]]; then
+    echo "MPI                   Dedicated ${mpi_formatted}"
+else
+    if [ "${mpi_formatted}" == "unknown" ]; then
+        echo "MPI                   \"${mpi_dir}\""
+    else
+        echo "MPI                   \"${mpi_dir}\" (${mpi_formatted})"
+    fi
+fi
+echo "Slim installation     ${slim}"
+echo "Native optimizations  ${native_optimizations}"
+echo "Yes to defaults       ${yes_to_defaults}"
+echo "Tests                 ${do_tests}"
 if [ "${top_dir_reasonable}" == "False" ]; then
     sleep 2
 fi
-cd "${top_dir}"
 
 # Replace "__top_dir__" in the path to the log file with the user
 # specified top_dir. Also convert to absolute path.
@@ -1089,7 +1119,7 @@ mpi_symlinkdir="${top_dir}/.mpi_symlinks"
 # Check whether system dependencies are installed and located on PATH
 current_step="check for pre-installed system dependencies"
 # Check for package manager and set package names
-set_package_names(){
+set_package_names() {
     # Arguments: Package name for awk, gcc, g++, gfortran, grep, gzip,
     # make, sed, tar, wget, glibc, as and ld, Linux headers.
     i=0
@@ -1112,7 +1142,7 @@ set_package_names(){
         eval "${package}_package=\${${i}}"
     done
 }
-set_package_manager_and_names(){
+set_package_manager_and_names() {
     # This function takes no arguments
     update_command=""
     package_manager=""
@@ -1364,7 +1394,7 @@ set_package_manager_and_names
 # Function for testing whether system dependencies are installed and
 # located on PATH. For missing system dependencies, it will attempt to
 # figure out the command to install it.
-check_system_dependency(){
+check_system_dependency() {
     # Arguments: Command, package name
     if ! get_command "${1}" >/dev/null; then
         # Package not installed
@@ -1443,7 +1473,7 @@ check_system_dependency "wget"     "${wget_package}"
 # Though gcc is now guaranteed to be installed,
 # it may miss important components, which we check for here.
 current_step="check of gcc components"
-gcc_test(){
+gcc_test() {
     # Arguments:
     #   - Name of gcc component
     #   - C source code to test
@@ -1503,7 +1533,7 @@ gcc_test(){
                         printf "$(sudo_command ${update_command}); "
                     fi
                     sudo_command ${install_command} ${package_name}
-                    gcc_test_prompt(){
+                    gcc_test_prompt() {
                         while :; do
                             read -p "Run above command now? [Y/n] " yn
                             case "${yn}" in
@@ -1590,7 +1620,7 @@ We need to make sure that these are installed."         \
 
 # Function which finds files deep inside a directory tree
 # (like the GNU find command).
-find_recursive(){
+find_recursive() {
     # Arguments: Absolute path to directory,
     # file/directory to find,
     # [type of file to find: "-f" for file (default),
@@ -1652,7 +1682,7 @@ find_recursive(){
 # Replace "__top_dir__" in paths with the user specified top_dir.
 # Also convert to absolute path and check that this path exist for
 # pre-installed libraries.
-fix_path(){
+fix_path() {
     # Arguments: Program name
     progname="${1// /_}"
     progname="$(echo "${progname}" | tr '[:upper:]' '[:lower:]')"
@@ -2086,7 +2116,7 @@ current_step="discovery of dependencies"
 install_any_pypackages="False"
 install_any_software="False"
 install_anything="False"
-assume_preinstalled(){
+assume_preinstalled() {
     # Arguments: Program name (lowercase)
     eval "name_preinstalled=\"\${${1}_preinstalled}\""
     if [ "${name_preinstalled}" == "False" ]; then
@@ -2113,7 +2143,7 @@ fi
 
 # Function that checks whether a given Python package
 # is installed or not.
-check_pypackage_installed(){
+check_pypackage_installed() {
     # Arguments: Python package name
     current_dir="$(pwd)"
     cd "${top_dir}"
@@ -2420,12 +2450,12 @@ fi
 # To also log stderr separately, we tee this into ${log}_err.
 ( ( (
 # Set up error trapping
-ctrl_c_subprocess(){
+ctrl_c_subprocess() {
     trap : 0
     ctrl_c
     exit 0
 }
-abort_subprocess(){
+abort_subprocess() {
     trap : 0
     if [ "${current_step}" != "aborting" ]; then
         error "An error occurred during ${current_step}!"
@@ -2441,16 +2471,16 @@ set -e
 echo
 
 # Functions for controlling the current status
-set_status(){
+set_status() {
     echo "${status_prefix}${1}"
 }
-disable_status(){
+disable_status() {
     echo "${status_prefix}${status_disable}"
 }
-enable_status(){
+enable_status() {
     echo "${status_prefix}${status_enable}"
 }
-successfully_finish_status(){
+successfully_finish_status() {
     echo "${status_prefix}${status_finish_successfully}"
 }
 # These are needed to get the spacing right in the output
@@ -2471,7 +2501,7 @@ set_status "Initialising"
 # to archives containing a single top-level directory.
 
 # Function for checking that a given url actually exists
-validate_url(){
+validate_url() {
     # Arguments: Program name, [exit on error ("True" or "False")]
     progname="$(echo "${1}" | tr '[:upper:]' '[:lower:]')"
     progname="${progname// /_}"
@@ -2479,14 +2509,12 @@ validate_url(){
     if [ -n "$2" ]; then
         exit_on_error="$2"
     fi
-    if [ "${progname}" == "mpi" ]; then
-        if [ "${mpi}" == "mpich" ]; then
-            current_step="validation of MPICH link"
-            set_status "Validating MPICH link"
-        elif [ "${mpi}" == "openmpi" ]; then
-            current_step="validation of OpenMPI link"
-            set_status "Validating OpenMPI link"
-        fi
+    if [ "${progname}" == "blas" ]; then
+        current_step="validation of OpenBLAS link"
+        set_status "Validating OpenBLAS link"
+    elif [ "${progname}" == "mpi" ]; then
+        current_step="validation of ${mpi_formatted} link"
+        set_status "Validating ${mpi_formatted} link"
     else
         current_step="validation of ${1/CONCEPT/$esc_concept} link"
         set_status "Validating ${1/CONCEPT/${esc_concept}} link"
@@ -2585,18 +2613,16 @@ validate_url(){
 
 # Function for letting versions fall back to their secondary,
 # fallback values, in case of unsuccessful retrievel of primary version.
-fallback(){
+fallback() {
     # Arguments: Program name
     progname="$(echo "${1}" | tr '[:upper:]' '[:lower:]')"
     progname="${progname// /_}"
     eval "progname_version=\"\${${progname}_version}\""
     eval "progname_version_fallback=\"\${${progname}_version_fallback}\""
-    if [ "${progname}" == "mpi" ]; then
-        if [ "${mpi}" == "mpich" ]; then
-            realname="MPICH"
-        elif [ "${mpi}" == "openmpi" ]; then
-            realname="OpenMPI"
-        fi
+    if [ "${progname}" == "blas" ]; then
+        realname="OpenBLAS"
+    elif [ "${progname}" == "mpi" ]; then
+        realname="${mpi_formatted}"
     else
         realname="${1}"
     fi
@@ -2614,7 +2640,7 @@ fallback(){
 # name (progname) as the argument and it will set the variables
 # progname_downloaded, progname_installed and progname_test_success
 # to either "True" or "False".
-check_progress(){
+check_progress() {
     # Arguments: Program name
     progname_display="${1/CONCEPT/${esc_concept}}"
     progname="${1// /_}"
@@ -2710,6 +2736,11 @@ check_progress(){
             fi
         done <<< "$(tac "${progdir}/.installation_finished")"
     fi
+    # Propagate the ${progname}_installed variable to the outer scope
+    progname_installed_varname="${progname}_installed"
+    eval "progname_installed_value=\${${progname_installed_varname}}"
+    echo "${status_prefix}${status_setvar}\
+${progname_installed_varname}=\"${progname_installed_value}\""
     # If the program is not yet installed fully, remove its directory,
     # cleaning up after any previous failed installation attempts.
     if [ "${progname}" == "gadget" ]; then
@@ -2947,7 +2978,7 @@ fi
 
 # FreeType
 if [ "${freetype_install}" == "True" ]; then
-    freetype_url="http://download.savannah.gnu.org/releases/freetype/\
+    freetype_url="https://download.savannah.gnu.org/releases/freetype/\
 freetype-${freetype_version}.tar.gz"
     # Check if already installed and/or downloaded
     check_progress "FreeType"
@@ -2957,7 +2988,7 @@ freetype-${freetype_version}.tar.gz"
         if [ "${validate_url_status}" != "success" ]; then
             echo "Primary FreeType link broken: ${freetype_url}"
             fallback "freetype"
-            freetype_url="http://sourceforge.net/projects/freetype/files/freetype2/\
+            freetype_url="https://sourceforge.net/projects/freetype/files/freetype2/\
 ${freetype_version}/freetype-${freetype_version}.tar.gz"
             echo "Using secondary FreeType link: ${freetype_url}"
             # Check if already installed and/or downloaded
@@ -2972,7 +3003,7 @@ fi
 
 # GADGET
 if [ "${gadget_install}" == "True" ]; then
-    gadget_url="http://www.mpa-garching.mpg.de/gadget/gadget-${gadget_version}.tar.gz"
+    gadget_url="https://www.mpa-garching.mpg.de/gadget/gadget-${gadget_version}.tar.gz"
     # Check if already installed/downloaded
     check_progress "GADGET"
     # If not yet downloaded, validate the URL
@@ -2997,7 +3028,7 @@ if [ "${gsl_install}" == "True" ]; then
         if [ "${validate_url_status}" != "success" ]; then
             echo "Primary GSL link broken: ${gsl_url}"
             fallback "GSL"
-            gsl_url="http://ftpmirror.gnu.org/gsl/gsl-${gsl_version}.tar.gz"
+            gsl_url="https://ftpmirror.gnu.org/gsl/gsl-${gsl_version}.tar.gz"
             echo "Using secondary gsl link: ${gsl_url}"
             # Check if already installed and/or downloaded
             check_progress "GSL"
@@ -3048,7 +3079,7 @@ if [ "${libpng_install}" == "True" ]; then
         if [ "${validate_url_status}" != "success" ]; then
             echo "Primary libpng link broken: ${libpng_url}"
             fallback "libpng"
-            libpng_url="http://prdownloads.sourceforge.net/libpng/libpng-${libpng_version}.tar.gz"
+            libpng_url="https://prdownloads.sourceforge.net/libpng/libpng-${libpng_version}.tar.gz"
             echo "Using secondary libpng link: ${libpng_url}"
             # Check if already installed and/or downloaded
             check_progress "libpng"
@@ -3064,7 +3095,7 @@ fi
 if [ "${mpi_install}" == "True" ]; then
     if [ "${mpi}" == "mpich" ]; then
         # MPICH
-        mpi_url="http://www.mpich.org/static/downloads/${mpi_version}/mpich-${mpi_version}.tar.gz"
+        mpi_url="https://www.mpich.org/static/downloads/${mpi_version}/mpich-${mpi_version}.tar.gz"
         # Check if already installed and/or downloaded
         check_progress "MPI"
         # If not yet downloaded, validate the URL
@@ -3073,7 +3104,7 @@ if [ "${mpi_install}" == "True" ]; then
             if [ "${validate_url_status}" != "success" ]; then
                 echo "Primary MPICH link broken: ${mpi_url}"
                 fallback "MPI"
-                mpi_url="http://fossies.org/linux/misc/mpich-${mpi_version}.tar.gz"
+                mpi_url="https://fossies.org/linux/misc/mpich-${mpi_version}.tar.gz"
                 echo "Using secondary MPICH link: ${mpi_url}"
                 # Check if already installed and/or downloaded
                 check_progress "MPI"
@@ -3105,7 +3136,7 @@ fi
 
 # ncurses
 if [ "${ncurses_install}" == "True" ]; then
-    ncurses_url="http://ftp.gnu.org/gnu/ncurses/ncurses-${ncurses_version}.tar.gz"
+    ncurses_url="https://ftp.gnu.org/gnu/ncurses/ncurses-${ncurses_version}.tar.gz"
     # Check if already installed and/or downloaded
     check_progress "ncurses"
     # If not yet downloaded, validate the URL
@@ -3114,7 +3145,7 @@ if [ "${ncurses_install}" == "True" ]; then
         if [ "${validate_url_status}" != "success" ]; then
             echo "Primary ncurses link broken: ${ncurses_url}"
             fallback "ncurses"
-            ncurses_url="http://ftpmirror.gnu.org/ncurses/ncurses-${ncurses_version}.tar.gz"
+            ncurses_url="https://ftpmirror.gnu.org/ncurses/ncurses-${ncurses_version}.tar.gz"
             echo "Using secondary ncurses link: ${ncurses_url}"
             # Check if already installed and/or downloaded
             check_progress "ncurses"
@@ -3200,7 +3231,7 @@ fi
 
 # Perl
 if [ "${perl_install}" == "True" ]; then
-    perl_url="http://www.cpan.org/src/5.0/perl-${perl_version}.tar.gz"
+    perl_url="https://www.cpan.org/src/5.0/perl-${perl_version}.tar.gz"
     # Check if already installed and/or downloaded
     check_progress "Perl"
     # If not yet downloaded, validate the URL
@@ -3232,7 +3263,7 @@ fi
 
 # zlib
 if [ "${zlib_install}" == "True" ]; then
-    zlib_url="http://sourceforge.net/projects/libpng/files/zlib/${zlib_version}/\
+    zlib_url="https://sourceforge.net/projects/libpng/files/zlib/${zlib_version}/\
 zlib-${zlib_version}.tar.gz"
     # Check if already installed and/or downloaded
     check_progress "zlib"
@@ -3242,7 +3273,7 @@ zlib-${zlib_version}.tar.gz"
         if [ "${validate_url_status}" != "success" ]; then
             echo "Primary zlib link broken: ${zlib_url}"
             fallback "zlib"
-            zlib_url="http://zlib.net/zlib-${zlib_version}.tar.gz"
+            zlib_url="https://zlib.net/zlib-${zlib_version}.tar.gz"
             echo "Using secondary zlib link: ${zlib_url}"
             # Check if already installed and/or downloaded
             check_progress "zlib"
@@ -3310,14 +3341,14 @@ fi
 # Functions for printing out nice tables (these are superior to the
 # "column" command on older systems, as this does not handle
 # formatted output very well).
-modify_element(){
+modify_element() {
     # Arguments: Character to be replaced, character to replace with
     for ((i = 0; i < nelements; i += 1)); do
         element="${table_to_print[i]}"
         table_to_print[i]="${element//$1/$2}"
     done
 }
-print_table(){
+print_table() {
     # Arguments: Array to be printed (passed as array[@]),
     #            number of columns.
     table_to_print=("${!1}")
@@ -3443,7 +3474,7 @@ sphinx_rtd_theme_patch="False"
 sphinx_tabs_patch="False"
 footnote_patch="${esc_blue}*${esc_normal}"
 footnote_installed="${esc_green}†${esc_normal}"
-insert_footnote_patch(){
+insert_footnote_patch() {
     # Argument: Program/Python package name
     eval "program_installed=\"\${${1}_installed}\""
     eval "program_patch=\"\${${1}_patch}\""
@@ -3451,7 +3482,7 @@ insert_footnote_patch(){
         echo "${footnote_patch}"
     fi
 }
-insert_footnote_installed(){
+insert_footnote_installed() {
     # Argument: Program/Python package name
     eval "program_installed=\"\${${1}_installed}\""
     if [ "${program_installed}" == "True" ]; then
@@ -3772,15 +3803,15 @@ for compiler in "${compiler_precedence_default[@]}"; do
         compiler_precedence=("${compiler_precedence[@]}" "${compiler}")
     fi
 done
-discover_specified_mpi_compilers(){
+discover_specified_mpi_compilers() {
     if [ "${mpi_preinstalled}" == "True" ]; then
         compiler_possibilities=("${compiler_possibilities[@]}" "specified_mpi")
     fi
 }
-discover_default_compilers(){
+discover_default_compilers() {
     compiler_possibilities=("${compiler_possibilities[@]}" "default")
 }
-discover_gnu_compilers(){
+discover_gnu_compilers() {
     for program in "gcc" "g++" "gfortran"; do
         program_path="$(get_command "${program}")" || :
         if [ -n "${program_path}" ]; then
@@ -3789,7 +3820,7 @@ discover_gnu_compilers(){
         fi
     done
 }
-discover_clang_compilers(){
+discover_clang_compilers() {
     for program in "clang" "clang++"; do
         program_path="$(get_command "${program}")" || :
         if [ -n "${program_path}" ]; then
@@ -3798,7 +3829,7 @@ discover_clang_compilers(){
         fi
     done
 }
-discover_mpi_compilers(){
+discover_mpi_compilers() {
     for program in "mpicc" "mpiCC" "mpicxx" "mpic++" "mpifort" "mpif90"; do
         program_path="$(get_command "${program}")" || :
         if [ -n "${program_path}" ]; then
@@ -3807,7 +3838,7 @@ discover_mpi_compilers(){
         fi
     done
 }
-discover_intel_compilers(){
+discover_intel_compilers() {
     for program in "icc" "icpc" "ifort"; do
         program_path="$(get_command "${program}")" || :
         if [ -n "${program_path}" ]; then
@@ -3816,7 +3847,7 @@ discover_intel_compilers(){
         fi
     done
 }
-discover_cray_compilers(){
+discover_cray_compilers() {
     for program in "craycc" "crayCC" "crayftn"; do
         program_path="$(get_command "${program}")" || :
         if [ -n "${program_path}" ]; then
@@ -3825,7 +3856,7 @@ discover_cray_compilers(){
         fi
     done
 }
-discover_portland_compilers(){
+discover_portland_compilers() {
     for program in "pgcc" "pgCC" "pgf77" "pgf90"; do
         program_path="$(get_command "${program}")" || :
         if [ -n "${program_path}" ]; then
@@ -3834,7 +3865,7 @@ discover_portland_compilers(){
         fi
     done
 }
-discover_generic_compilers(){
+discover_generic_compilers() {
     for program in "cc" "c89" "c99" "CC" "c++" "ftn" "f77" "f90" "fortran"; do
         program_path="$(get_command "${program}")" || :
         if [ -n "${program_path}" ]; then
@@ -3843,7 +3874,7 @@ discover_generic_compilers(){
         fi
     done
 }
-discover_unset_compilers(){
+discover_unset_compilers() {
     compiler_possibilities=("${compiler_possibilities[@]}" "unset")
 }
 compiler_possibilities=()
@@ -3882,11 +3913,11 @@ if [ "${install_anything}" == "True" ]; then
     sleep ${sleep_time}
     enable_status
 fi
-use_default_compilers(){
+use_default_compilers() {
     # This dummy function must exist
     :
 }
-use_specified_mpi_compilers(){
+use_specified_mpi_compilers() {
     local program program_path bin_path include_path lib_path
     if [ -n "${mpi_dir}" ]; then
         compiler_path="${mpi_compilerdir}"
@@ -4011,7 +4042,7 @@ use_specified_mpi_compilers(){
             export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${mpi_symlinkdir}"
             # Using MVAPICH2 together with Python (or Fortran) can cause
             # trouble as described in section 9.1.1 of
-            # http://mvapich.cse.ohio-state.edu/static/media/mvapich/
+            # https://mvapich.cse.ohio-state.edu/static/media/mvapich/
             # mvapich2-2.3b-userguide.html#x1-1280009.1.1
             # Setting the LD_PRELOAD variable should fix this.
             if [ ! -f "${mpi_symlinkdir}/ld_preload.so" ]; then
@@ -4122,7 +4153,7 @@ int main(int argc, char *argv[]) {
         fi
     fi
 }
-use_gnu_compilers(){
+use_gnu_compilers() {
     local program_path bin_path include_path lib_path
     program_path="$(get_command "gcc")" || :
     if [ -n "${program_path}" ]; then
@@ -4184,7 +4215,7 @@ use_gnu_compilers(){
         fi
     fi
 }
-use_clang_compilers(){
+use_clang_compilers() {
     local program_path bin_path include_path lib_path
     program_path="$(get_command "clang")" || :
     if [ -n "${program_path}" ]; then
@@ -4224,7 +4255,7 @@ use_clang_compilers(){
     fi
     # Clang does not have a Fortran compiler
 }
-use_mpi_compilers(){
+use_mpi_compilers() {
     local program program_path bin_path include_path lib_path
     for program in "mpicc" "mpiCC"; do
         program_path="$(get_command "${program}")" || :
@@ -4364,7 +4395,7 @@ use_mpi_compilers(){
         fi
     done
 }
-use_intel_compilers(){
+use_intel_compilers() {
     local program_path bin_path include_path lib_path
     program_path="$(get_command "icc")" || :
     if [ -n "${program_path}" ]; then
@@ -4424,7 +4455,7 @@ use_intel_compilers(){
         fi
     fi
 }
-use_cray_compilers(){
+use_cray_compilers() {
     local program_path bin_path include_path lib_path
     program_path="$(get_command "craycc")" || :
     if [ -n "${program_path}" ]; then
@@ -4484,7 +4515,7 @@ use_cray_compilers(){
         fi
     fi
 }
-use_portland_compilers(){
+use_portland_compilers() {
     local program_path bin_path include_path lib_path
     program_path="$(get_command "pgcc")" || :
     if [ -n "${program_path}" ]; then
@@ -4562,7 +4593,7 @@ use_portland_compilers(){
         fi
     fi
 }
-use_generic_compilers(){
+use_generic_compilers() {
     local program program_path bin_path include_path lib_path
     for program in "cc" "c89" "c99"; do
         program_path="$(get_command "${program}")" || :
@@ -4649,7 +4680,7 @@ use_generic_compilers(){
         fi
     done
 }
-use_unset_compilers(){
+use_unset_compilers() {
     unset CC CXX FC F90 F9X CFLAGS CXXFLAGS CPPFLAGS FCFLAGS FFLAGS LDFLAGS
 }
 
@@ -4659,7 +4690,7 @@ use_unset_compilers(){
 # Download CO𝘕CEPT dependencies #
 #################################
 # Function for downloading compressed archives
-download(){
+download() {
     # Arguments: Program name, [print_heading], [url]
     progname_formatted="$1"
     progname="${progname_formatted// /_}"
@@ -4676,19 +4707,17 @@ download(){
     fi
     eval "progversion=\"\${${progname}_version}\""
     if [ "${print_heading}" != "False" ]; then
-        if [ "${progname}" == "fftw_for_gadget" ]; then
+        if [ "${progname}" == "blas" ]; then
+            current_step="the downloading of OpenBLAS ${progversion}"
+            heading "Downloading OpenBLAS ${progversion}"
+        elif [ "${progname}" == "fftw_for_gadget" ]; then
             # When downloading FFTW for GADGET, the version number should
             # be printed together with FFTW, not GADGET.
             current_step="the downloading of FFTW ${progversion} for GADGET"
             heading "Downloading FFTW ${progversion} for GADGET"
         elif [ "${progname}" == "mpi" ]; then
-            if [ "${mpi}" == "mpich" ]; then
-                current_step="the downloading of MPICH ${progversion}"
-                heading "Downloading MPICH ${progversion}"
-            elif [ "${mpi}" == "openmpi" ]; then
-                current_step="the downloading of OpenMPI ${progversion}"
-                heading "Downloading OpenMPI ${progversion}"
-            fi
+            current_step="the downloading of ${mpi_formatted} ${progversion}"
+            heading "Downloading ${mpi_formatted} ${progversion}"
         else
             current_step="the downloading of ${1/CONCEPT/$esc_concept} ${progversion}"
             heading "Downloading ${1/CONCEPT/$esc_concept} ${progversion}"
@@ -4706,6 +4735,15 @@ download(){
                 for no_dns_cache in "--no-dns-cache" ""; do
                     for no_check_certificate in "" "--no-check-certificate"; do
                         for progressbar in "--progress=bar:force" ""; do
+                            # Redirect stderr to the TTY, in order to
+                            # show the progress bar.
+                            tty_connected="True"
+                            (printf "" >/dev/tty) 2>/dev/null || tty_connected="False"
+                            exec 3>&2
+                            if [ "${tty_connected}" == "True" ]; then
+                                exec 3<> /dev/tty || :
+                            fi
+                            # Attempt the download
                             wget_status="success"
                             wget                        \
                                 ${progressbar}          \
@@ -4716,7 +4754,9 @@ download(){
                                 ${no_dns_cache}         \
                                 ${ipv}                  \
                                 "${url}"                \
+                                2>&3                    \
                                 || wget_status="error"
+                            exec 3>&-
                             if [ "${wget_status}" == "success" ]; then
                                 return
                             fi
@@ -4807,7 +4847,7 @@ enable_status
 # Install CO𝘕CEPT dependencies #
 ################################
 # Function for extracting compressed files
-extract(){
+extract() {
     # Arguments: Program name, [is_file]
     # Here, the optional is_file argument can be set to "True" if
     # the first argument is a filename rather than a program name.
@@ -4964,7 +5004,7 @@ extract(){
 
 # Function which initializes installations (extracts the pre-
 # downloaded archive and change to the extracted directory).
-init_install(){
+init_install() {
     # Arguments: Program name, ["Attempting to install" text]
     local progname_formatted="$1"
     local progname="$(echo "${progname_formatted// /_}" | tr '[:upper:]' '[:lower:]')"
@@ -4978,14 +5018,10 @@ init_install(){
             heading "Installing FFTW ${progversion} for GADGET"
             set_status "Installing FFTW ${progversion} for GADGET"
         else
-            if [ "${progname}" == "mpi" ]; then
-                if [ "${mpi}" == "mpich" ]; then
-                    progname_formatted="MPICH"
-                elif [ "${mpi}" == "openmpi" ]; then
-                    progname_formatted="OpenMPI"
-                fi
-            elif [ "${progname}" == "blas" ]; then
+            if [ "${progname}" == "blas" ]; then
                 progname_formatted="OpenBLAS"
+            elif [ "${progname}" == "mpi" ]; then
+                progname_formatted="${mpi_formatted}"
             else
                 progname_formatted=${progname_formatted/CONCEPT/${esc_concept}}
             fi
@@ -5023,7 +5059,7 @@ with ${attempting_to_install_text}\n\n"
 # sometimes has this bad hanging behaviour, especially for particular
 # packages, such as h5py. This function should not be called in a
 # situation where you do not believe that the hang is only apparent.
-soothe(){
+soothe() {
     # Argument: PID of background process on which to wait,
     # [hang time in seconds after which PID is killed],
     # [total time in seconds after which the PID is killed].
@@ -5154,9 +5190,10 @@ install() {
         && [ -f "test_log"                ] \
     ; then
         mkdir -p "$(dirname "${program_test_log}")"
-        cp "test_log" "${program_test_log}"
-    else
-        rm -f "test_log"
+        cp "test_log" "${program_test_log}" || :
+    fi
+    if [ "${program_test_log}" != "$(pwd)/test_log" ]; then
+        rm -f "test_log" || :
     fi
     # Copy over license and readme files.
     # Get the directory from the test log path.
@@ -5273,7 +5310,7 @@ with ${attempting_to_install_text}\n\n"
 
 # Function for writing out installation notices to files in the
 # installation directories of the various programs.
-install_notice(){
+install_notice() {
     # Arguments: Program name, program_dir
     local progname_formatted="$1"
     local progdir="$2"
@@ -5782,7 +5819,7 @@ blas_install_func() {
     openblas_make_options="DYNAMIC_ARCH=1 DYNAMIC_OLDER=1"
     # Due to the threading behaviour of Python,
     # we install a non-threaded version of OpenBLAS.
-    openblas_make_options="${openblas_make_options} USE_THREAD=0"
+    openblas_make_options="${openblas_make_options} USE_THREAD=0 USE_OPENMP=0"
     # Attempt build
     openblas_make_options="${openblas_make_options} ${NO_AVX}"
     if [ "${openblas_gfortran}" == "True" ]; then
@@ -6062,7 +6099,7 @@ if [ -n "${python}" ]; then
 fi
 
 # Function for downloading Python packages, utilizing pip
-pip_download(){
+pip_download() {
     # Arguments: Python package name, version, pip_download_time.
     # No second argument, blank second argument or a second argument of
     # "upgrade" means newest version. The second argument can also be a
@@ -6172,7 +6209,7 @@ Attempting to download ${1} using pip ${all_pip_args}\n\n"
 }
 
 # Function for installing and upgrading Python packages, utilizing pip
-pip_install_pypackage(){
+pip_install_pypackage() {
     # Arguments: Python package name, [version or "upgrade"]
     # (install specific version or update existing version to newest).
     # If second argument is not provided, the newest version
@@ -6860,43 +6897,30 @@ Attempting to install Matplotlib with compiler=${compiler}\n\n"
         # by CO𝘕CEPT. Most often these dependencies are downloaded
         # automatically by the previous command. In case of failure,
         # we do it manually.
+        # The version numbers below are tkane from
+        # https://matplotlib.org/3.1.2/users/installing.html
+        # and
+        # https://github.com/matplotlib/matplotlib/blob/v3.1.2/setupext.py
+        matplotlib_numpy_installed=$(check_pypackage_installed "numpy")
         matplotlib_pyparsing_installed=$(check_pypackage_installed "pyparsing")
         matplotlib_dateutil_installed=$(check_pypackage_installed "dateutil")
         matplotlib_cycler_installed=$(check_pypackage_installed "cycler")
         matplotlib_kiwisolver_installed=$(check_pypackage_installed "kiwisolver")
-        if [ "${numpy_preinstalled}" == "True" ] || [ "${numpy_install}" == "True" ]; then
-            # NumPy already installed
-            deps=(                \
-                "pyparsing"       \
-                "python-dateutil" \
-                "cycler"          \
-                "kiwisolver"      \
-            )
-            # From https://matplotlib.org/3.1.1/users/installing.html and
-            # https://github.com/matplotlib/matplotlib/blob/v3.1.2/setupext.py
-            dep_versions=(
-                ">=2.0.1,!=2.0.4,!=2.1.2,!=2.1.6" \
-                ">=2.1"                           \
-                ">=0.10.0"                        \
-                ">=1.0.1"                         \
-            )
-        else
-            # NumPy not installed. Add it as a matplotlib dependency
-            deps=(                \
-                "numpy"           \
-                "pyparsing"       \
-                "python-dateutil" \
-                "cycler"          \
-                "kiwisolver"      \
-            )
-            # From http://matplotlib.org/users/installing.html and matplotlib's setupext.py
-            dep_versions=(
-                ">=1.11"                          \
-                ">=2.0.1,!=2.0.4,!=2.1.2,!=2.1.6" \
-                ">=2.1"                           \
-                ">=0.10.0"                        \
-                ">=1.0.1"                         \
-            )
+        deps=(                \
+            "pyparsing"       \
+            "python-dateutil" \
+            "cycler"          \
+            "kiwisolver"      \
+        )
+        dep_versions=(                        \
+            ">=2.0.1,!=2.0.4,!=2.1.2,!=2.1.6" \
+            ">=2.1"                           \
+            ">=0.10.0"                        \
+            ">=1.0.1"                         \
+        )
+        if [ "${matplotlib_numpy_installed}" == "False" ]; then
+            deps=("numpy" "${deps[@]}")
+            dep_versions=(">=1.11" "${dep_versions[@]}")
         fi
         # An illegal version of pyparsing may be downloaded by Matplotlib!
         pyparsing_downloaded="$(ls "${top_dir}/tmp/pip" | grep -i "pyparsing" || :)"
@@ -7166,9 +7190,13 @@ if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; 
         # be the very file running now, and so it is not safe to
         # overwrite it. Instead, move the new installation script there
         # under a new name, reflecting its version.
+        rm -f "${top_dir}/installer_${concept_version}"
         mv "installer" "${top_dir}/installer_${concept_version}"
     fi
-    mv ./{.[!.],}* "${top_dir}/"
+    for f in {.[!.],}*; do
+        rm -rf "${top_dir}/${f}" || :
+        mv "${f}" "${top_dir}/"
+    done
     cd "${top_dir}"
     rm -rf "${top_dir}/tmp/concept" || :
     # Create directories
@@ -7390,7 +7418,7 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
     cd "${class_dir}"
     # Below we will do a lot of patching on the CLASS source code.
     # To aid us, we define the following function.
-    patch_class(){
+    patch_class() {
         filename="$1"
         local linenr="$2"
         action="$3"
@@ -7849,7 +7877,7 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
     patch_class "${class_dir}/source/perturbations.c" ${linenr} \
         "replace" "above" "${new_lines[@]}"
     # Include fld in perturbation output
-    new_class_perturbation_linenr(){
+    new_class_perturbation_linenr() {
         if [ "${1}" == "perturb_prepare_output" ]; then
             pattern='ppt *-> *number_of_scalar_titles *='
             linenr=$(awk "\$0 ~ \"${pattern}\" {print NR}" \
@@ -8470,12 +8498,23 @@ if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; 
                 unset OMP_NUM_THREADS
                 "${concept}" -t "all" 2>&1 | tee "${concept_test_log}"
                 [ ${PIPESTATUS[0]} -eq 0 ] || concept_test_success="False"
-                # Clean test_log if test is successfull
+                # Clean up after successful tests
                 if [ "${concept_test_success}" == "True" ]; then
                     rm -f "${concept_test_log}" || :
+                    # To clean up properly we perform a distclean, but
+                    # without removing the ${log} and ${log}_err file.
                     # Note that this also removes
                     # the ${top_dir}/tmp directory.
-                    (source "${concept}" && make distclean) || :
+                    (:                                              \
+                        && cd "${concept_dir}"                      \
+                        && source "${concept}"                      \
+                        && make -n distclean                        \
+                            | sed "s/\S*$(basename "${log}")\S*//g" \
+                            | while read -r line; do                \
+                                echo "${line}";                     \
+                                eval "${line}";                     \
+                            done                                    \
+                    ) || :
                 fi
                 if [ -n "${OMP_NUM_THREADS_backup}" ]; then
                     export OMP_NUM_THREADS="${OMP_NUM_THREADS_backup}"
@@ -8496,7 +8535,9 @@ fi
 ###################################
 if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; then
     current_step="building ${esc_concept}"
-    heading "Building ${esc_concept}"
+    # Do not print a heading,
+    # as the CO𝘕CEPT build process does this by itself.
+    echo
     set_status "Building ${esc_concept}"
     # Build the code by running it with no parameters specified
     cd "${concept_dir}"
@@ -8585,7 +8626,7 @@ if [ "${slim}" == "True" ]; then
 fi
 # Copyright notice
 disable_status
-copyright_notice(){
+copyright_notice() {
     # Arguments: Program/package name, text if installed by this script
     if eval "[ \"\${${1}_install}\" == \"True\" ]"; then
         printf "${2}\n"
@@ -8608,11 +8649,7 @@ if [ "${install_anything}" == "True" ] && [ "${say_copyright}" != "False" ]; the
     copyright_notice "gsl"               "GSL"
     copyright_notice "hdf5"              "HDF5"
     copyright_notice "libpng"            "libpng"
-    if [ "${mpi}" == "mpich" ]; then
-        copyright_notice "mpi"           "MPICH"
-    elif [ "${mpi}" == "openmpi" ]; then
-        copyright_notice "mpi"           "OpenMPI"
-    fi
+    copyright_notice "mpi"               "${mpi_formatted}"
     copyright_notice "ncurses"           "ncurses"
     copyright_notice "openssl"           "OpenSSL"
     copyright_notice "perl"              "Perl"
@@ -8633,20 +8670,19 @@ if [ "${install_anything}" == "True" ] && [ "${say_copyright}" != "False" ]; the
     copyright_notice "sphinx_tabs"       "$(printf ${en_quad}%.s {1..4})Sphinx_tabs"
     printf "\nThese have been installed into separate directories in\n\"${top_dir}\".\n"
     if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; then
-        printf "\nAny use of ${esc_concept} must conform to the license terms of the above \
-software in addition to its own."
+        printf "\nAny use of ${esc_concept} must conform to the license terms\n\
+of the above software in addition to its own.\n"
     else
-        printf "\nAny use of the above software must conform to their license terms."
+        printf "\nAny use of the above software must conform to their license terms.\n"
     fi
     if [ "${slim}" != "True" ]; then
-        printf " These can be found in the separate installation directories."
+        echo "These can be found in the separate installation directories."
     fi
-    printf "\n"
 fi
 # Notice about test errors
 current_step="erroneous tests notice"
 any_test_error_notices="False"
-erroneous_test_notice(){
+erroneous_test_notice() {
     # Arguments: Program name, [alternative message]
     progname="${1// /_}"
     progname="$(echo "${progname}" | tr '[:upper:]' '[:lower:]')"
@@ -8664,12 +8700,10 @@ erroneous_test_notice(){
         eval "test_log_path=\"\${${progname}_test_log}\""
         printf "${esc_bold}${esc_red}Warning: ${esc_normal}"
         real_name="${1/CONCEPT/$esc_concept}"
-        if [ "${real_name}" == "MPI" ]; then
-            if [ "${mpi}" == "mpich" ]; then
-                real_name="MPICH"
-            elif [ "${mpi}" == "openmpi" ]; then
-                real_name="OpenMPI"
-            fi
+        if [ "${real_name}" == "BLAS" ]; then
+            real_name="OpenBLAS"
+        elif [ "${real_name}" == "MPI" ]; then
+            real_name="${mpi_formatted}"
         fi
         printf "Some tests of ${real_name} did not pass successfully.\n"
         if [ -n "${2}" ]; then
@@ -8704,11 +8738,21 @@ erroneous_test_notice "SciPy"
 erroneous_test_notice "zlib"
 erroneous_test_notice "CONCEPT" \
                       "${esc_italic}This should usually be taken seriously!${esc_no_italic}"
-if [ "${any_test_error_notices}" == "True" ]; then
-    printf "\nThe logged output of the entire installation process can be found in\n"
-    printf "\"${log}\"\n"
-    printf "while the logged warnings and errors can be found in\n"
-    printf "\"${log}_err\"\n"
+if [ "${any_test_error_notices}" == "True" ] \
+    && ([ "${slim}" != "True" ] || [ "${keep_install_logs}" == "True" ]) \
+; then
+    if [ -s "${log}" ]; then
+        printf "\nThe logged output of the entire installation process can be found in\n"
+        printf "\"${log}\"\n"
+        if [ -s "${log}_err" ]; then
+            printf "while the logged warnings and errors can be found in\n"
+            printf "\"${log}_err\"\n"
+        fi
+    elif [ -s "${log}_err" ]; then
+        printf "\nThe logged warnings and errors for the entire installation process\n"
+        printf "can be found in\n"
+        printf "\"${log}_err\"\n"
+    fi
 fi
 
 # Subprocess complete
@@ -8753,7 +8797,8 @@ done
 
 # Continuously print the tail of the install log
 ((n_lines_to_skip = log_file_lines_before_install + 2))
-display_loop(){
+rm -f "${top_dir}/.setvars" || :
+display_loop() {
     local IFS=''
     printf "\n\n"
     tail -n +${n_lines_to_skip} -f "${log}" --pid ${log_pid} | while read -r line; do
@@ -8778,6 +8823,10 @@ display_loop(){
                 # Display loop complete or print of
                 # internal install pid. Do nothing.
                 :
+            elif [[ "${status}" == "${status_setvar}"* ]]; then
+                # A variable is to be set in the outer scope
+                # from within the subprocess.
+                echo "${status#*:}" >> "${top_dir}/.setvars"
             elif [ "${status_visible}" == "${status_on}" ]; then
                 # Normal status update
                 printf "${esc_up}${esc_erase}"
@@ -8799,11 +8848,15 @@ display_loop(){
     done
 }
 display_loop
+sleep 1
+eval "$(cat "${top_dir}/.setvars" 2>/dev/null)" 2>/dev/null || :
+rm -f "${top_dir}/.setvars" || :
 
 # Installation complete
 installation_guaranteed_successful="False"
-if [ "${do_tests}" == "True" ] && \
-    [ "$(tail -n 1 "${log}")" == "${status_prefix}${status_finish_successfully}" ]; then
+if     [ "${do_tests}" == "True" ]                                                                \
+    && [ "$(tail -n 1 "${log}" 2>/dev/null)" == "${status_prefix}${status_finish_successfully}" ] \
+; then
     installation_guaranteed_successful="True"
 fi
 if [ ! -s "${log}" ]; then

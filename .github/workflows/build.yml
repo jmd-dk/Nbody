@@ -5,7 +5,7 @@ name: build
 
 on:
     schedule:
-      - cron: '0 0 * * SUN'
+      - cron: '0 0 * * SUN'  # Weekly, Sundays at 00:00
     pull_request:
         branches:
           - master
@@ -15,7 +15,7 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, heavy]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -24,10 +24,10 @@ jobs:
                 rm -f concept/docs/_static/*.pdf
                 docker build -t concept .
           - name: Test suite 🤖
-            run: docker run concept concept -t all
+            run: docker run --rm concept concept -t all
           - name: Build docs 📖
-            run: docker run concept make docs
-          - name: Push to Docker Hub 📤
+            run: docker run --rm concept make docs
+          - name: Push to Docker Hub 🐋
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             if: env.docker_username

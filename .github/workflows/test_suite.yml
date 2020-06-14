@@ -16,7 +16,7 @@ on:
 jobs:
     # This job runs first
     test_basic:
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, heavy]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -26,29 +26,34 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && concept -t ${GITHUB_JOB/test_} \
-                    && mkdir /github/build \
-                    && cp "${concept_dir}/"*.so /github/build/ \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && concept -t ${GITHUB_JOB/test_} \
+                        && mkdir /github/build \
+                        && cp "${concept_dir}/"*.so /github/build/ \
+                        && chmod a+rw /github/build/ \
+                    '
           - name: Upload build 📤
-            uses: actions/upload-artifact@v1
+            uses: actions/upload-artifact@v2
             with:
                 name: build
                 path: build
     # All jobs below uses the compiled code from the test_basic job
     test_friedmann:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -58,27 +63,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_realize:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -88,27 +98,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_powerspec:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -118,27 +133,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_gadget:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -148,27 +168,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_drift_nohubble:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -178,27 +203,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_drift:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -208,27 +238,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_kick_pp_without_ewald:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -238,27 +273,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_kick_pp_with_ewald:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -268,27 +308,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_nprocs_pp:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -298,27 +343,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_pure_python_pp:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -328,27 +378,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_concept_vs_gadget_pp:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -358,27 +413,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_nprocs_pm:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -388,27 +448,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_pure_python_pm:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -418,27 +483,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_concept_vs_class_pm:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -448,27 +518,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_nprocs_p3m:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -478,27 +553,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_pure_python_p3m:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -508,27 +588,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_concept_vs_gadget_p3m:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -538,27 +623,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_multicomponent:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, heavy]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -568,27 +658,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_drift_rigid_nohubble:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -598,27 +693,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_drift_rigid:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -628,27 +728,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_gravity_nohubble:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -658,27 +763,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_gravity:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -688,27 +798,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_vacuum:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -718,27 +833,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_vs_particles:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -748,27 +868,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_pressure:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -778,27 +903,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_neutrino:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, heavy]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -808,27 +938,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_optimizations:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, heavy]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -838,27 +973,32 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_render:
         needs: test_basic
-        runs-on: ubuntu-18.04
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
@@ -868,22 +1008,27 @@ jobs:
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
                 echo "::set-env name=docker_username::${docker_username}"
+          - name: Pull Docker image 🐋
+            run: docker pull ${docker_username}/concept:latest
           - name: Download build 📥
-            uses: actions/download-artifact@v1
+            uses: actions/download-artifact@v2
             with:
                 name: build
+                path: build
           - name: Run test 🤖
             run: |
                 docker run \
-                -e GITHUB_JOB \
-                -v "${GITHUB_WORKSPACE}":/github \
-                ${docker_username}/concept:latest bash -c ': \
-                    && cd / \
-                    && source ~/.bashrc \
-                    && rm -rf "${concept_dir}" \
-                    && cp -r /github/concept "${concept_dir}" \
-                    && cp /github/build/* "${concept_dir}/" \
-                    && (cd "${concept_dir}" && make -t) \
-                    && concept -t ${GITHUB_JOB/test_} \
-                '
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
 

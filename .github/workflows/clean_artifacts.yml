@@ -1,0 +1,17 @@
+# GitHub workflow for removing all artifacts
+name: clean_artifacts
+
+on:
+    schedule:
+      - cron: '0 0 * * *'  # Daily at 00:00
+
+jobs:
+    clean_artifacts:
+        runs-on: [self-hosted, linux]
+        steps:
+          - name: Clean up artifacts 🧹
+            uses: kolpav/purge-artifacts-action@v1
+            with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                expire-in: 2days
+

@@ -27,15 +27,6 @@ set -e
 # Cleanup from last test run
 "${this_dir}/clean"
 
-# Create the Ewald grid using Cython, if it does not already exist
-#ewald_gridsize="$(get_param ewald_gridsize)"
-#if [ ! -f "${reusables_dir}/ewald/${ewald_gridsize}.hdf5" ]; then
-#    select_forces="$(get_param select_forces)"
-#    echo "ewald_gridsize = ${ewald_gridsize}" >  "${this_dir}/params_ewald"
-#    echo "select_forces  = ${select_forces}"  >> "${this_dir}/params_ewald"
-#    "${concept}" -n 1 -p "${this_dir}/params_ewald" --local
-#fi
-
 # Generate ICs
 echo "$(cat "${this_dir}/params")
 output_dirs  = {'snapshot': '${this_dir}'}
