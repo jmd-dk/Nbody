@@ -9,7 +9,7 @@ on:
 
 jobs:
     deploy_docker:
-        runs-on: [self-hosted, linux]
+        runs-on: ubuntu-20.04
         steps:
           - name: Deploy to Docker Hub 🚀
             env:
