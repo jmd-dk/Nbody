@@ -2666,7 +2666,7 @@ def compute_transfer(
     k_max='double',
     k_min='double',
     logk='double',
-    logk_magnitudes=list,
+    logk_magnitudes=object,  # list, np.ndarray
     logk_max='double',
     logk_min='double',
     returns=object,  # FloatStr
@@ -2681,13 +2681,15 @@ def get_k_magnitudes(gridsize):
     # Minimum and maximum k
     k_min = ℝ[2*π/boxsize]
     k_max = k_min*sqrt(3*(gridsize//2)**2)
+    k_min *= ℝ[1 - k_safety_factor]
+    k_max *= ℝ[1 + k_safety_factor]
     logk_min = log10(k_min)
     logk_max = log10(k_max)
     # Starting from log10(k_min), append new log10(k)
     # using a running number of modes/decade.
     logk = logk_min
     logk_magnitudes = [logk]
-    while logk < logk_max:
+    while logk <= logk_max:
         logk += 1/logk_modes_per_decade_interp(logk)
         logk_magnitudes.append(logk)
     k_gridsize = len(logk_magnitudes)
@@ -2697,18 +2699,16 @@ def get_k_magnitudes(gridsize):
             f'To allow for more k modes, you may increase the CLASS macro '
             f'_ARGUMENT_LENGTH_MAX_ in include/parser.h.'
         )
-    # Adjust the last two points so that the last point is at
-    # log10(k_max) and the second last point is right in the middle of
-    # its neighbour poins.
-    logk_magnitudes[k_gridsize - 1] = logk_max
-    if k_gridsize > 2:
-        logk_magnitudes[k_gridsize - 2] = 0.5*(logk_magnitudes[k_gridsize - 3] + logk_max)
+    logk_magnitudes = asarray(logk_magnitudes)
+    # The last log10(k) is guaranteed to be slightly larger
+    # than logk_max. Scale the tabulated log10(k) so that they exactly
+    # span [log10(k_min), log10(k_max)].
+    logk_magnitudes -= logk_min
+    logk_magnitudes *= (logk_max - logk_min)/logk_magnitudes[k_gridsize - 1]
+    logk_magnitudes += logk_min
     # Construct the |k| array
-    k_magnitudes = 10**asarray(logk_magnitudes)
-    # Widen the boundaries slightly
-    k_magnitudes[0             ] *= 1 - k_safety_factor
-    k_magnitudes[k_gridsize - 1] *= 1 + k_safety_factor
-    # Convert to CLASS units, i.e. Mpc, which shall be the unit
+    k_magnitudes = 10**logk_magnitudes
+    # Convert to CLASS units, i.e. Mpc⁻¹, which shall be the unit
     # used for the str representation of k_magnitudes.
     k_magnitudes = asarray(k_magnitudes)/units.Mpc**(-1)
     # Limit the number of decimals on each |k|,
@@ -2723,9 +2723,10 @@ def get_k_magnitudes(gridsize):
     k_magnitudes = np.fromstring(k_magnitudes_str, sep=',')
     if len(set(k_magnitudes)) != k_gridsize:
         abort(
-            'The requested k sampling is too dense; '
-            'you should lower the k_modes_per_decade parameter. '
-            'Alternatively, you can lower the linear.k_safety_factor variable.'
+            'The requested k sampling is too dense, leading to modes that are exactly equal '
+            'after limiting the number of decimal places. Though this ought not to ever happen, '
+            'it should help to lower the k_modes_per_decade parameter. '
+            'Alternatively, you can try lowering the linear.k_safety_factor variable.'
         )
     # Convert back to the current CO𝘕CEPT unit system
     k_magnitudes = asarray(k_magnitudes)*units.Mpc**(-1)
