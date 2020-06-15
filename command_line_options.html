@@ -31,7 +31,7 @@
         <script src="_static/language_data.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -637,11 +637,11 @@ select AMD then;</p>
 </div>
 <p>The effect of this is simply to place the line</p>
 <blockquote>
-<div><p>#SBATCH --constraint=AMD</p>
+<div><p>#SBATCH \-\-constraint=AMD</p>
 </div></blockquote>
 <p>in the header of the job script, assuming Slurm, or</p>
 <blockquote>
-<div><p>#PBS --constraint=AMD</p>
+<div><p>#PBS \-\-constraint=AMD</p>
 </div></blockquote>
 <p>in the case of TORQUE/PBS (the specific example of <code class="docutils literal notranslate"><span class="pre">--constraint</span></code>
 does not mean anything to TORQUE/PBS, though).</p>
