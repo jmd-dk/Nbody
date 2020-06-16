@@ -636,6 +636,7 @@ def slab_fourier_loop(
     powerspec_declaration=object,  # PowerspecDeclaration
     powerspec_declaration_group=list,
     powerspec_declaration_groups=dict,
+    powerspec_header_info=object,  # PowerspecHeaderInfo
     size='Py_ssize_t',
     spectrum_plural=str,
     topline=str,
@@ -656,8 +657,8 @@ def save_powerspec(powerspec_declarations, filename):
     if not powerspec_declarations:
         return
     # Get header, format and delimiter specifier for the data file
-    header, fmt, delimiter, powerspec_declaration_groups = get_powerspec_header(
-        powerspec_declarations)
+    powerspec_header_info = get_powerspec_header(powerspec_declarations)
+    header = powerspec_header_info.header
     spectrum_plural = 'spectrum' if len(powerspec_declarations) == 1 else 'spectra'
     masterprint(f'Saving power {spectrum_plural} to "{filename}" ...')
     # The top line of the header, stating general information
@@ -679,15 +680,20 @@ def save_powerspec(powerspec_declarations, filename):
     # make all columns the same length by appending NaNs as required
     # (zeros for the modes).
     # Get a 2D array with the right size for storing all data.
-    n_rows = next(iter(powerspec_declaration_groups.values()))[0].k_bin_centers.shape[0]
+    for powerspec_declaration_group in powerspec_header_info.powerspec_declaration_groups.values():
+        powerspec_declaration = powerspec_declaration_group[0]
+        n_rows = powerspec_declaration.k_bin_centers.shape[0]
+        break
     n_cols = (
-        2*len(powerspec_declaration_groups)
+        2*len(powerspec_header_info.powerspec_declaration_groups)
         + len(powerspec_declarations)*(2 if powerspec_include_linear else 1)
     )
     data = get_buffer((n_rows, n_cols))
     # Fill in data columns
     col = 0
-    for gridsize, powerspec_declaration_group in powerspec_declaration_groups.items():
+    for gridsize, powerspec_declaration_group in (
+        powerspec_header_info.powerspec_declaration_groups.items()
+    ):
         powerspec_declaration = powerspec_declaration_group[0]
         k_bin_centers = powerspec_declaration.k_bin_centers
         n_modes       = powerspec_declaration.n_modes
@@ -724,8 +730,8 @@ def save_powerspec(powerspec_declarations, filename):
     np.savetxt(
         filename,
         data,
-        fmt=fmt,
-        delimiter=delimiter,
+        fmt=powerspec_header_info.fmt,
+        delimiter=powerspec_header_info.delimiter,
         header=f'{topline}\n{header}',
     )
     masterprint('done')
@@ -745,9 +751,25 @@ def get_powerspec_header(powerspec_declarations):
         tuple(powerspec_declaration.components)
         for powerspec_declaration in powerspec_declarations
     ])
-    cache_result = powerspec_header_cache.get(key)
-    if cache_result:
-        return cache_result
+    powerspec_header_info = powerspec_header_cache.get(key)
+    if powerspec_header_info:
+        # Cached result found.
+        # Which components to include in the power spectrum
+        # computation/plot may change over time due to components
+        # changing their passive/active/terminated state, which in turn
+        # change the passed powerspec_declarations. As the key used
+        # above depends on the components only, the resulting cached
+        # result may hold outdated PowerspecDeclaration instances.
+        # Update these before returning.
+        for powerspec_declaration_group in (
+            powerspec_header_info.powerspec_declaration_groups.values()
+        ):
+            for i, powerspec_declaration_cached in enumerate(powerspec_declaration_group):
+                for powerspec_declaration in powerspec_declarations:
+                    if powerspec_declaration_cached.components == powerspec_declaration.components:
+                        powerspec_declaration_group[i] = powerspec_declaration
+                        break
+        return powerspec_header_info
     # A column mapping each component to a number
     components = []
     for powerspec_declaration in powerspec_declarations:
@@ -909,11 +931,17 @@ def get_powerspec_header(powerspec_declarations):
         delimiter.join(columns_heading),
     ])
     # Store in cache and return
-    powerspec_header_cache[key] = (header, fmt, delimiter, powerspec_declaration_groups)
-    return header, fmt, delimiter, powerspec_declaration_groups
-# Cache used by the get_powerspec_header() function
+    powerspec_header_cache[key] = PowerspecHeaderInfo(
+        header, fmt, delimiter, powerspec_declaration_groups,
+    )
+    return powerspec_header_cache[key]
+# Cache and type used by the get_powerspec_header() function
 cython.declare(powerspec_header_cache=dict)
 powerspec_header_cache = {}
+PowerspecHeaderInfo = collections.namedtuple(
+    'PowerspecHeaderInfo',
+    ('header', 'fmt', 'delimiter', 'powerspec_declaration_groups'),
+)
 
 # Function which given a power spectrum declaration with the
 # k_bin_centers and power fields correctly populated will compute the
