@@ -22,20 +22,21 @@ jobs:
           - name: Install 🔧
             run: |
                 rm -f concept/docs/_static/*.pdf
-                docker build -t concept .
+                docker build --pull --no-cache -t concept:test-build .
           - name: Test suite 🤖
-            run: docker run --rm concept concept -t all
+            run: docker run --rm concept:test-build concept -t all
           - name: Build docs 📖
-            run: docker run --rm concept make docs
+            run: docker run --rm concept:test-build make docs
           - name: Push to Docker Hub 🐋
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             if: env.docker_username
             run: |
-                docker tag concept ${{ secrets.DOCKER_USERNAME }}/concept:test-build
+                docker tag concept:test-build ${{ secrets.DOCKER_USERNAME }}/concept:test-build
                 docker login \
                     -u ${{ secrets.DOCKER_USERNAME }} \
                     -p ${{ secrets.DOCKER_PASSWORD }} \
                     2>/dev/null
                 docker push ${{ secrets.DOCKER_USERNAME }}/concept:test-build
+                docker logout
 
