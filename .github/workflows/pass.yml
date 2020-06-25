@@ -11,159 +11,159 @@ on:
 jobs:
     # Test entire build
     build:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     # Test docs
     test_docs:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     # Test suite
     test_basic:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_friedmann:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_realize:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_powerspec:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_gadget:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_drift_nohubble:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_drift:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_kick_pp_without_ewald:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_kick_pp_with_ewald:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_nprocs_pp:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_pure_python_pp:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_concept_vs_gadget_pp:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_nprocs_pm:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_pure_python_pm:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_concept_vs_class_pm:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_nprocs_p3m:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_pure_python_p3m:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_concept_vs_gadget_p3m:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_multicomponent:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_drift_rigid_nohubble:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_drift_rigid:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_gravity_nohubble:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_gravity:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_vacuum:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_vs_particles:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_fluid_pressure:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_neutrino:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_optimizations:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0
     test_render:
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, linux, light]
         steps:
           - name: Pass
             run: exit 0

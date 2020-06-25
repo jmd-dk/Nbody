@@ -1,0 +1,31 @@
+# GitHub workflow for testing the entire build,
+# including installation, the test suite and building of the docs.
+# - This workflow runs on a schedule, and only if
+#   the GitHub secret SCHEDULE_BUILD is set to True.
+name: build
+
+on:
+    schedule:
+      - cron: '0 0 * * SUN'  # Weekly, Sundays at 00:00
+
+jobs:
+    build:
+        runs-on: ubuntu-20.04
+        steps:
+          - name: Check schedule ❓
+            env:
+                schedule_build: ${{ secrets.SCHEDULE_BUILD }}
+            run: |
+                [ "${schedule_build}" == "True" ] || (echo "Build not scheduled" && exit 1)
+                echo "Build scheduled"
+          - name: Checkout 🛎
+            uses: actions/checkout@v2
+          - name: Install 🔧
+            run: |
+                rm -f concept/docs/_static/*.pdf
+                docker build --pull --no-cache -t concept:test-build .
+          - name: Test suite 🤖
+            run: docker run --rm concept:test-build concept -t all
+          - name: Build docs 📖
+            run: docker run --rm concept:test-build make docs
+

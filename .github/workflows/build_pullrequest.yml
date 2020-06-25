@@ -1,11 +1,11 @@
 # GitHub workflow for testing the entire build,
 # including installation, the test suite and building of the docs.
-# Docker build is pushed to Docker Hub upon success.
+# - This workflow runs on pull requests to master
+#   if installer or Dockerfile has changed.
+# - The Docker build is pushed to Docker Hub upon success.
 name: build
 
 on:
-    schedule:
-      - cron: '0 0 * * SUN'  # Weekly, Sundays at 00:00
     pull_request:
         branches:
           - master

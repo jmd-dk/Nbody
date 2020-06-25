@@ -1,4 +1,4 @@
-## CO*N*CEPT <img align="right" src="https://github.com/AarhusCosmology/concept/workflows/build/badge.svg?event=schedule"/>
+## CO*N*CEPT <img align="right" src="https://github.com/jmd-dk/concept/workflows/build/badge.svg"/>
 
  &nbsp; <a href="https://github.com/jmd-dk/concept/tree/master/">:rocket:</a> &nbsp; Latest release: Use <a href="https://github.com/jmd-dk/concept/tree/master/">master</a> for now \
  &nbsp; <a href="https://jmd-dk.github.io/concept/">:book:</a> &nbsp; <a href="https://jmd-dk.github.io/concept/">Documentation</a> <img height="22" width="0" src="/concept/docs/_static/render2D.png"/>
