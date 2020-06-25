@@ -1159,7 +1159,7 @@ class CosmoResults:
         if not class_reuse:
             return False
         if not master:
-            return bcast(None)
+            return bcast()
         if not os.path.isfile(self.filename):
             return bcast(False)
         # The master process attempts to load the given element
@@ -2740,7 +2740,7 @@ cython.declare(
     k_safety_factor='double',
 )
 k_magnitudes_cache = {}
-logk_modes_per_decade_interp = lambda logk, f=scipy.interpolate.interp1d(
+logk_modes_per_decade_interp = lambda logk, *, f=scipy.interpolate.interp1d(
     np.log10(tuple(k_modes_per_decade.keys())),
     tuple(k_modes_per_decade.values()),
     'linear',

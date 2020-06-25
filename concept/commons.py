@@ -198,7 +198,7 @@ Sendrecv = (lambda sendbuf, dest, sendtag=0, recvbuf=None, source=MPI.ANY_SOURCE
 )
 allgather  = comm.allgather
 allreduce  = comm.allreduce
-bcast      = lambda obj, root=master_rank: comm.bcast (obj, root)
+bcast      = lambda obj=None, root=master_rank: comm.bcast (obj, root)
 gather     = lambda obj, root=master_rank: comm.gather(obj, root)
 iprobe     = comm.iprobe
 isend      = comm.isend
@@ -2009,6 +2009,7 @@ cython.declare(
     Δt_base_background_factor='double',
     Δt_base_nonlinear_factor='double',
     Δt_rung_factor='double',
+    static_timestepping=object,  # str, callable or None
     N_rungs='Py_ssize_t',
     fftw_wisdom_rigor=str,
     fftw_wisdom_reuse='bint',
@@ -2246,11 +2247,11 @@ for key, val in force_interlacings.copy().items():
 user_params['force_interlacings'] = force_interlacings
 force_differentiations = {
     'gravity': {
-        'pm' : 4,
+        'pm' : 2,
         'p3m': 4,
     },
     'lapse': {
-        'pm': 4,
+        'pm': 2,
     },
 }
 for key, val in replace_ellipsis(dict(user_params.get('force_differentiations', {}))).items():
@@ -2598,6 +2599,10 @@ user_params['Δt_base_background_factor'] = Δt_base_background_factor
 user_params['Δt_base_nonlinear_factor'] = Δt_base_nonlinear_factor
 Δt_rung_factor = float(user_params.get('Δt_rung_factor', 1))
 user_params['Δt_rung_factor'] = Δt_rung_factor
+static_timestepping = user_params.get('static_timestepping')
+if static_timestepping == '':
+    static_timestepping = None
+user_params['static_timestepping'] = static_timestepping
 N_rungs = int(user_params.get('N_rungs', 10))
 user_params['N_rungs'] = N_rungs
 fftw_wisdom_rigor = user_params.get('fftw_wisdom_rigor', 'measure').lower()
@@ -4278,6 +4283,10 @@ for key, d in shortrange_params.items():
             d['subtiling'] = (subtiling[0], subtiling_refinement_period_min)
     else:
         abort(f'Could not understand shortrange_params["{key}"]["subtiling"] == {subtiling}')
+# Static time-stepping (both recording and application) uses scale
+# factor values and this requires the Hubble expansion to be enabled.
+if static_timestepping is not None and not enable_Hubble:
+    abort('You may not specify static_timestepping with the Hubble expansion disabled')
 # Abort for non-positive number of rungs. Also, since the rung indices
 # are stored as signed chars, the largest rung index that can be
 # represented is 127, corresponding to the highest rung for

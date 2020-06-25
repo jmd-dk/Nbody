@@ -983,7 +983,7 @@ def CLASS():
             Send(a_values, dest=master_rank)
         send(0, dest=master_rank)
         # Receive processed a values from the master process
-        all_a_values = empty(bcast(None), dtype=C2np['double'])
+        all_a_values = empty(bcast(), dtype=C2np['double'])
         Bcast(all_a_values)
     # Store the a and k values at which the perturbations are tabulated.
     # Also store the gauge.

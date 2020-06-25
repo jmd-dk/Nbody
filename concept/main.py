@@ -35,6 +35,7 @@ cimport(
     '    expand,               '
     '    hubble,               '
     '    init_time,            '
+    '    remove_doppelgängers, '
     '    scale_factor,         '
     '    scalefactor_integral, '
 )
@@ -60,6 +61,7 @@ cimport('from utilities import delegate')
     interaction_name=str,
     output_filenames=dict,
     recompute_Δt_max='bint',
+    static_timestepping_func=object,  # callable or None
     subtiling='Tiling',
     subtiling_computation_times=object,  # collections.defaultdict
     subtiling_name=str,
@@ -128,11 +130,14 @@ def timeloop():
     # using a separate seed on each process.
     seed_rng()
     # Set initial time step size
+    static_timestepping_func = prepare_static_timestepping()
     if Δt_begin_autosave == -1:
-        # Set the initial time step size to the largest allowed value
-        # times Δt_initial_fac.
-        Δt_max, bottleneck = get_base_timestep_size(components)
-        Δt_begin = Δt_initial_fac*Δt_max
+        # Including the current (initial) t in initial_fac_times in
+        # order to scale Δt_max by Δt_initial_fac,
+        # making it appropriate for use as Δt_begin.
+        initial_fac_times.add(universals.t)
+        Δt_max, bottleneck = get_base_timestep_size(components, static_timestepping_func)
+        Δt_begin = Δt_max
         # We always want the simulation time span to be at least
         # one whole Δt_period long.
         timespan = dump_times[len(dump_times) - 1].t - universals.t
@@ -176,6 +181,14 @@ def timeloop():
             # Things to do at the beginning and end of each time step
             if time_step > time_step_previous:
                 time_step_previous = time_step
+                # If at an "init" time step, all short-range rungs will
+                # be synchronized. Here, re-assign a short-range rung to
+                # each particle based on their short-range acceleration,
+                # disregarding their currently assigned rung and flagged
+                # rung jumps. Any flagged rung jumps will be nullified.
+                if time_step_type == 'init':
+                    for component in components:
+                        component.assign_rungs(Δt, fac_softening)
                 # Update subtile computation times
                 for component in components:
                     for subtiling_name, subtiling in component.tilings.items():
@@ -219,13 +232,6 @@ def timeloop():
                 # long-range kick to particles and inital half
                 # application of internal sources.
                 kick_long(components, Δt, sync_time, 'init')
-                # All short-range rungs are synchronized. Re-assign a
-                # short-range rung to each particle based on their
-                # short-range acceleration, disregarding their
-                # currently assigned rung and flagged rung jumps.
-                # Any flagged rung jumps will be nullified.
-                for component in components:
-                    component.assign_rungs(Δt, fac_softening)
                 # Sort particles in memory so that the order matches
                 # the visiting order when iterating through all subtiles
                 # within tiles, improving the performance of
@@ -267,9 +273,10 @@ def timeloop():
                         component.tile_sort(tiling_name, None, -1, subtiling_name)
                         # Reset subtile computation time
                         subtiling_computation_times[component].clear()
-                # Initial half short-range kick of particles on all
-                # rungs. No rung jumps will occur, as any such has been
-                # nullified above.
+                # Initial half short-range kick of particles on
+                # all rungs. No rung jumps will occur, as any such
+                # have been nullified by the call
+                # to Component.assign_rungs() above.
                 kick_short(components, Δt)
                 # Check whether next dump is within 1.5*Δt
                 if dump_time.t - universals.t <= 1.5*Δt:
@@ -277,7 +284,7 @@ def timeloop():
                     sync_time = dump_time.t
                     continue
                 # Check whether the base time step needs to be reduced
-                Δt_max, bottleneck = get_base_timestep_size(components)
+                Δt_max, bottleneck = get_base_timestep_size(components, static_timestepping_func)
                 if Δt > Δt_max:
                     # Next base step should synchronize.
                     # Thereafter we can lower the base time step size.
@@ -333,10 +340,13 @@ def timeloop():
                     # Reduce base time step if necessary.
                     # If not, increase it as allowed.
                     if recompute_Δt_max:
-                        Δt_max, bottleneck = get_base_timestep_size(components)
+                        Δt_max, bottleneck = get_base_timestep_size(
+                            components, static_timestepping_func,
+                        )
                     recompute_Δt_max = True
                     Δt, bottleneck = update_base_timestep_size(
                         Δt, Δt_min, Δt_max, bottleneck, time_step, time_step_last_sync,
+                        tolerate_danger=(bottleneck == bottleneck_static_timestepping),
                     )
                     # Update time step counters
                     time_step += 1
@@ -353,7 +363,10 @@ def timeloop():
                             # The "dump" was really the activation of a
                             # component. This new component might need
                             # a reduced time step size.
-                            Δt_max, bottleneck = get_base_timestep_size(components)
+                            initial_fac_times.add(universals.t)
+                            Δt_max, bottleneck = get_base_timestep_size(
+                                components, static_timestepping_func,
+                            )
                             Δt, bottleneck = update_base_timestep_size(
                                 Δt, Δt_min, Δt_max, bottleneck,
                                 allow_increase=False, tolerate_danger=True,
@@ -393,7 +406,7 @@ def timeloop():
                     sync_time = dump_time.t
                     continue
                 # Check whether the base time step needs to be reduced
-                Δt_max, bottleneck = get_base_timestep_size(components)
+                Δt_max, bottleneck = get_base_timestep_size(components, static_timestepping_func)
                 if Δt > Δt_max:
                     # We should synchronize, whereafter the
                     # base time step size can be lowered.
@@ -419,6 +432,12 @@ def timeloop():
         autosave_filename = f'{autosave_dir}/autosave_{jobid}.hdf5'
         if os.path.isfile(autosave_filename):
             os.remove(autosave_filename)
+# Set of (cosmic) times at which the maximum time step size Δt_max
+# should be further scaled by Δt_initial_fac, which are at the initial
+# time step as well as right after component activations. This set is
+# populated by timeloop() and queried by get_base_timestep_size().
+cython.declare(initial_fac_times=set)
+initial_fac_times = set()
 # Dict containing list of scale factor values at which to activate or
 # terminate components (the 't' list is never used).
 # The list is populated by the prepare_for_output() function.
@@ -436,10 +455,133 @@ cython.declare(
 passive_components = []
 components_order = []
 
+# Function preparing for static time-stepping. If static time-stepping
+# is to be used, this will return a newly constructed
+# callable Δt_max(a). Otherwise, None is returned.
+def prepare_static_timestepping():
+    static_timestepping_func = None
+    if not master:
+        # Ask master whether static time-stepping is to be used
+        if bcast():
+            # Static time-stepping is to be used.
+            # Only the master process holds the time-stepping data,
+            # so the function to return should simply receive a result
+            # from the master.
+            static_timestepping_func = lambda a=-1: bcast()
+        return static_timestepping_func
+    # Only the master process handles the below preparation
+    apply_static_timestepping = False
+    if static_timestepping is None:
+        # Do not use static time-stepping
+        pass
+    elif isinstance(static_timestepping, str):
+        if os.path.exists(static_timestepping):
+            # The static_timestepping parameter holds the path to an
+            # existing file. This file should have been produced by
+            # a previous simulation and store (a, Δa) data.
+            apply_static_timestepping = True
+            # Load and clean up data
+            static_timestepping_a, static_timestepping_Δa = np.loadtxt(
+                static_timestepping,
+                unpack=True,
+            )
+            static_timestepping_a  = static_timestepping_a .copy()  # ensure contiguousness
+            static_timestepping_Δa = static_timestepping_Δa.copy()  # ensure contiguousness
+            static_timestepping_a, static_timestepping_Δa = remove_doppelgängers(
+                static_timestepping_a, static_timestepping_Δa,
+                rel_tol=Δt_reltol,
+            )
+            # Construct scale factor intervals
+            # of monotonically increasing Δa.
+            interval_indices = list(np.where(np.diff(static_timestepping_Δa) < 0)[0] + 1)
+            a_intervals = []
+            a_right = 0
+            for index in interval_indices:
+                a_left, a_right = a_right, static_timestepping_a[index]
+                a_intervals.append((a_left, a_right))
+            interval_indices.append(static_timestepping_a.shape[0])
+            a_left, a_right = a_right, ထ
+            a_intervals.append((a_left, a_right))
+            # Create linear spline for each interval
+            static_timestepping_interps = []
+            index_left = 0
+            for index_right in interval_indices:
+                static_timestepping_interps.append(
+                    lambda a, *, f=scipy.interpolate.interp1d(
+                        np.log(static_timestepping_a [index_left:index_right]),
+                        np.log(static_timestepping_Δa[index_left:index_right]),
+                        'linear',
+                        fill_value='extrapolate',
+                    ): exp(float(f(log(a))))
+                )
+                index_left = index_right
+            # Create function Δt(a) implementing the static
+            # time-stepping using the above splines.
+            def static_timestepping_func(a=-1):
+                if a == -1:
+                    a, t = universals.a, universals.t
+                else:
+                    t = cosmic_time(a)
+                # Find the scale factor tabulation interval
+                # and look up the interpolated function.
+                # As the number of intervals ought always to
+                # be small, a simple linear search is sufficient.
+                for (a_left, a_right), static_timestepping_interp in zip(
+                    a_intervals, static_timestepping_interps,
+                ):
+                    # With a very close to a_right, it is a good guess
+                    # that we really ought to have a == a_right, but
+                    # that floating-point imprecisions have ruined the
+                    # exact equality. If so, this a really belongs to
+                    # the next interval.
+                    if a_right != ထ and isclose(float(a), float(a_right)):
+                        continue
+                    if isclose(float(a), float(a_left + machine_ϵ)):
+                        a = a_left
+                    if a_left <= a < a_right:
+                        break
+                else:
+                    abort(f'static_timestepping_func(): a = {a} not in any interval')
+                # Do the interpolation and convert Δa to Δt
+                Δa = static_timestepping_interp(a)
+                a_next = a + Δa
+                Δt = cosmic_time(a_next) - t if a_next <= 1 else ထ
+                return bcast(Δt)
+        else:
+            # The static_timestepping parameter does not refer to an
+            # existing path. Interpret it as a path to a not yet
+            # existing file. The time stepping of this simulation
+            # will be written to this file.
+            pass
+    elif callable(static_timestepping):
+        # Create function Δt(a) implementing the static
+        # time-stepping using the callable.
+        apply_static_timestepping = True
+        def static_timestepping_func(a=-1):
+            if a == -1:
+                a, t = universals.a, universals.t
+            else:
+                t = cosmic_time(a)
+            # Compute Δa using the user-supplied callable
+            Δa = static_timestepping(a)
+            # Convert to Δt
+            a_next = a + Δa
+            Δt = cosmic_time(a_next) - t if a_next <= 1 else ထ
+            return bcast(Δt)
+    else:
+        abort(
+            f'Could not interpret static_timestepping = {static_timestepping} '
+            f'of type {type(static_timestepping)}'
+        )
+    # Inform slaves whether static timestepping is to be applied
+    bcast(apply_static_timestepping)
+    return static_timestepping_func
+
 # Function for computing the size of the base time step
 @cython.header(
     # Arguments
     components=list,
+    static_timestepping_func=object,  # callable or None
     # Locals
     H='double',
     a='double',
@@ -452,15 +594,17 @@ components_order = []
     lapse_gridsize='Py_ssize_t',
     measurements=dict,
     method=str,
+    n='int',
     resolution='Py_ssize_t',
     scale='double',
     v_max='double',
     v_rms='double',
-    Δt='double',
+    Δa_max='double',
     Δt_courant='double',
     Δt_decay='double',
     Δt_dynamical='double',
     Δt_hubble='double',
+    Δt_max='double',
     Δt_pm='double',
     Δt_ẇ='double',
     Δx_max='double',
@@ -469,12 +613,12 @@ components_order = []
     φ_gridsize='Py_ssize_t',
     returns=tuple,
 )
-def get_base_timestep_size(components):
+def get_base_timestep_size(components, static_timestepping_func=None):
     """This function computes the maximum allowed size
     of the base time step Δt. The time step limiters come in three
     categories; global limiters, component limiters and
     particle/fluid element limiters. For each limiter, the value of Δt
-    should not be exceed a small fraction of the following.
+    should not exceed a small fraction of the following.
     Background limiters:
       Global background limiters:
       - The dynamical time scale.
@@ -500,10 +644,18 @@ def get_base_timestep_size(components):
       given component.
     The return value is a tuple containing the maximum allowed Δt and a
     str stating which limiter is the bottleneck.
+    If a callable static_timestepping_func is given, this is used obtain
+    Δt_max directly, ignoring all time step limiters.
     """
     a = universals.a
+    # If a static_timestepping_func is given, use this to
+    # determine Δt_max, short-circuiting this function.
+    if static_timestepping_func is not None:
+        Δt_max = static_timestepping_func(a)
+        bottleneck = bottleneck_static_timestepping
+        return Δt_max, bottleneck
     H = hubble(a)
-    Δt = ထ
+    Δt_max = ထ
     bottleneck = ''
     # Local cache for calls to measure()
     measurements = {}
@@ -514,22 +666,22 @@ def get_base_timestep_size(components):
             continue
         ρ_bar += a**(-3*(1 + component.w_eff(a=a)))*component.ϱ_bar
     Δt_dynamical = fac_dynamical/(sqrt(G_Newton*ρ_bar) + machine_ϵ)
-    if Δt_dynamical < Δt:
-        Δt = Δt_dynamical
+    if Δt_dynamical < Δt_max:
+        Δt_max = Δt_dynamical
         bottleneck = 'the dynamical timescale'
     # The Hubble time
     if enable_Hubble:
         Δt_hubble = fac_hubble/H
-        if Δt_hubble < Δt:
-            Δt = Δt_hubble
+        if Δt_hubble < Δt_max:
+            Δt_max = Δt_hubble
             bottleneck = 'the Hubble time'
     # 1/abs(ẇ)
     for component in components:
         if component.representation == 'fluid' and component.is_linear(0):
             continue
         Δt_ẇ = fac_ẇ/(abs(cast(component.ẇ(a=a), 'double')) + machine_ϵ)
-        if Δt_ẇ < Δt:
-            Δt = Δt_ẇ
+        if Δt_ẇ < Δt_max:
+            Δt_max = Δt_ẇ
             bottleneck = f'ẇ of {component.name}'
     # Reciprocal decay rate
     for component in components:
@@ -537,8 +689,8 @@ def get_base_timestep_size(components):
             continue
         ρ_bar_component = component.ϱ_bar*a**(-3*(1 + component.w_eff(a=a)))
         Δt_decay = fac_Γ/(abs(component.Γ(a)) + machine_ϵ)*ρ_bar/ρ_bar_component
-        if Δt_decay < Δt:
-            Δt = Δt_decay
+        if Δt_decay < Δt_max:
+            Δt_max = Δt_decay
             bottleneck = f'decay rate of {component.name}'
     # Courant condition for fluid elements
     for component in components:
@@ -558,8 +710,8 @@ def get_base_timestep_size(components):
         # The Courant condition
         Δx_max = boxsize/component.gridsize
         Δt_courant = fac_courant*Δx_max/v_max
-        if Δt_courant < Δt:
-            Δt = Δt_courant
+        if Δt_courant < Δt_max:
+            Δt_max = Δt_courant
             bottleneck = f'the Courant condition for {component.name}'
     # PM limiter
     for component in components:
@@ -613,8 +765,8 @@ def get_base_timestep_size(components):
         # The PM limiter
         Δx_max = boxsize/resolution
         Δt_pm = fac_pm*Δx_max/v_rms
-        if Δt_pm < Δt:
-            Δt = Δt_pm
+        if Δt_pm < Δt_max:
+            Δt_max = Δt_pm
             bottleneck = f'the PM method of the {extreme_force} force for {component.name}'
     # P³M limiter
     for component in components:
@@ -646,11 +798,29 @@ def get_base_timestep_size(components):
         # The P³M limiter
         Δx_max = scale
         Δt_p3m = fac_p3m*Δx_max/v_rms
-        if Δt_p3m < Δt:
-            Δt = Δt_p3m
+        if Δt_p3m < Δt_max:
+            Δt_max = Δt_p3m
             bottleneck = f'the P³M method of the {extreme_force} force for {component.name}'
+    # Reduce the found Δt_max by Δt_initial_fac
+    # if we are at a time which demands this reduction.
+    if universals.t in initial_fac_times:
+        Δt_max *= Δt_initial_fac
+    # Record static time-stepping to disk
+    if master and isinstance(static_timestepping, str):
+        if universals.t + Δt_max < cosmic_time(1):
+            Δa_max = scale_factor(universals.t + Δt_max) - universals.a
+            n = int(ceil(log10(1/Δt_reltol) + 0.5))
+            with open(static_timestepping, 'a', encoding='utf-8') as f:
+                if f.tell() == 0:
+                    f.write(unicode(
+                        '#{}a{}Δa\n'.format(' '*((n + 3)//2), ' '*(n + 6))
+                    ))
+                f.write(f'{{:.{n}e}} {{:.{n}e}}\n'.format(universals.a, Δa_max))
     # Return maximum allowed base time step size and the bottleneck
-    return Δt, bottleneck
+    return Δt_max, bottleneck
+# Constant used by the get_base_timestep_size() function
+cython.declare(bottleneck_static_timestepping=str)
+bottleneck_static_timestepping = 'static time-stepping'
 
 # Function for computing the updated value of Δt.
 # This has to be a pure Python function due to the use
@@ -708,7 +878,7 @@ def update_base_timestep_size(
         Δt_new = Δt_tmp
     Δt = Δt_new
     # As the base time step size has been increased,
-    # there are no bottleneck.
+    # there is no bottleneck.
     bottleneck = ''
     return Δt, bottleneck
 
@@ -1517,7 +1687,7 @@ def activate_terminate(components, a, Δt, act='activate terminate'):
         if activated_components:
             # For realization it is important that universals.a matches
             # the given a exactly. These really ought to be idential,
-            # but may not be due to floating point imprecisions.
+            # but may not be due to floating-point imprecisions.
             universal_a_backup = universals.a
             universals.a = a
             for component in activated_components:
@@ -1994,10 +2164,10 @@ cython.declare(
     Δt_period='Py_ssize_t',
 )
 # The initial time step size Δt will be set to the maximum allowed
-# value times this factor. At early times of almost homogeneity,
-# it is preferable with a small Δt, and so
-# this factor should be below unity.
-Δt_initial_fac = 0.9
+# value times this factor. The same goes for Δt right after activation
+# of a component. As newly added components may need a somewhat lower
+# time step than predicted, this factor should be below unity.
+Δt_initial_fac = 0.95
 # When reducing Δt, set it to the maximum allowed value
 # times this factor.
 Δt_reduce_fac = 0.94
@@ -2028,7 +2198,7 @@ cython.declare(
 # step size had been Δt/Δt_jump_fac > Δt. The factor Δt_jump_fac
 # should then be somewhat below unity.
 Δt_jump_fac = 0.95
-# Due to floating point imprecisions, universals.t may not land
+# Due to floating-point imprecisions, universals.t may not land
 # exactly at sync_time when it should, which is needed to detect
 # whether we are at a synchronization time or not. To fix this,
 # we consider the universal time to be at the synchronization time

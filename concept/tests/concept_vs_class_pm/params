@@ -2,7 +2,7 @@
 _this_dir = os.path.dirname(paths['params'])
 
 # Input/output
-_size = 64
+_size = 128
 initial_conditions = [
     {
         'species': 'matter',
@@ -18,9 +18,9 @@ powerspec_select = {
 powerspec_include_linear = True
 
 # Numerical parameters
-boxsize = 1024*Mpc
-powerspec_gridsizes = _size
-powerspec_interpolation = 'CIC'
+boxsize = 2048*Mpc
+powerspec_gridsizes = 2*_size
+powerspec_interpolation = 'PCS'
 force_interpolations = {
     'gravity': {
         'pm': 'PCS',

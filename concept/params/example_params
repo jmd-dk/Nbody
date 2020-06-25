@@ -114,7 +114,7 @@ force_interlacings = {  # Use interlaced particle potential grids, for each long
 }
 force_differentiations = {  # Order (number of grid points) to use for potential grid differentiation, for each long-range force and method
     'gravity': {
-        'pm' : 4,
+        'pm' : 2,
         'p3m': 4,
    },
 }
@@ -228,6 +228,7 @@ select_softening_length = {  # Gravitational softening for each component
 Δt_base_background_factor = 1       # This scales the 'background' time step limiters
 Δt_base_nonlinear_factor = 1        # This scales the 'non-linear' time step limiters
 Δt_rung_factor = 1                  # This scales the rung time step size needed for a given short-range acceleration
+static_timestepping = None          # File to write/read static time-stepping information to/from
 N_rungs = 10                        # Number of available rungs for adaptive time stepping
 fftw_wisdom_rigor = 'measure'       # Rigor level when acquiring FFTW wisdom
 fftw_wisdom_reuse = True            # Reuse FFTW wisdom from earlier runs?

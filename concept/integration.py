@@ -299,7 +299,7 @@ def remove_doppelgängers(xs, y, rel_tol=1e-1, copy=False):
     """Given arrays of x and y values, this function checks for
     doppelgängers in the x values, meaning consecutive x values that are
     exactly or very nearly equal. New arrays with doppelgängers
-    removed to single points will be returned.
+    reduced to single points will be returned.
     You may have as many x arrays as you like.
     The relative tolerance used in determining doppelgängers is given
     by rel_tol.

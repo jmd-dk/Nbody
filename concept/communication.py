@@ -1212,7 +1212,7 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
         # The exact size of the data to receive is not known,
         # but it cannot be larger than the size of the receiver block.
         size_recv = arr_recv.size
-    # Based on the contiguousity of the input arrays, assign the names
+    # Based on the contiguousness of the input arrays, assign the names
     # data_send and data_recv to the contiguous blocks of data,
     # which are to be passed into the MPI functions.
     if contiguous_send:
