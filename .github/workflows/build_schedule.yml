@@ -9,23 +9,35 @@ on:
       - cron: '0 0 * * SUN'  # Weekly, Sundays at 00:00
 
 jobs:
-    build:
+    check_schedule:
         runs-on: ubuntu-20.04
+        outputs:
+            scheduled: ${{ steps.check_schedule.outputs.scheduled }}
         steps:
-          - name: Check schedule ❓
+          - name: Check schedule ⏰
+            id: check_schedule
             env:
                 schedule_build: ${{ secrets.SCHEDULE_BUILD }}
             run: |
-                [ "${schedule_build}" == "True" ] || (echo "Build not scheduled" && exit 1)
-                echo "Build scheduled"
+                if [ "${schedule_build}" == "True" ]; then
+                    echo "Build scheduled"
+                    echo "::set-output name=scheduled::1"
+                else
+                    echo "Build not scheduled"
+                fi
+    build:
+        runs-on: ubuntu-20.04
+        needs: check_schedule
+        if: needs.check_schedule.outputs.scheduled
+        steps:
           - name: Checkout 🛎
             uses: actions/checkout@v2
           - name: Install 🔧
             run: |
                 rm -f concept/docs/_static/*.pdf
-                docker build --pull --no-cache -t concept:test-build .
+                docker build --pull --no-cache -t concept:latest .
           - name: Test suite 🤖
-            run: docker run --rm concept:test-build concept -t all
+            run: docker run --rm concept:latest concept -t all
           - name: Build docs 📖
-            run: docker run --rm concept:test-build make docs
+            run: docker run --rm concept:latest make docs
 
