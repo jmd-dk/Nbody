@@ -493,7 +493,11 @@ def prepare_static_timestepping():
             )
             # Construct scale factor intervals
             # of monotonically increasing Δa.
-            interval_indices = list(np.where(np.diff(static_timestepping_Δa) < 0)[0] + 1)
+            mask = (np.diff(static_timestepping_Δa) < 0)
+            for index in range(1, len(mask)):
+                mask[index] &= not mask[index - 1]
+            mask[-1] = False
+            interval_indices = list(np.where(mask)[0] + 1)
             a_intervals = []
             a_right = 0
             for index in interval_indices:
