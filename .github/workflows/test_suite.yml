@@ -41,6 +41,7 @@ jobs:
                         && rm -rf "${concept_dir}" \
                         && cp -r /github/concept "${concept_dir}" \
                         && concept -t ${GITHUB_JOB/test_} \
+                        && rm -rf /github/build \
                         && mkdir /github/build \
                         && cp "${concept_dir}/"*.so /github/build/ \
                         && chmod a+rw /github/build/ \
