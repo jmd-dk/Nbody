@@ -83,8 +83,7 @@ class_params = {
     'm_ncdm'                  : 0.3/3,
     'l_max_ncdm'              : 50,
     'Number of momentum bins' : 25,
-    'Maximum q'               : 18,
-    'Quadrature strategy'     : 3,
+    'Quadrature strategy'     : 2,
     'ncdm_fluid_approximation': 3,
 }
 

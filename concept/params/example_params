@@ -152,8 +152,7 @@ class_params = {  # CLASS parameters. See the CLASS documentation for details.
     'm_ncdm'                  : 1/3,
     'l_max_ncdm'              : 100,
     'Number of momentum bins' : 25,
-    'Maximum q'               : 18,
-    'Quadrature strategy'     : 3,
+    'Quadrature strategy'     : 2,
     'ncdm_fluid_approximation': 3,
 }
 

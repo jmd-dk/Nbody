@@ -38,11 +38,10 @@ class_params = {
     'm_ncdm'  : [mν if mν else 1e-100 for mν in sorted(set(_mν))],
     'T_ncdm'  : [(4/11)**(1/3)*(_N_eff/len(_mν))**(1/4)]*len(set(_mν)),
     # Neutrino precision parameters
-    'ncdm_fluid_approximation': 3,
-    'Quadrature strategy'     : [3]*len(set(_mν)),
     'l_max_ncdm'              : 50,
     'Number of momentum bins' : [25]*len(set(_mν)),
-    'Maximum q'               : [18]*len(set(_mν)),
+    'Quadrature strategy'     : [2]*len(set(_mν)),
+    'ncdm_fluid_approximation': 3,
     # Photon temperature and precision parameters
     'T_cmb'                            : 2.7255,
     'radiation_streaming_approximation': 3,
