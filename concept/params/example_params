@@ -227,6 +227,7 @@ select_softening_length = {  # Gravitational softening for each component
 Δt_base_background_factor = 1       # This scales the 'background' time step limiters
 Δt_base_nonlinear_factor = 1        # This scales the 'non-linear' time step limiters
 Δt_rung_factor = 1                  # This scales the rung time step size needed for a given short-range acceleration
+Δa_max_increasing = 0.022           # Maximum allowed change in scale factor over a time step
 static_timestepping = None          # File to write/read static time-stepping information to/from
 N_rungs = 10                        # Number of available rungs for adaptive time stepping
 fftw_wisdom_rigor = 'measure'       # Rigor level when acquiring FFTW wisdom

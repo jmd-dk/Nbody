@@ -2009,6 +2009,7 @@ cython.declare(
     Δt_base_background_factor='double',
     Δt_base_nonlinear_factor='double',
     Δt_rung_factor='double',
+    Δa_max_increasing='double',
     static_timestepping=object,  # str, callable or None
     N_rungs='Py_ssize_t',
     fftw_wisdom_rigor=str,
@@ -2599,6 +2600,8 @@ user_params['Δt_base_background_factor'] = Δt_base_background_factor
 user_params['Δt_base_nonlinear_factor'] = Δt_base_nonlinear_factor
 Δt_rung_factor = float(user_params.get('Δt_rung_factor', 1))
 user_params['Δt_rung_factor'] = Δt_rung_factor
+Δa_max_increasing = float(user_params.get('Δa_max_increasing', 0.022))
+user_params['Δa_max_increasing'] = Δa_max_increasing
 static_timestepping = user_params.get('static_timestepping')
 if static_timestepping == '':
     static_timestepping = None

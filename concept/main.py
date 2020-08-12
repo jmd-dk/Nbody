@@ -601,6 +601,7 @@ def prepare_static_timestepping():
     n='int',
     resolution='Py_ssize_t',
     scale='double',
+    t='double',
     v_max='double',
     v_rms='double',
     Δa_max='double',
@@ -651,6 +652,7 @@ def get_base_timestep_size(components, static_timestepping_func=None):
     If a callable static_timestepping_func is given, this is used obtain
     Δt_max directly, ignoring all time step limiters.
     """
+    t = universals.t
     a = universals.a
     # If a static_timestepping_func is given, use this to
     # determine Δt_max, short-circuiting this function.
@@ -807,19 +809,19 @@ def get_base_timestep_size(components, static_timestepping_func=None):
             bottleneck = f'the P³M method of the {extreme_force} force for {component.name}'
     # Reduce the found Δt_max by Δt_initial_fac
     # if we are at a time which demands this reduction.
-    if universals.t in initial_fac_times:
+    if t in initial_fac_times:
         Δt_max *= Δt_initial_fac
     # Record static time-stepping to disk
     if master and isinstance(static_timestepping, str):
-        if universals.t + Δt_max < cosmic_time(1):
-            Δa_max = scale_factor(universals.t + Δt_max) - universals.a
+        if t + Δt_max < cosmic_time(1):
+            Δa_max = scale_factor(t + Δt_max) - a
             n = int(ceil(log10(1/Δt_reltol) + 0.5))
             with open(static_timestepping, 'a', encoding='utf-8') as f:
                 if f.tell() == 0:
                     f.write(unicode(
                         '#{}a{}Δa\n'.format(' '*((n + 3)//2), ' '*(n + 6))
                     ))
-                f.write(f'{{:.{n}e}} {{:.{n}e}}\n'.format(universals.a, Δa_max))
+                f.write(f'{{:.{n}e}} {{:.{n}e}}\n'.format(a, Δa_max))
     # Return maximum allowed base time step size and the bottleneck
     return Δt_max, bottleneck
 # Constant used by the get_base_timestep_size() function
@@ -867,7 +869,7 @@ def update_base_timestep_size(
         return Δt, bottleneck
     if not allow_increase:
         return Δt, bottleneck
-    # Increase the base time step size Δt,
+    # Construct new base time step size Δt_new,
     # making sure that its relative change is not too big.
     Δt_new = Δt_increase_fac*Δt_max
     if Δt_new < Δt:
@@ -880,11 +882,20 @@ def update_base_timestep_size(
     Δt_tmp = (1 + period_frac*Δt_period_increase_max_fac)*Δt
     if Δt_new > Δt_tmp:
         Δt_new = Δt_tmp
-    Δt = Δt_new
-    # As the base time step size has been increased,
-    # there is no bottleneck.
+    # If close to a = 1, leave Δt as is
+    if enable_Hubble and universals.t + Δt_new > cosmic_time(1):
+        bottleneck = 'a ≈ 1'
+        return Δt, bottleneck
+    # Reject Δt_new if accepting it brings Δa above Δa_max_increasing
+    if enable_Hubble and Δa_max_increasing > 0:
+        Δa_new = scale_factor(universals.t + Δt_new) - universals.a
+        if Δa_new > Δa_max_increasing:
+            bottleneck = 'Δa_max_increasing'
+            return Δt, bottleneck
+    # Accept Δt_new. As the base time step size
+    # has been increased, there is no bottleneck.
     bottleneck = ''
-    return Δt, bottleneck
+    return Δt_new, bottleneck
 
 # Function for computing all time step integrals
 # between two specified cosmic times.
