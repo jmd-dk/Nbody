@@ -591,11 +591,10 @@ def prepare_static_timestepping():
     a='double',
     bottleneck=str,
     component='Component',
-    component_lapse='Component',
     extreme_force=str,
     force=str,
+    gridsize='Py_ssize_t',
     key=tuple,
-    lapse_gridsize='Py_ssize_t',
     measurements=dict,
     method=str,
     n='int',
@@ -615,7 +614,6 @@ def prepare_static_timestepping():
     Δx_max='double',
     ρ_bar='double',
     ρ_bar_component='double',
-    φ_gridsize='Py_ssize_t',
     returns=tuple,
 )
 def get_base_timestep_size(components, static_timestepping_func=None):
@@ -723,38 +721,18 @@ def get_base_timestep_size(components, static_timestepping_func=None):
     for component in components:
         if component.representation == 'fluid' and component.is_linear(0):
             continue
-        # Find PM resolution for this component.
-        # The PM method is implemented for gravity and the lapse force.
+        # Find PM resolution for this component
         resolution = 0
-        lapse_gridsize = 0
         for force, method in component.forces.items():
             if method != 'pm':
                 continue
-            if force == 'gravity':
-                φ_gridsize = component.φ_gridsizes['gravity', 'pm']
-                if φ_gridsize > resolution:
-                    resolution = φ_gridsize
-                    extreme_force = 'gravity'
-            elif force == 'lapse':
-                # Find gridsize of the lapse force
-                if lapse_gridsize == 0:
-                    for component_lapse in components:
-                        if component_lapse.species != 'lapse':
-                            continue
-                        lapse_gridsize = component_lapse.gridsize
-                        break
-                    else:
-                        abort(
-                            f'Failed to detect any lapse component, but the lapse force '
-                            f'is assigned to {component.name}'
-                        )
-                φ_gridsize = component.φ_gridsizes['lapse', 'pm']
-                φ_gridsize = np.min([lapse_gridsize, φ_gridsize])
-                if φ_gridsize > resolution:
-                    resolution = φ_gridsize
-                    extreme_force = 'lapse'
-            else:
-                abort(f'Unregistered force "{force}" with method "{method}"')
+            for method, gridsizes in component.potential_gridsizes[force].items():
+                if method != 'pm':
+                    continue
+                gridsize = np.max(gridsizes)
+                if gridsize > resolution:
+                    resolution = gridsize
+                    extreme_force = force
         if resolution == 0:
             continue
         # Find rms bulk velocity, i.e. do not add the sound speed
@@ -784,12 +762,13 @@ def get_base_timestep_size(components, static_timestepping_func=None):
         for force, method in component.forces.items():
             if method != 'p3m':
                 continue
-            if force == 'gravity':
-                if ℝ[shortrange_params['gravity']['scale']] < scale:
-                    scale = ℝ[shortrange_params['gravity']['scale']]
-                    extreme_force = 'gravity'
-            else:
-                abort(f'Unregistered force "{force}" with method "{method}"')
+            if force != 'gravity':
+                abort(
+                    f'Force "{force}" with method "P³M" unknown to get_base_timestep_size()'
+                )
+            if ℝ[shortrange_params['gravity']['scale']] < scale:
+                scale = ℝ[shortrange_params['gravity']['scale']]
+                extreme_force = 'gravity'
         if scale == ထ:
             continue
         # Find rms velocity
@@ -1613,12 +1592,6 @@ def dump(components, output_filenames, dump_time, Δt=0):
             any_activations |= (
                 activate_terminate(components, time_value, Δt, act) and act == 'activate'
             )
-    # Dump render2D
-    if time_value in render2D_times[time_param]:
-        filename = output_filenames['render2D'].format(time_param, time_value)
-        if time_param == 't':
-            filename += unit_time
-        render2D(components, filename)
     # Dump snapshot
     if time_value in snapshot_times[time_param]:
         filename = output_filenames['snapshot'].format(time_param, time_value)
@@ -1637,6 +1610,12 @@ def dump(components, output_filenames, dump_time, Δt=0):
         if time_param == 't':
             filename += unit_time
         render3D(components, filename)
+    # Dump render2D
+    if time_value in render2D_times[time_param]:
+        filename = output_filenames['render2D'].format(time_param, time_value)
+        if time_param == 't':
+            filename += unit_time
+        render2D(components, filename)
     # Activate or terminate components after dumps
     for act in 𝕆[life_output_order[life_output_order.index('dump')+1:]]:
         if time_value in activation_termination_times[time_param]:

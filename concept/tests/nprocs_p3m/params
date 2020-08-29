@@ -10,6 +10,11 @@ output_times       = {'snapshot': (0.1, 0.5, 1)}
 
 # Numerical parameters
 boxsize = 8*Mpc
+potential_gridsizes = {
+    'gravity': {
+        'p3m': 64,
+    },
+}
 shortrange_params = {
     'gravity': {
         'scale'    : '1.25*boxsize/gridsize',
@@ -25,7 +30,7 @@ H0      = 70*km/s/Mpc
 a_begin = 0.02
 
 # Physics
-select_forces = {'matter': {'gravity': ('p3m', 64)}}
+select_forces = {'matter': {'gravity': 'p3m'}}
 
 # Debugging options
 print_load_imbalance = False

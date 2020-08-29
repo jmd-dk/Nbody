@@ -39,13 +39,21 @@ cimport(
     '    diff_domaingrid,                     '
     '    domain_decompose,                    '
     '    fft,                                 '
-    '    get_deconvolution,                   '
+    '    get_fftw_slab,                       '
+    '    get_gridshape_local,                 '
     '    interpolate_components,              '
     '    interpolate_domaingrid_to_particles, '
     '    interpolate_grid_to_grid,            '
+    '    interpolate_upstream,                '
+    '    nullify_highest_frequency_mode,      '
     '    slab_decompose,                      '
+    '    slab_fourier_loop,                   '
 )
-cimport('from species import tentatively_refine_subtiling, accept_or_reject_subtiling_refinement')
+cimport(
+    'from species import                        '
+    '    accept_or_reject_subtiling_refinement, '
+    '    tentatively_refine_subtiling,          '
+)
 
 # Function pointer types used in this module
 pxd("""
@@ -61,9 +69,6 @@ ctypedef void (*func_interaction)(
     Py_ssize_t**,     # tile_indices_supplier_paired
     Py_ssize_t*,      # tile_indices_supplier_paired_N
     dict,             # interaction_extra_args
-)
-ctypedef double (*func_potential)(
-    double,  # k2
 )
 """)
 
@@ -407,7 +412,7 @@ def domain_domain(
     In this case, every domain will both send and receive from every
     other domain.
     """
-    # Just to satisfy the compiler
+    # To satisfy the compiler
     tile_indices_receiver = tile_indices_supplier = None
     tile_indices_supplier_paired = tile_indices_supplier_paired_N = NULL
     # Flag specifying whether or not this interaction is instantaneous.
@@ -1742,463 +1747,359 @@ tiles_offset_ptr    = cython.address(tiles_offset[:])
     # Arguments
     receivers=list,
     suppliers=list,
+    gridsize_global='Py_ssize_t',
     quantity=str,
-    φ_gridsizes_receivers=list,
-    potential=func_potential,
-    potential_name=str,
+    force=str,
+    method=str,
+    potential=str,
     interpolation_order='int',
     interlace='bint',
+    differentiate_global='bint',
     differentiation_order='int',
     ᔑdt=dict,
     ᔑdt_key=object,  # str or tuple
     # Locals
-    J_dim='FluidScalar',
-    J_dim_ptr='double*',
-    component='Component',
-    components=list,
-    dim='int',
-    grid='double[:, :, ::1]',
-    grid_interpolated='double[:, :, ::1]',
-    grids=dict,
-    i='Py_ssize_t',
-    receiver_group=dict,
-    receiver_groups=dict,
-    representation=str,
-    Δx_φ='double',
-    φ_gridsize='Py_ssize_t',
-    ϱ_ptr='double*',
-    𝒫_ptr='double*',
-    ᐁgrid_dim='double[:, :, ::1]',
-    ᐁgrid_dim_ptr='double*',
-)
-def particle_mesh(
-    receivers, suppliers, quantity, φ_gridsizes_receivers, potential, potential_name,
-    interpolation_order, interlace, differentiation_order, ᔑdt, ᔑdt_key,
-):
-    """This function will update the momenta of all receiver components
-    due to an interaction. This is done by constructing global fields by
-    interpolating the dependent variables of all suppliers onto grids.
-    Two global grids are used, one for particles and one for fluids,
-    both of which contain the entire potential field of both particles
-    and fluid components. These grids are constructed in the
-    construct_potential() function.
-
-    This function is then responsible for differentiating the potential
-    grids and applying the resulting force to the receiver components.
-    This force is applied given the prescription
-    Δmom = -mass*∂ⁱφ*ᔑdt[ᔑdt_key].
-    """
-    # Build the two potentials due to all particles and fluid suppliers.
-    # For the potential gridsize, we always choose the largest of the
-    # available φ_gridsizes of the receivers.
-    masterprint(
-        f'Constructing the {potential_name} due to {suppliers[0].name} ...'
-        if len(suppliers) == 1 else (
-            f'Constructing the {potential_name} due to {{{{{{}}}}}} ...'
-            .format(', '.join([component.name for component in suppliers]))
-        )
-    )
-    φ_gridsize = np.max(φ_gridsizes_receivers)
-    grids = construct_potential(
-        receivers, suppliers, quantity, φ_gridsize, potential, interpolation_order, interlace, ᔑdt,
-    )
-    masterprint('done')
-    # Group receivers into a dict mapping representation to
-    # dict mapping φ_gridsize to list of receiver components.
-    receiver_groups = {
-        representation: collections.defaultdict(list)
-        for representation in ('particles', 'fluid')
-    }
-    for φ_gridsize, component in zip(φ_gridsizes_receivers, receivers):
-        receiver_groups[component.representation][φ_gridsize].append(component)
-    for representation in ('particles', 'fluid'):
-        receiver_groups[representation] = {
-            φ_gridsize: list(receiver_groups[representation][φ_gridsize])
-            for φ_gridsize in sorted(receiver_groups[representation].keys(), reverse=True)
-        }
-    # Buffers to use for interpolation and differentiation.
-    buffer_name_interpolate   = 0
-    buffer_name_differentiate = 1
-    # Loop over the receiver components and apply the force to each
-    for representation, receiver_group in receiver_groups.items():
-        grid = grids[representation]
-        for φ_gridsize, components in receiver_group.items():
-            # Interpolate potential grid to new grid
-            # of gridsize φ_gridsize.
-            grid_interpolated = interpolate_grid_to_grid(grid, buffer_name_interpolate, φ_gridsize)
-            # For each dimension, differentiate the potential
-            # and apply the force to the selected components.
-            Δx_φ = boxsize/φ_gridsize  # Physical grid spacing of potential grid
-            for dim in range(3):
-                masterprint(
-                    f'Differentiating the ({representation}) {potential_name} along the '
-                    f'{"xyz"[dim]}-direction and applying it ...'
-                )
-                # Differentiate the grid along the dim'th dimension
-                ᐁgrid_dim = diff_domaingrid(
-                    grid_interpolated, dim, differentiation_order, Δx_φ, buffer_name_differentiate,
-                )
-                # Apply force
-                for component in components:
-                    with unswitch:
-                        if isinstance(ᔑdt_key, tuple):
-                            ᔑdt_key = (ᔑdt_key[0], component.name)
-                    masterprint(f'Applying to {component.name} ...')
-                    with unswitch(3):
-                        if representation == 'particles':
-                            # Update the dim'th momentum component of
-                            # all particles through interpolation in
-                            # ᐁgrid_dim. To convert from force to
-                            # momentum change we should multiply by
-                            # -mass*Δt (minus as the force is the
-                            # negative gradient of the potential), where
-                            # Δt = ᔑdt['1']. Here this integral over the
-                            # time step is generalised and supplied by
-                            # the caller.
-                            interpolate_domaingrid_to_particles(
-                                ᐁgrid_dim, component, 'mom', dim, interpolation_order,
-                                component.mass*ℝ[-ᔑdt[ᔑdt_key]],
-                            )
-                        else:  # representation == 'fluid'
-                            # The source term has the form
-                            # ΔJ ∝ -(ϱ + c⁻²𝒫)*ᐁφ.
-                            # The proportionality factor above is
-                            # something liḱe Δt = ᔑdt['1']. Here this
-                            # integral over the time step is generalised
-                            # and supplied by the caller. As we are
-                            # guaranteed that φ_gridsize matches the
-                            # fluid gridsize, we simply add the values
-                            # directly; no additional interpolation is
-                            # needed.
-                            J_dim = component.J[dim]
-                            J_dim_ptr = J_dim.grid
-                            ϱ_ptr = component.ϱ.grid
-                            𝒫_ptr = component.𝒫.grid
-                            ᐁgrid_dim_ptr = cython.address(ᐁgrid_dim[:, :, :])
-                            for i in range(component.size):
-                                J_dim_ptr[i] += ℝ[-ᔑdt[ᔑdt_key]]*(
-                                    ϱ_ptr[i] + ℝ[light_speed**(-2)]*𝒫_ptr[i]
-                                )*ᐁgrid_dim_ptr[i]
-                            # If the ghost points of J_dim was properly
-                            # populated prior to the momentum update,
-                            # they should have been correctly updated as
-                            # well. To be absolutely sure, we here set
-                            # the ghost points from the boundary points.
-                            communicate_ghosts(J_dim.grid_mv, '=')
-                    masterprint('done')
-                masterprint('done')
-
-# Generic function capable of constructing potential grids out of
-# components and a given expression for the potential.
-@cython.header(
-    # Arguments
-    receivers=list,
-    suppliers=list,
-    quantity=str,
-    φ_gridsize='Py_ssize_t',
-    potential=func_potential,
-    order='int',
-    interlace='bint',
-    ᔑdt=dict,
-    # Locals
+    Jᵢ='FluidScalar',
+    Jᵢ_ptr='double*',
+    any_fluid_receivers='bint',
+    any_fluid_suppliers='bint',
+    any_particles_receivers='bint',
+    any_particles_suppliers='bint',
+    buffer_names=dict,
     deconv='double',
-    deconv_ij='double',
-    deconv_ijk='double',
-    deconv_j='double',
-    fft_normalization_factor='double',
-    grid='double[:, :, ::1]',
-    grids=dict,
+    dim='int',
+    factor='double',
+    fft_factor='double',
+    grid_global='double[:, :, ::1]',
     gridshape_local=tuple,
-    i='Py_ssize_t',
-    im='double',
-    j='Py_ssize_t',
-    j_global='Py_ssize_t',
-    k='Py_ssize_t',
+    gridsize_downstream='Py_ssize_t',
+    grids_global=dict,
+    index='Py_ssize_t',
     k2='Py_ssize_t',
     ki='Py_ssize_t',
-    ki_plus_kj='Py_ssize_t',
     kj='Py_ssize_t',
     kk='Py_ssize_t',
     potential_factor='double',
-    present=dict,
-    re='double',
+    receiver='Component',
+    receiver_collections=dict,
+    receiver_group=list,
+    receiver_groups=object,  # collections.defaultdict(list)
     representation=str,
-    representation_counter='int',
-    slab='double[:, :, ::1]',
     slab_fluid='double[:, :, ::1]',
-    slab_fluid_jik='double*',
-    slab_jik='double*',
-    slab_particles_jik='double*',
-    slab_particles_shifted='double[:, :, ::1]',
-    slab_particles_shifted_jik='double*',
+    slab_fluid_ptr='double*',
+    slab_particles='double[:, :, ::1]',
+    slab_particles_ptr='double*',
     slabs=dict,
-    θ='double',
-    returns=dict,
+    submsg=str,
+    supplier='Component',
+    suppliers_gridsizes_upstream=list,
+    suppliers_name=str,
+    Δx='double',
+    ϱ_ptr='double*',
+    𝒫_ptr='double*',
+    ᐁᵢgrid_downstream='double[:, :, ::1]',
+    ᐁᵢgrid_global='double[:, :, ::1]',
+    ᐁᵢgrid_receiver='double[:, :, ::1]',
+    ᐁᵢgrid_receiver_ptr='double*',
+    returns='void',
 )
-def construct_potential(
-    receivers, suppliers, quantity, φ_gridsize, potential, order, interlace, ᔑdt,
+def particle_mesh(
+    receivers, suppliers, gridsize_global, quantity, force, method, potential,
+    interpolation_order, interlace, differentiate_global, differentiation_order,
+    ᔑdt, ᔑdt_key,
 ):
-    """This function populates two grids (including ghost layers) with a
-    real-space potential corresponding to the Fourier-space potential
-    function given, due to all supplier components. A seperate grid for
-    particle and fluid components will be constructed, the difference
-    being only the handling of deconvolutions needed for the
-    interpolation to/from the grid. Both grids will contain the full
-    potential due to all the supplier components. Which variables to
-    extrapolate to the grid(s) is determined by the quantity argument.
-    For details on this argument, see the interpolate_components()
-    function in the mesh module.
-
-    First the variable given in 'quantity' of the supplier components
-    are interpolated to the grids; particle components to one grid and
-    fluid components to a seperate grid. The two grids are then Fourier
-    transformed.
-    The potential function is then used to change the value of each grid
-    point for both grids. Also while in Fourier space, deconvolutions
-    will be carried out, in a different manner for each grid.
-    The two grids are added in such a way that they both corresponds to
-    the total potential of all components, but deconvolved in the way
-    suitable for either particles or fluids. The two grids are now
-    Fourier transformed back to real space.
-
-    The order argument specifies the interpolation order; 1 for NGP,
-    2 for CIC, 3 for TSC, 4 for PCS.
-
-    In the case of normal gravity, we have
-    φ(k) = -4πGa²ρ(k)/k² = -4πG a**(-3*w_eff - 1) ϱ(k)/k²,
-    which can be signalled by passing
-      quantity = 'a²ρ',
-      potential = lambda k2: -4*π*G_Newton/k2,
-    (note that it is not actally allowed to pass an untyped lambda
-    function in compiled mode).
     """
-    # Dicts of flags specifying whether any fluid/particle components
-    # are present among the receivers/suppliers.
-    present = {
-        (representation, components_type): (
-            representation in {component.representation for component in components}
-        )
-        for representation in ('fluid', 'particles')
-        for components_type, components in zip(('receivers', 'suppliers'), (receivers, suppliers))
-    }
-    if not present['particles', 'receivers'] and not present['fluid', 'receivers']:
-        abort('construct_potential() got no recognizable receivers')
-    if not present['particles', 'suppliers'] and not present['fluid', 'suppliers']:
-        abort('construct_potential() got no recognizable suppliers')
-    # Interpolate the particles/fluid elements onto grids
-    grids = interpolate_components(suppliers, quantity, φ_gridsize, order, ᔑdt, interlace)
-    # If a given representation does not exist among the suppliers, the
-    # corresponding grids[representation] will be None. If at the same
-    # time we do have this representation among the receivers, we really
-    # do need a (nullified) grid.
-    for grid in grids.values():
-        if grid is not None:
-            gridshape_local = asarray(grid).shape
-            break
-    for representation in ('fluid', 'particles'):
-        grid = grids[representation]
-        if grid is None and present[representation, 'receivers']:
-            grids[representation] = get_buffer(gridshape_local, f'grid_{representation}',
-                nullify=True)
-    # Slab decompose the grids
-    slabs = {
-        representation: slab_decompose(grid, f'slab_{representation}', prepare_fft=True)
-        for representation, grid in grids.items()
-    }
+    This function will update the momenta of all receiver components due
+    to an interaction with the supplier components. The steps taken are
+    outlined below.
+    - Interpolate the specified quantity of all supplier components onto
+      local (component specific) grids. For particle components, this is
+      done through particle (e.g. CIC) interpolation, while pixel mixing
+      is used for fluids.
+    - Pixel mix the local grids onto a common, global grid of grid
+      size gridsize_global.
+    - Convert the global grid to a potential:
+      - Transform the grid to Fourier space.
+      - Multiply the grid values by the specified potential function.
+      - While in Fourier space, perform deconvolutions needed due to
+        particle interpolations. This results in two versions of the
+        global potential grid; one applicable to particle components and
+        one applicable to fluid components, both of which contain the
+        total potential from all suppliers.
+      - Transform back to real space.
+    - For each dimension, differentiate the global potentials to get the
+      (particle and fluid) force.
+    - Pixel mix the global force grid back to the local grids.
+    - Interpolate the local grids onto the components, applying the
+      force. The force application uses the prescription
+      Δmom = -component.mass*∂ⁱφ*ᔑdt[ᔑdt_key].
+    """
+    suppliers_name = '{{{}}}'.format(', '.join([supplier.name for supplier in suppliers]))
+    if len(suppliers) == 1:
+        suppliers_name = suppliers_name.strip('{}')
+    masterprint(
+        f'Constructing potential of grid size {gridsize_global} due to {suppliers_name} ...'
+    )
+    # Flags specifying the existence of components
+    any_particles_receivers = any([receiver.representation == 'particles' for receiver in receivers])
+    any_fluid_receivers     = any([receiver.representation == 'fluid'     for receiver in receivers])
+    any_particles_suppliers = any([supplier.representation == 'particles' for supplier in suppliers])
+    any_fluid_suppliers     = any([supplier.representation == 'fluid'     for supplier in suppliers])
+    if not any_particles_suppliers:
+        interlace = False
+    # Interpolate suppliers onto global grids by first interpolating
+    # them onto individual upstream grids and then pixel mix these onto
+    # global grids of size gridsize_global. Separate global grids will
+    # be used for particle and fluid components.
+    suppliers_gridsizes_upstream = [
+        supplier.potential_gridsizes[force][method].upstream
+        for supplier in suppliers
+    ]
+    grids_global = interpolate_upstream(
+        suppliers, suppliers_gridsizes_upstream, gridsize_global, quantity,
+        interpolation_order, interlace, ᔑdt,
+        do_ghost_communication=False,
+    )
+    # Slab decompose the global grids
+    slabs = slab_decompose(grids_global, prepare_fft=True)
     # Do a forward in-place Fourier transform of the slabs
-    for slab in slabs.values():
-        fft(slab, 'forward')
-    # Store the fluid slab as a separate variable. Also, if we had any
-    # particle supplier and interlace is True, a slab named
-    # 'particles_shifted' will be present. Store this as a separate
-    # variable as well.
-    slab_fluid = slabs['fluid']
-    slab_particles_shifted = slabs.get('particles_shifted')
-    # In the case of both particle and fluid components being present,
-    # it is important that the particle slabs are handled after the
-    # fluid slabs, as the deconvolution factor is only computed for
-    # particle components and this is needed after combining the fluid
-    # and particle slabs. It is also important that the order of
-    # representations in grids and slabs is the same.
-    slabs = {
-        representation: slabs[representation] for representation in ('fluid', 'particles')
-    }
-    grids = {
-        representation: grids[representation] for representation in ('fluid', 'particles')
-    }
-    # Multiplicative factor needed after a forward and a backward
-    # Fourier transformation.
-    fft_normalization_factor = float(φ_gridsize)**(-3)
-    # For each grid, multiply by the potential and deconvolution
-    # factors. Do fluid slabs fist, then particle slabs.
-    for representation_counter, (representation, slab) in enumerate(slabs.items()):
-        if slab is None:
-            continue
-        # No need to process the fluid slab if it does not
-        # contain any data.
-        if representation == 'fluid' and not 𝔹[present['fluid', 'suppliers']]:
-            continue
-        # Do not apply any deconvolution for the fluid slab.
-        # For the particle slab, this will be redefined below.
-        deconv = 1
-        # Begin loop over slabs. As the first and second dimensions
-        # are transposed due to the FFT, start with the j-dimension.
-        for j in range(ℤ[slab.shape[0]]):
-            # The j-component of the wave vector (grid units).
-            # Since the slabs are distributed along the j-dimension,
-            # an offset must be used.
-            j_global = ℤ[slab.shape[0]*rank] + j
-            kj = j_global - φ_gridsize if j_global > ℤ[φ_gridsize//2] else j_global
-            # The j-component of the deconvolution
-            with unswitch(1):
-                if 𝔹[representation == 'particles']:
-                    deconv_j = get_deconvolution(kj*ℝ[π/φ_gridsize])
-            # Loop through the complete i-dimension
-            for i in range(φ_gridsize):
-                # The i-component of the wave vector (grid units)
-                ki = i - φ_gridsize if i > ℤ[φ_gridsize//2] else i
-                # The product of the i- and the j-component
-                # of the deconvolution.
-                with unswitch(2):
-                    if 𝔹[representation == 'particles']:
-                        deconv_ij = get_deconvolution(ki*ℝ[π/φ_gridsize])*deconv_j
-                # The sum of wave vector elements
-                with unswitch(2):
-                    if 𝔹[representation == 'particles' and slab_particles_shifted is not None]:
-                        ki_plus_kj = ki + kj
-                # Loop through the complete, padded k-dimension
-                # in steps of 2 (one complex number at a time).
-                for k in range(0, ℤ[slab.shape[2]], 2):
-                    # The k-component of the wave vector (grid units)
-                    kk = k//2
-                    # The squared magnitude of the wave vector (grid units)
-                    k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
-                    # Pointer to the [j, i, k]'th element of the slab.
-                    # The complex number is then given as
-                    # Re = slab_jik[0], Im = slab_jik[1].
-                    slab_jik = cython.address(slab[j, i, k:])
-                    # Enforce the vanishing of the potential at |k| = 0.
-                    # The real-space mean value of the potential will
-                    # then be zero, as it should for a
-                    # peculiar potential.
-                    if k2 == 0:
-                        slab_jik[0] = 0  # Real part
-                        slab_jik[1] = 0  # Imag part
-                        continue
-                    # The final deconvolution factor
-                    with unswitch(3):
-                        if 𝔹[representation == 'particles']:
-                            # The total (NGP) deconvolution factor
-                            deconv_ijk = deconv_ij*get_deconvolution(kk*ℝ[π/φ_gridsize])
-                            # The full deconvolution factor
-                            deconv_ijk **= order
-                            # A deconvolution of the particle potential
-                            # is needed due to the interpolation from
-                            # the particle positions to the grid.
-                            deconv = deconv_ijk
-                            # For particle receivers we will need to do
-                            # a second deconvolution due to the
-                            # interpolation from the grid back to the
-                            # particles. In the case where we have only
-                            # particle components and thus only a
-                            # particles potential, we carry out this
-                            # second deconvolution now. If both particle
-                            # and fluid components are present,
-                            # this second deconvolution
-                            # will take place later.
-                            with unswitch(4):
-                                if 𝔹[
-                                        not present['fluid', 'receivers']
-                                    and not present['fluid', 'suppliers']
-                                ]:
-                                    deconv *= deconv_ijk
-                    # Interlace the two relatively shifted particle
-                    # slabs using harmonic averaging. The result
-                    # overwrites the current values
-                    # in the particles slab.
-                    with unswitch(3):
-                        if 𝔹[representation == 'particles' and slab_particles_shifted is not None]:
-                            slab_particles_shifted_jik = cython.address(
-                                slab_particles_shifted[j, i, k:])
-                            re, im = slab_particles_shifted_jik[0], slab_particles_shifted_jik[1]
-                            θ = ℝ[π/φ_gridsize]*(ki_plus_kj + kk)
-                            re, im = re*ℝ[cos(θ)] - im*ℝ[sin(θ)], re*ℝ[sin(θ)] + im*ℝ[cos(θ)]
-                            slab_particles_jik = slab_jik
-                            slab_particles_jik[0] = 0.5*(slab_particles_jik[0] + re)  # Real part
-                            slab_particles_jik[1] = 0.5*(slab_particles_jik[1] + im)  # Imag part
-                    # Transform this complex grid point.
-                    # The particles grid only need to be processed if it
-                    # contains data (i.e. particle suppliers exist).
-                    with unswitch(3):
-                        if 𝔹[representation == 'fluid' or present['particles', 'suppliers']]:
-                            # The physical squared length of the wave
-                            # vector is given by (2π/boxsize*|k|)².
-                            potential_factor = potential(ℝ[(2*π/boxsize)**2]*k2)
-                            slab_jik[0] *= ℝ[  # Real part
-                                potential_factor*deconv*fft_normalization_factor
-                            ]
-                            slab_jik[1] *= ℝ[  # Imag part
-                                potential_factor*deconv*fft_normalization_factor
-                            ]
-                    # If only particle components or only fluid
-                    # components exist, the slabs now store the final
-                    # potential in Fourier space. However, if both
-                    # particle and fluid components exist, the two sets
-                    # of slabs should be combined to form total
-                    # potentials.
-                    with unswitch(3):
-                        if 𝔹[
-                                representation_counter == 1
-                            and (
-                                   present['particles', 'receivers']
-                                or present['particles', 'suppliers']
-                            )
-                            and (
-                                   present['fluid', 'receivers']
-                                or present['fluid', 'suppliers']
-                            )
-                        ]:
-                            # Pointers to this element for both slabs.
-                            # As we are looping over the particle slab,
-                            # we may reuse the pointer above.
-                            slab_particles_jik = slab_jik
-                            slab_fluid_jik = cython.address(slab_fluid[j, i, k:])
-                            # Add the particle potential values
-                            # to the fluid potential.
-                            slab_fluid_jik[0] += slab_particles_jik[0]  # Real part
-                            slab_fluid_jik[1] += slab_particles_jik[1]  # Imag part
-                            # Now the fluid slabs store the total
-                            # potential, with the particle part
-                            # deconvolved once due to the interpolation
-                            # of the particles to the grid. The particle
-                            # slabs should now be a copy of what is
-                            # stored in the fluid slabs, but with an
-                            # additional deconvolution, accounting for
-                            # the upcoming interpolation from the grid
-                            # back to the particles.
-                            slab_particles_jik[0] = deconv_ijk*slab_fluid_jik[0]  # Real part
-                            slab_particles_jik[1] = deconv_ijk*slab_fluid_jik[1]  # Imag part
-    # If a representation is present amongst the suppliers but not the
-    # receivers, the corresponding (total) potential has been
-    # constructed but will not be used. Remove it.
-    for representation in grids:
-        if present[representation, 'suppliers'] and not present[representation, 'receivers']:
-            grids[representation] = None
-            slabs[representation] = None
-    if slabs['particles'] is None and slabs['fluid'] is None:
+    fft(slabs, 'forward')
+    # Currently the 'particles' and 'fluid' grids/slabs hold data from
+    # the particles and fluid suppliers, respectively. In the end these
+    # will be transformed such that they both hold the total potential
+    # from all suppliers, their difference being the amount of
+    # deconvolution applied. The 'particles' grid then supplies the
+    # force to particle receivers while the 'fluid' grid supplies the
+    # force to fluid receivers. In the case where we have a
+    # particles/fluid receiver but no supplier of the same
+    # representation, no corresponding grid/slab currently exist.
+    # Allocate them.
+    gridshape_local = ()
+    if any_particles_receivers and not any_particles_suppliers:
+        if not gridshape_local:
+            gridshape_local = get_gridshape_local(gridsize_global)
+        grids_global['particles'] = get_buffer(gridshape_local, 'global_grid_particles')
+        slabs['particles'] = get_fftw_slab(gridsize_global, 'slab_particles')
+    if any_fluid_receivers and not any_fluid_suppliers:
+        if not gridshape_local:
+            gridshape_local = get_gridshape_local(gridsize_global)
+        grids_global['fluid'] = get_buffer(gridshape_local, 'global_grid_fluid')
+        slabs['fluid'] = get_fftw_slab(gridsize_global, 'slab_fluid')
+    # Store the slabs as separate variables
+    slab_particles = slabs.get('particles')
+    if slab_particles is not None:
+        slab_particles_ptr = cython.address(slab_particles[:, :, :])
+    slab_fluid = slabs.get('fluid')
+    if slab_fluid is not None:
+        slab_fluid_ptr = cython.address(slab_fluid[:, :, :])
+    # Multiplicative factor needed after a
+    # forward and a backward Fourier transformation.
+    fft_factor = float(gridsize_global)**(-3)
+    # Loop over the complex numbers in the slabs
+    deconv_order = interpolation_order*(any_particles_suppliers or any_particles_receivers)
+    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(
+        slabs,
+        deconv_order=deconv_order,
+        do_interlacing=interlace,
+    ):
+        # The potential factor, for converting the slab values
+        # to the desired potential. Note that we further attach
+        # the FFT normalisation factor to this.
+        with unswitch(3):
+            # The physical squared length of the wave
+            # vector is given by |k|² = (2π/boxsize)**2*k2.
+            if 𝔹[potential == 'gravity']:
+                # The Poisson equation, the factor of which is
+                #   -4πG/|k|².
+                potential_factor = ℝ[fft_factor*ℝ[-boxsize**2*G_Newton/π]]/k2
+            elif 𝔹[potential == 'gravity long-range']:
+                # The Poisson equation with a Gaussian
+                # cutoff, resulting in the factor
+                #   -4πG/|k|² * exp(-rₛ²*|k|²).
+                potential_factor = (
+                    ℝ[fft_factor*ℝ[-boxsize**2*G_Newton/π]]/k2
+                    *exp(k2*ℝ[-(2*π/boxsize*shortrange_params['gravity']['scale'])**2])
+                )
+            else:
+                abort(f'potential "{potential}" not implemented in particle_mesh()')
+                potential_factor = 1  # To satisfy the compiler
+        # Combine the fluid and particles slab values into the
+        # total potential. The result is {re, im} and
+        # corresponds to the fluid potential, from which the
+        # particles potential is obtained through a single
+        # deconvolution.
+        with unswitch(3):
+            if 𝔹[any_particles_suppliers and any_fluid_suppliers]:
+                re = potential_factor*(
+                    slab_fluid_ptr[index    ] + deconv*slab_particles_ptr[index    ]
+                )
+                im = potential_factor*(
+                    slab_fluid_ptr[index + 1] + deconv*slab_particles_ptr[index + 1]
+                )
+            elif any_particles_suppliers:
+                factor = potential_factor*deconv
+                re = factor*slab_particles_ptr[index    ]
+                im = factor*slab_particles_ptr[index + 1]
+            else:  # any_fluid_suppliers
+                re = potential_factor*slab_fluid_ptr[index    ]
+                im = potential_factor*slab_fluid_ptr[index + 1]
+        # Insert the final potential values into the slabs
+        with unswitch(3):
+            if any_particles_receivers:
+                slab_particles_ptr[index    ] = deconv*re
+                slab_particles_ptr[index + 1] = deconv*im
+        with unswitch(3):
+            if any_fluid_receivers:
+                slab_fluid_ptr[index    ] = re
+                slab_fluid_ptr[index + 1] = im
+    # The shifted particles slabs and global grid are never needed
+    # from this point on, and so we remove these. We further remove the
+    # slabs and global grids for which we have no receivers of the same
+    # representation.
+    grids_global.pop('particles_shifted', None)
+    slabs       .pop('particles_shifted', None)
+    if not any_particles_receivers:
+        grids_global.pop('particles', None)
+        slabs       .pop('particles', None)
+    if not any_fluid_receivers:
+        grids_global.pop('fluid', None)
+        slabs       .pop('fluid', None)
+    if not slabs or not grids_global:
         abort(
-            'Something went wrong in the construct_potential() function, '
+            'Something went wrong in the particle_mesh() function, '
             'as it appears that neither particles nor fluids should receive the force '
-            'due to the potential'
+            'due to the potential.'
         )
+    # The very highest frequency mode is highly uncertain
+    # and so we nullify its contribution.
+    nullify_highest_frequency_mode(slabs)
     # Fourier transform the slabs back to coordinate space
-    for slab in slabs.values():
-        fft(slab, 'backward')
+    fft(slabs, 'backward')
     # Domain-decompose the slabs
-    for grid, slab in zip(grids.values(), slabs.values()):
-        domain_decompose(slab, grid)  # Also populates ghosts
-    # Return the potential grid(s)
-    return grids
+    domain_decompose(slabs, grids_global, do_ghost_communication=differentiate_global)
+    masterprint('done')
+    # Get and apply the force from the global potential grids
+    buffer_names = {
+        'differentiate'    : 0,
+        'interpolate'      : 1,
+        'interpolate_fluid': 2,
+    }
+    if differentiate_global:
+        # We should first differentiate the global potential grids to
+        # obtain global force grids, then pixel mix these to downstream
+        # force grids and apply them.
+        # Group receivers according to their representation and
+        # downstream grid size.
+        receiver_collections = {
+            representation: collections.defaultdict(list)
+            for representation in grids_global.keys()
+        }
+        for receiver in receivers:
+            gridsize_downstream = (
+                receiver.potential_gridsizes[force][method].downstream
+            )
+            receiver_group = (
+                receiver_collections[receiver.representation][gridsize_downstream]
+            )
+            receiver_group.append(receiver)
+        # Physical grid spacing of global potential grids
+        Δx = boxsize/gridsize_global
+        # Differentiate the global potential to get the global force
+        # field, pixel mix to downstream forces and apply them, for each
+        # representation, direction and receiver.
+        submsg = (r'({representation}, {xyz})' if len(grids_global) == 2 else r'({xyz})')
+        for representation, grid_global in grids_global.items():
+            receiver_groups = receiver_collections[representation]
+            for dim in range(3):
+                masterprint(
+                    f'Obtaining and applying the {submsg} force ...'
+                    .format(representation=representation, xyz='xyz'[dim])
+                )
+                # Differentiate the global potential grid
+                # along the dim'th dimension.
+                ᐁᵢgrid_global = diff_domaingrid(
+                    grid_global, dim, differentiation_order,
+                    Δx, ℤ[buffer_names['differentiate']],
+                    do_ghost_communication=False,
+                )
+                for gridsize_downstream, receiver_group in receiver_groups.items():
+                    # Pixel mix global force downstream
+                    # to get local force.
+                    ᐁᵢgrid_downstream = interpolate_grid_to_grid(
+                        ᐁᵢgrid_global,
+                        ℤ[buffer_names['interpolate']],
+                        gridsize_downstream,
+                    )
+                    # For particle interpolation we need the
+                    # ghost points to be properly set.
+                    with unswitch(2):
+                        if 𝔹[representation == 'particles']:
+                            communicate_ghosts(ᐁᵢgrid_downstream, '=')
+                    # Apply force
+                    for receiver in receiver_group:
+                        masterprint(f'Applying force to {receiver.name} ...')
+                        with unswitch(3):
+                            if 𝔹[isinstance(ᔑdt_key, tuple)]:
+                                ᔑdt_key = (ᔑdt_key[0], receiver.name)
+                        with unswitch(3):
+                            if 𝔹[representation == 'particles']:
+                                # Update the dim'th momentum component
+                                # of all particles through interpolation
+                                # in ᐁᵢgrid_downstream. To convert from
+                                # force to momentum change we should
+                                # multiply by -mass*Δt (minus as the
+                                # force is the negative gradient of the
+                                # potential), where Δt = ᔑdt['1']. Here
+                                # this integral over the time step is
+                                # generalised and supplied
+                                # by the caller.
+                                interpolate_domaingrid_to_particles(
+                                    ᐁᵢgrid_downstream, receiver, 'mom', dim, interpolation_order,
+                                    receiver.mass*ℝ[-ᔑdt[ᔑdt_key]],
+                                )
+                            else:  # representation == 'fluid'
+                                # Make sure that the force grid has
+                                # identical grid size as the receiver.
+                                # After this we may simply add the force
+                                # grid directly to the receiver grids,
+                                # without further interpolation.
+                                ᐁᵢgrid_receiver = interpolate_grid_to_grid(
+                                    ᐁᵢgrid_downstream,
+                                    ℤ[buffer_names['interpolate_fluid']],
+                                    receiver.gridsize,
+                                )
+                                ᐁᵢgrid_receiver_ptr = cython.address(ᐁᵢgrid_receiver[:, :, :])
+                                # The source term has the form
+                                # ΔJ ∝ -(ϱ + c⁻²𝒫)*ᐁφ.
+                                # The proportionality factor above is
+                                # something liḱe Δt = ᔑdt['1']. Here
+                                # this integral over the time step is
+                                # generalised and supplied by the
+                                # caller.
+                                Jᵢ = receiver.J[dim]
+                                Jᵢ_ptr = Jᵢ.grid
+                                ϱ_ptr = receiver.ϱ.grid
+                                𝒫_ptr = receiver.𝒫.grid
+                                for index in range(receiver.size):
+                                    Jᵢ_ptr[index] += ℝ[-ᔑdt[ᔑdt_key]]*(
+                                        ϱ_ptr[index] + ℝ[light_speed**(-2)]*𝒫_ptr[index]
+                                    )*ᐁᵢgrid_receiver_ptr[index]
+                                # Though the above loop includes ghost
+                                # points, these are not properly set in
+                                # ᐁᵢgrid_receiver. Correctly set the
+                                # ghost points in the momentum grid.
+                                communicate_ghosts(Jᵢ.grid_mv, '=')
+                        masterprint('done')
+                masterprint('done')
+    else:
+        # We should first pixel mix the global potentials to downstream
+        # potentials, then differentiate these to get downstream force
+        # grids and then apply them.
+        abort(
+            f'It is currently only possible to obtain the force directly from the '
+            f'global potential. You should set '
+            f'force_from_global_potentials["{force}"]["{method}"] = True.'
+        )
 
 # Function implementing progress messages used for the short-range
 # kicks intertwined with drift operations.
@@ -2275,10 +2176,9 @@ def find_interactions(components, interaction_type='any', instantaneous='both'):
       Include only instantaneous interactions.
     """
     # Use cached result
-    interactions_list = interactions_lists.get(
-        tuple(components + [interaction_type, instantaneous])
-    )
-    if interactions_list:
+    key = (interaction_type, instantaneous, tuple(components))
+    interactions_list = interactions_lists.get(key)
+    if interactions_list is not None:
         return interactions_list
     # Find all (force, method) pairs in use. Store these as a (default)
     # dict mapping forces to lists of methods.
@@ -2294,14 +2194,15 @@ def find_interactions(components, interaction_type='any', instantaneous='both'):
             abort(f'Force "{force}" is not implemented')
         for method in interaction_info.methods:
             if not method:
-                # When the method is set to an empty string it signifies
-                # that this method should be used as a supplier for the
-                # given force, but not receive the force itself.
-                continue
+                # Should never happen
+                abort(f'Falsy method "{method}" registered for force "{force}')
             if method not in methods_implemented:
                 abort(f'Force method "{method}" not recognized')
         for method in methods:
             if not method:
+                # When the method is set to an empty string it signifies
+                # that this method should be used as a supplier for the
+                # given force, but not receive the force itself.
                 continue
             if method not in methods_implemented:
                 abort(f'Force method "{method}" not recognized')
@@ -2365,20 +2266,12 @@ def find_interactions(components, interaction_type='any', instantaneous='both'):
                             interaction.force, 'pm', interaction.receivers.copy(), [component],
                         )
                     )
-                    # Make sure that the receivers have a φ_gridsize set
-                    # for the newly added PM method. If not, the value
-                    # is inherited from the original method.
-                    for receiver in interaction.receivers:
-                        receiver.φ_gridsizes.setdefault(
-                            (interaction.force, 'pm'),
-                            receiver.φ_gridsizes[interaction.force, interaction.method],
-                        )
                     return True
         # Remove interactions with no suppliers or no receivers
         interactions_list = [interaction for interaction in interactions_list
             if interaction.receivers and interaction.suppliers]
-        # Merge interactions of identical force, method and receivers
-        # but different suppliers, or identical force,
+        # Merge interactions of identical force, method and receivers,
+        # but different suppliers; or identical force,
         # method and suppliers but different receivers.
         for     i, interaction_i in enumerate(interactions_list):
             for j, interaction_j in enumerate(interactions_list[i+1:], i+1):
@@ -2439,7 +2332,7 @@ def find_interactions(components, interaction_type='any', instantaneous='both'):
     elif 'both' not in str(instantaneous):
         abort(f'find_interactions(): Unknown instantaneous value "{instantaneous}"')
     # Cache the result and return it
-    interactions_lists[tuple(components + [interaction_type, instantaneous])] = interactions_list
+    interactions_lists[key] = interactions_list
     return interactions_list
 # Global dict of interaction lists populated by the above function
 cython.declare(interactions_lists=dict)
@@ -2570,71 +2463,78 @@ def get_pairwise_quantities(receivers, suppliers, select_dict, name=''):
 cython.declare(pairwise_quantities=dict)
 pairwise_quantities = {}
 
-# Function for looking up φ_gridsize for the supplied receivers given
-# the force and method, and then adjusting these according to each other
-# and the suppliers.
+# Function for looking up various information needed for potential
+# (i.e. particle mesh) interactions.
 @cython.header(
     # Arguments
-    receivers=list,
-    suppliers=list,
     force=str,
     method=str,
-    φ_gridsizes_receivers=list,
+    receivers=list,
+    suppliers=list,
     # Locals
-    gridsize_min_suppliers='Py_ssize_t',
+    differentiate_global='bint',
+    differentiation_order='int',
+    gridsize='Py_ssize_t',
+    gridsizes=set,
+    interlace='bint',
+    interpolation_order='int',
     key=tuple,
+    potential_specs=object,  # PotentialForceInfo
     receiver='Component',
-    receiver_representations=set,
     supplier='Component',
-    φ_gridsize_min_fluid_receivers='Py_ssize_t',
-    φ_gridsizes_receivers_retrieved=list,
-    returns=list,
+    returns=object,  # PotentialForceInfo
 )
-def set_φ_gridsizes_receivers(receivers, suppliers, force, method, φ_gridsizes_receivers=None):
-    # Attempt lookup in cache
-    key = (
-        tuple([receiver.name for receiver in receivers]),
-        tuple([supplier.name for supplier in suppliers]),
-        force,
-        method,
-        None if φ_gridsizes_receivers is None else tuple(φ_gridsizes_receivers),
+def get_potential_specs(force, method, receivers, suppliers):
+    # Cache lookup
+    key = (force, method, tuple(receivers), tuple(suppliers))
+    potential_specs = potential_specs_cache.get(key)
+    if potential_specs is not None:
+        return potential_specs
+    # Look up the global potential grid size
+    gridsize = 𝕆[potential_gridsizes['global']][force][method]
+    if gridsize == -1:
+        # No global grid size specified. If all supplier upstream
+        # and receiver downstream grid sizes are equal, use this for
+        # the global grid size.
+        gridsizes = (
+            {
+                supplier.potential_gridsizes[force][method].upstream
+                for supplier in suppliers
+            } | {
+                receiver.potential_gridsizes[force][method].downstream
+                for receiver in receivers
+            }
+        )
+        if len(gridsizes) != 1:
+            abort(
+                f'No global potential grid size specified for force "{force}" with '
+                f'method "{method}". As multiple upstream and/or downstream grid sizes '
+                f'are in use, the global grid size could not be set automatically.'
+            )
+        gridsize = gridsizes.pop()
+    # Fetch interpolation, interlacing
+    # and differentiation specifications.
+    interpolation_order   = force_interpolations        [force][method]
+    interlace             = force_interlacings          [force][method]
+    differentiate_global  = force_from_global_potentials[force][method]
+    differentiation_order = force_differentiations      [force][method]
+    # Cache and return
+    potential_specs = PotentialForceInfo(
+        gridsize, interpolation_order, interlace,
+        differentiate_global, differentiation_order,
     )
-    φ_gridsizes_receivers_retrieved = φ_gridsizes_receivers_cache.get(key)
-    if φ_gridsizes_receivers_retrieved is not None:
-        return φ_gridsizes_receivers_retrieved
-    # Set initial values if not supplied
-    if φ_gridsizes_receivers is None:
-        φ_gridsizes_receivers = [receiver.φ_gridsizes[force, method] for receiver in receivers]
-    # In the case of solely having fluid suppliers, there is no
-    # reason for particle receivers to ever have a φ_gridsize below
-    # the minimum fluid gridsize among the suppliers.
-    if 'particles' not in {supplier.representation for supplier in suppliers}:
-        gridsize_min_suppliers = np.min([supplier.gridsize for supplier in suppliers])
-        φ_gridsizes_receivers = [
-            np.max([φ_gridsize, gridsize_min_suppliers])
-            if receiver.representation == 'particles' else φ_gridsize
-            for receiver, φ_gridsize in zip(receivers, φ_gridsizes_receivers)
-        ]
-    # In the case of having both particle and fluid receivers, there
-    # is no reason to have φ_gridsize for the particle receivers be
-    # below the minimum φ_gridsize among the fluid receivers.
-    receiver_representations = {receiver.representation for receiver in receivers}
-    if 'particles' in receiver_representations and 'fluid' in receiver_representations:
-        φ_gridsize_min_fluid_receivers = np.min([
-            receiver.φ_gridsizes[force, method] for receiver in receivers
-            if receiver.representation == 'fluid'
-        ])
-        φ_gridsizes_receivers = [
-            np.max([φ_gridsize, φ_gridsize_min_fluid_receivers])
-            if receiver.representation == 'particles' else φ_gridsize
-            for receiver, φ_gridsize in zip(receivers, φ_gridsizes_receivers)
-        ]
-    # Store result in cache
-    φ_gridsizes_receivers_cache[key] = φ_gridsizes_receivers
-    return φ_gridsizes_receivers
-# Cache used by the above function
-cython.declare(φ_gridsizes_receivers_cache=dict)
-φ_gridsizes_receivers_cache = {}
+    potential_specs_cache[key] = potential_specs
+    return potential_specs
+# Cache and type used by the above function
+cython.declare(potential_specs_cache=dict)
+potential_specs_cache = {}
+PotentialForceInfo = collections.namedtuple(
+    'PotentialForceInfo',
+    (
+        'gridsize', 'interpolation_order', 'interlace',
+        'differentiate_global', 'differentiation_order',
+    ),
+)
 
 
 
@@ -2653,90 +2553,26 @@ register('gravity', ['ppnonperiodic', 'pp', 'p3m', 'pm'], 'gravitational')
     ᔑdt=dict,
     interaction_type=str,
     printout='bint',
-    pm_potential=str,
-    φ_gridsizes_receivers=list,
-    interpolation_order='int',
-    interlace=object,  # bool or NoneType
-    differentiation_order='int',
     # Locals
     extra_message=str,
-    potential=func_potential,
-    potential_name=str,
+    force=str,
+    potential=str,
+    potential_specs=object,  # PotentialForceInfo
     quantity=str,
-    ᔑdt_key=object,  # str or tuple
+    ᔑdt_key=tuple,
 )
-def gravity(
-    method, receivers, suppliers, ᔑdt, interaction_type, printout,
-    pm_potential='full', φ_gridsizes_receivers=None,
-    interpolation_order=-1, interlace=None, differentiation_order=-1,
-):
-    # Compute gravity via one of the following methods
-    if method == 'p3m':
-        # The particle-particle-mesh method
-        if printout:
-            if 𝔹['long' in interaction_type]:
-                extra_message = ' (long-range only)'
-            elif 𝔹['short' in interaction_type]:
-                extra_message = ' (short-range only)'
-            else:
-                extra_message = ''
-            masterprint(
-                'Executing',
-                shortrange_progress_message('gravity', method, receivers, extra_message),
-                '...',
-            )
-        # The long-range PM part
-        if 𝔹['any' in interaction_type] or 𝔹['long' in interaction_type]:
-            φ_gridsizes_receivers = set_φ_gridsizes_receivers(
-                receivers, suppliers, 'gravity', 'p3m', φ_gridsizes_receivers,
-            )
-            if interpolation_order == -1:
-                interpolation_order = ℤ[force_interpolations['gravity']['p3m']]
-            if interlace is None:
-                interlace = ℤ[force_interlacings['gravity']['p3m']]
-            if differentiation_order == -1:
-                differentiation_order = ℤ[force_differentiations['gravity']['p3m']]
-            gravity(
-                'pm', receivers, suppliers, ᔑdt, interaction_type, printout,
-                'long-range only', φ_gridsizes_receivers,
-                interpolation_order, interlace, differentiation_order,
-            )
-        # The short-range PP part
-        if 𝔹['any' in interaction_type] or 𝔹['short' in interaction_type]:
-            tabulate_shortrange_gravity()
-            component_component(
-                'gravity', receivers, suppliers, gravity_pairwise_shortrange, ᔑdt,
-                pairing_level='tile',
-            )
-        if printout:
-            masterprint('done')
-    elif method == 'pm':
-        # The particle-mesh method.
-        if pm_potential == 'full':
-            # Use the full gravitational potential
-            if printout:
-                masterprint(
-                    f'Executing gravitational interaction for {receivers[0].name} '
-                    f'via the PM method ...'
-                    if len(receivers) == 1 else (
-                        'Executing gravitational interaction for {{{}}} via the PM method ...'
-                        .format(', '.join([component.name for component in receivers]))
-                    )
-                )
-            potential = gravity_potential
-            potential_name = 'gravitational potential'
-        elif 'long' in pm_potential:
-            # Only use the long-range part of the
-            # gravitational potential.
-            potential = gravity_longrange_potential
-            potential_name = 'gravitational long-range potential'
-        elif master:
-            abort(f'Unrecognized pm_potential = {pm_potential} in gravity()')
+def gravity(method, receivers, suppliers, ᔑdt, interaction_type, printout):
+    force = 'gravity'
+    # Set up variables used by potential/grid (PM and P³M) methods
+    if method in {'pm', 'p3m'}:
+        potential_specs = get_potential_specs(force, method, receivers, suppliers)
         # The gravitational potential is given by the Poisson equation
         # ∇²φ = 4πGa²ρ = 4πGa**(-3*w_eff - 1)ϱ,
-        # summed over all suppliers. The component dependent quantity
-        # is then
-        # a²ρ = a**(-3*w_eff - 1)ϱ.
+        # summed over all suppliers.
+        # The component dependent quantity is then a²ρ.
+        # In the case of the long-range part only (for use with P³M),
+        # though the expression for the potential is altered, we still
+        # have φ ∝ a²ρ.
         quantity = 'a²ρ'
         # In the fluid description, the gravitational source term is
         # ∂ₜJⁱ = ⋯ -a**(-3*w_eff)*(ϱ + c⁻²𝒫)*∂ⁱφ
@@ -2749,34 +2585,69 @@ def gravity(
         # shoud be integrated over the time step
         # in order to obtain Δmomⁱ.
         ᔑdt_key = ('a**(-3*w_eff)', 'component')
-        # Execute the gravitational particle-mesh interaction
-        φ_gridsizes_receivers = set_φ_gridsizes_receivers(
-            receivers, suppliers, 'gravity', 'pm', φ_gridsizes_receivers,
-        )
-        if interpolation_order == -1:
-            interpolation_order = ℤ[force_interpolations['gravity']['pm']]
-        if interlace is None:
-            interlace = ℤ[force_interlacings['gravity']['pm']]
-        if differentiation_order == -1:
-            differentiation_order = ℤ[force_differentiations['gravity']['pm']]
+    # Compute gravity via one of the following methods
+    if method == 'pm':
+        # The particle-mesh method
+        if printout:
+            masterprint(
+                f'Executing gravitational interaction for {receivers[0].name} '
+                f'via the PM method ...'
+                if len(receivers) == 1 else (
+                    'Executing gravitational interaction for {{{}}} via the PM method ...'
+                    .format(', '.join([component.name for component in receivers]))
+                )
+            )
+        potential = 'gravity'
         particle_mesh(
-            receivers, suppliers, quantity, φ_gridsizes_receivers, potential, potential_name,
-            interpolation_order, interlace, differentiation_order, ᔑdt, ᔑdt_key,
+            receivers, suppliers, potential_specs.gridsize, quantity, force, method, potential,
+            potential_specs.interpolation_order, potential_specs.interlace,
+            potential_specs.differentiate_global, potential_specs.differentiation_order,
+            ᔑdt, ᔑdt_key,
         )
-        if pm_potential == 'full':
-            if printout:
-                masterprint('done')
+        if printout:
+            masterprint('done')
+    elif method == 'p3m':
+        # The particle-particle-mesh method
+        if printout:
+            extra_message = ''
+            if 𝔹['long' in interaction_type]:
+                extra_message = ' (long-range only)'
+            elif 𝔹['short' in interaction_type]:
+                extra_message = ' (short-range only)'
+            masterprint(
+                'Executing',
+                shortrange_progress_message(force, method, receivers, extra_message),
+                '...',
+            )
+        # The long-range PM part
+        if 𝔹['any' in interaction_type] or 𝔹['long' in interaction_type]:
+            potential = 'gravity long-range'
+            particle_mesh(
+                receivers, suppliers, potential_specs.gridsize, quantity, force, method, potential,
+                potential_specs.interpolation_order, potential_specs.interlace,
+                potential_specs.differentiate_global, potential_specs.differentiation_order,
+                ᔑdt, ᔑdt_key,
+            )
+        # The short-range PP part
+        if 𝔹['any' in interaction_type] or 𝔹['short' in interaction_type]:
+            tabulate_shortrange_gravity()
+            component_component(
+                force, receivers, suppliers, gravity_pairwise_shortrange, ᔑdt,
+                pairing_level='tile',
+            )
+        if printout:
+            masterprint('done')
     elif method == 'pp':
         # The particle-particle method with Ewald-periodicity
         if printout:
             masterprint(
                 'Executing',
-                shortrange_progress_message('gravity', method, receivers),
+                shortrange_progress_message(force, method, receivers),
                 '...',
             )
         get_ewald_grid()
         component_component(
-            'gravity', receivers, suppliers, gravity_pairwise, ᔑdt,
+            force, receivers, suppliers, gravity_pairwise, ᔑdt,
             pairing_level='domain',
         )
         if printout:
@@ -2786,11 +2657,11 @@ def gravity(
         if printout:
             masterprint(
                 'Executing',
-                shortrange_progress_message('gravity', method, receivers),
+                shortrange_progress_message(force, method, receivers),
                 '...',
             )
         component_component(
-            'gravity', receivers, suppliers, gravity_pairwise_nonperiodic, ᔑdt,
+            force, receivers, suppliers, gravity_pairwise_nonperiodic, ᔑdt,
             pairing_level='domain',
         )
         if printout:
@@ -2809,14 +2680,14 @@ register('lapse', 'pm')
     interaction_type=str,
     printout='bint',
     # Locals
-    interlace='bint',
-    interpolation_order='int',
-    differentiation_order='int',
+    force=str,
+    potential=str,
+    potential_specs=object,  # PotentialForceInfo
     quantity=str,
-    φ_gridsizes_receivers=list,
-    ᔑdt_key=object,  # str or tuple
+    ᔑdt_key=tuple,
 )
 def lapse(method, receivers, suppliers, ᔑdt, interaction_type, printout):
+    force = 'lapse'
     # While the receivers list stores the correct components,
     # the suppliers store the lapse component as well as all the
     # components also present as receivers. As the lapse force should be
@@ -2840,36 +2711,33 @@ def lapse(method, receivers, suppliers, ᔑdt, interaction_type, printout):
                     .format(', '.join([component.name for component in receivers]))
                 )
             )
+        # Get interaction specifications
+        potential_specs = get_potential_specs(force, method, receivers, suppliers)
         # As the lapse potential is implemented exactly analogous to the
         # gravitational potential, it obeys the Poisson equation
         # ∇²φ = 4πGa²ρ = 4πGa**(-3*w_eff - 1)ϱ,
         # with φ the lapse potential and ρ, ϱ and w_eff belonging to the
         # fictitious lapse species.
         quantity = 'a²ρ'
+        potential = 'gravity'
         # As the lapse potential is implemented exactly analogous to the
         # gravitational potential, the momentum updates are again
         # proportional to a**(-3*w_eff) integrated over the time step
         # (see the gravity function for a more detailed explanation).
         # The realized lapse potential is the common lapse potential,
-        # indepedent on the component in question which is to receive
+        # independent of the component in question which is to receive
         # momentum updates. The actual lapse potential needed for a
         # given component is obtained by multiplying the common lapse
         # potential by Γ/H, where Γ is the decay rate of the component
         # and H is the Hubble parameter. As these are time dependent,
         # the full time step integral is then a**(-3*w_eff)*Γ/H.
         ᔑdt_key = ('a**(-3*w_eff)*Γ/H', 'component')
-        # Execute the lapse particle-mesh interaction.
-        # As the lapse potential is exactly analogous to the
-        # gravitational potential, we may reuse the gravity_potential
-        # function implementing the Poisson equation for gravity.
-        φ_gridsizes_receivers = set_φ_gridsizes_receivers(receivers, suppliers, 'lapse', 'pm')
-        interpolation_order   = ℤ[force_interpolations  ['lapse']['pm']]
-        interlace             = ℤ[force_interlacings    ['lapse']['pm']]
-        differentiation_order = ℤ[force_differentiations['lapse']['pm']]
+        # Execute the lapse interaction
         particle_mesh(
-            receivers, suppliers, quantity, φ_gridsizes_receivers,
-            gravity_potential, 'lapse potential',
-            interpolation_order, interlace, differentiation_order, ᔑdt, ᔑdt_key,
+            receivers, suppliers, potential_specs.gridsize, quantity, force, method, potential,
+            potential_specs.interpolation_order, potential_specs.interlace,
+            potential_specs.differentiate_global, potential_specs.differentiation_order,
+            ᔑdt, ᔑdt_key,
         )
         if printout:
             masterprint('done')

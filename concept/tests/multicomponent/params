@@ -28,12 +28,18 @@ render2D_select = {
 boxsize = 100*Mpc
 if _subtest == 'tile':
     _scale = 1.25
-    _range = 4.8 - 1e-2
+    _range = 4.8*(1 - 1e-2)
     shortrange_params = {
         'gravity': {
             'scale'    : f'{_scale}*boxsize/gridsize',
             'range'    : f'{_range}*scale',
             'subtiling': _subtiling,
+        },
+    }
+    _tiles_lin = 6  # The global tiling will have a shape of _tiles_lin×_tiles_lin×_tiles_lin
+    potential_gridsizes = {
+        'gravity': {
+            'p3m': ceil(_tiles_lin*_range*_scale),
         },
     }
 
@@ -46,9 +52,8 @@ if _subtest == 'domain':
         'particles': {'gravity': 'pp (non-periodic)'},
     }
 elif _subtest == 'tile':
-    _tiles_lin = 6  # The global tiling will have a shape of _tiles_lin×_tiles_lin×_tiles_lin
     select_forces = {
-        'particles': {'gravity': ('p3m', ceil(_tiles_lin*_range*_scale))},
+        'particles': {'gravity': 'p3m'},
     }
 
 select_softening_length = {
@@ -59,9 +64,13 @@ select_softening_length = {
 N_rungs = 10
 
 # Graphics
+_gridsize = 210
 render2D_options = {
-    'gridsize': {
-        _key: 210,
+    'upstream gridsize': {
+        'all': _gridsize,
+    },
+    'global gridsize': {
+        _key: _gridsize,
     },
     'interpolation': {
         _key: 'CIC',

@@ -16,27 +16,32 @@ initial_conditions = [
 ]
 output_dirs  = {
     'powerspec': _this_dir + '/output',
-    'render2D': ...,
+    'render2D' : ...,
 }
 output_bases = {
     'powerspec': 'powerspec',
-    'render2D': 'render2D',
+    'render2D' : 'render2D',
 }
 output_times = {
     'powerspec': 0.1,
-    'render2D': ...,
+    'render2D' : ...,
 }
 powerspec_select = {
-    'all': {'data': True, 'plot': False},
+    'all'             : {'data': True, 'linear': True, 'plot': False},
     'all combinations': ...,
 }
 render2D_select = {
-    'all': False,
-    ('matter', 'neutrinos'): {'data': True, 'image': False},
+    ('matter', 'neutrinos'): {'data': True},
 }
 
 # Numerical parameters
 boxsize = 5000*Mpc
+potential_gridsizes = {
+    'gravity': {
+        'p3m': 2*_size,
+        'pm' :   _size,
+    },
+}
 shortrange_params = {
     'gravity': {
         'scale'    : '1.25*boxsize/gridsize',
@@ -56,7 +61,7 @@ class_params = {
 
 # Physics
 select_forces = {
-    'particles': {'gravity': ('p3m', 2*_size)},
+    'particles': {'gravity': 'p3m'},
     'fluid':     {'gravity': 'pm'},
 }
 

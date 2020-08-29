@@ -1966,8 +1966,6 @@ cython.declare(
     autosave_interval='double',
     snapshot_select=dict,
     powerspec_select=dict,
-    powerspec_include_linear='bint',
-    powerspec_significant_figures='int',
     render2D_select=dict,
     render3D_select=dict,
     life_output_order=tuple,
@@ -1976,15 +1974,14 @@ cython.declare(
     class_extra_perturbations=set,
     # Numerical parameter
     boxsize='double',
-    powerspec_gridsizes=dict,
-    powerspec_binsize='double',
-    powerspec_interpolation='int',
-    powerspec_interlacing='bint',
+    potential_gridsizes=dict,
     force_interpolations=dict,
     force_interlacings=dict,
     force_differentiations=dict,
+    force_from_global_potentials=dict,
     ewald_gridsize='Py_ssize_t',
     shortrange_params=dict,
+    powerspec_options=dict,
     R_tophat='double',
     k_modes_per_decade=dict,
     # Cosmology
@@ -1996,10 +1993,10 @@ cython.declare(
     primordial_spectrum=dict,
     class_params=dict,
     # Physics
-    select_boltzmann_order=dict,
     select_forces=dict,
     select_class_species=dict,
     select_eos_w=dict,
+    select_boltzmann_order=dict,
     select_boltzmann_closure=dict,
     select_realization_options=dict,
     select_lives=dict,
@@ -2082,47 +2079,43 @@ if user_params.get('snapshot_select'):
     else:
         snapshot_select = {'all': user_params['snapshot_select']}
 user_params['snapshot_select'] = snapshot_select
-powerspec_select = {'all': True, 'all combinations': True}
-if user_params.get('powerspec_select'):
+if 'powerspec_select' in user_params:
     if isinstance(user_params['powerspec_select'], dict):
         powerspec_select = user_params['powerspec_select']
-        replace_ellipsis(powerspec_select)
     else:
-        powerspec_select = {'all':              bool(user_params['powerspec_select']),
-                            'all combinations': bool(user_params['powerspec_select']),
-                            }
+        powerspec_select = {'default': user_params['powerspec_select']}
+    powerspec_select.setdefault('default', {'data': False, 'linear': False, 'plot': False})
+else:
+    powerspec_select = {
+        'default': {'data': True, 'linear': True, 'plot': True},
+    }
+replace_ellipsis(powerspec_select)
 for key, val in powerspec_select.copy().items():
     if isinstance(val, dict):
         val.setdefault('data', False)
+        val.setdefault('linear', False)
         val.setdefault('plot', False)
     else:
-        powerspec_select[key] = {'data': bool(val), 'plot': bool(val)}
+        powerspec_select[key] = {'data': bool(val), 'linear': bool(val), 'plot': bool(val)}
 user_params['powerspec_select'] = powerspec_select
-powerspec_include_linear = bool(user_params.get('powerspec_include_linear', True))
-user_params['powerspec_include_linear'] = powerspec_include_linear
-powerspec_significant_figures = int(user_params.get('powerspec_significant_figures', 8))
-user_params['powerspec_significant_figures'] = powerspec_significant_figures
-render2D_select = {'all': True, 'all combinations': True}
-if user_params.get('render2D_select'):
+if 'render2D_select' in user_params:
     if isinstance(user_params['render2D_select'], dict):
         render2D_select = user_params['render2D_select']
-        replace_ellipsis(render2D_select)
     else:
-        render2D_select = {
-            'all':              bool(user_params['render2D_select']),
-            'all combinations': bool(user_params['render2D_select']),
-        }
+        render2D_select = {'default': user_params['render2D_select']}
+    render2D_select.setdefault('default', {'data': False, 'image': False, 'terminal image': False})
+else:
+    render2D_select = {
+        'default': {'data': True, 'image': True, 'terminal image': True},
+    }
+replace_ellipsis(render2D_select)
 for key, val in render2D_select.copy().items():
     if isinstance(val, dict):
         val.setdefault('data', False)
         val.setdefault('image', False)
         val.setdefault('terminal image', False)
     else:
-        render2D_select[key] = {
-            'data'          : bool(val),
-            'image'         : bool(val),
-            'terminal image': bool(val),
-        }
+        render2D_select[key] = {'data': bool(val), 'image': bool(val), 'terminal image': bool(val)}
 user_params['render2D_select'] = render2D_select
 render3D_select = {'all': True}
 if user_params.get('render3D_select'):
@@ -2169,21 +2162,97 @@ user_params['class_extra_perturbations'] = class_extra_perturbations
 # Numerical parameters
 boxsize = float(user_params.get('boxsize', 512*units.Mpc))
 user_params['boxsize'] = boxsize
-if isinstance(user_params.get('powerspec_gridsizes', {}), (int, float)):
-    powerspec_gridsizes = {'all': int(round(user_params['powerspec_gridsizes']))}
-else:
-    powerspec_gridsizes = replace_ellipsis(dict(user_params.get('powerspec_gridsizes', {})))
-user_params['powerspec_gridsizes'] = powerspec_gridsizes
-powerspec_binsize = float(user_params.get('powerspec_binsize', 2*π/boxsize))
-user_params['powerspec_binsize'] = powerspec_binsize
-interpolation_orders = {'NGP': 1, 'CIC': 2, 'TSC': 3, 'PCS': 4}
-powerspec_interpolation_str = str(user_params.get('powerspec_interpolation', 'PCS'))
-powerspec_interpolation = int(
-    interpolation_orders.get(powerspec_interpolation_str.upper(), powerspec_interpolation_str)
+potential_forces_implemented = {
+    'gravity': ['pm', 'p3m'],  # Default force
+    'lapse': ['pm'],
+}
+potential_methods_implemented = set(itertools.chain(*potential_forces_implemented.values()))
+PotentialGridsizesComponent = collections.namedtuple(
+    'PotentialGridsizesComponent',
+    ('upstream', 'downstream'),
 )
-user_params['powerspec_interpolation'] = powerspec_interpolation
-powerspec_interlacing = bool(user_params.get('powerspec_interlacing', True))
-user_params['powerspec_interlacing'] = powerspec_interlacing
+def canonicalize_input_str(method):
+    method = re.sub(r'[ _\-^()]', '', method.lower())
+    for n in range(10):
+        method = method.replace(unicode_superscript(str(n)), str(n))
+    return method
+if isinstance(user_params.get('potential_gridsizes', {}), dict):
+    potential_gridsizes = replace_ellipsis(user_params.get('potential_gridsizes', {}))
+    potential_gridsizes.setdefault('global', -1)
+else:
+    val = user_params['potential_gridsizes']
+    potential_gridsizes = {'global': val, 'all': val}
+for key in potential_gridsizes.copy():
+    if key in potential_forces_implemented.keys():
+        val = potential_gridsizes.pop(key)
+        for key2 in ('global', 'all'):
+            if key2 not in potential_gridsizes or potential_gridsizes[key2] in (-1, (-1, -1)):
+                potential_gridsizes[key2] = {}
+            potential_gridsizes[key2].setdefault(key, val)
+for key, val in potential_gridsizes.copy().items():
+    if not isinstance(val, dict):
+        for potential_forces in potential_forces_implemented:
+            val = {potential_forces: val}
+            break
+    potential_gridsizes[key] = replace_ellipsis(val)
+for key, d in potential_gridsizes.items():
+    for key in d.copy():
+        key = canonicalize_input_str(key)
+        val = d.pop(key)
+        if isinstance(val, dict):
+            val = {canonicalize_input_str(key2): val2 for key2, val2 in val.items()}
+            for potential_method in potential_methods_implemented:
+                val.setdefault(potential_method, -1)
+        else:
+            val = {
+                potential_method: val
+                for potential_method in potential_methods_implemented
+            }
+        d[key] = replace_ellipsis(val)
+for key, val in potential_gridsizes.copy().items():
+    for potential_force in potential_forces_implemented:
+        val.setdefault(potential_force, {})
+    potential_gridsizes[key] = val
+    for key2, val2 in val.copy().items():
+        for potential_method in potential_methods_implemented:
+            val2.setdefault(potential_method, -1)
+        val2 = {
+            key3: val3
+            for key3, val3 in val2.items()
+            if key3 in potential_forces_implemented[key2]
+        }
+        val[key2] = val2
+for key, val in potential_gridsizes.items():
+    if key == 'global':
+        for key2, val2 in val.items():
+            for key3, val3 in val2.copy().items():
+                val3 = set(any2list(val3))
+                if len(val3) == 1:
+                    val2[key3] = int(round(val3.pop()))
+                    continue
+                abort(
+                    f'Only a single grid size may be specified for a global potential, '
+                    f'but potential_gridsizes["{key}"]["{key2}"]["{key3}"] = {val2[key3]}.'
+                )
+    else:
+        for key2, val2 in val.items():
+            for key3, val3 in val2.copy().items():
+                val3 = any2list(val3)
+                if len(val3) == 1:
+                    val3 *= 2
+                if len(val3) == 2:
+                    val2[key3] = PotentialGridsizesComponent(
+                        int(round(val3[0])),
+                        int(round(val3[1])),
+                    )
+                    continue
+                abort(
+                    f'potential_gridsizes["{key}"]["{key2}"]["{key3}"] = {val2[key3]} '
+                    f'but should to be a tuple of two integers, corresponding to the upstream '
+                    f'and downstream grid size.'
+                )
+user_params['potential_gridsizes'] = potential_gridsizes
+interpolation_orders = {'NGP': 1, 'CIC': 2, 'TSC': 3, 'PCS': 4}
 force_interpolations = {
     'gravity': {
         'pm' : 'CIC',
@@ -2208,12 +2277,10 @@ for key, val in replace_ellipsis(dict(user_params.get('force_interpolations', {}
 for key, val in force_interpolations.copy().items():
     subd = {}
     for subd_key, subd_val in val.items():
-        subd_key = subd_key.lower()
-        subd_val = int(interpolation_orders.get(str(subd_val).upper(), subd_val))
-        for char in ' _-^()':
-            subd_key = subd_key.replace(char, '')
+        subd_key = re.sub(r'[ _\-^()]', '', subd_key.lower())
         for n in range(10):
             subd_key = subd_key.replace(unicode_superscript(str(n)), str(n))
+        subd_val = int(interpolation_orders.get(str(subd_val).upper(), subd_val))
         subd[subd_key] = subd_val
     force_interpolations[key] = subd
 user_params['force_interpolations'] = force_interpolations
@@ -2237,12 +2304,10 @@ for key, val in replace_ellipsis(dict(user_params.get('force_interlacings', {}))
 for key, val in force_interlacings.copy().items():
     subd = {}
     for subd_key, subd_val in val.items():
-        subd_key = subd_key.lower()
-        subd_val = bool(subd_val)
-        for char in ' _-^()':
-            subd_key = subd_key.replace(char, '')
+        subd_key = re.sub(r'[ _\-^()]', '', subd_key.lower())
         for n in range(10):
             subd_key = subd_key.replace(unicode_superscript(str(n)), str(n))
+        subd_val = bool(subd_val)
         subd[subd_key] = subd_val
     force_interlacings[key] = subd
 user_params['force_interlacings'] = force_interlacings
@@ -2270,15 +2335,46 @@ for key, val in replace_ellipsis(dict(user_params.get('force_differentiations', 
 for key, val in force_differentiations.copy().items():
     subd = {}
     for subd_key, subd_val in val.items():
-        subd_key = subd_key.lower()
-        subd_val = int(subd_val)
-        for char in ' _-^()':
-            subd_key = subd_key.replace(char, '')
+        subd_key = re.sub(r'[ _\-^()]', '', subd_key.lower())
         for n in range(10):
             subd_key = subd_key.replace(unicode_superscript(str(n)), str(n))
+        subd_val = int(subd_val)
         subd[subd_key] = subd_val
     force_differentiations[key] = subd
 user_params['force_differentiations'] = force_differentiations
+force_from_global_potentials = {
+    'gravity': {
+        'pm' : True,
+        'p3m': True,
+    },
+    'lapse': {
+        'pm': True,
+    },
+}
+for key, val in replace_ellipsis(dict(
+    user_params.get('force_from_global_potentials', {})
+)).items():
+    key = key.lower()
+    if isinstance(val, dict):
+        force_from_global_potentials[key].update({
+            subd_key.lower(): subd_val for subd_key, subd_val in replace_ellipsis(val).items()
+        })
+    elif isinstance(val, (tuple, list)):
+        force_from_global_potentials[key][val[0].lower()] = val[1]
+    elif isinstance(val, (bool, int, float)):
+        force_from_global_potentials[key] = {'pm': bool(val), 'p3m': bool(val)}
+    else:
+        abort('Could not interpret the force_from_global_potentials parameter')
+for key, val in force_from_global_potentials.copy().items():
+    subd = {}
+    for subd_key, subd_val in val.items():
+        subd_key = re.sub(r'[ _\-^()]', '', subd_key.lower())
+        for n in range(10):
+            subd_key = subd_key.replace(unicode_superscript(str(n)), str(n))
+        subd_val = bool(subd_val)
+        subd[subd_key] = subd_val
+    force_from_global_potentials[key] = subd
+user_params['force_from_global_potentials'] = force_from_global_potentials
 ewald_gridsize = to_int(user_params.get('ewald_gridsize', 64))
 user_params['ewald_gridsize'] = ewald_gridsize
 shortrange_params = dict(user_params.get('shortrange_params', {}))
@@ -2309,16 +2405,6 @@ shortrange_params_defaults = {
 }
 for force, d in shortrange_params_defaults.items():
     shortrange_params.setdefault(force, d)
-shortrange_params_gridsizes = collections.defaultdict(int)
-for d in user_params.get('select_forces', {}).values():
-    if not isinstance(d, dict):
-        continue
-    for force, t in d.items():
-        if isinstance(t, (tuple, list)) and len(t) == 2:
-            if isinstance(t[1], str):
-                t = (t[1], t[0])
-            if t[0].lower() in {'pm', 'p3m'} and t[1] > shortrange_params_gridsizes[force]:
-                shortrange_params_gridsizes[force] = t[1]
 subtiling_refinement_period_default = 32
 for force, d in shortrange_params.items():
     for key, val in shortrange_params_defaults.get(force, {}).items():
@@ -2341,16 +2427,15 @@ for force, d in shortrange_params.items():
             continue
         val = val.replace('boxsize', str(boxsize))
         if 'gridsize' in val:
-            gridsize = shortrange_params_gridsizes[force]
-            if gridsize == 0:
+            gridsize = potential_gridsizes['global'][force]['p3m']
+            if gridsize == -1:
                 if user_specification_involves_gridsize[force]:
                     abort(
-                        f'Could not detect gridsize needed for '
+                        f'Could not detect grid size needed for '
                         f'shortrange_params["{force}"]["{key}"]. '
-                        f'Is the gridsize specified in the select_forces parameter?'
+                        f'You should specify it by setting the '
+                        f'potential_gridsizes["global"]["{force}"]["p3m"] parameter.'
                     )
-                else:
-                    gridsize = 1
             val = val.replace('gridsize', str(gridsize))
         if 'scale' in val:
             scale = d.get('scale')
@@ -2400,6 +2485,57 @@ for force, d in shortrange_params.items():
                 subtiling = ('automatic', int(subtiling[1]))
         d['subtiling'] = subtiling
 user_params['shortrange_params'] = shortrange_params
+powerspec_options_defaults = {
+    'upstream gridsize': {
+        'default': -1,
+    },
+    'global gridsize': {
+        'default': -1,
+    },
+    'interpolation': {
+        'default': 'PCS',
+    },
+    'deconvolution': {
+        'default': True,
+    },
+    'interlacing': {
+        'default': True,
+    },
+    'binsize': {
+        'default': 2*π/boxsize,
+    },
+    'significant figures': {
+        'default': 8,
+    },
+}
+powerspec_options = dict(user_params.get('powerspec_options', {}))
+for key, val in powerspec_options.items():
+    replace_ellipsis(val)
+if 'gridsize' in powerspec_options:
+    d = powerspec_options['gridsize']
+    if not isinstance(d, dict):
+        d = {'default': d}
+    powerspec_options.setdefault('upstream gridsize', d.copy())
+    powerspec_options.setdefault('global gridsize'  , d.copy())
+    powerspec_options.pop('gridsize')
+for key, d in powerspec_options.copy().items():
+    if not isinstance(d, dict):
+        powerspec_options[key] = {'default': d}
+for key, d_defaults in powerspec_options_defaults.items():
+    powerspec_options.setdefault(key, {})
+    d = powerspec_options[key]
+    for key, val in d_defaults.items():
+        d.setdefault(key, val)
+d = powerspec_options['global gridsize']
+for key, val in d.copy().items():
+    d[key] = int(round(val))
+d = powerspec_options['interpolation']
+for key, val in d.copy().items():
+    d[key] = int(interpolation_orders.get(str(val).upper(), val))
+for key in powerspec_options:
+    if key not in powerspec_options_defaults:
+        abort(f'powerspec_options["{key}"] not implemented')
+user_params['powerspec_options'] = powerspec_options
 R_tophat = float(user_params.get('R_tophat', -1))  # Default value will be set later
 user_params['R_tophat'] = R_tophat
 if isinstance(user_params.get('k_modes_per_decade', {}), (int, float)):
@@ -2450,19 +2586,8 @@ class_params = dict(user_params.get('class_params', {}))
 replace_ellipsis(class_params)
 user_params['class_params'] = class_params
 # Physics
-select_boltzmann_order = {}
-if user_params.get('select_boltzmann_order'):
-    if isinstance(user_params['select_boltzmann_order'], dict):
-        select_boltzmann_order = user_params['select_boltzmann_order']
-        replace_ellipsis(select_boltzmann_order)
-    else:
-        select_boltzmann_order = {'all': int(user_params['select_boltzmann_order'])}
-select_boltzmann_order['default'] = 1
-select_boltzmann_order.setdefault('metric', -1)
-select_boltzmann_order.setdefault('lapse', -1)
-user_params['select_boltzmann_order'] = select_boltzmann_order
 default_force_method = {
-    'gravity': 'pm',
+    'gravity': 'p3m',
     'lapse'  : 'pm',
 }
 methods_implemented = ('ppnonperiodic', 'pp', 'p3m', 'pm')
@@ -2473,46 +2598,30 @@ for key, val in replace_ellipsis(dict(user_params.get('select_forces', {}))).ite
         select_forces[key] = replace_ellipsis(val)
     elif isinstance(val, str):
         select_forces[key] = {val: default_force_method[val.lower()]}
-    elif isinstance(val, (tuple, list)):
-        if len(val) == 1:
-            select_forces[key] = {val[0]: default_force_method[val[0].lower()]}
-        elif len(val) == 2 and isinstance(val[0], str) and isinstance(val[1], str):
-            if val[1] in default_force_method:
-                select_forces[key] = {
-                    val[0]: default_force_method[val[0].lower()],
-                    val[1]: default_force_method[val[1].lower()],
-                }
-            else:
-                select_forces[key] = {val[0]: val[1]}
-        else:
-            new_val = {}
-            for el in val:
-                if isinstance(el, dict):
-                    new_val.update(replace_ellipsis(el))
-                elif isinstance(el, tuple) or isinstance(el, list):
-                    if len(el) == 1:
-                        new_val[el[0]] = default_force_method[el[0].lower()]
-                    if len(el) == 2:
-                        new_val[el[0]] = el[1]
-                elif isinstance(el, str):
-                    new_val[el] = default_force_method[el.lower()]
-            select_forces[key] = new_val
     subd = {}
-    for subd_key, subd_val in select_forces[key].items():
-        if isinstance(subd_val, (tuple, list)):
-            method, gridsize = subd_val
-            if not isinstance(method, str) or method not in methods_implemented:
-                method, gridsize = gridsize, method
-        else:
-            method, gridsize = subd_val, -1
-        subd_key, method = subd_key.lower(), method.lower()
-        for char in ' _-^()':
-            subd_key, method = subd_key.replace(char, ''), method.replace(char, '')
-        for n in range(10):
-            subd_key = subd_key.replace(unicode_superscript(str(n)), str(n))
-            method   = method  .replace(unicode_superscript(str(n)), str(n))
-        subd[subd_key] = (method, gridsize)
+    for subd_key, method in select_forces[key].items():
+        subd[canonicalize_input_str(subd_key)] = canonicalize_input_str(method)
     select_forces[key] = subd
+if not select_forces:
+    for key_force, dict_method in potential_gridsizes['global'].items():
+        methods = {
+            key_method for key_method, gridsize in dict_method.items() if gridsize != -1
+        }
+        if not methods:
+            continue
+        select_forces.setdefault('particles', {})
+        select_forces.setdefault('fluid', {})
+        if methods == {'pm'}:
+            select_forces['particles'].setdefault(key_force, 'pm')
+            select_forces['fluid'    ].setdefault(key_force, 'pm')
+        elif methods in ({'p3m'}, {'pm', 'p3m'}):
+            select_forces['particles'].setdefault(key_force, 'p3m')
+            select_forces['fluid'    ].setdefault(key_force, 'pm')
+        else:
+            abort(
+                f'Force methods "{methods}" from potential_gridsizes["global"]["{key_force}""] '
+                f'not understood'
+            )
 select_forces.setdefault('metric', {'gravity': 'pm'})
 select_forces.setdefault('lapse', {'lapse': 'pm'})
 user_params['select_forces'] = select_forces
@@ -2535,6 +2644,17 @@ if user_params.get('select_eos_w'):
 select_eos_w.setdefault('particles', 'default')
 select_eos_w['default'] = 'class'
 user_params['select_eos_w'] = select_eos_w
+select_boltzmann_order = {}
+if user_params.get('select_boltzmann_order'):
+    if isinstance(user_params['select_boltzmann_order'], dict):
+        select_boltzmann_order = user_params['select_boltzmann_order']
+        replace_ellipsis(select_boltzmann_order)
+    else:
+        select_boltzmann_order = {'all': int(user_params['select_boltzmann_order'])}
+select_boltzmann_order['default'] = 1
+select_boltzmann_order.setdefault('metric', -1)
+select_boltzmann_order.setdefault('lapse', -1)
+user_params['select_boltzmann_order'] = select_boltzmann_order
 select_boltzmann_closure = {}
 if user_params.get('select_boltzmann_closure'):
     if isinstance(user_params['select_boltzmann_closure'], dict):
@@ -2764,41 +2884,76 @@ suppress_output['out'] |= suppress_output['all']
 suppress_output['err'] |= suppress_output['all']
 user_params['suppress_output'] = suppress_output
 render2D_options_defaults = {
-    'gridsize'           : -1,
-    'interpolation'      : 'PCS',
-    'axis'               : 'z',
-    'extent'             : (0, 0.1*boxsize),
-    'terminal resolution': terminal_width,
-    'colormap'           : 'inferno',
-    'enhance'            : True,
+    'upstream gridsize': {
+        'default': -1,
+    },
+    'global gridsize': {
+        'default': -1,
+    },
+    'terminal resolution': {
+        'default': terminal_width,
+    },
+    'interpolation': {
+        'default': 'PCS',
+    },
+    'deconvolution': {
+        'default': False,
+    },
+    'interlacing': {
+        'default': False,
+    },
+    'axis': {
+        'default': 'z',
+    },
+    'extent': {
+        'default': (0, 0.1*boxsize),
+    },
+    'colormap': {
+        'default': 'inferno',
+    },
+    'enhance': {
+        'default': True,
+    },
 }
 render2D_options = dict(user_params.get('render2D_options', {}))
-for key, val in render2D_options_defaults.items():
-    render2D_options.setdefault(key, val)
-for key, val in render2D_options.copy().items():
-    if isinstance(val, dict):
-        replace_ellipsis(render2D_options[key])
-    else:
-        render2D_options[key] = {
-            'all': val,
-            'all combinations': val,
-        }
-for key, val in render2D_options['extent'].copy().items():
-    if len(any2list(val)) == 1:
-        render2D_options['extent'][key] = (0, val)
-    else:
-        render2D_options['extent'][key] = (np.min(val), np.max(val))
-for key, val in render2D_options_defaults.items():
-    render2D_options[key]['default'] = val
-for key, val in render2D_options['interpolation'].copy().items():
-    interpolation_str = str(val)
-    render2D_options['interpolation'][key] = int(
-       interpolation_orders.get(interpolation_str.upper(), interpolation_str)
-    )
-for key, val in render2D_options['gridsize'].copy().items():
-    render2D_options['gridsize'][key] = int(round(val))
-for key, val in render2D_options['terminal resolution'].copy().items():
-    render2D_options['terminal resolution'][key] = int(round(val))
+for key, val in render2D_options.items():
+    replace_ellipsis(val)
+if 'gridsize' in render2D_options:
+    d = render2D_options['gridsize']
+    if not isinstance(d, dict):
+        d = {'default': d}
+    render2D_options.setdefault('upstream gridsize', d.copy())
+    render2D_options.setdefault('global gridsize'  , d.copy())
+    render2D_options.pop('gridsize')
+for key, d in render2D_options.copy().items():
+    if not isinstance(d, dict):
+        render2D_options[key] = {'default': d}
+for key, d_defaults in render2D_options_defaults.items():
+    render2D_options.setdefault(key, {})
+    d = render2D_options[key]
+    for key, val in d_defaults.items():
+        d.setdefault(key, val)
+d = render2D_options['global gridsize']
+for key, val in d.copy().items():
+    d[key] = int(round(val))
+d = render2D_options['terminal resolution']
+for key, val in d.copy().items():
+    d[key] = int(round(val))
+d = render2D_options['interpolation']
+for key, val in d.copy().items():
+    d[key] = int(interpolation_orders.get(str(val).upper(), val))
+d = render2D_options['axis']
+for key, val in d.copy().items():
+    d[key] = val.lower()
+d = render2D_options['extent']
+for key, val in d.copy().items():
+    val = tuple(any2list(val))
+    if len(val) == 1:
+        val = (0, val[0])
+    d[key] = (np.min(val), np.max(val))
+for key in render2D_options:
+    if key not in render2D_options_defaults:
+        abort(f'render2D_options["{key}"] not implemented')
 user_params['render2D_options'] = render2D_options
 render3D_colors = {}
 if 'render3D_colors' in user_params:
@@ -2948,22 +3103,29 @@ autosave_dir = output_dirs['autosave']
 # We never include linear power spectra in power spectrum output
 # if the CLASS background is disabled.
 if not enable_class_background:
-    powerspec_include_linear = False
+    for d in powerspec_select.values():
+        d['linear'] = False
 # The number of ghost point layers around the domain grids (so that the
 # full shape of each grid is (nghosts + shape[0] + nghosts,
 # nghosts + shape[1] + nghosts, nghosts + shape[2] + nghosts). This is
-# determined by the interpolation orders of power spectrum and force
-# interpolations (order 1 (NGP): 0 ghost layers, 2 (CIC): 1 ghost
-# layer, order 3 (TSC): 1 ghost layer, order 4 (PCS): 2 ghost layers),
-# as well as force differentiations (order 1: 1 ghost layer, order 2:
-# 1 ghost layer, order 3: 2 ghost layers, order 4: 2 ghost layers).
-# One additional ghost layer is required for odd order interpolations
-# in the case of grid interlacing (as the particles are shifted by half
-# a grid cell). Finally, second-order differentiation is used to compute
-# fluid source terms, and so nghosts should always be at least 1.
-nghosts = powerspec_interpolation//2
-if powerspec_interlacing and powerspec_interpolation%2 != 0:
-    nghosts += 1
+# determined by the interpolation orders of potential, power spectrum
+# and render2D interpolations (order 1 (NGP): 0 ghost layers,
+# 2 (CIC): 1 ghost layer, order 3 (TSC): 1 ghost layer,
+# order 4 (PCS): 2 ghost layers), as well as force differentiations
+# (order 1: 1 ghost layer, order 2: 1 ghost layer, order 3: 2 ghost
+# layers, order 4: 2 ghost layers). One additional ghost layer is
+# required for odd order interpolations in the case of grid interlacing
+# (as the particles are shifted by half a grid cell). Finally,
+# second-order differentiation is used to compute fluid source terms,
+# and so nghosts should always be at least 1.
+nghosts = 0
+for options in (powerspec_options, render2D_options):
+    interpolation_order_option = np.max(list(options['interpolation'].values()))
+    interlacing_option = any(list(options['interlacing'].values()))
+    nghosts_option = interpolation_order_option//2
+    if interlacing_option and interpolation_order_option%2 != 0:
+        nghosts_option += 1
+    nghosts = np.max([nghosts, nghosts_option])
 for force, d in force_interpolations.items():
     for method, force_interpolation in d.items():
         nghosts = np.max([
@@ -3042,25 +3204,6 @@ if Ωdcdm > 1e-9 and class_params.get('Gamma_dcdm', 0) > 0:
 radiation_class_species = radiation_class_species.strip('+')
 neutrinos_class_species = neutrinos_class_species.strip('+')
 massive_neutrinos_class_species = massive_neutrinos_class_species.strip('+')
-# Modify select_forces so that the value in the sub-dicts is just the
-# method. The gridsize currently also stored will be extracted and saved
-# in the φ_gridsizes dict.
-cython.declare(φ_gridsizes=dict)
-φ_gridsizes = {}
-for key, subd in select_forces.items():
-    d = {}
-    keep = False
-    for subd_key, subd_val in subd.copy().items():
-        if isinstance(subd_val, (tuple, list)):
-            method, gridsize = subd_val
-        else:
-            method, gridsize = subd_val, -1
-        if method:
-            keep = True
-            d[subd_key, method] = gridsize
-        subd[subd_key] = method
-    if keep:
-        φ_gridsizes[key] = d
 # Handle optional values in special_params
 if 'ntimes' in special_params:
     ntimes = str(special_params['ntimes'])
@@ -3392,7 +3535,7 @@ def call_class(extra_params=None, sleep_time=0.1, mode='single node', class_call
 # Pseudo-random numbers #
 #########################
 # From the random_seed, generate seeds individual to each process.
-# The pseudo-random number generators on each proces will be seeded
+# The pseudo-random number generators on each process will be seeded
 # using these unique seeds, none of which equals random_seed.
 cython.declare(process_seed='unsigned long int')
 process_seed = random_seed + rank + 1
@@ -4420,6 +4563,25 @@ if t_begin < 0:
             f'The simulation start at t = {t_begin} {unit_time} < 0. '
             f'Negative times might lead to unexpected behaviour.'
         )
+# Sanity check on the 2D render axis
+for key, val in render2D_options['axis'].items():
+    if val not in {'x', 'y', 'z'}:
+        abort(
+            f'render2D_options["extent"][{key}] = "{val}" ∉ {{"x", "y", "z"}}'
+        )
+# Check that the 2D render extent is within the box and non-zero
+for key, val in render2D_options['extent'].items():
+    if val[0] < 0 or val[1] > boxsize:
+        abort(
+            f'render2D_options["extent"]["{key}"] '
+            f'= ({val[0]}*{unit_length}, {val[1]}*{unit_length}) '
+            f'is out-of-bounds'
+        )
+    if val[0] == val[1]:
+        abort(
+            f'Equal limits on render2D_options["extent"]["{key}"] '
+            f'= ({val[0]}*{unit_length}, {val[1]}*{unit_length})'
+        )
 # If the Hubble expansion is deactivated, warn if the CLASS background
 # is meant to be used.
 if not enable_Hubble and enable_class_background:
@@ -4484,7 +4646,7 @@ if jobid != -1:
             other_node_name = node_numbers2names[other_node]
             other_ranks = np.where(asarray(nodes) == other_node)[0]
             lines.append(''.join([
-                f'Node ${other_node}: $({other_node_name}): ',
+                f'Node ${other_node} $({other_node_name}): ',
                 '$Process ' if len(other_ranks) == 1 else '$Processes ',
                 '$', get_integerset_strrep(other_ranks),
             ]))

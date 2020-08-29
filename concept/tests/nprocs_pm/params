@@ -10,6 +10,11 @@ output_times       = {'snapshot': (0.1, 0.5, 1)}
 
 # Numerical parameters
 boxsize = 8*Mpc
+potential_gridsizes = {
+    'gravity': {
+        'pm' : 64,
+    },
+}
 
 # Cosmology
 H0      = 70*km/s/Mpc
@@ -18,4 +23,4 @@ H0      = 70*km/s/Mpc
 a_begin = 0.02
 
 # Physics
-select_forces = {'matter': {'gravity': ('pm', 64)}}
+select_forces = {'matter': {'gravity': 'pm'}}

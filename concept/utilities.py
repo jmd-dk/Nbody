@@ -221,7 +221,7 @@ def convert():
             # The mass attribute shall now be the average mass of a
             # fluid element. Since the total mass of the component
             # should be the same as before, the mass (at a = 1) and the
-            # gridsize are related by
+            # grid size are related by
             # mass = (a**(3*w_eff)*Σmass)/gridsize**3
             #      = original_mass*a**(3*w_eff)*N/gridsize**3.
             # If either mass or gridsize is given by the user,
@@ -251,7 +251,7 @@ def convert():
                             f'the average mass of a fluid element.'
                         )
             elif 'gridsize' not in attributes[name] and 'mass' not in attributes[name]:
-                # If neither the gridsize nor the mass is specified,
+                # If neither the grid size nor the mass is specified,
                 # the number of gridpoints in the fluid
                 # representation should equal the number of
                 # particles in the particle representation.
@@ -734,14 +734,14 @@ def CLASS():
         # Get power spectrum gridsize
         powerspec_gridsize = -1
         for component in components:
-            gridsize_tmp = is_selected(component, powerspec_gridsizes)
+            gridsize_tmp = is_selected(component, powerspec_options['global gridsize'])
             if gridsize_tmp is None or isinstance(gridsize_tmp, str) or gridsize_tmp <= 2:
                 continue
             gridsize = int(gridsize_tmp)
             if gridsize and gridsize > powerspec_gridsize:
                 powerspec_gridsize = gridsize
         if powerspec_gridsize == -1:
-            for gridsize_tmp in powerspec_gridsizes.values():
+            for gridsize_tmp in powerspec_options['global gridsize'].values():
                 if not (
                     gridsize_tmp is None or isinstance(gridsize_tmp, str) or gridsize_tmp <= 2
                 ):
@@ -749,8 +749,8 @@ def CLASS():
                     break
         if powerspec_gridsize <= 2:
             abort(
-                'You should (further) specify powerspec_gridsizes, e.g.\n'
-                'powerspec_gridsizes = {"all": 64}'
+                'You should (further) specify a power spectrum grid size, e.g.\n'
+                'powerspec_options = {"global gridsize": 64}'
             )
     # Do CLASS computation
     if compute_perturbations:

@@ -2,15 +2,14 @@
 _this_dir = os.path.dirname(paths['params'])
 
 # Input/output
-output_times             = {'a': {'powerspec': a_begin}}
-powerspec_select         = {'all': {'data': True}}
-powerspec_include_linear = False
+output_times     = {'a': {'powerspec': a_begin}}
+powerspec_select = {'all': {'data': True}}
 
 # Numerical parameters
 _size = 128
-boxsize             = 8*Gpc
-powerspec_gridsizes = {'all': _size}
-k_modes_per_decade  = 30
+boxsize            = 8*Gpc
+powerspec_options  = {'gridsize': _size}
+k_modes_per_decade = 30
 
 # Cosmology
 H0      = 70*km/(s*Mpc)

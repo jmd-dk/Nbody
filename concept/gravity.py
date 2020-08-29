@@ -431,25 +431,3 @@ def gravity_pairwise_nonperiodic(
     if j != -1:
         particle_particle_t_final = time()
         subtiling_r.computation_time += particle_particle_t_final - particle_particle_t_begin
-
-# Function implementing the gravitational potential (in Fouier space).
-# Here k2 = k² is the squared magnitude of the wave vector,
-# in physical units.
-@cython.header(
-    k2='double',
-    returns='double',
-)
-def gravity_potential(k2):
-    return ℝ[-4*π*G_Newton]/k2
-
-# Function implementing just the long-range part
-# of the gravitational potential (in Fouier space).
-# Here k2 = k² is the squared magnitude of the wave vector,
-# in physical units.
-@cython.header(
-    k2='double',
-    returns='double',
-)
-def gravity_longrange_potential(k2):
-    return exp(k2*ℝ[-shortrange_params['gravity']['scale']**2])*gravity_potential(k2)
-

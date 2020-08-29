@@ -21,8 +21,8 @@ class_extra_perturbations = {}
 # Numerical parameters
 boxsize = 2*π/_k_min
 _gridsize = int(2/sqrt(3)*_k_max/_k_min + 1)
-powerspec_gridsizes = {'all': _gridsize + (1 if _gridsize%2 else 0)}
-modes_per_decade = _k_modes/log10(_k_max/_k_min)
+powerspec_options = {'global gridsize': _gridsize + (1 if _gridsize%2 else 0)}
+k_modes_per_decade = _k_modes/log10(_k_max/_k_min)
 
 # Cosmology
 H0      = 67*km/(s*Mpc)

@@ -29,5 +29,5 @@ random_seed = 4  # A value of 4 results in nice looking 2D renders
 # Graphics
 render2D_options = {
     'terminal resolution': _size,
-    'colormap': 'inferno',
+    'colormap'           : 'inferno',
 }

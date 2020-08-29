@@ -7521,7 +7521,7 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
     redefine_class "${class_dir}/include/parser.h"        _ARGUMENT_LENGTH_MAX_     10000  # 10⁴
     redefine_class "${class_dir}/include/perturbations.h" _MAX_NUMBER_OF_K_FILES_  100000  # 10⁵
     # As only the (relatively) late-time evolution is needed from CLASS,
-    # we hardcode the perturbations output to only be printed here.
+    # we hard-code the perturbations output to only be printed here.
     a_min="3e-4"
     pattern=' +a *= *pvecback'
     linenr=$(awk "\$0 ~ \"${pattern}\" {print NR}" \
@@ -8185,7 +8185,7 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
     # (which are equivalent on compilers that recognize -O4).
     # We try with and without the -ffast-math option, try different
     # commpilers and various flags for correctly linking to OpenMP.
-    # The classy Python wrapper is hardcoded to use gcc in setup.py to
+    # The classy Python wrapper is hard-coded to use gcc in setup.py to
     # test for existence of the mvec library, as well as to get the
     # compiler library directory.
     sed -i '1s/^/# cython: language_level=3\n/' "python/classy.pyx"

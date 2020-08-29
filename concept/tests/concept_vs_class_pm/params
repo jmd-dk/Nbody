@@ -13,14 +13,16 @@ output_dirs  = {'powerspec': _this_dir + '/output'}
 output_bases = {'powerspec': 'powerspec'}
 output_times = {'powerspec': (a_begin, 1)}
 powerspec_select = {
-    'all': {'data': True, 'plot': True},
+    'all': {'data': True, 'linear': True, 'plot': True},
 }
-powerspec_include_linear = True
 
 # Numerical parameters
 boxsize = 2048*Mpc
-powerspec_gridsizes = 2*_size
-powerspec_interpolation = 'PCS'
+potential_gridsizes = {
+    'gravity': {
+        'pm': _size,
+    },
+}
 force_interpolations = {
     'gravity': {
         'pm': 'PCS',
@@ -30,6 +32,10 @@ force_differentiations = {
     'gravity': {
         'pm': 4,
     },
+}
+powerspec_options = {
+    'gridsize'     : 2*_size,
+    'interpolation': 'PCS',
 }
 k_modes_per_decade = 30
 
@@ -45,7 +51,7 @@ a_begin = 0.1
 # Physics
 select_forces = {
     'matter': {
-        'gravity': ('pm', _size),
+        'gravity': 'pm',
     },
 }
 

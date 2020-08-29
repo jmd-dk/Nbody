@@ -19,6 +19,11 @@ render2D_select = {'all': {'terminal image': True}}
 
 # Numerical parameters
 boxsize = 64*Mpc
+potential_gridsizes = {
+    'gravity': {
+        'pm': _size,
+    },
+}
 
 # Cosmology
 H0      = 70*km/(s*Mpc)
@@ -27,17 +32,17 @@ H0      = 70*km/(s*Mpc)
 a_begin = 0.02
 
 # Physics
-select_forces            = {'all': {'gravity': ('pm', _size)}}
+select_forces            = {'all': {'gravity': 'pm'}}
 select_boltzmann_closure = {'matter': 'truncate'}
 select_approximations    = {'matter': {'P=wρ': True}}
 
 # Graphics
 render2D_options = {
-    'gridsize': _size,
-    'axis': 'z',
+    'gridsize'           : _size,
     'terminal resolution': _size,
-    'colormap': 'inferno',
-    'enhance': False,
+    'axis'               : 'z',
+    'colormap'           : 'inferno',
+    'enhance'            : False,
 }
 
 # Debugging options

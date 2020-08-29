@@ -439,9 +439,11 @@ def exchange(component, reset_buffers=False):
 # of domain grids between processes.
 @cython.header(
     # Arguments
-    grid='double[:, :, ::1]',
+    grid_or_grids=object,  # double[:, :, ::1] or dict
     operation=str,
     # Locals
+    grid='double[:, :, ::1]',
+    grids=dict,
     i='int',
     index_recv_bgn_i='Py_ssize_t',
     index_recv_end_i='Py_ssize_t',
@@ -460,7 +462,7 @@ def exchange(component, reset_buffers=False):
     reverse='bint',
     returns='void',
 )
-def communicate_ghosts(grid, operation):
+def communicate_ghosts(grid_or_grids, operation):
     """This function can operate in two different modes depending on the
     operation argument:
     - operation == '+=':
@@ -472,6 +474,12 @@ def communicate_ghosts(grid, operation):
         values stored at the corresponding points on neighbour
         processes. Current ghost point values will be ignored.
     """
+    if isinstance(grid_or_grids, dict):
+        grids = grid_or_grids
+        for grid in grids.values():
+            communicate_ghosts(grid, operation)
+        return
+    grid = grid_or_grids
     if grid is None:
         return
     # Set the direction of communication dependeing on the operation
@@ -1179,7 +1187,7 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
     # Figure out the size of the data to be received
     size_recv = 0
     if mpifun == 'bcast':
-        # Broadcast the shape of the date to be broadcasted
+        # Broadcast the shape of the data to be broadcasted
         shape_recv = bcast(arr_send.shape, root=root)
         size_recv = np.prod(shape_recv)
         if rank == root:
@@ -1342,21 +1350,22 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
     return arr_recv
 
 # Function which manages buffers used by other functions
-@cython.pheader(# Arguments
-                size_or_shape=object,  # Py_ssize_t or tuple
-                buffer_name=object,  # Any hashable object
-                nullify='bint',
-                # Local
-                N_buffers='Py_ssize_t',
-                buffer='double*',
-                buffer_mv='double[::1]',
-                i='Py_ssize_t',
-                index='Py_ssize_t',
-                shape=tuple,
-                size='Py_ssize_t',
-                size_given='bint',
-                returns=object,  # multi-dimensional array of doubles
-                )
+@cython.pheader(
+    # Arguments
+    size_or_shape=object,  # Py_ssize_t or tuple
+    buffer_name=object,  # Any hashable object
+    nullify='bint',
+    # Local
+    N_buffers='Py_ssize_t',
+    buffer='double*',
+    buffer_mv='double[::1]',
+    i='Py_ssize_t',
+    index='Py_ssize_t',
+    shape=tuple,
+    size='Py_ssize_t',
+    size_given='bint',
+    returns=object,  # multi-dimensional array of doubles
+)
 def get_buffer(size_or_shape=-1, buffer_name=0, nullify=False):
     """This function returns a contiguous buffer containing doubles.
     The buffer will be exactly of size 'size_or_shape' when this is an

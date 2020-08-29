@@ -39,10 +39,11 @@ cimport(
     'from mesh import                         '
     '    domain_decompose,                    '
     '    fft,                                 '
-    '    get_deconvolution,                   '
     '    get_fftw_slab,                       '
     '    interpolate_domaingrid_to_particles, '
+    '    nullify_highest_frequency_mode,      '
     '    slab_decompose,                      '
+    '    slab_fourier_loop,                   '
 )
 
 
@@ -1542,11 +1543,11 @@ class TransferFunction:
                         for class_species in self.class_species.split('+')
                     }
                 else:
-                    weights_species = {}  # To satisfy the compiler
                     abort(
                         f'Transfer function weighting "{transferfunction_info.weighting}" '
                         f'not implemented.'
                     )
+                    weights_species = {}  # To satisfy the compiler
             # Construct the perturbation_values array from the CLASS
             # perturbations, units and weights.
             perturbation_values_arr = 0
@@ -1966,7 +1967,7 @@ class TransferFunction:
         # The data to be splined is in the form
         # {a, perturbation_values - trend},
         # with trend = factor*a**exponent. Here we find this
-        # trend trough curve fitting of perturbation_values.
+        # trend through curve fitting of perturbation_values.
         fitted_trends = []
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', category=RuntimeWarning)
@@ -2229,7 +2230,7 @@ class TransferFunction:
         smart_mpi(self.data_local, self.data, mpifun='allgatherv')
         self.data = asarray(self.data)[self.k_indices_all]
         return self.data
-    # Persistent buffers used by the the as_function_of_k() method,
+    # Persistent buffers used by the as_function_of_k() method,
     # shared among all instances.
     as_function_of_k_buffers = {
         'weights'          : empty(1, dtype=C2np['double']),
@@ -2653,7 +2654,7 @@ def compute_transfer(
     elif get == 'array':
         return transfer, cosmoresults
 
-# Function which given a gridsize computes an array of k values
+# Function which given a grid size computes an array of k values
 # based on the boxsize and the k_modes_per_decade parameter.
 @cython.header(
     # Arguments
@@ -2733,7 +2734,7 @@ def get_k_magnitudes(gridsize):
     # Cache and return both the float and str representation
     k_magnitudes_cache[gridsize] = (k_magnitudes, k_magnitudes_str)
     return k_magnitudes_cache[gridsize]
-# Cache and helper objects  used by the get_k_magnitudes() function
+# Cache and helper objects used by the get_k_magnitudes() function
 cython.declare(
     k_magnitudes_cache=dict,
     k_str_n_decimals='int',
@@ -2776,8 +2777,6 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     compound_variable='bint',
     cosmoresults_δ=object,  # CosmoResults
     deconv='double',
-    deconv_ij='double',
-    deconv_j='double',
     dim='int',
     dim2='int',
     domain_start_i='Py_ssize_t',
@@ -2789,17 +2788,14 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     fluidvar=object,  # Tensor
     fluidvar_name=str,
     gridsize='Py_ssize_t',
-    i='Py_ssize_t',
     index='Py_ssize_t',
     index0='Py_ssize_t',
     index1='Py_ssize_t',
     interpolation_order='int',
-    j='Py_ssize_t',
-    j_global='Py_ssize_t',
     k='Py_ssize_t',
     k_factor='double',
-    k_gridvec='Py_ssize_t*',
-    k_gridvec_arr='Py_ssize_t[::1]',
+    k_index0='Py_ssize_t',
+    k_index1='Py_ssize_t',
     k_magnitude='double',
     k2='Py_ssize_t',
     k2_max='Py_ssize_t',
@@ -2809,7 +2805,6 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     mass='double',
     momⁱ='double*',
     multi_index=object,  # tuple or str
-    nyquist='Py_ssize_t',
     option_key=str,
     option_val=object,  # str or bool
     options_linear=dict,
@@ -2817,7 +2812,7 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     particle_index='int',
     particle_shift='double',
     particle_shifts='double[::1]',
-    particlevar_name=str,
+    particle_var_name=str,
     posx='double*',
     posy='double*',
     posz='double*',
@@ -2826,13 +2821,14 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     processed_specific_multi_index=object,  # tuple or str
     reuse_slab_structure='bint',
     slab='double[:, :, ::1]',
-    slab_jik='double*',
+    slab_ptr='double*',
+    slabs=dict,
     sqrt_power='double',
     sqrt_power_common='double[::1]',
     slab_structure='double[:, :, ::1]',
     slab_structure_info=dict,
     slab_structure_name=str,
-    structure_jik='double*',
+    structure_ptr='double*',
     tensor_rank='int',
     transfer='double',
     transfer_spline_δ='Spline',
@@ -2953,7 +2949,7 @@ def realize(
     # Get the index of the fluid variable to be realized
     # and print out progress message.
     processed_specific_multi_index = ()
-    particlevar_name = 'pos'
+    particle_var_name = 'pos'
     fluid_index = component.varnames2indices(variable, single=True)
     if component.representation == 'particles':
         if use_gridˣ:
@@ -2965,12 +2961,12 @@ def realize(
         # For particles, the only variables that exist are the positions
         # and the momenta, corresponding to a fluid_index of 0 and 1,
         # respectively.
-        particlevar_name = {0: 'pos', 1: 'mom'}[fluid_index]
+        particle_var_name = {0: 'pos', 1: 'mom'}[fluid_index]
         # When the 'velocities from displacements' option is enabled,
         # both the positions and the momenta are constructed from the
         # displacement field ψⁱ. It is then illegal to request a position
         # realization directly.
-        if particlevar_name == 'pos' and options['velocitiesfromdisplacements']:
+        if particle_var_name == 'pos' and options['velocitiesfromdisplacements']:
             abort(
                 f'A realization of particle positions for {component.name} was requested. '
                 f'As this component is supposed to get its velocities from the displacements, '
@@ -2985,7 +2981,7 @@ def realize(
             masterprint(
                 f'Realizing {N_str} particle',
                 'momenta and positions' if options['velocitiesfromdisplacements']
-                    else {'pos': 'positions', 'mom': 'momenta'}[particlevar_name],
+                    else {'pos': 'positions', 'mom': 'momenta'}[particle_var_name],
                 f'of {component.name} ...'
             )
         else:
@@ -3000,7 +2996,7 @@ def realize(
             else:
                 masterprint(
                     f'Realizing {N_str} particle',
-                    {'pos': 'positions', 'mom': 'momenta'}[particlevar_name]
+                    {'pos': 'positions', 'mom': 'momenta'}[particle_var_name]
                         + f'[{processed_specific_multi_index[0]}] '
                     f'of {component.name} ...'
                 )
@@ -3038,7 +3034,7 @@ def realize(
                     )
                 )
             )
-    # Determine the gridsize of the grid used to do the realization
+    # Determine the grid size of the grid used to do the realization
     if component.representation == 'particles':
         if not isint(ℝ[cbrt(component.N)]):
             abort(
@@ -3174,14 +3170,6 @@ def realize(
             )
             fft(slab_structure, 'forward')
             masterprint('done')
-        # Remove the k⃗ = 0⃗ mode, leaving ℱₓ[δϱ(x⃗)]
-        if master:
-            slab_structure[0, 0, 0] = 0  # Real part
-            slab_structure[0, 0, 1] = 0  # Imag part
-    # Allocate 3-vectors which will store components
-    # of the k vector (in grid units).
-    k_gridvec_arr = empty(3, dtype=C2np['Py_ssize_t'])
-    k_gridvec = cython.address(k_gridvec_arr[:])
     # Initialize index0 and index1.
     # The actual values are not important.
     index0 = index1 = 0
@@ -3216,6 +3204,17 @@ def realize(
     # The realized field will be interpolated onto the shifted particle
     # positions, using the interpolation order specified in the options.
     interpolation_order = options['interpolation']
+    # Preparations for the Fourier slab loop.
+    # The deconvolution order is special, as we only deconvolve if the
+    # particles are shifted (i.e. not on top of the grid points) or if
+    # the interpolation order is more than 2 (i.e. TSC and beyond). We
+    # do it like this because interpolation orders beyond NGP and CIC
+    # samples more than a single grid point even in the case where the
+    # particles sit on top of the grid points.
+    slab_ptr      = cython.address(slab          [:, :, :])
+    structure_ptr = cython.address(slab_structure[:, :, :])
+    slabs = {'particles': slab}
+    deconv_order = interpolation_order*𝔹[particle_shift or interpolation_order > 2]
     # Loop over all fluid scalars of the fluid variable
     fluidvar = component.fluidvars[fluid_index]
     for multi_index in (
@@ -3237,150 +3236,101 @@ def realize(
             index0 = multi_index[0]
         if tensor_rank > 1:
             index1 = multi_index[1]
-        # Loop through the local j-dimension
-        for j in range(ℤ[slab.shape[0]]):
-            # The j-component of the wave vector (grid units).
-            # Since the slabs are distributed along the j-dimension,
-            # an offset must be used.
-            j_global = ℤ[slab.shape[0]*rank] + j
-            kj = j_global - gridsize if j_global > ℤ[gridsize//2] else j_global
-            k_gridvec[1] = kj
-            # The j-component of the deconvolution
-            with unswitch(1):
-                if 𝔹[particle_shift or interpolation_order > 2]:
-                    deconv_j = get_deconvolution(kj*ℝ[π/gridsize])
-            # Loop through the complete i-dimension
-            for i in range(gridsize):
-                # The i-component of the wave vector (grid units)
-                ki = i - gridsize if i > ℤ[gridsize//2] else i
-                k_gridvec[0] = ki
-                # The product of the i- and the j-component
-                # of the deconvolution.
-                with unswitch(2):
-                    if 𝔹[particle_shift or interpolation_order > 2]:
-                        deconv_ij = get_deconvolution(ki*ℝ[π/gridsize])*deconv_j
-                # Loop through the complete, padded k-dimension
-                # in steps of 2 (one complex number at a time).
-                for k in range(0, ℤ[slab.shape[2]], 2):
-                    # The k-component of the wave vector (grid units)
-                    kk = k//2
-                    k_gridvec[2] = kk
-                    # The squared magnitude of the wave vector
-                    # (grid units).
-                    k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
-                    # Regardless of what is being realized,
-                    # the |k⃗| = 0 mode should vanish, leading to a field
-                    # with zero mean.
-                    if k2 == 0:  # Only ever True for master
-                        slab[0, 0, 0] = 0
-                        slab[0, 0, 1] = 0
+        # Loop over the slab
+        for index, ki, kj, kk, k2, deconv in slab_fourier_loop(slabs, deconv_order=deconv_order):
+            # When realizing a variable with a tensor structure
+            # (anything but a scalar), the multiplication by kⁱ amounts
+            # to differentiating the grid. For such Fourier space
+            # differentiations, the Nyquist mode in the dimension of
+            # differentiation has to be explicitly zeroed out for odd
+            # differentiation orders. If not, the resultant grid will
+            # not satisfy the complex conjugate symmetry, and so will
+            # not represent the Fourier transform of a real-valued grid.
+            with unswitch(3):
+                if tensor_rank == 1:
+                    # Vector: First-order differentiation
+                    k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
+                    if k_index0 == nyquist:
+                        slab_ptr[index    ] = 0
+                        slab_ptr[index + 1] = 0
                         continue
-                    # Pointer to the [j, i, k]'th element of the slab.
-                    # The complex number is then given as
-                    # Re = slab_jik[0], Im = slab_jik[1].
-                    slab_jik = cython.address(slab[j, i, k:])
-                    # When realizing a variable with a tensor structure
-                    # (anything but a scalar), the multiplication by
-                    # kⁱ amounts to differentiating the grid. For such
-                    # Fourier space differentiations, the Nyquist
-                    # mode in the dimension of differentiation has to be
-                    # explicitly zeroed out for odd differentiation
-                    # orders. If not, the resultant grid will not
-                    # satisfy the complex conjugate symmetry, and so
-                    # will not represent the Fourier transform of a
-                    # real-valued grid.
+                elif tensor_rank == 2 and index0 != index1:
+                    # Rank 2 tensor with unequal indices:
+                    # Two first-order differentiations.
+                    k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
+                    k_index1 = ℤ[ℤ[ℤ[𝔹[index1 == 1]*kj] or 𝔹[index1 == 0]*ki] or 𝔹[index1 == 2]*kk]
+                    if k_index0 == nyquist or k_index1 == nyquist:
+                        slab_ptr[index    ] = 0
+                        slab_ptr[index + 1] = 0
+                        continue
+            # The square root of the power at this |k⃗|, disregarding all
+            # k⃗-dependent contributions (from the k factor and the
+            # non-linear structure).
+            sqrt_power = sqrt_power_common[k2]
+            # Apply deconvolution
+            with unswitch(3):
+                if deconv_order:
+                    sqrt_power *= deconv
+            # Populate slab according to the component
+            # representation and tensor_rank.
+            with unswitch(3):
+                if 𝔹[component.representation == 'particles']:
+                    # We are realizing either the displacement field ψⁱ
+                    # (for the positions) or the velocity field uⁱ (for
+                    # the momenta). These are constructed from the δ and
+                    # θ fields, respectively, with the vector k factor
+                    # K(k⃗) = ±ikⁱ/k².
+                    # For fluids, fluid_index distinguish between the
+                    # different variables. For particle positions and
+                    # momenta, the corresponding ψⁱ and uⁱ fields are
+                    # both vector variables, and so we had to set
+                    # fluid_index = 1 in both cases. To distinguish
+                    # between particles and momenta (and hence get the
+                    # sign in the k factor correct) we instead make use
+                    # of the particle_var_name variable. Also, when
+                    # realizing momenta with
+                    # 'velocities from displacements' True, we really
+                    # want to realize ψⁱ, and so we need to use the k
+                    # factor for positions.
+                    k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
+                    k_factor = ℝ[
+                        {
+                            ('pos', True ): +1,
+                            ('pos', False): +1,
+                            ('mom', True ): +1,  # use 'pos' k factor
+                            ('mom', False): -1,
+                        }[particle_var_name, options['velocitiesfromdisplacements']]
+                        *boxsize/(2*π)
+                    ]*k_index0/k2
+                    slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*(-structure_ptr[index + 1])
+                    slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*(+structure_ptr[index    ])
+                else:  # component.representation == 'fluid'
                     with unswitch(3):
-                        if tensor_rank == 1:
-                            # Vector: First-order differentiation
-                            if k_gridvec[index0] == nyquist:
-                                slab_jik[0] = 0
-                                slab_jik[1] = 0
-                                continue
-                        elif tensor_rank == 2 and index0 != index1:
-                            # Rank 2 tensor with unequal indices:
-                            # Two first-order differentiations.
-                            if k_gridvec[index0] == nyquist or k_gridvec[index1] == nyquist:
-                                slab_jik[0] = 0
-                                slab_jik[1] = 0
-                                continue
-                    # Pointer to the [j, i, k]'th element
-                    # of the structure grid.
-                    structure_jik = cython.address(slab_structure[j, i, k:])
-                    # The square root of the power at this |k⃗|,
-                    # disregarding all k⃗-dependent contributions
-                    # (from the k factor and the non-linear structure).
-                    sqrt_power = sqrt_power_common[k2]
-                    # Apply deconvolution. We do this if the particles
-                    # are shifted (i.e. not on top of the grid points)
-                    # or if the interpolation order is more than 2 (i.e.
-                    # TSC and beyond). We do this because interpolation
-                    # orders beyond NGP and CIC samples more than a
-                    # single grid point even in the case where the
-                    # particles sit on top of the grid points.
-                    with unswitch(3):
-                        if 𝔹[particle_shift or interpolation_order > 2]:
-                            # The total 3D NGP deconvolution factor
-                            deconv = deconv_ij*get_deconvolution(kk*ℝ[π/gridsize])
-                            sqrt_power *= deconv**interpolation_order
-                    # Populate slab_jik dependent on the component
-                    # representation and tensor_rank.
-                    with unswitch(3):
-                        if component.representation == 'particles':
-                            # We are realizing either the displacement
-                            # field ψⁱ (for the positions) or the
-                            # velocity field uⁱ (for the momenta).
-                            # These are constructed from the δ and θ
-                            # fields, respectively, with the vector
-                            # k factor
-                            # K(k⃗) = ±ikⁱ/k².
-                            # For fluids, fluid_index distinguishes
-                            # between the different variables. For
-                            # particle positions and momenta, the
-                            # corresponding ψⁱ and uⁱ fields are both
-                            # vector variables, and so we had to set
-                            # fluid_index = 1 in both cases. To
-                            # distinguish between particles and momenta
-                            # (and hence get the sign in the k factor
-                            # correct) we instead make use of the
-                            # particlevar_name variable. Also, when
-                            # realizing momenta with
-                            # 'velocities from displacements' True, we
-                            # really want to realize ψⁱ, and so we need
-                            # to use the k factor for positions.
-                            k_factor = ℝ[
-                                {
-                                    ('pos', True ): +1,
-                                    ('pos', False): +1,
-                                    ('mom', True ): +1,  # use 'pos' k factor
-                                    ('mom', False): -1,
-                                }[particlevar_name, options['velocitiesfromdisplacements']]
-                                *boxsize/(2*π)
-                            ]*k_gridvec[index0]/k2
-                            slab_jik[0] = sqrt_power*k_factor*(-structure_jik[1])
-                            slab_jik[1] = sqrt_power*k_factor*(+structure_jik[0])
-                        else:  # component.representation == 'fluid'
-                            with unswitch(3):
-                                if tensor_rank == 0:
-                                    # Realize δ or δ𝒫
-                                    slab_jik[0] = sqrt_power*structure_jik[0]
-                                    slab_jik[1] = sqrt_power*structure_jik[1]
-                                elif tensor_rank == 1:
-                                    # Realize uⁱ.
-                                    # For vectors we have a k factor of
-                                    # K(k⃗) = -ikⁱ/k².
-                                    k_factor = -(ℝ[boxsize/(2*π)]*k_gridvec[index0])/k2
-                                    slab_jik[0] = sqrt_power*k_factor*(-structure_jik[1])
-                                    slab_jik[1] = sqrt_power*k_factor*(+structure_jik[0])
-                                else:  # tensor_rank == 2
-                                    # Realize ςⁱⱼ.
-                                    # For rank 2 tensors we
-                                    # have a k factor of
-                                    # K(k⃗) = 3/2(δⁱⱼ/3 - kⁱkⱼ/k²).
-                                    k_factor = (ℝ[0.5*(index0 == index1)]
-                                        - (1.5*k_gridvec[index0]*k_gridvec[index1])/k2
-                                    )
-                                    slab_jik[0] = sqrt_power*k_factor*structure_jik[0]
-                                    slab_jik[1] = sqrt_power*k_factor*structure_jik[1]
+                        if tensor_rank == 0:
+                            # Realize δ or δ𝒫
+                            slab_ptr[index    ] = sqrt_power*structure_ptr[index    ]
+                            slab_ptr[index + 1] = sqrt_power*structure_ptr[index + 1]
+                        elif tensor_rank == 1:
+                            # Realize uⁱ.
+                            # For vectors we have a k factor of
+                            # K(k⃗) = -ikⁱ/k².
+                            k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
+                            k_factor = -(ℝ[boxsize/(2*π)]*k_index0)/k2
+                            slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*(-structure_ptr[index + 1])
+                            slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*(+structure_ptr[index    ])
+                        else:  # tensor_rank == 2
+                            # Realize ςⁱⱼ.
+                            # For rank 2 tensors we
+                            # have a k factor of
+                            # K(k⃗) = 3/2(δⁱⱼ/3 - kⁱkⱼ/k²).
+                            k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
+                            k_index1 = ℤ[ℤ[ℤ[𝔹[index1 == 1]*kj] or 𝔹[index1 == 0]*ki] or 𝔹[index1 == 2]*kk]
+                            k_factor = ℝ[0.5*(index0 == index1)] - (1.5*k_index0*k_index1)/k2
+                            slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*structure_ptr[index    ]
+                            slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*structure_ptr[index + 1]
+        # The very highest frequency mode is highly uncertain
+        # and so we nullify its contribution.
+        nullify_highest_frequency_mode(slab)
         # Fourier transform the slabs to coordinate space.
         # Now the slabs store the realized grid.
         fft(slab, 'backward')
@@ -3459,7 +3409,7 @@ def realize(
         # Below follows the Zel'dovich approximation
         # for particle components.
         dim = multi_index[0]
-        if particlevar_name == 'mom':
+        if particle_var_name == 'mom':
             if dim == 0:
                 # This is the realization of momx, which should be the
                 # first variable to be realized out of
@@ -3510,7 +3460,7 @@ def realize(
                 interpolate_domaingrid_to_particles(uⁱ, component, 'mom', dim, interpolation_order,
                     factor=a*mass,
                 )
-        else:  # particlevar_name == 'pos'
+        else:  # particle_var_name == 'pos'
             # Copy pos[dim] (currently containing the grid positions)
             # into Δmom[dim].
             posⁱ  = component. pos[dim]
@@ -3540,8 +3490,8 @@ def realize(
     # We can only do this exchange once both the momenta and the
     # positions have been assigned.
     if component.representation == 'particles' and (
-            particlevar_name == 'pos'
-        or (particlevar_name == 'mom' and options['velocitiesfromdisplacements'])
+            particle_var_name == 'pos'
+        or (particle_var_name == 'mom' and options['velocitiesfromdisplacements'])
     ):
         exchange(component, reset_buffers=True)
 # Module level variable used by the realize function
@@ -3632,7 +3582,7 @@ def generate_primordial_noise(slab):
     and setting each point equal to the conjucate of the corresponding
     symmetric point.
     """
-    # The global gridsize is equal to
+    # The global grid size is equal to
     # the first (1) dimension of the slab.
     gridsize = slab.shape[1]
     if primordial_amplitude_fixed:
@@ -3678,15 +3628,25 @@ def generate_primordial_noise(slab):
                 ki_start, ki_stop, ki_step = ℤ[-shell + 1], ℤ[shell + 1], ℤ[2*shell - 1]
                 kk_start, kk_stop, kk_step =            0 ,   shell     ,             1
             # Loop over the face.
-            # Note that at least in Cython 0.29.2, these loops are not
-            # optimized as the step value is unknown at cythonization
-            # time.
-            for kj in range(kj_start, kj_stop, kj_step):
+            # We want to loop like
+            #   for kj in range(kj_start, kj_stop, kj_step)
+            # but at least in Cython 0.29 such a loop transpiles to
+            # unoptimized code (the step value needs to be known at
+            # cythonization time for proper transpilation). Below we
+            # write out this loop by manually initializing and
+            # incrementing the loop variable.
+            kj = ℤ[kj_start - kj_step]
+            for _ in range(ℤ[((kj_stop - kj_start) + (kj_step - 1))//kj_step]):
+                kj += kj_step
                 j_global = kj + gridsize if kj < 0 else kj
                 j = j_global - ℤ[slab.shape[0]*rank]
-                for ki in range(ki_start, ki_stop, ki_step):
+                ki = ℤ[ki_start - ki_step]
+                for _ in range(ℤ[((ki_stop - ki_start) + (ki_step - 1))//ki_step]):
+                    ki += ki_step
                     i = ki + gridsize if ki < 0 else ki
-                    for kk in range(kk_start, kk_stop, kk_step):
+                    kk = ℤ[kk_start - kk_step]
+                    for _ in range(ℤ[((kk_stop - kk_start) + (kk_step - 1))//kk_step]):
+                        kk += kk_step
                         # Draw the random numbers
                         with unswitch:
                             if primordial_amplitude_fixed:
@@ -3803,10 +3763,10 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
         class_species='+'.join([component.class_species for component in components])
     )
     linear_component.name = 'linear power spectrum'
-    # Get gridsize for linear perturbation computation. In an attempt to
-    # not rerun CLASS, we reuse any existing CosmoResults object, even
-    # if this has too small a gridsize, in which case the largest k
-    # modes will be filled with NaN values.
+    # Get grid size for linear perturbation computation. In an attempt
+    # to not rerun CLASS, we reuse any existing CosmoResults object,
+    # even if this has too small a grid size, in which case the largest
+    # k modes will be filled with NaN values.
     gridsize_max = -1
     for (gridsize, gauge_cached), cosmoresults in cosmoresults_cache.items():
         if gauge_cached != 𝕊['synchronous' if gauge == 'nbody' else gauge]:
@@ -3815,7 +3775,7 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
             gridsize_max = gridsize
     gridsize = gridsize_max
     if gridsize == -1:
-        gridsize = np.max([component.powerspec_gridsize for component in components])
+        gridsize = np.max([component.powerspec_upstream_gridsize for component in components])
     # Get spline of δ transfer function for the fake component
     δ_spline, cosmoresults = compute_transfer(
         linear_component, 0, gridsize, a=a, gauge=gauge,
@@ -3829,7 +3789,10 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
     k_max = δ_spline.x[len(δ_spline.x) - 1]
     for i in range(k_magnitudes.shape[0]):
         k_magnitude = k_magnitudes[i]
-        δ = (δ_spline.eval(k_magnitude) if k_magnitude <= k_max else NaN)
+        if k_magnitude > k_max:
+            power[i:] = NaN
+            break
+        δ = δ_spline.eval(k_magnitude)
         power[i] = (ζ(k_magnitude)*δ)**2
     return power
 

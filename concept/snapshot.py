@@ -184,10 +184,11 @@ class StandardSnapshot:
                         fluidvar_h5 = component_h5.create_group('fluidvar_{}'.format(index))
                         for multi_index in fluidvar.multi_indices:
                             fluidscalar = fluidvar[multi_index]
-                            fluidscalar_h5 = fluidvar_h5.create_dataset('fluidscalar_{}'
-                                                                        .format(multi_index),
-                                                                        shape,
-                                                                        dtype=C2np['double'])
+                            fluidscalar_h5 = fluidvar_h5.create_dataset(
+                                f'fluidscalar_{multi_index}',
+                                shape,
+                                dtype=C2np['double'],
+                            )
                             # The global fluid scalar grid is of course
                             # stored contiguously on disk. Generally
                             # though, a single process does not store a
@@ -199,9 +200,11 @@ class StandardSnapshot:
                             slab = slab_decompose(fluidscalar.grid_mv)
                             slab_start = slab.shape[0]*rank
                             slab_end = slab_start + slab.shape[0]
-                            fluidscalar_h5[slab_start:slab_end, :, :] = slab[:,
-                                                                             :,
-                                                                             :component.gridsize]
+                            fluidscalar_h5[
+                                slab_start:slab_end,
+                                :,
+                                :,
+                            ] = slab[:, :, :component.gridsize]
                     # Create additional names (hard links) for the fluid
                     # groups and data sets. The names from
                     # component.fluid_names will be used, except for

@@ -49,7 +49,7 @@ transforms through Cython.
           }
       }
   }
-- After a forward, inplace r2c transformation,
+- After a forward, in-place r2c transformation,
   provided that we execute this on the correct process, where
   (gridstart_local_j <= j && j < gridstart_local_j + gridsize_local_j):
   grid[i, j, k] --> grid[((j - gridstart_local_j)*gridsize_i + i)

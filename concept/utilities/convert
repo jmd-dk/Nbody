@@ -128,7 +128,7 @@ if [ "${params}" == "None" ]; then
     params="${this_file}.params"
 fi
 
-# Split the paths_and_attributes array up into two seperate arrays,
+# Split the paths_and_attributes array up into two separate arrays,
 # one for paths and one for attributes. A path_or_attribute is
 # counted as a path if the path exists.
 paths=()

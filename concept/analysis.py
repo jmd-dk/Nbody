@@ -26,16 +26,18 @@ from commons import *
 
 # Cython imports
 cimport('from communication import communicate_ghosts, get_buffer')
-cimport('from graphics import plot_powerspec')
+cimport('from graphics import get_output_declarations, plot_powerspec')
 cimport('from linear import get_linear_powerspec')
 cimport(
-    'from mesh import            '
-    '    diff_domaingrid,        '
-    '    fft,                    '
-    '    get_deconvolution,      '
-    '    get_fftw_slab,          '
-    '    interpolate_components, '
-    '    slab_decompose,         '
+    'from mesh import                    '
+    '    diff_domaingrid,                '
+    '    fft,                            '
+    '    get_fftw_slab,                  '
+    '    get_symmetry_multiplicity,      '
+    '    interpolate_upstream,           '
+    '    nullify_highest_frequency_mode, '
+    '    slab_decompose,                 '
+    '    slab_fourier_loop,              '
 )
 
 
@@ -46,32 +48,28 @@ cimport(
     components=list,
     filename=str,
     # Locals
-    powerspec_declarations=list,
-    powerspec_declaration=object,  # PowerspecDeclaration
+    declaration=object,  # PowerspecDeclaration
+    declarations=list,
     returns='void',
 )
 def powerspec(components, filename):
-    # Get needed power spectrum declarations
-    powerspec_declarations = get_powerspec_declarations(components)
-    # Compute power spectrum for each power spectrum declaration.
-    for powerspec_declaration in powerspec_declarations:
+    # Get power spectrum declarations
+    declarations = get_powerspec_declarations(components)
+    # Compute power spectrum for each declaration
+    for declaration in declarations:
         # Compute the power spectrum of the non-linearly evolved
-        # components in this power spectrum declaration. The result is
-        # stored in powerspec_declaration.power. Only the master process
-        # holds the full power spectrum.
-        compute_powerspec(powerspec_declaration)
-        # If specified, also compute the linear power spectrum. The
-        # result is stored in powerspec_declaration.linear_power. Only
-        # the master process holds the linear power spectrum.
-        if powerspec_declaration.power_linear is not None:
-            compute_powerspec_linear(powerspec_declaration)
-    # Saving and plotting the power spectra is solely up to the master
-    if not master:
-        return
+        # components in this power spectrum declaration.
+        # The result is stored in declaration.power.
+        # Only the master process holds the full power spectrum.
+        compute_powerspec(declaration)
+        # If specified, also compute the linear power spectrum.
+        # The result is stored in declaration.power_linear.
+        # Only the master process holds the linear power spectrum.
+        compute_powerspec_linear(declaration)
     # Dump power spectra to collective data file
-    save_powerspec(powerspec_declarations, filename)
+    save_powerspec(declarations, filename)
     # Dump power spectra to individual image files
-    plot_powerspec(powerspec_declarations, filename)
+    plot_powerspec(declarations, filename)
 
 # Function for getting declarations for all needed power spectra,
 # given a list of components.
@@ -79,115 +77,103 @@ def powerspec(components, filename):
     # Arguments
     components=list,
     # Locals
-    component_combination=list,
-    component_combinations=list,
-    data_select=dict,
-    do_data='bint',
-    do_plot='bint',
-    gridsize='Py_ssize_t',
+    cache_key=tuple,
+    declaration=object,  # PowerspecDeclaration
+    declarations=list,
+    index='Py_ssize_t',
     k_bin_centers='double[::1]',
     k_bin_indices='Py_ssize_t[::1]',
     n_modes='Py_ssize_t[::1]',
     n_modes_max='Py_ssize_t',
-    plot_select=dict,
     power='double[::1]',
     power_linear='double[::1]',
-    powerspec_declarations=list,
     returns=list,
 )
 def get_powerspec_declarations(components):
-    # Look up power spectrum declarations in cache
-    powerspec_declarations = powerspec_declarations_cache.get(tuple(components), [])
-    if powerspec_declarations:
-        return powerspec_declarations
-    # Generate list of lists storing all possible (unordered)
-    # combinations of the passed components.
-    component_combinations = list(
-        map(
-            list,
-            itertools.chain.from_iterable(
-                [itertools.combinations(components, i) for i in range(1, len(components) + 1)]
-            ),
-        )
+    # Look up declarations in cache
+    cache_key = tuple(components)
+    declarations = powerspec_declarations_cache.get(cache_key)
+    if declarations:
+        return declarations
+    # Get declarations with basic fields populated
+    declarations = get_output_declarations(
+        'powerspec',
+        components,
+        powerspec_select,
+        powerspec_options,
+        PowerspecDeclaration,
     )
-    # Construct dicts to be used with the is_selected function
-    data_select = {key: val['data'] for key, val in powerspec_select.items()}
-    plot_select = {key: val['plot'] for key, val in powerspec_select.items()}
-    # Construct power spectrum declarations
-    for component_combination in component_combinations:
-        do_data = is_selected(component_combination, data_select)
-        do_plot = is_selected(component_combination, plot_select)
-        if not do_data and not do_plot:
-            continue
-        # A power spectrum is to be computed of this component
-        # combination. The power spectrum gridsize should be the largest
-        # of the individual power spectrum gridsizes of each component.
-        gridsize = np.max(
-            [component.powerspec_gridsize for component in component_combination]
+    # Add missing declaration fields
+    for index, declaration in enumerate(declarations):
+        # Get bin information
+        k_bin_indices, k_bin_centers, n_modes, n_modes_max = get_powerspec_bins(
+            declaration.gridsize,
+            declaration.binsize,
         )
-        # Get k_bin_indices, k_bin_centers and n_modes
-        # for the given grid size
-        k_bin_indices, k_bin_centers, n_modes, n_modes_max = get_powerspec_bins(gridsize)
-        # Allocate grid for storing the power
+        # Allocate arrays for storing the power
         power = empty(bcast(k_bin_centers.shape[0] if master else None), dtype=C2np['double'])
-        power_linear = (asarray(power).copy() if powerspec_include_linear else None)
-        # Add power spectrum declaration
-        powerspec_declarations.append(
-            PowerspecDeclaration(
-                component_combination, do_data, do_plot, gridsize, k_bin_indices, k_bin_centers,
-                n_modes, n_modes_max, power, power_linear,
-            )
+        power_linear = (asarray(power).copy() if declaration.do_linear else None)
+        # Replace old declaration with a new, fully populated one
+        declaration = declaration._replace(
+            k_bin_indices=k_bin_indices,
+            k_bin_centers=k_bin_centers,
+            n_modes=n_modes,
+            n_modes_max=n_modes_max,
+            power=power,
+            power_linear=power_linear,
         )
-    # Store power spectrum declarations in cache
-    powerspec_declarations_cache[tuple(components)] = powerspec_declarations
-    return powerspec_declarations
-# Create the PowerspecDeclaration type
-PowerspecDeclaration = collections.namedtuple(
-    'PowerspecDeclaration',
-    (
-        'components', 'do_data', 'do_plot', 'gridsize', 'k_bin_indices', 'k_bin_centers',
-        'n_modes', 'n_modes_max', 'power', 'power_linear',
-    ),
-)
-# Cache used by the get_powerspec_declarations function
+        declarations[index] = declaration
+    # Store declarations in cache and return
+    powerspec_declarations_cache[cache_key] = declarations
+    return declarations
+# Cache used by the get_powerspec_declarations() function
 cython.declare(powerspec_declarations_cache=dict)
 powerspec_declarations_cache = {}
+# Create the PowerspecDeclaration type
+fields = (
+    'components', 'do_data', 'do_linear', 'do_plot', 'gridsize',
+    'interpolation', 'deconvolution', 'interlacing', 'binsize', 'significant_figures',
+    'k_bin_indices', 'k_bin_centers', 'n_modes', 'n_modes_max', 'power', 'power_linear',
+)
+PowerspecDeclaration = collections.namedtuple(
+    'PowerspecDeclaration', fields, defaults=[None]*len(fields),
+)
 
 # Function for constructing arrays k_bin_indices, k_bin_centers and
 # n_modes, describing the binning of power spectra.
 @cython.header(
     # Arguments
     gridsize='Py_ssize_t',
+    binsize='double',
     # Locals
-    any_particles='bint',
-    compute_sumk='bint',
+    binsize_min='double',
+    cache_key=tuple,
     deconv='double',
-    i='Py_ssize_t',
-    index_largest_mode='Py_ssize_t',
-    j='Py_ssize_t',
-    k='Py_ssize_t',
+    index='Py_ssize_t',
+    k2='Py_ssize_t',
+    k2_max='Py_ssize_t',
     k_bin_center='double',
     k_bin_centers='double[::1]',
     k_bin_index='Py_ssize_t',
+    k_bin_index_prev='Py_ssize_t',
     k_bin_indices='Py_ssize_t[::1]',
     k_bin_size='double',
+    k_magnitude='double',
     k_max='double',
     k_min='double',
-    k_magnitude='double',
-    k2='Py_ssize_t',
+    ki='Py_ssize_t',
+    kj='Py_ssize_t',
+    kk='Py_ssize_t',
+    mask=object,  # boolean np.ndarray
     n_modes='Py_ssize_t[::1]',
     n_modes_fine='Py_ssize_t[::1]',
     n_modes_max='Py_ssize_t',
     powerspec_bins=tuple,
-    size_i='Py_ssize_t',
-    size_j='Py_ssize_t',
-    size_k='Py_ssize_t',
     slab='double[:, :, ::1]',
-    sumk='Py_ssize_t',
-    symmetry_multiplicity='int',
+    slabs=dict,
     returns=tuple,
 )
-def get_powerspec_bins(gridsize):
+def get_powerspec_bins(gridsize, binsize):
     """The returned arrays are:
     - k_bin_indices: Mapping from k⃗² (grid units) to bin index, i.e.
         k_bin_index = k_bin_indices[k2]
@@ -200,28 +186,30 @@ def get_powerspec_bins(gridsize):
       This array lives on the master process only.
     """
     # Look up in the cache
-    powerspec_bins = powerspec_bins_cache.get(gridsize)
+    cache_key = (gridsize, binsize)
+    powerspec_bins = powerspec_bins_cache.get(cache_key)
     if powerspec_bins:
         return powerspec_bins
     # Maximum value of k² (grid units)
-    k2_max = 3*(gridsize//2)**2
+    nyquist = gridsize//2
+    k2_max = 3*nyquist**2
     # Maximum and minum k values
     k_min = ℝ[2*π/boxsize]
     k_max = ℝ[2*π/boxsize]*sqrt(k2_max)
     # Construct linear k bins, each with a linear size given by the
-    # powerspec_binsize parameter. The k_bin_centers will be changed
-    # later according to the k² values on the 3D grid that falls inside
+    # binsize argument. The k_bin_centers will be changed later
+    # according to the k² values on the 3D grid that falls inside
     # each bin. The final placing of the bin centers are then really
     # defined indirectly by k_bin_indices below (which depend on the
     # initial values given to k_bin_centers).
-    # A bin size below powerspec_binsize_min is guaranteed to never bin
-    # separate k² together in the same bin, and so powerspec_binsize_min
-    # is the smallest bin size allowed.
-    powerspec_binsize_min = (0.5 - 1e-2)*(
-          ℝ[2*π/boxsize]*sqrt(3*((gridsize + 2)//2)**2 + 1)
-        - ℝ[2*π/boxsize]*sqrt(3*((gridsize + 2)//2)**2)
+    # A bin size below binsize_min is guaranteed to never bin
+    # separate k² together in the same bin, and so binsize_min is the
+    # smallest bin size allowed.
+    binsize_min = 0.5*(1 - 1e-2)*(
+        + ℝ[2*π/boxsize]*sqrt(ℤ[3*((gridsize + 2)//2)**2] + 1)
+        - ℝ[2*π/boxsize]*sqrt(ℤ[3*((gridsize + 2)//2)**2]    )
     )
-    k_bin_size = np.max((powerspec_binsize, powerspec_binsize_min))
+    k_bin_size = pairmax(binsize, binsize_min)
     k_bin_centers = np.arange(
         k_min + (0.5 - 1e+1*machine_ϵ)*k_bin_size,
         k_max + k_bin_size,
@@ -246,18 +234,16 @@ def get_powerspec_bins(gridsize):
     # Array counting the multiplicity (number of modes) of each
     # k² in the 3D grid.
     n_modes_fine = zeros(k_bin_indices.shape[0], dtype=C2np['Py_ssize_t'])
-    # Get distributed slab
+    # Get distributed slab for the given grid size
     slab = get_fftw_slab(gridsize)
-    # We only actually use the slab for its shape. In Fourier space,
-    # the slab is transposed in the first two dimensions.
-    size_j, size_i, size_k = slab.shape[0], slab.shape[1], slab.shape[2]
-    # Loop over the slab
-    any_particles = compute_sumk = False
-    for i, j, k, k2, sumk, symmetry_multiplicity, deconv in slab_fourier_loop(
-        gridsize, size_i, size_j, size_k, any_particles, compute_sumk,
-    ):
-        # Increase the multiplicity of this k²
-        n_modes_fine[k2] += symmetry_multiplicity
+    # Loop over the slab, tallying up the multiplicity for each k².
+    # We do not touch the slab data.
+    slabs = {'particles': slab}
+    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(slabs, nullify_DC=False):
+        n_modes_fine[k2] += get_symmetry_multiplicity(kk, nyquist)
+    # The k == k_max mode is highly uncertain.
+    # We wish to exclude this point and so we set its multiplicity to 0.
+    n_modes_fine[k2_max] = 0
     # Sum n_modes_fine into the master process
     Reduce(
         sendbuf=(MPI.IN_PLACE if master else n_modes_fine),
@@ -268,11 +254,11 @@ def get_powerspec_bins(gridsize):
     n_modes_max = 0
     if not master:
         # The slave processes return now.
-        # Updated values of k_bin_indice are received from the master.
+        # Updated values of k_bin_indices are received from the master.
         # This is the only data known to the slaves.
         Bcast(k_bin_indices)
         k_bin_centers = n_modes = None
-        powerspec_bins_cache[gridsize] = k_bin_indices, k_bin_centers, n_modes, n_modes_max
+        powerspec_bins_cache[cache_key] = k_bin_indices, k_bin_centers, n_modes, n_modes_max
         return k_bin_indices, k_bin_centers, n_modes, n_modes_max
     # Redefine k_bin_centers so that each element is the mean of all the
     # k values that falls within the bin, using the multiplicity
@@ -312,9 +298,9 @@ def get_powerspec_bins(gridsize):
     mask = (asarray(n_modes) > 0)
     n_modes = asarray(n_modes)[mask]
     k_bin_centers = asarray(k_bin_centers)[mask]
-    powerspec_bins_cache[gridsize] = k_bin_indices, k_bin_centers, n_modes, n_modes_max
+    powerspec_bins_cache[cache_key] = k_bin_indices, k_bin_centers, n_modes, n_modes_max
     return k_bin_indices, k_bin_centers, n_modes, n_modes_max
-# Cache used by the get_powerspec_bins function
+# Cache used by the get_powerspec_bins() function
 cython.declare(powerspec_bins_cache=dict)
 powerspec_bins_cache = {}
 
@@ -322,7 +308,7 @@ powerspec_bins_cache = {}
 # with all fields will compute its power spectrum.
 @cython.header(
     # Arguments
-    powerspec_declaration=object,  # PowerspecDeclaration
+    declaration=object,  # PowerspecDeclaration
     # Locals
     a='double',
     any_fluid='bint',
@@ -330,46 +316,50 @@ powerspec_bins_cache = {}
     component='Component',
     components=list,
     components_str=str,
-    compute_sumk='bint',
     deconv='double',
-    deconv2='double',
-    grid='double[:, :, ::1]',
+    deconvolution='bint',
     grids=dict,
-    i='Py_ssize_t',
-    im='double',
-    j='Py_ssize_t',
-    k='Py_ssize_t',
-    k_bin_indices='Py_ssize_t[::1]',
-    k_bin_index='Py_ssize_t',
-    k2='Py_ssize_t',
     gridsize='Py_ssize_t',
+    gridsizes_upstream=list,
+    index='Py_ssize_t',
+    interlacing='bint',
+    interpolation='int',
+    k_bin_index='Py_ssize_t',
+    k_bin_indices='Py_ssize_t[::1]',
+    k_bin_indices_ptr='Py_ssize_t*',
+    k2='Py_ssize_t',
+    ki='Py_ssize_t',
+    kj='Py_ssize_t',
+    kk='Py_ssize_t',
+    multiplicity='int',
     n_modes='Py_ssize_t[::1]',
+    n_modes_ptr='Py_ssize_t*',
     normalization='double',
     power='double[::1]',
-    power_jik='double',
-    re='double',
-    representation=str,
-    size_i='Py_ssize_t',
-    size_j='Py_ssize_t',
-    size_k='Py_ssize_t',
+    power_ijk='double',
+    power_ptr='double*',
     slab='double[:, :, ::1]',
     slab_fluid='double[:, :, ::1]',
-    slab_jik='double*',
+    slab_fluid_ptr='double*',
     slab_particles='double[:, :, ::1]',
-    slab_particles_shifted='double[:, :, ::1]',
+    slab_particles_ptr='double*',
     slabs=dict,
-    sumk='Py_ssize_t',
-    symmetry_multiplicity='int',
-    θ='double',
     returns='void',
 )
-def compute_powerspec(powerspec_declaration):
+def compute_powerspec(declaration):
     # Extract some variables from the power spectrum declaration
-    components    = powerspec_declaration.components
-    gridsize      = powerspec_declaration.gridsize
-    k_bin_indices = powerspec_declaration.k_bin_indices
-    n_modes       = powerspec_declaration.n_modes
-    power         = powerspec_declaration.power
+    components    = declaration.components
+    gridsize      = declaration.gridsize
+    interpolation = declaration.interpolation
+    deconvolution = declaration.deconvolution
+    interlacing   = declaration.interlacing
+    k_bin_indices = declaration.k_bin_indices
+    k_bin_indices_ptr = cython.address(k_bin_indices[:])
+    n_modes = declaration.n_modes
+    if master:
+        n_modes_ptr = cython.address(n_modes[:])
+    power = declaration.power
+    power_ptr = cython.address(power[:])
     # Begin progress message
     if len(components) == 1:
         component = components[0]
@@ -377,74 +367,65 @@ def compute_powerspec(powerspec_declaration):
     else:
         components_str = ', '.join([component.name for component in components])
         masterprint(f'Computing power spectrum of {{{components_str}}} ...')
-    # Populate grids with physical densities from all of the components.
-    # A separate grid will be used for particle and fluid components.
-    grids = interpolate_components(components, 'ρ', gridsize, powerspec_interpolation,
-        include_shifted_particles=powerspec_interlacing)
+    # Interpolate the physical density of all components onto global
+    # grids by first interpolating onto individual upstream grids and
+    # then pixel mix these onto the global grids. Separate global grids
+    # will be used for particle and fluid components.
+    gridsizes_upstream = [
+        component.powerspec_upstream_gridsize
+        for component in components
+    ]
+    grids = interpolate_upstream(
+        components, gridsizes_upstream, gridsize, 'ρ',
+        interpolation, interlacing,
+        do_ghost_communication=False,
+    )
     # Slab decompose the grids
-    slabs = {
-        representation: slab_decompose(grid, f'slab_{representation}', prepare_fft=True)
-        for representation, grid in grids.items()
-    }
+    slabs = slab_decompose(grids, prepare_fft=True)
     # Do a forward in-place Fourier transform of the slabs
-    for slab in slabs.values():
-        if slab is None:
-            continue
-        fft(slab, 'forward')
-        # In Fourier space, the slab is transposed
-        # in the first two dimensions.
-        size_j, size_i, size_k = slab.shape[0], slab.shape[1], slab.shape[2]
+    fft(slabs, 'forward')
+    # The very highest frequency mode is highly uncertain
+    # and so we nullify its contribution.
+    nullify_highest_frequency_mode(slabs)
+    # Store the slabs as separate variables
+    slab_particles = slabs.get('particles')
+    any_particles = (slab_particles is not None)
+    if any_particles:
+        slab_particles_ptr = cython.address(slab_particles[:, :, :])
+    slab_fluid = slabs.get('fluid')
+    any_fluid = (slab_fluid is not None)
+    if any_fluid:
+        slab_fluid_ptr = cython.address(slab_fluid[:, :, :])
     # Nullify the reused power array
     power[:] = 0
-    # Loop over the slabs
-    slab_particles = slabs['particles']
-    if powerspec_interlacing:
-        slab_particles_shifted = slabs['particles_shifted']
-    slab_fluid = slabs['fluid']
-    any_particles = (slab_particles is not None)
-    any_fluid     = (slab_fluid     is not None)
-    compute_sumk = (any_particles and powerspec_interlacing)
-    for i, j, k, k2, sumk, symmetry_multiplicity, deconv in slab_fourier_loop(
-        gridsize, size_i, size_j, size_k, any_particles, compute_sumk,
+    # Loop over the slab(s),
+    # tallying up the power in the different k² bins.
+    nyquist = gridsize//2
+    deconv_order = interpolation*deconvolution*any_particles
+    do_interlacing = (any_particles and interlacing)
+    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(
+        slabs,
+        deconv_order=deconv_order,
+        do_interlacing=do_interlacing,
     ):
-        # Power from the complex number at [j, i, k]
-        power_jik = 0
-        # Add deconvolved power from the particles slab
+        # Compute the total power at this index resulting
+        # from both particles and fluid components,
+        # with the particles slab values deconvolved.
         with unswitch(3):
-            if any_particles:
-                # The deconvolution factor given by deconv is that of
-                # order 1 (NGP) interpolation. The full deconvolution
-                # needed is deconv**powerspec_interpolation.
-                # Below we compute the square of the full deconvolution.
-                deconv2 = deconv**ℤ[2*powerspec_interpolation]
-                # Add power from the particles slab and possibly the
-                # shifted particles slab.
-                with unswitch(3):
-                    if powerspec_interlacing:
-                        # Rotate the phase of the complex number of the
-                        # shifted particles slab at this [j, i, k] by θ,
-                        # which according to harmonic averaging is
-                        #   θ = (kx + ky + kz)*(gridsize/boxsize)/2
-                        #     = π/gridsize*(ki + kj + kk)
-                        slab_jik = cython.address(slab_particles_shifted[j, i, k:])
-                        re, im = slab_jik[0], slab_jik[1]
-                        θ = ℝ[π/gridsize]*sumk
-                        re, im = re*ℝ[cos(θ)] - im*ℝ[sin(θ)], re*ℝ[sin(θ)] + im*ℝ[cos(θ)]
-                        # Add the interlaced, deconvolved power
-                        slab_jik = cython.address(slab_particles[j, i, k:])
-                        power_jik += 0.25*((slab_jik[0] + re)**2 + (slab_jik[1] + im)**2)*deconv2
-                    else:
-                        # Add the deconvolved power
-                        slab_jik = cython.address(slab_particles[j, i, k:])
-                        power_jik += (slab_jik[0]**2 + slab_jik[1]**2)*deconv2
-        # Add power from the fluid slab
-        with unswitch(3):
-            if any_fluid:
-                slab_jik = cython.address(slab_fluid[j, i, k:])
-                power_jik += slab_jik[0]**2 + slab_jik[1]**2
+            if 𝔹[any_particles and any_fluid]:
+                re = deconv*slab_particles_ptr[index    ] + slab_fluid_ptr[index    ]
+                im = deconv*slab_particles_ptr[index + 1] + slab_fluid_ptr[index + 1]
+            elif any_particles:
+                re = deconv*slab_particles_ptr[index    ]
+                im = deconv*slab_particles_ptr[index + 1]
+            else:  # any_fluid
+                re = slab_fluid_ptr[index    ]
+                im = slab_fluid_ptr[index + 1]
+        power_ijk = re**2 + im**2
         # Add power at this k² to the corresponding bin
-        k_bin_index = k_bin_indices[k2]
-        power[k_bin_index] += symmetry_multiplicity*power_jik
+        k_bin_index = k_bin_indices_ptr[k2]
+        multiplicity = get_symmetry_multiplicity(kk, nyquist)
+        power_ptr[k_bin_index] += multiplicity*power_ijk
     # Sum power into the master process
     Reduce(
         sendbuf=(MPI.IN_PLACE if master else power),
@@ -480,7 +461,7 @@ def compute_powerspec(powerspec_declaration):
     normalization *= (gridsize*ℝ[1/sqrt(boxsize)])**3
     normalization **= -2
     for k_bin_index in range(power.shape[0]):
-        power[k_bin_index] *= normalization/n_modes[k_bin_index]
+        power_ptr[k_bin_index] *= normalization/n_modes_ptr[k_bin_index]
     # Done with the main power spectrum computation
     masterprint('done')
 
@@ -488,7 +469,7 @@ def compute_powerspec(powerspec_declaration):
 # with all fields will compute its linear CLASS power spectrum.
 @cython.header(
     # Arguments
-    powerspec_declaration=object,  # PowerspecDeclaration
+    declaration=object,  # PowerspecDeclaration
     # Locals
     component='Component',
     components=list,
@@ -497,11 +478,13 @@ def compute_powerspec(powerspec_declaration):
     power_linear='double[::1]',
     returns='void',
 )
-def compute_powerspec_linear(powerspec_declaration):
+def compute_powerspec_linear(declaration):
+    if not declaration.do_linear:
+        return
     # Extract some variables from the power spectrum declaration
-    components    = powerspec_declaration.components
-    k_bin_centers = powerspec_declaration.k_bin_centers
-    power_linear  = powerspec_declaration.power_linear
+    components    = declaration.components
+    k_bin_centers = declaration.k_bin_centers
+    power_linear  = declaration.power_linear
     # Begin progress message
     if len(components) == 1:
         component = components[0]
@@ -515,117 +498,22 @@ def compute_powerspec_linear(powerspec_declaration):
     # Done with the linear power spectrum computation
     masterprint('done')
 
-# Iterator implementing looping over Fourier space slabs
-@cython.iterator
-def slab_fourier_loop(
-    gridsize, size_i, size_j, size_k, any_particles, compute_sumk,
-):
-    # Cython declarations for variables used for the iteration,
-    # not including those to yield.
-    # Do not write these using the decorator syntax above this function.
-    cython.declare(
-        j_global='Py_ssize_t',
-        k2_max='Py_ssize_t',
-        ki='Py_ssize_t',
-        ki_plus_kj='Py_ssize_t',
-        kj='Py_ssize_t',
-        kk='Py_ssize_t',
-        nyquist='Py_ssize_t',
-        deconv_ij='double',
-        deconv_j='double',
-    )
-    # Maximum value of k² (grid units)
-    nyquist = gridsize//2
-    k2_max = 3*nyquist**2
-    # When any_particles is False,
-    # this is the returned deconvolution factor.
-    deconv = 1
-    # When compute_sumk is False,
-    # this is the returned sum of wave vector elements.
-    sumk = 0
-    # To satisfy the compiler
-    deconv_j = deconv_ij = deconv_ijk = 1
-    # When looping in Fourier space, remember that the first and second
-    # dimension are transposed.
-    for j in range(size_j):
-        # The j-component of the wave vector (grid units).
-        # Since the slabs are distributed along the j-dimension,
-        # an offset must be used.
-        j_global = ℤ[size_j*rank] + j
-        kj = j_global - gridsize if j_global > ℤ[gridsize//2] else j_global
-        # The j-component of the deconvolution
-        with unswitch(1):
-            if any_particles:
-                deconv_j = get_deconvolution(kj*ℝ[π/gridsize])
-        # Loop over the entire first dimension
-        for i in range(gridsize):
-            # The i-component of the wave vector
-            ki = i - gridsize if i > ℤ[gridsize//2] else i
-            # The product of the i- and the j-component
-            # of the deconvolution.
-            with unswitch(2):
-                if any_particles:
-                    deconv_ij = get_deconvolution(ki*ℝ[π/gridsize])*deconv_j
-            # The sum of wave vector elements
-            with unswitch(2):
-                if compute_sumk:
-                    ki_plus_kj = ki + kj
-            # Loop over the entire last dimension in steps of two,
-            # as contiguous pairs of elements are the real and
-            # imaginary part of the same complex number.
-            for k in range(0, size_k, 2):
-                # The k-component of the wave vector
-                kk = k//2
-                # The squared magnitude of the wave vector
-                k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
-                # Skip the DC component.
-                # For some reason, the k = k_max mode is
-                # highly uncertain. Skip this as well.
-                if k2 == 0 or k2 == k2_max:
-                    continue
-                # The sum of wave vector elements
-                with unswitch(3):
-                    if compute_sumk:
-                        sumk = ki_plus_kj + kk
-                # Because of the complex-conjugate symmetry, the slabs
-                # only contain half of the data; the positive kk
-                # frequencies. Including this missing half lead to truer
-                # statistics, altering the binned power spectrum. The
-                # symmetry_multiplicity variable counts the number of
-                # times this grid point should be counted.
-                if kk == 0 or kk == nyquist:
-                    symmetry_multiplicity = 1
-                else:
-                    symmetry_multiplicity = 2
-                # Construct the complete deconvolution
-                with unswitch(3):
-                    if any_particles:
-                        # The total (NGP) deconvolution factor
-                        deconv = deconv_ij*get_deconvolution(kk*ℝ[π/gridsize])
-                # To get the complex number at this [j, i, k]
-                # of a slab, use
-                # slab_jik = cython.address(slab[j, i, k:])
-                # after which the real and the imaginary part
-                # can be accessed as
-                # slab_jik[0]  # real part
-                # slab_jik[1]  # imag part
-                #
-                # Yield the local indices, the global k2, the symmetry
-                # multiplicity and the deconvolution factor.
-                yield i, j, k, k2, sumk, symmetry_multiplicity, deconv
-
-# Function for saving already computed power spectra to disk
+# Function for saving already computed power spectra
+# to a single text file.
 @cython.header(
     # Arguments
-    powerspec_declarations=list,
+    declarations=list,
     filename=str,
     # Locals
     col='int',
     data='double[:, ::1]',
+    declaration=object,  # PowerspecDeclaration
+    declaration_group=list,
+    declaration_groups=dict,
     delimiter=str,
     fmt=list,
-    gridsize='Py_ssize_t',
     header=str,
+    header_info=object,  # PowerspecHeaderInfo
     k_bin_centers='double[::1]',
     n_cols='int',
     n_modes='Py_ssize_t[::1]',
@@ -633,70 +521,66 @@ def slab_fourier_loop(
     n_rows='int',
     power='double[::1]',
     power_linear='double[::1]',
-    powerspec_declaration=object,  # PowerspecDeclaration
-    powerspec_declaration_group=list,
-    powerspec_declaration_groups=dict,
-    powerspec_header_info=object,  # PowerspecHeaderInfo
     size='Py_ssize_t',
     spectrum_plural=str,
     topline=str,
     σ='double',
     returns='void',
 )
-def save_powerspec(powerspec_declarations, filename):
-    """It is expected that this function
-    is called by the master process only.
-    All power spectra will be saves into a single text file.
-    """
+def save_powerspec(declarations, filename):
+    if not master:
+        return
     # Discard power spectrum declarations that should not be saved
-    powerspec_declarations = [
-        powerspec_declaration
-        for powerspec_declaration in powerspec_declarations
-        if powerspec_declaration.do_data
-    ]
-    if not powerspec_declarations:
+    declarations = [declaration for declaration in declarations if declaration.do_data]
+    if not declarations:
         return
     # Get header, format and delimiter specifier for the data file
-    powerspec_header_info = get_powerspec_header(powerspec_declarations)
-    header = powerspec_header_info.header
-    spectrum_plural = 'spectrum' if len(powerspec_declarations) == 1 else 'spectra'
+    header_info = get_powerspec_header(declarations)
+    header = header_info.header
+    spectrum_plural = 'spectrum' if len(declarations) == 1 else 'spectra'
     masterprint(f'Saving power {spectrum_plural} to "{filename}" ...')
     # The top line of the header, stating general information
+    header_significant_figures = np.max([
+        declaration.significant_figures
+        for declaration in declarations
+    ])
     topline = unicode(
         f'Power {spectrum_plural} from CO𝘕CEPT job {jobid} at t = '
-        + f'{{:.{powerspec_significant_figures}g}} '.format(universals.t)
+        + f'{{:.{header_significant_figures}g}} '.format(universals.t)
         + f'{unit_time}'
         + (
-            f', a = ' + f'{{:.{powerspec_significant_figures}g}}'.format(universals.a)
+            f', a = ' + f'{{:.{header_significant_figures}g}}'.format(universals.a)
             if enable_Hubble else ''
         )
         + '.'
     )
     # The output data consists of a "k" column and a "modes" column for
-    # each unique gridsize, along with a "power" column for each power
+    # each unique grid size, along with a "power" column for each power
     # spectrum and possibly another "power" if the linear power spectrum
     # should be outputted as well. The number of rows in a column
-    # depends on the gridsize, but to make it easier to read back in we
+    # depends on the grid size, but to make it easier to read back in we
     # make all columns the same length by appending NaNs as required
     # (zeros for the modes).
     # Get a 2D array with the right size for storing all data.
-    for powerspec_declaration_group in powerspec_header_info.powerspec_declaration_groups.values():
-        powerspec_declaration = powerspec_declaration_group[0]
-        n_rows = powerspec_declaration.k_bin_centers.shape[0]
+    for declaration_group in header_info.declaration_groups.values():
+        declaration = declaration_group[0]
+        n_rows = declaration.k_bin_centers.shape[0]
         break
     n_cols = (
-        2*len(powerspec_header_info.powerspec_declaration_groups)
-        + len(powerspec_declarations)*(2 if powerspec_include_linear else 1)
+        2*len(header_info.declaration_groups)
+        + len(declarations)
+        + np.sum([
+            declaration.do_linear
+            for declaration in declarations
+        ])
     )
     data = get_buffer((n_rows, n_cols))
     # Fill in data columns
     col = 0
-    for gridsize, powerspec_declaration_group in (
-        powerspec_header_info.powerspec_declaration_groups.items()
-    ):
-        powerspec_declaration = powerspec_declaration_group[0]
-        k_bin_centers = powerspec_declaration.k_bin_centers
-        n_modes       = powerspec_declaration.n_modes
+    for declaration_group in header_info.declaration_groups.values():
+        declaration = declaration_group[0]
+        k_bin_centers = declaration.k_bin_centers
+        n_modes       = declaration.n_modes
         size = k_bin_centers.shape[0]
         # New k
         data[:size, col] = k_bin_centers
@@ -707,73 +591,67 @@ def save_powerspec(powerspec_declarations, filename):
         data[:size, col] = n_modes_float
         data[size:, col] = 0
         col += 1
-        for powerspec_declaration in powerspec_declaration_group:
+        for declaration in declaration_group:
             # New power
-            power = powerspec_declaration.power
+            power = declaration.power
             data[:size, col] = power
             data[size:, col] = NaN
             col += 1
             # Compute the rms density variation
             # and insert it into the header.
-            σ = compute_powerspec_σ(powerspec_declaration)
+            σ = compute_powerspec_σ(declaration)
             header = re.sub(r'= \{.+?\}', lambda m, σ=σ: m.group().format(σ), header, 1)
             # New linear power and rms density variation
-            with unswitch:
-                if powerspec_include_linear:
-                    power_linear = powerspec_declaration.power_linear
-                    data[:size, col] = power_linear
-                    data[size:, col] = NaN
-                    col += 1
-                    σ = compute_powerspec_σ(powerspec_declaration, linear=True)
-                    header = re.sub(r'= \{.+?\}', lambda m, σ=σ: m.group().format(σ), header, 1)
+            if declaration.do_linear:
+                power_linear = declaration.power_linear
+                data[:size, col] = power_linear
+                data[size:, col] = NaN
+                col += 1
+                σ = compute_powerspec_σ(declaration, linear=True)
+                header = re.sub(r'= \{.+?\}', lambda m, σ=σ: m.group().format(σ), header, 1)
     # Save data and header to text file
     np.savetxt(
         filename,
         data,
-        fmt=powerspec_header_info.fmt,
-        delimiter=powerspec_header_info.delimiter,
+        fmt=header_info.fmt,
+        delimiter=header_info.delimiter,
         header=f'{topline}\n{header}',
     )
     masterprint('done')
 
 # Pure Python function for generating the header for a power spectrum
 # data file, given a list of power spectrum declarations.
-def get_powerspec_header(powerspec_declarations):
+def get_powerspec_header(declarations):
     """Besides the header, this function also returns a list of data
     format specifiers, the delimter needed between the data columns and
-    a dict mapping power spectrum gridsizes to lists of
+    a dict mapping power spectrum grid sizes to lists of
     power spectrum declarations.
     Importantly, the supplied list of power spectrum declarations should
     only contain declarations for which do_data is True.
     """
     # Look up in the cache
-    key = tuple([
-        tuple(powerspec_declaration.components)
-        for powerspec_declaration in powerspec_declarations
-    ])
-    powerspec_header_info = powerspec_header_cache.get(key)
-    if powerspec_header_info:
+    cache_key = tuple([tuple(declaration.components) for declaration in declarations])
+    header_info = powerspec_header_cache.get(cache_key)
+    if header_info:
         # Cached result found.
         # Which components to include in the power spectrum
         # computation/plot may change over time due to components
         # changing their passive/active/terminated state, which in turn
-        # change the passed powerspec_declarations. As the key used
-        # above depends on the components only, the resulting cached
-        # result may hold outdated PowerspecDeclaration instances.
+        # change the passed declarations. As the cache key used above
+        # depends on the components only, the resulting cached result
+        # may hold outdated PowerspecDeclaration instances.
         # Update these before returning.
-        for powerspec_declaration_group in (
-            powerspec_header_info.powerspec_declaration_groups.values()
-        ):
-            for i, powerspec_declaration_cached in enumerate(powerspec_declaration_group):
-                for powerspec_declaration in powerspec_declarations:
-                    if powerspec_declaration_cached.components == powerspec_declaration.components:
-                        powerspec_declaration_group[i] = powerspec_declaration
+        for declaration_group in header_info.declaration_groups.values():
+            for i, declaration_cached in enumerate(declaration_group):
+                for declaration in declarations:
+                    if declaration_cached.components == declaration.components:
+                        declaration_group[i] = declaration
                         break
-        return powerspec_header_info
+        return header_info
     # A column mapping each component to a number
     components = []
-    for powerspec_declaration in powerspec_declarations:
-        for component in powerspec_declaration.components:
+    for declaration in declarations:
+        for component in declaration.components:
             if component not in components:
                 components.append(component)
     longest_name_size = np.max([len(component.name) for component in components])
@@ -782,17 +660,17 @@ def get_powerspec_header(powerspec_declarations):
         column_components.append(
             f'  {{:<{longest_name_size + 1}}} {i}'.format(f'{component.name}:')
         )
-    # Group power spectrum declarations according to their gridsize,
-    # in descending order.
-    powerspec_declaration_groups_unordered = collections.defaultdict(list)
-    for gridsize, powerspec_declarations_iter in itertools.groupby(
-        powerspec_declarations,
-        key=operator.attrgetter('gridsize'),
+    # Group power spectrum declarations according to their grid size
+    # (in descending order) and bin size (in ascending order).
+    declaration_groups_unordered = collections.defaultdict(list)
+    for key, declarations_iter in itertools.groupby(
+        declarations,
+        key=(lambda declaration: (declaration.gridsize, declaration.binsize)),
     ):
-        powerspec_declaration_groups_unordered[gridsize] += list(powerspec_declarations_iter)
-    powerspec_declaration_groups = {
-        gridsize: powerspec_declaration_groups_unordered[gridsize]
-        for gridsize in sorted(powerspec_declaration_groups_unordered, reverse=True)
+        declaration_groups_unordered[key] += list(declarations_iter)
+    declaration_groups = {
+        key: declaration_groups_unordered[key]
+        for key in sorted(declaration_groups_unordered, key=(lambda t: (-t[0], t[1])))
     }
     # The column headings
     column_headings = {
@@ -805,8 +683,15 @@ def get_powerspec_header(powerspec_declarations):
     # R_tophat. By convention, the unit is Mpc/h.
     σ_unit = units.Mpc/(H0/(100*units.km/(units.s*units.Mpc))) if enable_Hubble else units.Mpc
     σ_str = ''.join([unicode('σ'), unicode_subscript(f'{R_tophat/σ_unit:.3g}'), ' = '])
+    # Helper function for obtaining the float format and width
+    # given number of significant figures.
+    def get_formatting(significant_figures):
+        fmt_float = f'%-{{}}.{significant_figures - 1}e'
+        width_float = significant_figures + n_chars_nonsignificant
+        return fmt_float, width_float
+    n_chars_nonsignificant = len(f'{1e+100:.1e}') - 2
     # The output data consists of a "k" column and a "modes" column for
-    # each unique gridsize, along with a "power" column for each power
+    # each unique grid size, along with a "power" column for each power
     # spectrum.
     # Determine the headings for each column and their format specifier.
     group_spacing = 1
@@ -816,14 +701,10 @@ def get_powerspec_header(powerspec_declarations):
     σs_heading = []
     columns_heading = []
     fmt = []
-    fmt_float = f'%-{{}}.{powerspec_significant_figures - 1}e'
-    n_chars_nonsignificant = len(f'{1e+100:.1e}') - 2
-    width_float = powerspec_significant_figures + n_chars_nonsignificant
     fmt_int = '%{}u'
-    for gridsize, powerspec_declaration_group in powerspec_declaration_groups.items():
-        powerspec_declaration = powerspec_declaration_group[0]
+    for (gridsize, binsize), declaration_group in declaration_groups.items():
         if col > 0:
-            # New group with new gridsize begins. Insert additional
+            # New group with new grid size begins. Insert additional
             # spacing by modifying the last elements of the
             # *s_heading and fmt.
             components_heading.append(components_heading.pop() + group_delimiter)
@@ -833,6 +714,9 @@ def get_powerspec_header(powerspec_declarations):
         # New k
         col += 1
         column_heading = column_headings['k']
+        fmt_float, width_float = get_formatting(
+            np.max([declaration.significant_figures for declaration in declaration_group])
+        )
         width = np.max((width_float, len(column_heading) + 2*(col == 1)))
         components_heading.append(' '*(width - 2*(col == 1)))
         σs_heading.append(' '*(width - 2*(col == 1)))
@@ -844,7 +728,8 @@ def get_powerspec_header(powerspec_declarations):
         # New modes
         col += 1
         column_heading = column_headings['modes']
-        width = np.max((len(str(powerspec_declaration.n_modes_max)), len(column_heading)))
+        declaration = declaration_group[0]
+        width = np.max((len(str(declaration.n_modes_max)), len(column_heading)))
         components_heading.append(' '*width)
         σs_heading.append(' '*width)
         extra_spacing = width - len(column_heading)
@@ -852,21 +737,22 @@ def get_powerspec_header(powerspec_declarations):
             ' '*(extra_spacing//2) + column_heading + ' '*(extra_spacing - extra_spacing//2)
         )
         fmt.append(fmt_int.format(width))
-        for powerspec_declaration in powerspec_declaration_group:
+        for declaration in declaration_group:
             # New power and possibly linear power
-            for power_type in range(1 + powerspec_include_linear):
+            for power_type in range(1 + declaration.do_linear):
                 col += 1
                 if power_type == 0:  # Non-linear
                     component_heading = get_integerset_strrep([
                         components.index(component)
-                        for component in powerspec_declaration.components
+                        for component in declaration.components
                     ])
-                    if len(powerspec_declaration.components) == 1:
+                    if len(declaration.components) == 1:
                         component_heading = f'component {component_heading}'
                     else:
                         component_heading = f'components {{{component_heading}}}'
                 else:  # power_type == 1 (linear)
                     component_heading = '(linear)'
+                fmt_float, width_float = get_formatting(declaration.significant_figures)
                 σ_significant_figures = width_float - len(σ_str) - n_chars_nonsignificant
                 if σ_significant_figures < 2:
                     σ_significant_figures = 2
@@ -911,8 +797,8 @@ def get_powerspec_header(powerspec_declarations):
             width += len(delimiter) + len(column_heading)
     group_header_underlines.append('/' + unicode('‾')*(width - 2) + '\\')
     group_headers = []
-    for gridsize, group_header_underline in zip(
-        powerspec_declaration_groups, group_header_underlines,
+    for (gridsize, binsize), group_header_underline in zip(
+        declaration_groups, group_header_underlines,
     ):
         group_heading = f'grid size {gridsize}'
         extra_spacing = len(group_header_underline) - len(group_heading)
@@ -931,16 +817,17 @@ def get_powerspec_header(powerspec_declarations):
         delimiter.join(columns_heading),
     ])
     # Store in cache and return
-    powerspec_header_cache[key] = PowerspecHeaderInfo(
-        header, fmt, delimiter, powerspec_declaration_groups,
+    header_info = PowerspecHeaderInfo(
+        header, fmt, delimiter, declaration_groups,
     )
-    return powerspec_header_cache[key]
+    powerspec_header_cache[cache_key] = header_info
+    return header_info
 # Cache and type used by the get_powerspec_header() function
 cython.declare(powerspec_header_cache=dict)
 powerspec_header_cache = {}
 PowerspecHeaderInfo = collections.namedtuple(
     'PowerspecHeaderInfo',
-    ('header', 'fmt', 'delimiter', 'powerspec_declaration_groups'),
+    ('header', 'fmt', 'delimiter', 'declaration_groups'),
 )
 
 # Function which given a power spectrum declaration with the
@@ -948,7 +835,7 @@ PowerspecHeaderInfo = collections.namedtuple(
 # rms density variation of the power spectrum.
 @cython.header(
     # Arguments
-    powerspec_declaration=object,  # PowerspecDeclaration
+    declaration=object,  # PowerspecDeclaration
     linear='bint',
     # Locals
     W='double',
@@ -962,14 +849,14 @@ PowerspecHeaderInfo = collections.namedtuple(
     σ2_integrand='double[::1]',
     returns='double',
 )
-def compute_powerspec_σ(powerspec_declaration, linear=False):
-    k_bin_centers = powerspec_declaration.k_bin_centers
-    power         = powerspec_declaration.power
+def compute_powerspec_σ(declaration, linear=False):
+    k_bin_centers = declaration.k_bin_centers
+    power         = declaration.power
     # If the σ to be computed is of the linear power spectrum,
     # we need to truncate k_bin_centers and power so that they do
     # not contain NaN's.
     if linear:
-        power = powerspec_declaration.power_linear
+        power = declaration.power_linear
         power = asarray(power)[~np.isnan(power)]
         k_bin_centers = k_bin_centers[:power.shape[0]]
     # Ensure that the global σ2_integrand array is large enough

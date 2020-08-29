@@ -86,7 +86,7 @@ the modified code in a very clean state either. Sorry...
 
 
 # General imports
-import collections, contextlib, copy, importlib, inspect, itertools
+import ast, collections, contextlib, copy, importlib, inspect, itertools
 import keyword, os, re, shutil, sys, unicodedata, warnings
 # For math
 import numpy as np
@@ -249,6 +249,38 @@ def oneline(lines, no_optimization=None):
             multiline_statement = []
         else:
             new_lines.append(line)
+    return new_lines
+
+
+
+def walrus(lines, no_optimization):
+    """Remove this function once Python 3.8 assignment expressions get
+    implemented in Cython.
+    https://github.com/cython/cython/pull/3691
+    """
+    new_lines = []
+    for line in lines:
+        if ':=' in line:
+            varname = re.search(r'\( *([a-zA-Z_][a-zA-Z0-9_]*) *:=', line).group(1)
+            index_bgn = line.index(':=') + 2
+            for index_end in range(len(line), index_bgn + 1, -1):
+                expression = line[index_bgn:index_end].strip()
+                try:
+                    parsed = ast.parse(expression)
+                except:
+                    continue
+                if len(parsed.body) == 1:
+                    break
+            else:
+                print(
+                    f'Could not perform substitution of walrus operator '
+                    f'in the following line:\n"{line}"',
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            line = re.sub(rf'\( *{varname} *:=', '( ', line)
+            line = line.replace(varname, f'({expression})')
+        new_lines.append(line)
     return new_lines
 
 
@@ -595,6 +627,7 @@ def cimport_function(lines, no_optimization):
                 module = match.group(1)
                 functions = match.group(2).split(',')
                 for function in functions:
+                    function = function.strip()
                     if (
                         inline_iterators_found is None
                         or function not in inline_iterators_found[module]
@@ -2652,7 +2685,7 @@ def add_types_to_addition_chain_exponentiation_variables(lines, clines, no_optim
     # These variables are not explicitly typed in the Python code,
     # leading Cython to auto-type them as either doubles or PyObject*
     # (or no type at all for module level variables which may be treated
-    # seperately by Cython). Whenever a PyObject* declaration is found
+    # separately by Cython). Whenever a PyObject* declaration is found
     # for such a variable, it really should have the type Py_ssize_t.
     funcsuffixes2types = {
         # Integers
@@ -2919,6 +2952,8 @@ def C_casting(lines, no_optimization):
         while True:
             match = re.search(r'[^\w.]cast *\(', line)
             if not match:
+                break
+            if line.lstrip().startswith('#'):
                 break
             parens = 1
             brackets = 0
@@ -3550,6 +3585,7 @@ if __name__ == '__main__':
             # Apply transformations (stage 1) on the lines
             lines = cimport_cython               (lines, no_optimization)
             lines = oneline                      (lines, no_optimization)
+            lines = walrus                       (lines, no_optimization)
             lines = format_pxdhints              (lines, no_optimization)
             lines = cythonstring2code            (lines, no_optimization)
             lines = cython_structs               (lines, no_optimization)

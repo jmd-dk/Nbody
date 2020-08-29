@@ -168,13 +168,13 @@ for line in "${header_lines[@]}"; do
 done
 
 # If a CO𝘕CEPT parameter file is supplied,
-# get the grid size of the P(³)M grid used, if any.
+# get the grid size of the global P(³)M grid used, if any.
 PMGRID="128"
 disable_pm="#"
 if [ "${params}" != "None" ]; then
     gridsize="$("${concept}" -m '
 from commons import *
-print(np.max([val for d in φ_gridsizes.values() for val in d.values()]))
+print(np.max(list(potential_gridsizes["global"]["gravity"].values())))
 ' -n 1 -p "${params}" --pure-python --local | tail -n 1)"
     if [ ${gridsize} -gt 1 ]; then
         PMGRID=${gridsize}

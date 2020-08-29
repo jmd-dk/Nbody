@@ -10,6 +10,11 @@ output_times       = {'snapshot': (0.1, 0.5, 1)}
 
 # Numerical parameters
 boxsize = 8*Mpc/h
+potential_gridsizes = {
+    'gravity': {
+        'p3m': 32,
+    },
+}
 force_interpolations = {
     'gravity': {
         'p3m': 'CIC',
@@ -34,7 +39,7 @@ H0      = 70*km/s/Mpc
 a_begin = 0.02
 
 # Physics
-select_forces           = {'matter': {'gravity': ('p3m', 32)}}
+select_forces           = {'matter': {'gravity': 'p3m'}}
 select_softening_length = {'matter': '0.03*boxsize/cbrt(N)'}
 
 # Simulation options

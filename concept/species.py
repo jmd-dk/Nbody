@@ -870,7 +870,7 @@ class Component:
     ):
         # The keyword-only arguments are passed from dicts in the
         # initial_conditions user parameter. If not specified there
-        # (None passed) they will be set trough other parameters.
+        # (None passed) they will be set through other parameters.
         # Of special interest is the fluid parameters boltzmann_order,
         # boltzmann_closure and approximations. Together, these control
         # the degree to which a fluid component will behave non-
@@ -927,7 +927,7 @@ class Component:
         public str species
         public str representation
         public dict forces
-        public dict φ_gridsizes
+        public dict potential_gridsizes
         public str class_species
         public tuple life
         # Particle attributes
@@ -936,7 +936,8 @@ class Component:
         public Py_ssize_t N_local
         public double mass
         public double softening_length
-        public Py_ssize_t powerspec_gridsize
+        public Py_ssize_t powerspec_upstream_gridsize
+        public Py_ssize_t render2D_upstream_gridsize
         # Particle data
         double* posx
         double* posy
@@ -1074,7 +1075,7 @@ class Component:
             self.representation = 'fluid'
             if self.gridsize%2 != 0:
                 masterwarn(
-                    f'{self.name.capitalize()} has an odd gridsize ({self.gridsize}). '
+                    f'{self.name.capitalize()} has an odd grid size ({self.gridsize}). '
                     f'Some operations may not function correctly.'
                 )
         else:
@@ -1084,67 +1085,114 @@ class Component:
             forces = is_selected(self, select_forces, accumulate=True)
         if not forces:
             forces = {}
-        self.forces = {}
-        for force, method in forces.items():
-            force, method = force.lower(), method.lower()
-            for char in ' _-^()':
-                force, method = force.replace(char, ''), method.replace(char, '')
-            for n in range(10):
-                force  =  force.replace(unicode_superscript(str(n)), str(n))
-                method = method.replace(unicode_superscript(str(n)), str(n))
-            self.forces[force] = method
+        self.forces = forces
         # Check that needed short-range parameters are set
         for force, method in self.forces.items():
-            if (force, method) == ('gravity', 'p3m'):
-                if ℝ[shortrange_params['gravity']['scale']] < 0:
+            if method == 'p3m':
+                if shortrange_params[force]['scale'] < 0:
                     abort(
-                        f'It is specified that {self.name} should use P³M gravity, '
-                        f'but the gridsize to use could not be determined. Please also '
-                        f'specify the gridsize to use in select_forces, and/or specify '
-                        f'shortrange_params["gravity"]["scale"].'
+                        f'It is specified that {self.name} should use P³M {force}, '
+                        f'but the grid size to use could not be determined. Please also '
+                        f'specify the grid size to use in '
+                        f'potential_gridsizes["global"]["{force}"]["p3m"], and/or specify '
+                        f'shortrange_params["{force}"]["scale"].'
                     )
-        # Set φ gridsize for each (force, method) pair
-        self.φ_gridsizes = is_selected(self, φ_gridsizes, accumulate=True)
-        for force, method in forces.items():
-            self.φ_gridsizes.setdefault((force, method), -1)
-        for (force, method), φ_gridsize in self.φ_gridsizes.copy().items():
-            if φ_gridsize == -1:
-                if self.representation == 'particles':
-                    # For particle components, we choose the default
-                    # φ gridsize to equal cbrt(N), except when using
-                    # P³M where having a large grid is very important
-                    # for performance.
-                    φ_gridsize_str = 'cbrt(N)'
-                    if method == 'p3m':
-                        φ_gridsize_str = '2*cbrt(N)'
-                elif self.representation == 'fluid':
-                    # Fluids should always have a φ gridsize equal to
-                    # that of the fluid grids.
-                    φ_gridsize_str = 'gridsize'
-            else:
-                φ_gridsize_str = str(φ_gridsize)
+        # Function for converting expressions involving
+        # 'N' and 'gridsize' to floats.
+        def to_float(s):
+            s = str(s)
             if self.representation == 'particles':
-                φ_gridsize_str = φ_gridsize_str.replace('N', str(self.N))
-                φ_gridsize_str = φ_gridsize_str.replace('gridsize', str(cbrt(self.N)))
-            elif self.representation == 'fluid':
-                φ_gridsize_str = φ_gridsize_str.replace('N', str(self.gridsize**3))
-                φ_gridsize_str = φ_gridsize_str.replace('gridsize', str(self.gridsize))
-            self.φ_gridsizes[force, method] = int(round(
-                eval(φ_gridsize_str, globals(), units_dict)
-            ))
+                s = (s
+                    .replace('N', str(self.N))
+                    .replace('gridsize', str(cbrt(self.N)))
+                )
+            else:  # self.representation == 'fluid':
+                s = (s
+                    .replace('N', str(self.gridsize**3))
+                    .replace('gridsize', str(self.gridsize))
+                )
+            s = s.replace('nprocs', str(nprocs))
+            return eval(s, globals(), units_dict)
+        # Set upstream and downstream potential grid sizes
+        # for each force and method.
+        self.potential_gridsizes = {
+            key_force: dict_method_cleaned
+            for key_force, dict_method in is_selected(
+                self, potential_gridsizes, accumulate=True, default={},
+            ).items()
             if (
-                    self.representation == 'fluid'
-                and self.φ_gridsizes[force, method] != self.gridsize
-                and self.gridsize > 2
-            ):
-                if self.name and self.name not in internally_defined_names:
-                    masterwarn(
-                        f'A φ_gridsize of {self.φ_gridsizes[force, method]} was specified for '
-                        f'the "{force}" force and "{method}" method of the {self.name} fluid '
-                        f'component. This has been changed to {self.gridsize} in order to match '
-                        f'the grid size of the fluid grids.'
+                dict_method_cleaned := {
+                    key_method: gridsizes
+                    for key_method, gridsizes in dict_method.items()
+                    if -1 not in gridsizes
+                }
+            )
+        }
+        for force, method in self.forces.items():
+            self.potential_gridsizes.setdefault(force, {})
+            methods = [method]
+            if method == 'p3m':
+                # If P³M is to be used, also set up potential grid sizes
+                # for PM, as P³M will be switched out for PM in the case
+                # of fluid components.
+                methods.append('pm')
+            for method_extra in methods:
+                if self.representation == 'fluid':
+                    # Fluids should have upstream and downstream
+                    # grid sizes equal to that of the fluid grids.
+                    gridsizes_default = self.gridsize
+                else:
+                    gridsizes_default = (
+                        potential_gridsizes['global'].get(force, {}).get(method_extra)
                     )
-                self.φ_gridsizes[force, method] = self.gridsize
+                    if not gridsizes_default:
+                        continue
+                gridsizes = self.potential_gridsizes[force].get(method_extra, gridsizes_default)
+                if gridsizes == -1:
+                    if self.representation == 'particles':
+                        # For particle components, we choose the default
+                        # potential grid size to equal cbrt(N) (for both
+                        # upstream and downstream), except when using
+                        # P³M where having a large grid is very
+                        # important for performance.
+                        gridsizes = ('cbrt(N)', 'cbrt(N)')
+                        if method_extra == 'p3m':
+                            gridsizes = ('2*cbrt(N)', '2*cbrt(N)')
+                    elif self.representation == 'fluid':
+                        # Fluids should have upstream and downstream
+                        # grid sizes equal to that of the fluid grids.
+                        gridsizes = ('gridsize', 'gridsize')
+                gridsizes = any2list(gridsizes)
+                if len(gridsizes) == 1:
+                    gridsizes *= 2
+                self.potential_gridsizes[force][method_extra] = (
+                    PotentialGridsizesComponent(*gridsizes)
+                )
+        for force, dict_method in self.potential_gridsizes.items():
+            for method, gridsizes in dict_method.items():
+                gridsizes_transformed = [
+                    int(round(to_float(gridsize_str)))
+                    for gridsize_str in gridsizes
+                ]
+                dict_method[method] = PotentialGridsizesComponent(*gridsizes_transformed)
+        # Check that fluid components have upstream and downstream
+        # potential grid sizes equal to their fluid grid size.
+        if self.representation == 'fluid' and self.name:
+            gridsizes_ought = PotentialGridsizesComponent(self.gridsize, self.gridsize)
+            for force, dict_method in self.potential_gridsizes.items():
+                for method, gridsizes in dict_method.items():
+                    if gridsizes != gridsizes_ought:
+                        if method in {'p3m', }:
+                            # Allow wrong specification for non-fluid
+                            # methods. Overwrite for consistency.
+                            dict_method[method] = gridsizes_ought
+                        else:
+                            abort(
+                                f'Upstream and downstream potential grid sizes of fluid component '
+                                f'"{self.name}" for force {force} with method {method} was set to '
+                                f'{tuple(dict_method[method])} but both need to equal the fluid '
+                                f'grid size {self.gridsize}'
+                            )
         # Mapping from component names to number of
         # (instantaneous) interactions that have taken place.
         self.n_interactions = collections.defaultdict(int)
@@ -1351,14 +1399,8 @@ class Component:
         if isinstance(softening_length, str):
             # Evaluate softening_length if it's a str.
             # Replace 'N' with the number of particles of this component
-            # and 'gridsize' with the gridsize of this component.
-            if self.representation == 'particles':
-                softening_length = softening_length.replace('N', str(self.N))
-                softening_length = softening_length.replace('gridsize', str(cbrt(self.N)))
-            elif self.representation == 'fluid':
-                softening_length = softening_length.replace('N', str(self.gridsize**3))
-                softening_length = softening_length.replace('gridsize', str(self.gridsize))
-            softening_length = eval(softening_length, globals(), units_dict)
+            # and 'gridsize' with the grid size of this component.
+            softening_length = to_float(softening_length)
         if not softening_length:
             if self.representation == 'particles':
                 # If no name is given, this is an internally
@@ -1368,38 +1410,33 @@ class Component:
                     masterwarn(f'No softening length set for {self.name}')
             softening_length = 0
         self.softening_length = float(softening_length)
-        # Set gridsize of powerspectrum
-        powerspec_gridsize = is_selected(self, powerspec_gridsizes)
-        if powerspec_gridsize is None:
-            if self.representation == 'fluid':
-                # Fluids should always have a power spectrum gridsize
-                # equal to that of the fluid grids.
-                powerspec_gridsize = 'gridsize'
-            elif self.representation == 'particles':
-                # For particle components, we choose the default
-                # power spectrum gridsize to equal twice the cube root
-                # of the number of particles.
-                powerspec_gridsize = '2*cbrt(N)'
-        powerspec_gridsize_str = str(powerspec_gridsize)
-        if self.representation == 'particles':
-            powerspec_gridsize_str = powerspec_gridsize_str.replace('N', str(self.N))
-            powerspec_gridsize_str = powerspec_gridsize_str.replace('gridsize', str(cbrt(self.N)))
-        elif self.representation == 'fluid':
-            powerspec_gridsize_str = powerspec_gridsize_str.replace('N', str(self.gridsize**3))
-            powerspec_gridsize_str = powerspec_gridsize_str.replace('gridsize', str(self.gridsize))
-        self.powerspec_gridsize = int(round(eval(powerspec_gridsize_str, globals(), units_dict)))
-        if (
-                self.representation == 'fluid'
-            and self.powerspec_gridsize != self.gridsize
-            and self.gridsize > 2
-        ):
-            if self.name and self.name not in internally_defined_names:
-                masterwarn(
-                    f'A powerspec_gridsize of {self.powerspec_gridsize} was specified for '
-                    f'{self.name}, which is a fluid component. This has been changed '
-                    f'to {self.gridsize} in order to match the grid size of the fluid grids.'
+        # Set upstream grid size for power spectra and 2D renders
+        for output_type, options in {
+            'powerspec': powerspec_options,
+            'render2D': render2D_options,
+        }.items():
+            upstream_gridsize = is_selected(
+                self, options['upstream gridsize'],
+                default=-1,
+            )
+            if upstream_gridsize == -1:
+                if self.representation == 'fluid':
+                    upstream_gridsize = 'gridsize'
+                elif self.representation == 'particles':
+                    upstream_gridsize = {
+                        'powerspec': '2*cbrt(N)',
+                        'render2D' : '1*cbrt(N)',
+                    }[output_type]
+            upstream_gridsize = int(round(to_float(upstream_gridsize)))
+            setattr(self, f'{output_type}_upstream_gridsize', upstream_gridsize)
+            # Check that fluid components have upstream grid sizes
+            # equal to their fluid grid size.
+            if self.representation == 'fluid' and upstream_gridsize != self.gridsize and self.name:
+                abort(
+                    f'Upstream {output_type} grid size of fluid component "{self.name}" '
+                    f'was set to {upstream_gridsize} but needs to equal the fluid '
+                    f'grid size {self.gridsize}'
                 )
-            self.powerspec_gridsize = self.gridsize
         # This attribute will store the conserved mean density
         # of this component. It is set by the ϱ_bar method.
         self._ϱ_bar = -1
@@ -1542,10 +1579,10 @@ class Component:
         # Create the (boltzmann_order + 1) non-linear fluid variables
         # and store them in the fluidvars list. This is done even for
         # particle components, as the fluidscalars are all instantiated
-        # with a gridsize of 1. The is_linear argument specifies whether
-        # the FluidScalar will be a linear or non-linear variable,
-        # where a non-linear variable is one that is updated non-
-        # linearly, as opposed to a linear variable which is only
+        # with a grid size of 1. The is_linear argument specifies
+        # whether the FluidScalar will be a linear or non-linear
+        # variable, where a non-linear variable is one that is updated
+        # non-linearly, as opposed to a linear variable which is only
         # updated through continuous realization. Currently, only ϱ and
         # J is implemented as non-linear variables. It is still allowed
         # to have boltzmann_order == 2, in which case ς (and 𝒫) is also
@@ -2084,7 +2121,7 @@ class Component:
             (val.lower().replace(' ', '').replace('-', '') if isinstance(val, str) else val)
             for key, val in options.items()
         }
-        # Define the gridsize used by the realization (gridsize for
+        # Define the grid size used by the realization (gridsize for
         # fluid components and ∛N for particle components) and resize
         # the data attributes if needed.
         # Also do some particles-only checks.
@@ -2106,7 +2143,7 @@ class Component:
             gridsize = self.gridsize
             shape = tuple([gridsize//domain_subdivisions[dim] for dim in range(3)])
             self.resize(shape)
-        # Check that the gridsize fulfills the requirements for FFT
+        # Check that the grid size fulfills the requirements for FFT
         # and therefore for realizations.
         if gridsize%nprocs != 0:
             abort(
@@ -4692,12 +4729,13 @@ internally_defined_names = {
     'buffer',
     'default',
     'fake',
+    'global',
     'linear power spectrum',
     'tmp',
     'total',
 }
 # Names of all implemented fluid variables in order.
-# Note that 𝒫 is not considered a seperate fluid variable,
+# Note that 𝒫 is not considered a separate fluid variable,
 # but rather a fluid scalar that lives on ς.
 cython.declare(fluidvar_names=tuple)
 fluidvar_names = ('ϱ', 'J', 'ς')

@@ -3,16 +3,20 @@
 # Input/output
 output_bases = {'powerspec': 'powerspec'}
 powerspec_select = {
-    'all'             : {'data': True, 'plot': True},
-    'all combinations': {'data': True, 'plot': True},
+    'all'             : {'data': True, 'linear': False, 'plot': True},
+    'all combinations': {'data': True, 'linear': False, 'plot': True},
 }
-powerspec_include_linear = False
 
 # Numerical parameters
-powerspec_gridsizes = {
-    'particles': '2*cbrt(N)',
+powerspec_options = {
+    'upstream gridsize': {
+        'particles': '2*cbrt(N)',
+        'fluid'    : 'gridsize',
+    },
+    'interpolation': {
+        'default': 'PCS',
+    },
 }
-powerspec_interpolation = 'PCS'
 R_tophat = 8*Mpc/h
 
 # Simulation options

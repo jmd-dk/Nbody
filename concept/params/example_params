@@ -73,11 +73,9 @@ snapshot_select = {  # Select which components to save in snapshots
     'all': True,
 }
 powerspec_select = {  # Toggle power spectra computation for individual and sets of components
-    'all'             : {'data': True, 'plot': True},
-    'all combinations': {'data': True, 'plot': False},
+    'all'             : {'data': True, 'linear': True, 'plot': True},
+    'all combinations': {'data': True, 'linear': True, 'plot': False},
 }
-powerspec_include_linear = True  # Include linear CLASS power spectra in output?
-powerspec_significant_figures = 8  # Number of significant figures in power spectra output
 render2D_select = {  # Toggle 2D rendering for individual and sets of components
     'matter'   : {'data': False, 'image': True,  'terminal image': True},
     'neutrinos': {'data': False, 'image': False, 'terminal image': False},
@@ -94,12 +92,24 @@ class_extra_perturbations = {}    # Extra CLASS perturbations to dump
 
 # Numerical parameters
 boxsize = 512*Mpc  # Linear size of the simulation box
-powerspec_gridsizes = {  # Linear grid sizes to use for power spectrum computation for each component
-    'particles': '2*cbrt(N)',
+potential_gridsizes = {
+    'global': {
+        'gravity': {
+            'p3m': 2*_size,
+            'pm' :   _size,
+        },
+    },
+    'matter': {
+        'gravity': {
+            'p3m': (2*_size, 2*_size),
+        },
+    },
+    'neutrinos': {
+        'gravity': {
+            'pm': _size,
+        },
+    },
 }
-powerspec_binsize = 2*π/boxsize  # Linear size of each power spectrum bin
-powerspec_interpolation = 'PCS'  # Particle interpolation order to use for power spectrum computation
-powerspec_interlacing = True  # Use interlaced grids for particle power spectra?
 force_interpolations = {  # Particle interpolation orders to use for each long-range force and method
     'gravity': {
         'pm' : 'CIC',
@@ -118,12 +128,42 @@ force_differentiations = {  # Order (number of grid points) to use for potential
         'p3m': 4,
    },
 }
+force_from_global_potentials = {  # Obtain force from the global potential (alternatively from the downstream potentials)?
+    'gravity': {
+        'pm' : True,
+        'p3m': True,
+   },
+}
 ewald_gridsize = 64  # Linear grid size of the grid of Ewald corrections
 shortrange_params = {  # Short-range force parameters for each short-range force
     'gravity': {
         'scale'    : '1.25*boxsize/gridsize',  # The long/short-range force split scale
         'range'    : '4.5*scale',              # Maximum reach of short-range force
         'subtiling': 'automatic',              # Subtile decomposition
+    },
+}
+powerspec_options = {  # Specifications of power spectra for individual and sets of components
+    'upstream gridsize': {  # Linear upstream grid sizes
+        'particles': '2*cbrt(N)',
+        'fluid'    : 'gridsize',
+    },
+    'global gridsize': {  # Linear global grid sizes
+        'default': -1,
+    },
+    'interpolation': {  # Particle interpolation order
+        'default': 'PCS',
+    },
+    'deconvolution': {  # Perform deconvolution for particles?
+        'default': True,
+    },
+    'interlacing': {  # Use interlaced grids for particles?
+        'default': True,
+    },
+    'binsize': {  # Linear width of each power spectrum bin
+        'default': 2*π/boxsize,
+    },
+    'significant figures': {  # Number of significant figures in output
+        'default': 8,
     },
 }
 R_tophat = 8*Mpc/h  # Radius of tophat used to compute the rms density variation from power spectra
@@ -158,7 +198,7 @@ class_params = {  # CLASS parameters. See the CLASS documentation for details.
 
 # Physics
 select_forces = {  # Forces and methods which act on each component
-    'particles': {'gravity': ('p3m', 2*_size)},
+    'particles': {'gravity': 'p3m'},
     'fluid'    : {'gravity': 'pm'},
 }
 select_class_species = {  # CLASS species to use for each component
@@ -278,33 +318,36 @@ suppress_output = {                # Suppress terminal output matching these reg
     'all': (),
 }
 render2D_options = {  # Specifications of 2D renders for individual and sets of components
-    'gridsize': {  # Resolution of grid on which to project the components
-        'all'             : _size,
-        'all combinations': ...,
+    'upstream gridsize': {  # Linear upstream grid sizes
+        'particles': 'cbrt(N)',
+        'fluid'    : 'gridsize',
     },
-    'interpolation': {  # Interpolation order
-        'all'             : 'PCS',
-        'all combinations': ...,
-    },
-    'axis': {  # Projection axis
-        'all'             : 'z',
-        'all combinations': ...,
-    },
-    'extent': {  # Length or interval to include along the projected axis
-        'all'             : 0.1*boxsize,
-        'all combinations': ...,
+    'global gridsize': {  # Linear global grid sizes
+        'default': -1,
     },
     'terminal resolution': {  # Resolution (in characters) of terminal images
-        'all'             : terminal_width,
-        'all combinations': ...,
+        'default': terminal_width,
+    },
+    'interpolation': {  # Particle interpolation order
+        'default': 'PCS',
+    },
+    'deconvolution': {  # Perform deconvolution for particles?
+        'default': False,
+    },
+    'interlacing': {  # Use interlaced grids for particles?
+        'default': False,
+    },
+    'axis': {  # Projection axis
+        'default': 'z',
+    },
+    'extent': {  # Interval to include along the projected axis
+        'default': (0, 0.1*boxsize),
     },
     'colormap': {  # Colormap for 2D render images and terminal images
-        'all'             : 'inferno',
-        'all combinations': ...,
+        'default': 'inferno',
     },
     'enhance': {  # Toggle non-linear contrast enhancement of 2D render images and terminal images
-        'all'             : True,
-        'all combinations': ...,
+        'default': True,
     },
 }
 render3D_colors = {  # Color to use in 3D renders for each component

@@ -25,20 +25,21 @@ output_times = {
     'render2D' : ...,
 }
 powerspec_select = {
-    'all': True,
-    'all combinations': True,
+    'all'             : {'data': True, 'linear': True, 'plot': True},
+    'all combinations': ...,
 }
 render2D_select = {
-    'all': False,
-    'all combinations': False,
     'neutrinos': {'image': True, 'terminal image': True},
 }
-powerspec_include_linear = True
 
 # Numerical parameters
 boxsize = 512*Mpc
-powerspec_gridsizes = {'particles': 2*_size}
-powerspec_interpolation = 'PCS'
+potential_gridsizes = {
+    'gravity': {
+        'p3m': 2*_size,
+        'pm' :   _size,
+    },
+}
 force_interpolations = {
     'gravity': {
         'pm' : 'CIC',
@@ -57,6 +58,13 @@ shortrange_params = {
         'range'    : '4.5*scale',
         'subtiling': 'automatic',
     },
+}
+powerspec_options = {
+    'gridsize': {
+        'particles': 2*_size,
+        'fluid'    :   _size,
+    },
+    'interpolation': 'PCS',
 }
 k_modes_per_decade = {
     3e-3/Mpc: 10,
@@ -85,12 +93,13 @@ class_params = {
     'Number of momentum bins' : 25,
     'Quadrature strategy'     : 2,
     'ncdm_fluid_approximation': 3,
+    'evolver'                 : 0,
 }
 
 # Physics
 select_forces = {
-    'particles': {'gravity': ('p3m', 2*_size)},
-    'fluid'    : {'gravity': ('pm',    _size)},
+    'particles': {'gravity': 'p3m'},
+    'fluid'    : {'gravity': 'pm'},
 }
 
 # Simulation options
