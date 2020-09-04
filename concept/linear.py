@@ -48,6 +48,146 @@ cimport(
 
 
 
+# Class storing the internal state for generation of pseudo-random
+# numbers and implementing probability distributions.
+# NumPy is used in both compiled and pure Python mode.
+@cython.cclass
+class PseudoRandomNumberGenerator:
+    # Find all bit stream generators available in NumPy,
+    # e.g. 'PCG64' (Permuted Congruential Generator)
+    # and 'MT19937' (Mersenne Twister).
+    streams = {}
+    for name, attr in vars(np.random).items():
+        if attr is np.random.BitGenerator:
+            continue
+        try:
+            if not issubclass(attr, np.random.BitGenerator):
+                continue
+        except:
+            continue
+        streams[name] = attr
+
+    # Initialization method
+    @cython.pheader(
+        # Arguments
+        seed=object,  # Python int or None
+        stream=str,
+    )
+    def __init__(self, seed=None, stream=random_generator):
+        # The triple quoted string below serves as the type declaration
+        # for the data attributes of the RandomNumberGenerator type.
+        # It will get picked up by the pyxpp script
+        # and included in the .pxd file.
+        """
+        public object seed  # Python int or None
+        public str stream
+        object generator  # np.random.Generator
+        Py_ssize_t cache_size
+        double[::1] cache_uniform
+        double[::1] cache_gaussian
+        Py_ssize_t index_uniform
+        Py_ssize_t index_gaussian
+        """
+        self.seed = seed
+        self.stream = stream
+        # Fixed size of internal distribution caches
+        self.cache_size = 2**12
+        # Look up requested bit stream generator
+        generator = self.streams.get(stream)
+        if generator is None:
+            streams_str = ', '.join([f'"{stream}"' for stream in self.streams])
+            abort(
+                f'Pseudo-random bit generator "{stream}" not available in NumPy. '
+                f'The available ones are {streams_str}.'
+            )
+        # Instantiate a seeded pseudo-random number generator
+        self.generator = np.random.Generator(generator(self.seed))
+        # Initialize caches
+        self.cache_uniform  = None
+        self.cache_gaussian = None
+        self.index_uniform  = self.cache_size - 1
+        self.index_gaussian = self.cache_size - 1
+
+    # Uniform distribution over the half-open interval [low, high)
+    @cython.header(
+        # Arguments
+        low='double',
+        high='double',
+        # Locals
+        x='double',
+        returns='double',
+    )
+    def uniform(self, low=0, high=1):
+        self.index_uniform += 1
+        if self.index_uniform == self.cache_size:
+            self.index_uniform = 0
+            # Draw new batch of uniform pseudo-random numbers
+            # in the half-open interval [0, 1).
+            self.cache_uniform = self.generator.uniform(0, 1, size=self.cache_size)
+        # Look up in cache
+        x = self.cache_uniform[self.index_uniform]
+        # Transform
+        x = low + x*(high - low)
+        return x
+
+    # Gaussian distribution with standard deviation
+    # given by scale and mean 0.
+    @cython.header(
+        # Arguments
+        scale='double',
+        # Locals
+        x='double',
+        returns='double',
+    )
+    def gaussian(self, scale=1):
+        self.index_gaussian += 1
+        if self.index_gaussian == self.cache_size:
+            self.index_gaussian = 0
+            # Draw new batch of Gaussian pseudo-random numbers
+            # with unit standard deviation and mean 0.
+            self.cache_gaussian = self.generator.normal(0, 1, size=self.cache_size)
+        # Look up in cache
+        x = self.cache_gaussian[self.index_gaussian]
+        # Transform
+        x *= scale
+        return x
+
+# Instantiate pseudo-random number generator with a unique
+# seed on each process, meant for general-purpose use.
+# Also wrap its methods in easy to use but badly performing functions.
+cython.declare(prng_general='PseudoRandomNumberGenerator')
+prng_general = PseudoRandomNumberGenerator(1 + random_seed + rank)
+@cython.header(
+    # Arguments
+    distribution=str,
+    size=object,  # int or tuple of ints
+    a='double',
+    b='double',
+    # Locals
+    data='double[::1]',
+    i='Py_ssize_t',
+    shape=tuple,
+    returns=object,  # double or np.ndarray
+)
+def random_general(distribution, size, a=0, b=0):
+    shape = tuple(any2list(size))
+    size = np.prod(shape)
+    data = empty(size, dtype=C2np['double'])
+    for i in range(size):
+        with unswitch:
+            if distribution == 'uniform':
+                data[i] = prng_general.uniform(a, b)
+            elif distribution == 'gaussian':
+                data[i] = prng_general.gaussian(a)
+    if size == 1:
+        return data[0]
+    else:
+        return asarray(data).reshape(shape)
+def random_uniform(low=0, high=1, size=1):
+    return random_general('uniform', size, low, high)
+def random_gaussian(scale=1, size=1):
+    return random_general('gaussian', size, scale)
+
 # Class storing a classy.Class instance
 # together with the corresponding |k| values
 # and results retrieved from the classy.Class instance.
@@ -1315,7 +1455,7 @@ class TransferFunction:
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the TransferFunction type.
         # It will get picked up by the pyxpp script
-        # and indluded in the .pxd file.
+        # and included in the .pxd file.
         """
         object cosmoresults
         Component component
@@ -3532,6 +3672,7 @@ slab_structure_infos = {}
     plane_ji='double*',
     plane_ji_conj='double*',
     plane_nyquist='double[:, :, ::1]',
+    prng='PseudoRandomNumberGenerator',
     r='double',
     shell='Py_ssize_t',
     slab_jik='double*',
@@ -3540,7 +3681,7 @@ slab_structure_infos = {}
 )
 def generate_primordial_noise(slab):
     """Given the already allocated slab, this function will populate
-    it with Gaussian (pseudo) random numbers, the stream of which is
+    it with Gaussian pseudo-random numbers, the stream of which is
     controlled by the random_seed parameter. The slab grid is thought of
     as being in Fourier space, and so these are complex numbers. We wish
     the variance of these complex numbers to equal unity, and so their
@@ -3604,9 +3745,9 @@ def generate_primordial_noise(slab):
     # Allocate the entire DC and Nyquist plane on all processes
     plane_dc      = empty((gridsize, gridsize, 2), dtype=C2np['double'])
     plane_nyquist = empty((gridsize, gridsize, 2), dtype=C2np['double'])
-    # Seed the pseudo random number generator
+    # Instantiate pseudo-random number generator
     # using the same seed on all processes.
-    seed_rng(random_seed)
+    prng = PseudoRandomNumberGenerator(random_seed)
     # Loop through all shells
     nyquist = gridsize//2
     for shell in range(1, nyquist + 1):
@@ -3652,7 +3793,7 @@ def generate_primordial_noise(slab):
                             if primordial_amplitude_fixed:
                                 # Generate random noise of fixed
                                 # amplitude.
-                                θ = ℝ[2*π]*random()
+                                θ = prng.uniform(0, ℝ[2*π])
                                 with unswitch:
                                     if primordial_phase_shift:
                                         θ += primordial_phase_shift
@@ -3660,8 +3801,8 @@ def generate_primordial_noise(slab):
                                 noise_im = sin(θ)
                             else:
                                 # Generate Gaussian noise
-                                noise_re = random_gaussian(0, ℝ[1/sqrt(2)])
-                                noise_im = random_gaussian(0, ℝ[1/sqrt(2)])
+                                noise_re = prng.gaussian(ℝ[1/sqrt(2)])
+                                noise_im = prng.gaussian(ℝ[1/sqrt(2)])
                         # Populate the local slab
                         with unswitch(2):
                             if 0 <= j < ℤ[slab.shape[0]]:

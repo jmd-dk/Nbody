@@ -67,10 +67,16 @@ for momentum_spread in momentum_spreads:
     mean_momentum_spreads.append(np.mean(eval(momentum_spread)))
 print(int(round(mean_momentum_spreads[1]/mean_momentum_spreads[0])))
 " --pure-python --local | tail -n 1)"
-momentum_spread_growth_expected=12  # Expected rate of std(mom) between the two snapshots
-if [ ${momentum_spread_growth} -ne ${momentum_spread_growth_expected} ]; then
+# Expected rate of std(mom) between the two snapshots.
+# Note that this depends slightly on the
+# pseudo-random number generation.
+momentum_spread_growth_expected_low=11
+momentum_spread_growth_expected_high=12
+if     [ ${momentum_spread_growth} -lt ${momentum_spread_growth_expected_low}  ] \
+    || [ ${momentum_spread_growth} -gt ${momentum_spread_growth_expected_high} ]; then
     colorprint "Momentum spread grew by a factor ${momentum_spread_growth}, \
-but ${momentum_spread_growth_expected} was expected" "red"
+but expected it to be between ${momentum_spread_growth_expected_low} \
+and ${momentum_spread_growth_expected_high}" "red"
     exit 1
 fi
 

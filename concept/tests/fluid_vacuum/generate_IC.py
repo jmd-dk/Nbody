@@ -2,6 +2,7 @@
 
 # Imports from the CO𝘕CEPT code
 from commons import *
+from linear import random_uniform
 from species import Component
 from snapshot import save
 
@@ -36,8 +37,8 @@ posx = zeros(N)
 posy = zeros(N)
 posz = zeros(N)
 momx = -ones(N)*mass*boxsize/(60*units.Gyr)
-momy =  ones(N)*mass*boxsize/(60*units.Gyr)*(2*random() - 1)
-momz =  ones(N)*mass*boxsize/(60*units.Gyr)*(2*random() - 1)
+momy =  ones(N)*mass*boxsize/(60*units.Gyr)*random_uniform(-1, 1)
+momz =  ones(N)*mass*boxsize/(60*units.Gyr)*random_uniform(-1, 1)
 x = 0
 count = 0
 for i in range(Nx):

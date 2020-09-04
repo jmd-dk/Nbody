@@ -204,7 +204,7 @@ class FluidScalar:
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the FluidScalar type.
         # It will get picked up by the pyxpp script
-        # and indluded in the .pxd file.
+        # and included in the .pxd file.
         """
         # Fluid variable number and index of fluid scalar
         public int varnum
@@ -462,7 +462,7 @@ class Tiling:
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the Tiling type.
         # It will get picked up by the pyxpp script
-        # and indluded in the .pxd file.
+        # and included in the .pxd file.
         """
         public str            name
         bint                  is_trivial
@@ -920,7 +920,7 @@ class Component:
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the Component type.
         # It will get picked up by the pyxpp script
-        # and indluded in the .pxd file.
+        # and included in the .pxd file.
         """
         # General component attributes
         public str name

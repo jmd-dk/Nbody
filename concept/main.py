@@ -126,9 +126,6 @@ def timeloop():
         # Return now if all dumps lie at the initial time
         if len(dump_times) == 0:
             return
-    # Re-seed the pseudo-random number generator,
-    # using a separate seed on each process.
-    seed_rng()
     # Set initial time step size
     static_timestepping_func = prepare_static_timestepping()
     if Δt_begin_autosave == -1:

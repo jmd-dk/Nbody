@@ -25,7 +25,6 @@ primordial_spectrum = {
 }
 
 # Simulation options
-random_seed = 1
 class_reuse = False
 
 # System of units

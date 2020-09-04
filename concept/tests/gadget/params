@@ -14,3 +14,7 @@ H0      = 67*km/s/Mpc
 Ωcdm    = 0.27
 Ωb      = 0.049
 a_begin = 0.1
+
+# Simulation options
+random_generator = 'PCG64'
+random_seed      = 0

@@ -103,7 +103,6 @@ select_forces = {
 }
 
 # Simulation options
-random_seed = 1
 primordial_amplitude_fixed = True
 fluid_scheme_select = {'all': 'maccormack'}
 class_reuse = True

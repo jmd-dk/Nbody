@@ -2,6 +2,7 @@
 
 # Imports from the CO𝘕CEPT code
 from commons import *
+from linear import random_gaussian
 from species import Component
 from snapshot import save
 
@@ -19,14 +20,14 @@ momz = zeros(N)
 count = 0
 boxsize_over_N_lin = boxsize/N_lin
 for i in range(N_lin):
-    X = i*boxsize_over_N_lin
+    x = i*boxsize_over_N_lin
     for j in range(N_lin):
-        Y = j*boxsize_over_N_lin
+        y = j*boxsize_over_N_lin
         for k in range(N_lin):
-            Z = k*boxsize_over_N_lin
-            posx[count] = mod(random_gaussian(X, R_tophat), boxsize)
-            posy[count] = mod(random_gaussian(Y, R_tophat), boxsize)
-            posz[count] = mod(random_gaussian(Z, R_tophat), boxsize)
+            z = k*boxsize_over_N_lin
+            posx[count] = mod(x + random_gaussian(R_tophat), boxsize)
+            posy[count] = mod(y + random_gaussian(R_tophat), boxsize)
+            posz[count] = mod(z + random_gaussian(R_tophat), boxsize)
             count += 1
 component.populate(posx, 'posx')
 component.populate(posy, 'posy')
@@ -49,6 +50,8 @@ for i in range(N):
 
 # Save another snapshot, this time with an enlarged boxsize,
 # matching the expanded particle locations.
-save(component,
-     '{}_double_boxsize{}'.format(*os.path.splitext(initial_conditions)),
-     {'boxsize': 2*boxsize})
+save(
+    component,
+    '{}_double_boxsize{}'.format(*os.path.splitext(initial_conditions)),
+    {'boxsize': 2*boxsize},
+)

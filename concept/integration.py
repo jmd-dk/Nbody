@@ -57,7 +57,7 @@ class Spline:
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the Spline type.
         # It will get picked up by the pyxpp script
-        # and indluded in the .pxd file.
+        # and included in the .pxd file.
         """
         double[::1] x
         double[::1] y

@@ -2,6 +2,7 @@
 
 # Imports from the CO𝘕CEPT code
 from commons import *
+from linear import random_uniform
 from species import Component
 from snapshot import save
 
@@ -26,10 +27,10 @@ for i in range(gridsize):
     ϱ[i, :, :] = 2 + np.sin(2*π*i/gridsize)  # Unitless
 ϱ /= sum(ϱ)                                  # Normalize
 ϱ *= mass_fluid_tot/Vcell                    # Apply units
-component.populate(ϱ,                        'ϱ'   )
-component.populate(ϱ*speed,                  'J', 0)
-component.populate(zeros([gridsize]*3),      'J', 1)
-component.populate(ϱ*speed*(random()*2 - 1), 'J', 2)
+component.populate(ϱ,                             'ϱ'   )
+component.populate(ϱ*speed,                       'J', 0)
+component.populate(zeros([gridsize]*3),           'J', 1)
+component.populate(ϱ*speed*random_uniform(-1, 1), 'J', 2)
 components.append(component)
 
 # Create the particles.
@@ -43,7 +44,7 @@ offset = 0.5*boxsize
 A = 0.4*boxsize
 component.populate(linspace(0, boxsize, N, endpoint=False),        'posx')
 component.populate(offset + A*np.sin([2*π*i/N for i in range(N)]), 'posy')
-component.populate(random(N)*boxsize,                              'posz')
+component.populate(random_uniform(0, boxsize, size=N),             'posz')
 component.populate(ones(N)*speed*mass_particles,                   'momx')
 component.populate(zeros(N),                                       'momy')
 component.populate(zeros(N),                                       'momz')

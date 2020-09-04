@@ -73,7 +73,7 @@ class StandardSnapshot:
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the StandardSnapshot type.
         # It will get picked up by the pyxpp script
-        # and indluded in the .pxd file.
+        # and included in the .pxd file.
         """
         public dict params
         public list components
@@ -553,7 +553,7 @@ class Gadget2Snapshot:
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the Gadget2Snapshot type.
         # It will get picked up by the pyxpp script
-        # and indluded in the .pxd file.
+        # and included in the .pxd file.
         """
         public dict params
         public list components

@@ -2011,7 +2011,8 @@ cython.declare(
     N_rungs='Py_ssize_t',
     fftw_wisdom_rigor=str,
     fftw_wisdom_reuse='bint',
-    random_seed='unsigned long int',
+    random_generator=str,
+    random_seed=object,  # Python int
     primordial_amplitude_fixed='bint',
     primordial_phase_shift='double',
     fourier_structure_caching=dict,
@@ -2732,7 +2733,9 @@ fftw_wisdom_rigor = user_params.get('fftw_wisdom_rigor', 'measure').lower()
 user_params['fftw_wisdom_rigor'] = fftw_wisdom_rigor
 fftw_wisdom_reuse = bool(user_params.get('fftw_wisdom_reuse', True))
 user_params['fftw_wisdom_reuse'] = fftw_wisdom_reuse
-random_seed = to_int(user_params.get('random_seed', 1))
+random_generator = user_params.get('random_generator', 'PCG64')
+user_params['random_generator'] = random_generator
+random_seed = to_int(user_params.get('random_seed', 0))
 user_params['random_seed'] = random_seed
 primordial_amplitude_fixed = bool(user_params.get('primordial_amplitude_fixed', False))
 user_params['primordial_amplitude_fixed'] = primordial_amplitude_fixed
@@ -3528,51 +3531,6 @@ def call_class(extra_params=None, sleep_time=0.1, mode='single node', class_call
         return cosmo, k_output_values_node_indices
     else:
         return cosmo
-
-
-
-#########################
-# Pseudo-random numbers #
-#########################
-# From the random_seed, generate seeds individual to each process.
-# The pseudo-random number generators on each process will be seeded
-# using these unique seeds, none of which equals random_seed.
-cython.declare(process_seed='unsigned long int')
-process_seed = random_seed + rank + 1
-# Initialize the pseudo-random number generator and declare the
-# functions random and random_gaussian, returning random numbers from
-# the uniform distibution between 0 (inclusive) and 1 (exclusive) and a
-# Gaussian distribution with variable mean and spread, respectively.
-# Both the pure Python and the compiled version of the functions use the
-# Mersenne Twister algorithm to generate the random numbers.
-# Despite of this, their exact implementations differ enough to make
-# the generated sequence of random numbers completely different for
-# pure Python and compiled runs.
-if not cython.compiled:
-    # In pure Python, use NumPy's random module
-    def seed_rng(seed=process_seed):
-        np.random.seed(seed)
-    random = np.random.random
-    random_gaussian = np.random.normal
-else:
-    # Use GSL in compiled mode
-    cython.declare(random_number_generator='gsl_rng*')
-    random_number_generator = gsl_rng_alloc(gsl_rng_mt19937)
-    @cython.header(seed='unsigned long int')
-    def seed_rng(seed=process_seed):
-        gsl_rng_set(random_number_generator, seed)
-    @cython.header(returns='double')
-    def random():
-        return gsl_rng_uniform(random_number_generator)
-    @cython.header(
-        loc='double',
-        scale='double',
-        returns='double',
-    )
-    def random_gaussian(loc=0, scale=1):
-        return loc + gsl_ran_gaussian(random_number_generator, scale)
-# Seed the pseudo-random number generator
-seed_rng()
 
 
 
@@ -4452,13 +4410,9 @@ if N_rungs == 1 and Δt_rung_factor != 1:
 # Abort on illegal FFTW rigor
 if fftw_wisdom_rigor not in ('estimate', 'measure', 'patient', 'exhaustive'):
     abort('Does not recognize FFTW rigor "{}"'.format(user_params['fftw_wisdom_rigor']))
-# Warn if random_seed is chosen to be 0, as this may lead to clashes
-# with the default seed used by GSL.
-if random_seed < 1:
-    masterwarn(
-        f'A random_seed of {random_seed} was specified. '
-        f'This should be > 0 to avoid clashes with the default GSL seed.'
-    )
+# Abort on negative random_seed
+if random_seed < 0:
+    abort(f'A random_seed of {random_seed} < 0 was specified')
 # Sanity check on fixed and paired primordial parameters
 if not primordial_amplitude_fixed and primordial_phase_shift != 0:
     abort(
