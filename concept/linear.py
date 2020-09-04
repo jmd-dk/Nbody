@@ -85,8 +85,10 @@ class PseudoRandomNumberGenerator:
         Py_ssize_t cache_size
         double[::1] cache_uniform
         double[::1] cache_gaussian
+        double[::1] cache_rayleigh
         Py_ssize_t index_uniform
         Py_ssize_t index_gaussian
+        Py_ssize_t index_rayleigh
         """
         self.seed = seed
         self.stream = stream
@@ -105,8 +107,10 @@ class PseudoRandomNumberGenerator:
         # Initialize caches
         self.cache_uniform  = None
         self.cache_gaussian = None
+        self.cache_rayleigh = None
         self.index_uniform  = self.cache_size - 1
         self.index_gaussian = self.cache_size - 1
+        self.index_rayleigh = self.cache_size - 1
 
     # Uniform distribution over the half-open interval [low, high)
     @cython.header(
@@ -152,6 +156,27 @@ class PseudoRandomNumberGenerator:
         x *= scale
         return x
 
+    # Rayleigh distribution
+    @cython.header(
+        # Arguments
+        scale='double',
+        # Locals
+        x='double',
+        returns='double',
+    )
+    def rayleigh(self, scale=1):
+        self.index_rayleigh += 1
+        if self.index_rayleigh == self.cache_size:
+            self.index_rayleigh = 0
+            # Draw new batch of Rayleigh pseudo-random numbers
+            # with unit scale.
+            self.cache_rayleigh = self.generator.rayleigh(1, size=self.cache_size)
+        # Look up in cache
+        x = self.cache_rayleigh[self.index_rayleigh]
+        # Transform
+        x *= scale
+        return x
+
 # Instantiate pseudo-random number generator with a unique
 # seed on each process, meant for general-purpose use.
 # Also wrap its methods in easy to use but badly performing functions.
@@ -179,6 +204,8 @@ def random_general(distribution, size, a=0, b=0):
                 data[i] = prng_general.uniform(a, b)
             elif distribution == 'gaussian':
                 data[i] = prng_general.gaussian(a)
+            elif distribution == 'rayleigh':
+                data[i] = prng_general.rayleigh(a)
     if size == 1:
         return data[0]
     else:
@@ -187,6 +214,8 @@ def random_uniform(low=0, high=1, size=1):
     return random_general('uniform', size, low, high)
 def random_gaussian(scale=1, size=1):
     return random_general('gaussian', size, scale)
+def random_rayleigh(scale=1, size=1):
+    return random_general('rayleigh', size, scale)
 
 # Class storing a classy.Class instance
 # together with the corresponding |k| values
@@ -3676,6 +3705,7 @@ slab_structure_infos = {}
     r='double',
     shell='Py_ssize_t',
     slab_jik='double*',
+    text=list,
     θ='double',
     θ_str=str,
 )
@@ -3686,7 +3716,16 @@ def generate_primordial_noise(slab):
     as being in Fourier space, and so these are complex numbers. We wish
     the variance of these complex numbers to equal unity, and so their
     real and imaginary parts are drawn from a distribution
-    with variance 1/√2.
+    with variance 1/√2, corresponding to
+      noise_re = gaussian(1/√2)
+      noise_im = gaussian(1/√2)
+    As we furhter want to allow for fixing of the amplitude and shifting
+    of the phase, we instead draw the numbers in the following
+    equivalent manner:
+      r = rayleigh(1/√2]
+      θ = uniform(0, 2π)
+      noise_re = r*cos(θ)
+      noise_im = r*sin(θ)
     The 3D sequence of random numbers should be independent on the size
     of the grid, in the sense that increasing the grid size should
     amount to just populating the additional "shell" with new random
@@ -3726,22 +3765,21 @@ def generate_primordial_noise(slab):
     # The global grid size is equal to
     # the first (1) dimension of the slab.
     gridsize = slab.shape[1]
+    # Progress message
+    text = ['Generating primordial']
+    if not primordial_amplitude_fixed:
+        text.append(' Gaussian')
+    text.append(f' noise of grid size {gridsize}')
     if primordial_amplitude_fixed:
-        if primordial_phase_shift == 0:
-            masterprint(
-                f'Generating primordial noise of grid size {gridsize} with fixed amplitude ...'
-            )
+        text.append(', fixed amplitude')
+    if primordial_phase_shift != 0:
+        if isclose(primordial_phase_shift, π):
+            θ_str = 'π'
         else:
-            if isclose(primordial_phase_shift, π):
-                θ_str = 'π'
-            else:
-                θ_str = str(primordial_phase_shift)
-            masterprint(
-                f'Generating primordial noise of grid size {gridsize} with fixed amplitude '
-                f'and phase shift {θ_str} ...'
-            )
-    else:
-        masterprint(f'Generating primordial Gaussian noise of grid size {gridsize} ...')
+            θ_str = str(primordial_phase_shift)
+        text.append(f', phase shift {θ_str}')
+    text.append(' ...')
+    masterprint(''.join(text))
     # Allocate the entire DC and Nyquist plane on all processes
     plane_dc      = empty((gridsize, gridsize, 2), dtype=C2np['double'])
     plane_nyquist = empty((gridsize, gridsize, 2), dtype=C2np['double'])
@@ -3788,21 +3826,21 @@ def generate_primordial_noise(slab):
                     kk = ℤ[kk_start - kk_step]
                     for _ in range(ℤ[((kk_stop - kk_start) + (kk_step - 1))//kk_step]):
                         kk += kk_step
-                        # Draw the random numbers
+                        # Generate Gaussian random noise.
+                        # In order to ensure the same random stream
+                        # for both r and θ across simulations,
+                        # we draw r even in the case
+                        # of fixed amplitude.
+                        r = prng.rayleigh(ℝ[1/sqrt(2)])
                         with unswitch:
                             if primordial_amplitude_fixed:
-                                # Generate random noise of fixed
-                                # amplitude.
-                                θ = prng.uniform(0, ℝ[2*π])
-                                with unswitch:
-                                    if primordial_phase_shift:
-                                        θ += primordial_phase_shift
-                                noise_re = cos(θ)
-                                noise_im = sin(θ)
-                            else:
-                                # Generate Gaussian noise
-                                noise_re = prng.gaussian(ℝ[1/sqrt(2)])
-                                noise_im = prng.gaussian(ℝ[1/sqrt(2)])
+                                r = 1
+                        θ = prng.uniform(0, ℝ[2*π])
+                        with unswitch:
+                            if primordial_phase_shift:
+                                θ += primordial_phase_shift
+                        noise_re = r*cos(θ)
+                        noise_im = r*sin(θ)
                         # Populate the local slab
                         with unswitch(2):
                             if 0 <= j < ℤ[slab.shape[0]]:

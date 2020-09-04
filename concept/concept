@@ -198,7 +198,7 @@ print_logo(){
     # Plot the logo via Python's matplotlib.
     # While the color of the 𝘕 is fixed, the color used for the rest
     # is determined from the timestamp of this file.
-    # This uses up the the 16th and 17th color of the terminal.
+    # This uses up the 16th and 17th color of the terminal.
     "${python}" -B -c "
 import sys, matplotlib
 # Generate color based on input number

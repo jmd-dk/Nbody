@@ -327,7 +327,7 @@ clean:
 ##################################
 # Generate GADGET parameter file #
 ##################################
-# A CO𝘕CEPT parameter file is only generated
+# A GADGET parameter file is only generated
 # if a corresponding CO𝘕CEPT parameter file is given.
 if [ "${params}" != "None" ]; then
     # GADGET parameter file header

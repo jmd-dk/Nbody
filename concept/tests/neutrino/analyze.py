@@ -171,7 +171,7 @@ if not isclose(
 
 # Check whether the CO𝘕CEPT supression around the non-linear dip
 # is about that found in https://arxiv.org/pdf/0802.3700.pdf .
-rel_tol = 0.10
+rel_tol = 0.11
 suppression_nonlinear_theoretical = -9.8*Ων/(Ωcdm + Ωb + Ων)
 if not isclose(
     suppression_linear,
@@ -179,10 +179,10 @@ if not isclose(
     rel_tol=rel_tol,
 ):
     abort(
-        f'The total power suppression predicted by CO𝘕CEPT ({suppression_concept*100:.2f}%) '
+        f'The total power suppression predicted by CO𝘕CEPT ({suppression_linear*100:.2f}%) '
         f'at the non-linear dip (k ≈ {k_dip}/{unit_length}) is far from being equal '
         f'to the prediction -9.8*Ων/(Ωcdm + Ωb + Ων) '
-        f'= {suppression_concept_theoretical*100:.2f}%.\n'
+        f'= {suppression_nonlinear_theoretical*100:.2f}%.\n'
         f'See "{fig_file}" for a visualization.'
     )
 

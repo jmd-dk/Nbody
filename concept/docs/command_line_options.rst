@@ -253,7 +253,7 @@ remote job is to be submitted:
 
    ./concept -q <queue>
 
-If using Slurm, you you can specify multiple queues:
+If using Slurm, you can specify multiple queues:
 
 .. code-block:: bash
 

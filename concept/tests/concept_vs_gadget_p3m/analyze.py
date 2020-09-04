@@ -102,7 +102,7 @@ plt.tight_layout()
 plt.savefig(fig_file)
 
 # Printout error message for unsuccessful test
-tol = 1e-2
+tol = 1.2e-2
 if any(np.mean(d/boxsize) > tol for d in dist):
     abort('The results from CO𝘕CEPT disagree with those from GADGET.\n'
           'See "{}" for a visualization.'.format(fig_file))

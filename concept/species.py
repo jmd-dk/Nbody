@@ -794,7 +794,7 @@ class Tiling:
                     # This particle sits on an active rung
                     contains = 2
                 else:
-                    # This particle sits on on active rung
+                    # This particle sits on active rung
                     # and is flagged to undergo a rung-jump.
                     contains = 3
                 if contain_particles[tile_index] < contains:

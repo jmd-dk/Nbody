@@ -3847,11 +3847,14 @@ def correct_float(val_raw):
     val_str = val_str.replace('.', '')
     if len(val_str) < 15:
         return val_raw
-    val_new = sorted(
-        [val_raw*(1 + sign*i*ℝ[0.5*machine_ϵ]) for i in range(21) for sign in (+1, -1)],
-        key=(lambda val: len(str(val))),
-    )[0]
-    return (val_new if len(str(val_new)) < len(str(val_raw)) - 2 else val_raw)
+    val_new_lower = val_raw*(1 - 10*machine_ϵ)
+    val_new_upper = val_raw*(1 + 10*machine_ϵ)
+    val_correct = val_new = val_new_lower
+    while val_new <= val_new_upper:
+        if len(str(val_new)) < len(str(val_correct)):
+            val_correct = val_new
+        val_new = np.nextafter(val_new, np.inf)
+    return (val_correct if len(str(val_correct)) < len(str(val_raw)) - 2 else val_raw)
 
 # Functions for stripping the left-/right-most end off a string
 # if this entire end of the string matches the given end argument.
@@ -4413,13 +4416,7 @@ if fftw_wisdom_rigor not in ('estimate', 'measure', 'patient', 'exhaustive'):
 # Abort on negative random_seed
 if random_seed < 0:
     abort(f'A random_seed of {random_seed} < 0 was specified')
-# Sanity check on fixed and paired primordial parameters
-if not primordial_amplitude_fixed and primordial_phase_shift != 0:
-    abort(
-        f'You are using primordial_phase_shift = {primordial_phase_shift} ≠ 0 while having '
-        f'primordial_amplitude_fixed = False, but a phase shift is only implemented '
-        f'for fixed amplitude.'
-    )
+# Sanity check on the primordial phase shift
 if primordial_phase_shift == 1:
     masterwarn(
         f'You have specified primordial_phase_shift = 1. '

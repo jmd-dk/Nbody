@@ -1069,13 +1069,13 @@ def convert_particles_to_fluid(component, order):
         J_dim = component.J[dim]
         interpolate_particles(component, gridsize, J_dim.grid_mv, 'J' + 'xyz'[dim], order, ᔑdt)
     # The interpolation may have left some cells empty. Count up the
-    # number of such vacuum cells and assign to them a density of
+    # number of such vacuum cells and add to each a density of
     # ρ_vacuum, while leaving the momentum at zero. This will increase
     # the total mass, which then has to be lowered again, which we do
     # by subtracting a constant amount from each cell. This subtraction
     # may itself produce vacuum cells, and so we need to repeat until
     # no vacuum is detected.
-    for vacuum_sweep in itertools.count():
+    for vacuum_sweep in range(gridsize):
         # Count up and assign to vacuum cells
         N_vacuum = 0
         for         i in range(nghosts, ℤ[ϱ.shape[0] - nghosts]):
@@ -1083,7 +1083,7 @@ def convert_particles_to_fluid(component, order):
                 for k in range(nghosts, ℤ[ϱ.shape[2] - nghosts]):
                     if ϱ[i, j, k] < ρ_vacuum:
                         N_vacuum += 1
-                        ϱ[i, j, k] = ρ_vacuum
+                        ϱ[i, j, k] += ρ_vacuum
         N_vacuum = allreduce(N_vacuum, op=MPI.SUM)
         # Remember the original number of vacuum cells
         if vacuum_sweep == 0:
@@ -1096,14 +1096,13 @@ def convert_particles_to_fluid(component, order):
         for         i in range(nghosts, ℤ[ϱ.shape[0] - nghosts]):
             for     j in range(nghosts, ℤ[ϱ.shape[1] - nghosts]):
                 for k in range(nghosts, ℤ[ϱ.shape[2] - nghosts]):
-                    ϱ_noghosts[i, j, k] -= Δϱ_each
-        # Fail safe
-        if vacuum_sweep > gridsize:
-            masterwarn(
-                'The convert_particles_to_fluid() was unable to get rid of '
-                'vacuum cells in the fluid after interpolation'
-            )
-            break
+                    ϱ[i, j, k] -= Δϱ_each
+    else:
+        # Failed to remove vacuum
+        masterwarn(
+            'The convert_particles_to_fluid() function was unable to '
+            'get rid of vacuum cells in the fluid after interpolation'
+        )
     # Populate ghost points of all fluid grids
     component.communicate_fluid_grids('=')
     # The particle data is no longer needed. Free it to save memory.
@@ -2610,7 +2609,7 @@ def diff_domaingrid(
     if do_ghost_communication:
         communicate_ghosts(ᐁgrid_dim, '=')
     return ᐁgrid_dim
-# Allocate global arrays arrays used by the diff_domaingrid() function
+# Allocate global arrays used by the diff_domaingrid() function
 cython.declare(
     highest_differentiation_order_implemented='int',
     diff_steps_i='Py_ssize_t*',

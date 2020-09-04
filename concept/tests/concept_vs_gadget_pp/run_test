@@ -47,6 +47,14 @@ Gadget2_local_dir="${this_dir}/Gadget2"
 mkdir -p "${Gadget2_local_dir}"
 cp "${Gadget2_dir}/"* "${Gadget2_local_dir}" 2>/dev/null || :
 "${concept}" -u gadget "${Gadget2_local_dir}" -p "${this_dir}/params"
+replace_gadget_param() {
+    name="$1"
+    value="$2"
+    sed -i "s/${name} /${name} ${value} %/" "${Gadget2_local_dir}/params"
+}
+replace_gadget_param "ErrTolTheta"               "1e-6"
+replace_gadget_param "ErrTolForceAcc"            "1e-6"
+replace_gadget_param "TreeDomainUpdateFrequency" "0"
 (                             \
     cd "${Gadget2_local_dir}" \
     && make clean             \
