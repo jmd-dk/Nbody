@@ -1590,7 +1590,15 @@ def slab_decompose(grid_or_grids, slab_or_buffer_name='slab_particles', prepare_
         request.wait()
     return slab
 
-# Iterator implementing looping over Fourier space slabs
+# Iterator implementing looping over Fourier space slabs.
+# The yielded values are the linear index into the slab, the physical
+# ki, kj, kk (in grid units) and the deconvolution factor.
+# Nyquist planes are excluded from the iteration. If sparse is True,
+# only unique points in the z DC plane will be visited. If the
+# deconvolution factor is to be used, specify the deconvolution
+# (interpolation) order as deconv_order. If both a 'particles' and a
+# 'particles_shifted' slab is present, these will be interlaced together
+# (in-place into the 'particles' slab) if do_interlacing is True.
 @cython.iterator(
     depends=[
         # Functions used by slab_fourier_loop()
@@ -1598,7 +1606,7 @@ def slab_decompose(grid_or_grids, slab_or_buffer_name='slab_particles', prepare_
     ]
 )
 def slab_fourier_loop(
-    slabs, deconv_order=0, do_interlacing=False, nullify_DC=True,
+    slabs, sparse=False, deconv_order=0, do_interlacing=False,
 ):
     # Cython declarations for variables used for the iteration,
     # not including positional arguments and variables to yield,
@@ -1606,10 +1614,12 @@ def slab_fourier_loop(
     # Do not write these using the decorator syntax above this function.
     cython.declare(
         # Keyword arguments
+        sparse='bint',
         deconv_order='int',
         do_interlacing='bint',
-        nullify_DC='bint',
         # Locals
+        _gridsize='Py_ssize_t',
+        _nyquist='Py_ssize_t',
         _slab='double[:, :, ::1]',
         _slab_particles='double[:, :, ::1]',
         _slab_particles_ptr='double*',
@@ -1622,9 +1632,7 @@ def slab_fourier_loop(
         j='Py_ssize_t',
         j_global='Py_ssize_t',
         ki_plus_kj='Py_ssize_t',
-        nyquist='Py_ssize_t',
         re='double',
-        slab_size_global='Py_ssize_t',
         slab_size_i='Py_ssize_t',
         slab_size_j='Py_ssize_t',
         slab_size_k='Py_ssize_t',
@@ -1635,13 +1643,10 @@ def slab_fourier_loop(
     ki_plus_kj = 0
     # The index into a slab
     index = 0
-    # The DC component is always skipped in the below iteration.
-    # If specified, nullify the DC component now.
+    # The DC element (origin) is always skipped in the below iteration.
+    # This element is always located at the beginning of the slab
+    # belonging to the master process.
     if master:
-        if nullify_DC:
-            for _slab in slabs.values():
-                _slab[0, 0, 0] = 0  # real part
-                _slab[0, 0, 1] = 0  # imag part
         index += 2
     # As we increment the index (by 2) prior to using it,
     # we decrement it now.
@@ -1655,12 +1660,14 @@ def slab_fourier_loop(
         else:
             _slab_particles_ptr         = cython.address(_slab_particles        [:, :, :])
             _slab_particles_shifted_ptr = cython.address(_slab_particles_shifted[:, :, :])
-    # Get slab shape (must be equal between slabs of different keys)
+    # Get slab shape (must be equal between slabs of different keys).
+    # Note that in Fourier space, the x (i) and y (j) dimensions
+    # are transposed.
     for _slab in slabs.values():
         slab_size_j, slab_size_i, slab_size_k = asarray(_slab).shape
         break
-    slab_size_global = slab_size_i
-    nyquist = slab_size_global//2
+    _gridsize = slab_size_i
+    _nyquist = _gridsize//2
     # Begin iterating over slab. As the first and second dimensions
     # are transposed due to the FFT, the j-dimension is first.
     for j in range(slab_size_j):
@@ -1668,41 +1675,43 @@ def slab_fourier_loop(
         # Since the slabs are distributed along the j-dimension,
         # an offset must be used.
         j_global = ℤ[slab_size_j*rank] + j
-        kj = j_global - slab_size_global*(j_global > nyquist)
+        kj = j_global - _gridsize*(j_global >= _nyquist)
         # The j-component of the deconvolution
         with unswitch(1):
             if deconv_order:
-                deconv_j = get_deconvolution_factor(kj*ℝ[π/slab_size_global])
+                deconv_j = get_deconvolution_factor(kj*ℝ[π/_gridsize])
         # Loop through the complete i-dimension
-        for i in range(slab_size_global):
+        for i in range(_gridsize):
             # The i-component of the wave vector (grid units)
-            ki = i - slab_size_global*(i > nyquist)
+            ki = i - _gridsize*(i >= _nyquist)
             # The product of the i- and the j-component
             # of the deconvolution.
             with unswitch(2):
                 if deconv_order:
-                    deconv_ij = deconv_j*get_deconvolution_factor(ki*ℝ[π/slab_size_global])
+                    deconv_ij = deconv_j*get_deconvolution_factor(ki*ℝ[π/_gridsize])
             # The sum of wave vector elements, used for interlacing
             with unswitch(2):
                 if do_interlacing:
                     ki_plus_kj = ki + kj
-            # Only half of the k-dimension (the non-negative part)
-            # exists, along with some padding. Loop through this half in
-            # steps of 2 (one complex number at a time, looping directly
-            # over kk instead of k == 2*kk). To avoid |k|² = 0
-            # we start at kk = 1 if kj == 0 == ki.
-            for kk in range(𝔹[kj == 0] and ki == 0, ℤ[slab_size_k//2]):
+            # Only the non-negative part of the k-dimension exists.
+            # Loop through this half one complex number at a time,
+            # looping directly over kk instead of k == 2*kk.
+            # To avoid |k|² = 0 we start at kk = 1 if kj == 0 == ki.
+            for kk in range(𝔹[kj == 0] and ki == 0, _nyquist + 1):
                 # Jump to the next complex number
                 index += 2
-                # The squared magnitude of the wave vector (grid units)
-                k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
-                # The final deconvolution factor
+                # Skip Nyquist points
+                if 𝔹[𝔹[ki == ℤ[-_nyquist]] or 𝔹[kj == ℤ[-_nyquist]]] or kk == _nyquist:
+                    continue
+                # The z DC plane consists of complex conjugate pairs of
+                # points. When looping sparsely we only want to hit one
+                # point from each pair. To do this, we choose to skip
+                # points with positive ki and also points with positive
+                # kj and ki == 0.
                 with unswitch(3):
-                    if deconv_order:
-                        # The total (NGP) deconvolution factor
-                        deconv = deconv_ij*get_deconvolution_factor(kk*ℝ[π/slab_size_global])
-                        # The full deconvolution factor
-                        deconv **= deconv_order
+                    if sparse:
+                        if 𝔹[ki > 0 or (𝔹[ki == 0] and 𝔹[kj > 0])] and kk == 0:
+                            continue
                 # Interlace the two relatively shifted particle slabs
                 with unswitch(3):
                     if do_interlacing:
@@ -1713,14 +1722,21 @@ def slab_fourier_loop(
                         #     = π/gridsize*(ki + kj + kk)
                         re = _slab_particles_shifted_ptr[index    ]
                         im = _slab_particles_shifted_ptr[index + 1]
-                        θ = ℝ[π/slab_size_global]*(ki_plus_kj + kk)
+                        θ = ℝ[π/_gridsize]*(ki_plus_kj + kk)
                         re, im = re*ℝ[cos(θ)] - im*ℝ[sin(θ)], re*ℝ[sin(θ)] + im*ℝ[cos(θ)]
                         # The interlaced result overwrites the current
                         # values in the particles slab.
                         _slab_particles_ptr[index    ] = 0.5*(_slab_particles_ptr[index    ] + re)
                         _slab_particles_ptr[index + 1] = 0.5*(_slab_particles_ptr[index + 1] + im)
+                # The full deconvolution factor
+                with unswitch(3):
+                    if deconv_order:
+                        # The total (NGP) deconvolution factor
+                        deconv = deconv_ij*get_deconvolution_factor(kk*ℝ[π/_gridsize])
+                        # The full deconvolution factor
+                        deconv **= deconv_order
                 # Yield the needed variables
-                yield index, ki, kj, kk, k2, deconv
+                yield index, ki, kj, kk, deconv
 
 # Function for deconvolving and/or interlacing particle grids
 @cython.header(
@@ -1738,7 +1754,6 @@ def slab_fourier_loop(
     grids_extra=dict,
     gridsize='Py_ssize_t',
     index='Py_ssize_t',
-    k2='Py_ssize_t',
     ki='Py_ssize_t',
     kj='Py_ssize_t',
     kk='Py_ssize_t',
@@ -1798,18 +1813,17 @@ def deconvolve_interlace(grids, order=0, interlacing=True, do_ghost_communicatio
     # Perform the deconvolution and interlacing
     slab_particles = slabs['particles']
     slab_particles_ptr = cython.address(slab_particles[:, :, :])
-    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(
+    for index, ki, kj, kk, deconv in slab_fourier_loop(
         slabs,
         deconv_order=order,
         do_interlacing=interlacing,
-        nullify_DC=False,
     ):
         # Compute the total power at this index resulting
         # from both particles and fluid components,
         # with the particles slab values deconvolved.
         slab_particles_ptr[index    ] *= ℝ[fft_factor*deconv]  # real part
         slab_particles_ptr[index + 1] *= ℝ[fft_factor*deconv]  # imag part
-    # The fft_factor should be applied to the DC component as well
+    # The fft_factor should be applied to the DC element as well
     if master:
         slab_particles_ptr[0] *= fft_factor  # real part
         slab_particles_ptr[1] *= fft_factor  # imag part
@@ -1844,83 +1858,100 @@ def get_deconvolution_factor(value):
     # in pure Python mode.
     return cast((value == 0) or value/sin(value), 'double')
 
-# Function implementing the Fourier slab symmetry multiplicity.
-# Because of the complex-conjugate symmetry, the slabs only contain
-# half of the data; the positive kk frequencies. The return value of
-# this function counts the number of times a given grid point should
-# be counted (1 or 2) in order to account for all of the data.
-@cython.header(kk='Py_ssize_t', nyquist='Py_ssize_t', returns='int')
-def get_symmetry_multiplicity(kk, nyquist):
-    # The count is 2 except at the zero and Nyquist k-plane.
-    # Here kk and nyquist are measured in grid units, and so nyquist
-    # should be gridsize//2 with gridsize the global size of the
-    # original grid, corresponding to the slab size in the i-dimension
-    # (element [1] in transposed Fourier space).
-    return 2 - (kk == 0 or kk == nyquist)
-
-# Function for nullifying the very highest frequency mode of
-# Fourier space slabs.
+# Function for nullifying sets of modes of Fourier space slabs
 @cython.header(
     # Arguments
     slab_or_slabs=object,  # double[:, :, ::1] or dict
+    nullifications=object,  # str or list of str's
     # Locals
-    deconv='double',
     gridsize='Py_ssize_t',
-    index='Py_ssize_t',
-    index_k2_max='Py_ssize_t',
-    k2='Py_ssize_t',
-    k2_max='Py_ssize_t',
+    i='Py_ssize_t',
+    j='Py_ssize_t',
+    j_global='Py_ssize_t',
+    k='Py_ssize_t',
     ki='Py_ssize_t',
     kj='Py_ssize_t',
     kk='Py_ssize_t',
+    nullification=str,
+    nyquist='Py_ssize_t',
     slab='double[:, :, ::1]',
-    slab_ptr='double*',
+    slab_jik='double*',
+    slab_size_j='Py_ssize_t',
+    slab_size_i='Py_ssize_t',
+    slab_size_k='Py_ssize_t',
     slabs=dict,
     returns='void',
 )
-def nullify_highest_frequency_mode(slab_or_slabs):
+def nullify_modes(slab_or_slabs, nullifications):
+    """The nullifications argument can be a str of comma-separated
+    words, or alternatively a list of str's, each being a single word.
+    The words specify which types of modes to nullify:
+    - "DC": Nullify the origin ki = kj = kk = 0. Other points which may
+      be considered as "DC" along only one or two dimensions
+      (e.g. ki = kj = 0, kk = 7) will not be nullified.
+    - "Nyquist": Nullify the three Nyquist planes:
+        ki = -nyquist, -nyquist ≤ kj < nyquist, 0 ≤ kk ≤ nyquist.
+        kj = -nyquist, -nyquist ≤ ki < nyquist, 0 ≤ kk ≤ nyquist.
+        kk = +nyquist, -nyquist ≤ ki < nyquist, -nyquist ≤ kj < nyquist.
+    """
     if isinstance(slab_or_slabs, dict):
         slabs = slab_or_slabs
+        for slab in slabs.values():
+            nullify_modes(slab, nullifications)
+        return
     else:
         slab = slab_or_slabs
-        slabs = {'particles': slab}
-    # Extract gridsize from slab
-    for slab in slabs.values():
-        break
-    slab_size_i = slab.shape[1]
+    # Parse nullifications
+    if isinstance(nullifications, str):
+        nullifications = nullifications.split(',')
+    nullifications = [nullification.strip().lower() for nullification in nullifications]
+    # Get slab dimensions
+    slab_size_j, slab_size_i, slab_size_k = asarray(slab).shape
     gridsize = slab_size_i
-    # Look up cached index of highest frequency mode
-    index_k2_max = highest_frequency_mode_cache.get(gridsize, -2)
-    if index_k2_max != -2:
-        # Cache lookup succeeded
-        if index_k2_max != -1:
-            # The highest frequency mode resides on this process.
-            # Carry out nullification.
-            for slab in slabs.values():
-                slab_ptr = cython.address(slab[:, :, :])
-                slab_ptr[index_k2_max    ] = 0  # real part
-                slab_ptr[index_k2_max + 1] = 0  # imag part
-        return
-    # Not found in cache.
-    # Compute maximum k2.
     nyquist = gridsize//2
-    k2_max = 3*nyquist**2
-    # Find the linear index at which k2 == k2_max.
-    # Note that this only exists on a single process.
-    index_k2_max = -1
-    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(slabs, nullify_DC=False):
-        if k2 == k2_max:
-            index_k2_max = index
-            break
-    # Store the result in cache. Only one process stores the actual
-    # index, the others store -1.
-    highest_frequency_mode_cache[gridsize] = index_k2_max
-    # Re-call this function in order to trigger cache lookup
-    # and subsequent nullification.
-    nullify_highest_frequency_mode(slabs)
-# Cache used by the above function
-cython.declare(highest_frequency_mode_cache=dict)
-highest_frequency_mode_cache = {}
+    # Perform nullifications
+    for nullification in nullifications:
+        if nullification == 'dc':
+            # Nullify the DC point ki == kj == kk == 0. This is always
+            # located as the first element on the master process.
+            if master:
+                slab_jik = cython.address(slab[0, 0, 0:])
+                slab_jik[0] = 0  # real part
+                slab_jik[1] = 0  # imag part
+        elif nullification == 'nyquist':
+            # Nullify the three Nyquist planes ki == -nyquist,
+            # kj = -nyquist and kk = +nyquist. These planes overlap
+            # pairwise at the edges and so a little effort can be spared
+            # by not nullifying these edges twice. We take this into
+            # account for the two edges in the kk = +nyquist plane but
+            # not for the remaining ki = kj = -nyquist edge, as skipping
+            # the Nyquist point along the i or j direction (unlike along
+            # the k direction) requires logic.
+            ki = -nyquist
+            i = ki + gridsize*(ki < 0)
+            for j in range(slab_size_j):
+                for k in range(0, gridsize, 2):  # exclude k = gridsize (kk = nyquist)
+                    slab_jik = cython.address(slab[j, i, k:])
+                    slab_jik[0] = 0  # real part
+                    slab_jik[1] = 0  # imag part
+            kj = -nyquist
+            j_global = kj + gridsize*(kj < 0)
+            j = j_global - ℤ[slab_size_j*rank]
+            if 0 <= j < slab_size_j:
+                for i in range(gridsize):
+                    for k in range(0, gridsize, 2):  # exclude k = gridsize (kk = nyquist)
+                        slab_jik = cython.address(slab[j, i, k:])
+                        slab_jik[0] = 0  # real part
+                        slab_jik[1] = 0  # imag part
+            kk = +nyquist
+            k = 2*kk
+            for j in range(slab_size_j):
+                for i in range(gridsize):
+                    slab_jik = cython.address(slab[j, i, k:])
+                    slab_jik[0] = 0  # real part
+                    slab_jik[1] = 0  # imag part
+        else:
+            abort(f'nullify_modes(): nullification "{nullification}" not understood')
 
 # Function that returns a slab decomposed grid,
 # allocated by FFTW.

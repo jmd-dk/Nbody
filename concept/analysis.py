@@ -33,9 +33,7 @@ cimport(
     '    diff_domaingrid,                '
     '    fft,                            '
     '    get_fftw_slab,                  '
-    '    get_symmetry_multiplicity,      '
     '    interpolate_upstream,           '
-    '    nullify_highest_frequency_mode, '
     '    slab_decompose,                 '
     '    slab_fourier_loop,              '
 )
@@ -168,6 +166,7 @@ PowerspecDeclaration = collections.namedtuple(
     n_modes='Py_ssize_t[::1]',
     n_modes_fine='Py_ssize_t[::1]',
     n_modes_max='Py_ssize_t',
+    nyquist='Py_ssize_t',
     powerspec_bins=tuple,
     slab='double[:, :, ::1]',
     slabs=dict,
@@ -192,7 +191,7 @@ def get_powerspec_bins(gridsize, binsize):
         return powerspec_bins
     # Maximum value of k² (grid units)
     nyquist = gridsize//2
-    k2_max = 3*nyquist**2
+    k2_max = 3*(nyquist - 1)**2
     # Maximum and minum k values
     k_min = ℝ[2*π/boxsize]
     k_max = ℝ[2*π/boxsize]*sqrt(k2_max)
@@ -236,14 +235,11 @@ def get_powerspec_bins(gridsize, binsize):
     n_modes_fine = zeros(k_bin_indices.shape[0], dtype=C2np['Py_ssize_t'])
     # Get distributed slab for the given grid size
     slab = get_fftw_slab(gridsize)
-    # Loop over the slab, tallying up the multiplicity for each k².
-    # We do not touch the slab data.
+    # Loop over the slabs, tallying up the number of modes for each k²
     slabs = {'particles': slab}
-    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(slabs, nullify_DC=False):
-        n_modes_fine[k2] += get_symmetry_multiplicity(kk, nyquist)
-    # The k == k_max mode is highly uncertain.
-    # We wish to exclude this point and so we set its multiplicity to 0.
-    n_modes_fine[k2_max] = 0
+    for index, ki, kj, kk, deconv in slab_fourier_loop(slabs, sparse=True):
+        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
+        n_modes_fine[k2] += 1
     # Sum n_modes_fine into the master process
     Reduce(
         sendbuf=(MPI.IN_PLACE if master else n_modes_fine),
@@ -331,7 +327,6 @@ powerspec_bins_cache = {}
     ki='Py_ssize_t',
     kj='Py_ssize_t',
     kk='Py_ssize_t',
-    multiplicity='int',
     n_modes='Py_ssize_t[::1]',
     n_modes_ptr='Py_ssize_t*',
     normalization='double',
@@ -384,9 +379,6 @@ def compute_powerspec(declaration):
     slabs = slab_decompose(grids, prepare_fft=True)
     # Do a forward in-place Fourier transform of the slabs
     fft(slabs, 'forward')
-    # The very highest frequency mode is highly uncertain
-    # and so we nullify its contribution.
-    nullify_highest_frequency_mode(slabs)
     # Store the slabs as separate variables
     slab_particles = slabs.get('particles')
     any_particles = (slab_particles is not None)
@@ -398,15 +390,12 @@ def compute_powerspec(declaration):
         slab_fluid_ptr = cython.address(slab_fluid[:, :, :])
     # Nullify the reused power array
     power[:] = 0
-    # Loop over the slab(s),
+    # Loop over the slabs,
     # tallying up the power in the different k² bins.
-    nyquist = gridsize//2
     deconv_order = interpolation*deconvolution*any_particles
     do_interlacing = (any_particles and interlacing)
-    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(
-        slabs,
-        deconv_order=deconv_order,
-        do_interlacing=do_interlacing,
+    for index, ki, kj, kk, deconv in slab_fourier_loop(
+        slabs, sparse=True, deconv_order=deconv_order, do_interlacing=do_interlacing,
     ):
         # Compute the total power at this index resulting
         # from both particles and fluid components,
@@ -423,9 +412,9 @@ def compute_powerspec(declaration):
                 im = slab_fluid_ptr[index + 1]
         power_ijk = re**2 + im**2
         # Add power at this k² to the corresponding bin
+        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
         k_bin_index = k_bin_indices_ptr[k2]
-        multiplicity = get_symmetry_multiplicity(kk, nyquist)
-        power_ptr[k_bin_index] += multiplicity*power_ijk
+        power_ptr[k_bin_index] += power_ijk
     # Sum power into the master process
     Reduce(
         sendbuf=(MPI.IN_PLACE if master else power),

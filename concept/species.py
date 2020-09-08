@@ -1182,17 +1182,21 @@ class Component:
             for force, dict_method in self.potential_gridsizes.items():
                 for method, gridsizes in dict_method.items():
                     if gridsizes != gridsizes_ought:
-                        if method in {'p3m', }:
-                            # Allow wrong specification for non-fluid
-                            # methods. Overwrite for consistency.
-                            dict_method[method] = gridsizes_ought
-                        else:
+                        # As PM is the only method available for fluid
+                        # components, we do not count wrong
+                        # upstream/downstream potential grid size
+                        # specifications of other methods as errors.
+                        if method == 'pm':
                             abort(
                                 f'Upstream and downstream potential grid sizes of fluid component '
                                 f'"{self.name}" for force {force} with method {method} was set to '
                                 f'{tuple(dict_method[method])} but both need to equal the fluid '
                                 f'grid size {self.gridsize}'
                             )
+                        else:
+                            # Allow wrong specification
+                            # but overwrite for consistency.
+                            dict_method[method] = gridsizes_ought
         # Mapping from component names to number of
         # (instantaneous) interactions that have taken place.
         self.n_interactions = collections.defaultdict(int)

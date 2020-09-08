@@ -45,7 +45,7 @@ cimport(
     '    interpolate_domaingrid_to_particles, '
     '    interpolate_grid_to_grid,            '
     '    interpolate_upstream,                '
-    '    nullify_highest_frequency_mode,      '
+    '    nullify_modes,                       '
     '    slab_decompose,                      '
     '    slab_fourier_loop,                   '
 )
@@ -1897,11 +1897,12 @@ def particle_mesh(
     fft_factor = float(gridsize_global)**(-3)
     # Loop over the complex numbers in the slabs
     deconv_order = interpolation_order*(any_particles_suppliers or any_particles_receivers)
-    for index, ki, kj, kk, k2, deconv in slab_fourier_loop(
+    for index, ki, kj, kk, deconv in slab_fourier_loop(
         slabs,
         deconv_order=deconv_order,
         do_interlacing=interlace,
     ):
+        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
         # The potential factor, for converting the slab values
         # to the desired potential. Note that we further attach
         # the FFT normalisation factor to this.
@@ -1931,10 +1932,10 @@ def particle_mesh(
         with unswitch(3):
             if 𝔹[any_particles_suppliers and any_fluid_suppliers]:
                 re = potential_factor*(
-                    slab_fluid_ptr[index    ] + deconv*slab_particles_ptr[index    ]
+                    deconv*slab_particles_ptr[index    ] + slab_fluid_ptr[index    ]
                 )
                 im = potential_factor*(
-                    slab_fluid_ptr[index + 1] + deconv*slab_particles_ptr[index + 1]
+                    deconv*slab_particles_ptr[index + 1] + slab_fluid_ptr[index + 1]
                 )
             elif any_particles_suppliers:
                 factor = potential_factor*deconv
@@ -1943,15 +1944,23 @@ def particle_mesh(
             else:  # any_fluid_suppliers
                 re = potential_factor*slab_fluid_ptr[index    ]
                 im = potential_factor*slab_fluid_ptr[index + 1]
-        # Insert the final potential values into the slabs
+        # Insert the final potential values into the slabs.
+        # The unswitched block below is somewhat repetitive,
+        # but it leads to fewer source lines after unswitching compared
+        # to having individual unswitching for any_particles_receivers
+        # and any_fluid_receivers.
         with unswitch(3):
-            if any_particles_receivers:
+            if 𝔹[any_particles_receivers and any_fluid_receivers]:
                 slab_particles_ptr[index    ] = deconv*re
                 slab_particles_ptr[index + 1] = deconv*im
-        with unswitch(3):
-            if any_fluid_receivers:
-                slab_fluid_ptr[index    ] = re
-                slab_fluid_ptr[index + 1] = im
+                slab_fluid_ptr    [index    ] =        re
+                slab_fluid_ptr    [index + 1] =        im
+            elif any_particles_receivers:
+                slab_particles_ptr[index    ] = deconv*re
+                slab_particles_ptr[index + 1] = deconv*im
+            else:  # any_fluid_receivers
+                slab_fluid_ptr    [index    ] =        re
+                slab_fluid_ptr    [index + 1] =        im
     # The shifted particles slabs and global grid are never needed
     # from this point on, and so we remove these. We further remove the
     # slabs and global grids for which we have no receivers of the same
@@ -1970,9 +1979,8 @@ def particle_mesh(
             'as it appears that neither particles nor fluids should receive the force '
             'due to the potential.'
         )
-    # The very highest frequency mode is highly uncertain
-    # and so we nullify its contribution.
-    nullify_highest_frequency_mode(slabs)
+    # Ensure nullified Nyquist planes and origin
+    nullify_modes(slabs, 'nyquist, dc')
     # Fourier transform the slabs back to coordinate space
     fft(slabs, 'backward')
     # Domain-decompose the slabs

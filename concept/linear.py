@@ -41,7 +41,7 @@ cimport(
     '    fft,                                 '
     '    get_fftw_slab,                       '
     '    interpolate_domaingrid_to_particles, '
-    '    nullify_highest_frequency_mode,      '
+    '    nullify_modes,                       '
     '    slab_decompose,                      '
     '    slab_fourier_loop,                   '
 )
@@ -2839,6 +2839,7 @@ def compute_transfer(
     logk_magnitudes=object,  # list, np.ndarray
     logk_max='double',
     logk_min='double',
+    nyquist='Py_ssize_t',
     returns=object,  # FloatStr
 )
 def get_k_magnitudes(gridsize):
@@ -2850,7 +2851,8 @@ def get_k_magnitudes(gridsize):
         abort(f'get_k_magnitudes() got gridsize = {gridsize} < 2')
     # Minimum and maximum k
     k_min = ℝ[2*π/boxsize]
-    k_max = k_min*sqrt(3*(gridsize//2)**2)
+    nyquist = gridsize//2
+    k_max = k_min*sqrt(3*(nyquist - 1)**2)
     k_min *= ℝ[1 - k_safety_factor]
     k_max *= ℝ[1 + k_safety_factor]
     logk_min = log10(k_min)
@@ -2974,6 +2976,7 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     mass='double',
     momⁱ='double*',
     multi_index=object,  # tuple or str
+    nyquist='Py_ssize_t',
     option_key=str,
     option_val=object,  # str or bool
     options_linear=dict,
@@ -3243,7 +3246,6 @@ def realize(
     if fluid_index == 0 and options['structure'] != options_linear['structure']:
         abort('Can only do linear realization of δ')
     # Extract various variables
-    nyquist = gridsize//2
     H = hubble(a)
     w = component.w(a=a)
     w_eff = component.w_eff(a=a)
@@ -3252,7 +3254,8 @@ def realize(
     # These values are the k (but not k⃗) dependent values inside the
     # inverse Fourier transform, not including any additional tenstor
     # structure (the k factors K(k⃗)).
-    k2_max = 3*(gridsize//2)**2  # Max |k⃗|² in grid units
+    nyquist = gridsize//2
+    k2_max = 3*(nyquist - 1)**2  # Max |k⃗|² in grid units
     sqrt_power_common = get_buffer(k2_max + 1,
         # Must use some buffer different from the one used to do the
         # domain decomposition of ψⁱ below.
@@ -3406,32 +3409,10 @@ def realize(
         if tensor_rank > 1:
             index1 = multi_index[1]
         # Loop over the slab
-        for index, ki, kj, kk, k2, deconv in slab_fourier_loop(slabs, deconv_order=deconv_order):
-            # When realizing a variable with a tensor structure
-            # (anything but a scalar), the multiplication by kⁱ amounts
-            # to differentiating the grid. For such Fourier space
-            # differentiations, the Nyquist mode in the dimension of
-            # differentiation has to be explicitly zeroed out for odd
-            # differentiation orders. If not, the resultant grid will
-            # not satisfy the complex conjugate symmetry, and so will
-            # not represent the Fourier transform of a real-valued grid.
-            with unswitch(3):
-                if tensor_rank == 1:
-                    # Vector: First-order differentiation
-                    k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
-                    if k_index0 == nyquist:
-                        slab_ptr[index    ] = 0
-                        slab_ptr[index + 1] = 0
-                        continue
-                elif tensor_rank == 2 and index0 != index1:
-                    # Rank 2 tensor with unequal indices:
-                    # Two first-order differentiations.
-                    k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
-                    k_index1 = ℤ[ℤ[ℤ[𝔹[index1 == 1]*kj] or 𝔹[index1 == 0]*ki] or 𝔹[index1 == 2]*kk]
-                    if k_index0 == nyquist or k_index1 == nyquist:
-                        slab_ptr[index    ] = 0
-                        slab_ptr[index + 1] = 0
-                        continue
+        for index, ki, kj, kk, deconv in slab_fourier_loop(
+            slabs, deconv_order=deconv_order,
+        ):
+            k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
             # The square root of the power at this |k⃗|, disregarding all
             # k⃗-dependent contributions (from the k factor and the
             # non-linear structure).
@@ -3497,9 +3478,8 @@ def realize(
                             k_factor = ℝ[0.5*(index0 == index1)] - (1.5*k_index0*k_index1)/k2
                             slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*structure_ptr[index    ]
                             slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*structure_ptr[index + 1]
-        # The very highest frequency mode is highly uncertain
-        # and so we nullify its contribution.
-        nullify_highest_frequency_mode(slab)
+        # Ensure nullified Nyquist planes and origin
+        nullify_modes(slab, 'nyquist, dc')
         # Fourier transform the slabs to coordinate space.
         # Now the slabs store the realized grid.
         fft(slab, 'backward')
@@ -3673,10 +3653,14 @@ slab_structure_infos = {}
     # Arguments
     slab='double[:, :, ::1]',
     # Locals
+    dcplane='double[:, :, ::1]',
+    dcplane_ji='double*',
+    dcplane_ji_conj='double*',
     face='int',
     gridsize='Py_ssize_t',
     i='Py_ssize_t',
     i_conj='Py_ssize_t',
+    iterate='Py_ssize_t',
     j='Py_ssize_t',
     j_global='Py_ssize_t',
     j_global_conj='Py_ssize_t',
@@ -3696,18 +3680,17 @@ slab_structure_infos = {}
     noise_im='double',
     noise_re='double',
     nyquist='Py_ssize_t',
-    plane='double[:, :, ::1]',
-    plane_dc='double[:, :, ::1]',
-    plane_ji='double*',
-    plane_ji_conj='double*',
-    plane_nyquist='double[:, :, ::1]',
     prng='PseudoRandomNumberGenerator',
     r='double',
     shell='Py_ssize_t',
     slab_jik='double*',
+    slab_size_i='Py_ssize_t',
+    slab_size_j='Py_ssize_t',
+    slab_size_k='Py_ssize_t',
     text=list,
     θ='double',
     θ_str=str,
+    returns='void',
 )
 def generate_primordial_noise(slab):
     """Given the already allocated slab, this function will populate
@@ -3731,40 +3714,39 @@ def generate_primordial_noise(slab):
     amount to just populating the additional "shell" with new random
     numbers, but keeping the random numbers inside of the inner cuboid
     the same. This has the effect that enlarging the grid leaves the
-    large-scale structure invariant; one merely add information at
+    large-scale structure invariant; one merely adds information at
     smaller scales. Additionally, the sequence of random numbers should
     be independent on the number of processes. To achieve all of this,
     we draw the random numbers using the following scheme:
     All processes loop over the entire 3D grid in shells, starting from
-    the inner most shell (labelled shell 1) containing (amongst others)
-    the (0, 0, 0) point. Since the kk-dimension is cut in half, each
-    shell is only tabulated at the kk ≥ 0 half. Thus, each shell
-    consists of a kk = constant face, two kj = constant faces and two
-    ki = constant faces. Denoting the shell number simply by 'shell',
-    the faces are defined by:
-        The kk = constant face : kk = shell              , -shell + 1 ≤ ki ≤ shell, -shell < kj ≤ shell,
-        The kj = constant faces: kj ∈ {-shell + 1, shell}, -shell + 1 ≤ ki ≤ shell,      0 ≤ kk < shell,
-        The ki = constant faces: ki ∈ {-shell + 1, shell}, -shell + 1 < kj ≤ shell,      0 ≤ kk < shell.
-    With 0 < shell ≤ nyquist, we hit all points in the 3D grid. The
-    (0, 0, 0) point will be part of the kj = 0 face in shell 1. At each
-    point, all processes draw the same two random numbers, but only the
-    process which owns the given point (determined by the j index that
-    goes with kj) assign the random numbers to its local slab.
-    The DC and Nyquist planes, defined by kk = 0 and kk = nyquist,
-    respectively, need to satisfy the complex conjugacy symmetry of a
-    Fourier transformed real field, namely
-        plane[k_vec] = plane[-k_vec]*,
-    where * means complex conjugation and k_vec is a 2D vector in the
-    plane. We enfore this symmetry by letting all processes tabulate
-    both planes with random numbers in their entirety. After the whole
-    3D grid and the two planes are filled with random numbers, we can
-    enforce the symmetry by simply looping over half of the two planes
-    and setting each point equal to the conjucate of the corresponding
-    symmetric point.
+    the inner most (shell = 1) and moving outwards (shell 2, 3, ...).
+    Each shell consists of 5 faces:
+      The kk = const face : kk =  shell, -shell ≤ ki ≤ shell, -shell ≤ kj ≤ shell
+      The ki = const faces: ki = ±shell, -shell ≤ kj ≤ shell, 0 ≤ kk < shell
+      The kj = const faces: kj = ±shell,  shell < ki < shell, 0 ≤ kk < shell
+    In principle a shell = 0 also exists, containing just the origin
+    ki = kj = kk = 0. With only a single point, the division into the 5
+    faces cannot be done. We skip this shell, meaning that the origin
+    will not be populated (nor will it be set to 0). The largest shell
+    populated will be nyquist - 1, meaning that the three Nyquist planes
+    will not be populated (nor will they be set to 0).
+    At each point, all processes draw the same two random numbers
+    (amounting to the real and imaginary part of the complex number),
+    but only the process which owns the given point (determined by the j
+    index that goes with kj) assigns the random numbers to its local
+    slab.
+    The z DC plane (kk = 0) needs to satisfy the complex conjugacy
+    symmetry of a Fourier transformed real field, here
+        plane[+kj, +ki, kk=0] = plane[-kj, -ki, kk=0]*,
+    where * means complex conjugation. We enfore this symmetry by
+    letting all processes tabulate this plane with random numbers in its
+    entirety. After the whole 3D grid and the DC plane is filled with
+    random numbers, we enforce the symmetry by looping over half of the
+    DC plane and setting the inverted points in the slab equal to their
+    complex conjucate partners.
     """
-    # The global grid size is equal to
-    # the first (1) dimension of the slab.
-    gridsize = slab.shape[1]
+    slab_size_j, slab_size_i, slab_size_k = asarray(slab).shape
+    gridsize = slab_size_i
     # Progress message
     text = ['Generating primordial']
     if not primordial_amplitude_fixed:
@@ -3780,32 +3762,31 @@ def generate_primordial_noise(slab):
         text.append(f', phase shift {θ_str}')
     text.append(' ...')
     masterprint(''.join(text))
-    # Allocate the entire DC and Nyquist plane on all processes
-    plane_dc      = empty((gridsize, gridsize, 2), dtype=C2np['double'])
-    plane_nyquist = empty((gridsize, gridsize, 2), dtype=C2np['double'])
+    # Allocate the entire z DC plane on all processes
+    dcplane = empty((gridsize, gridsize, 2), dtype=C2np['double'])
     # Instantiate pseudo-random number generator
     # using the same seed on all processes.
     prng = PseudoRandomNumberGenerator(random_seed)
     # Loop through all shells
     nyquist = gridsize//2
-    for shell in range(1, nyquist + 1):
+    for shell in range(1, nyquist):
         # Loop over the three types of faces
         for face in range(3):
             if face == 0:
-                # The kk = constant face
-                kj_start, kj_stop, kj_step = ℤ[-shell + 1], ℤ[shell + 1], 1
-                ki_start, ki_stop, ki_step = ℤ[-shell + 1], ℤ[shell + 1], 1
-                kk_start, kk_stop, kk_step =   +shell     , ℤ[shell + 1], 1
+                # The kk = const face
+                ki_start, ki_stop, ki_step = ℤ[-shell], ℤ[shell + 1], 1  # -shell ≤ ki ≤ shell
+                kj_start, kj_stop, kj_step = ℤ[-shell], ℤ[shell + 1], 1  # -shell ≤ kj ≤ shell
+                kk_start, kk_stop, kk_step =    shell , ℤ[shell + 1], 1  #          kk = shell
             elif face == 1:
-                # The two kj = constant faces
-                kj_start, kj_stop, kj_step = ℤ[-shell + 1], ℤ[shell + 1], ℤ[2*shell - 1]
-                ki_start, ki_stop, ki_step = ℤ[-shell + 1], ℤ[shell + 1],             1
-                kk_start, kk_stop, kk_step =            0 ,   shell     ,             1
+                # The two ki = const faces
+                ki_start, ki_stop, ki_step = ℤ[-shell], ℤ[shell + 1], ℤ[2*shell]  #          ki = ±shell
+                kj_start, kj_stop, kj_step = ℤ[-shell], ℤ[shell + 1],         1   # -shell ≤ kj ≤ shell
+                kk_start, kk_stop, kk_step =        0 ,   shell     ,         1   #      0 ≤ kk < shell
             else:  # face == 2:
-                # The two ki = constant faces
-                kj_start, kj_stop, kj_step = ℤ[-shell + 2],   shell     ,             1
-                ki_start, ki_stop, ki_step = ℤ[-shell + 1], ℤ[shell + 1], ℤ[2*shell - 1]
-                kk_start, kk_stop, kk_step =            0 ,   shell     ,             1
+                # The two kj = const faces
+                ki_start, ki_stop, ki_step = ℤ[-shell + 1],   shell     ,         1   # shell < ki < shell
+                kj_start, kj_stop, kj_step = ℤ[-shell    ], ℤ[shell + 1], ℤ[2*shell]  #         kj = ±shell
+                kk_start, kk_stop, kk_step =            0 ,   shell     ,         1   #     0 ≤ kk < shell
             # Loop over the face.
             # We want to loop like
             #   for kj in range(kj_start, kj_stop, kj_step)
@@ -3814,17 +3795,17 @@ def generate_primordial_noise(slab):
             # cythonization time for proper transpilation). Below we
             # write out this loop by manually initializing and
             # incrementing the loop variable.
-            kj = ℤ[kj_start - kj_step]
-            for _ in range(ℤ[((kj_stop - kj_start) + (kj_step - 1))//kj_step]):
+            kj = kj_start - kj_step
+            for iterate in range(ℤ[((kj_stop - kj_start) + (kj_step - 1))//kj_step]):
                 kj += kj_step
-                j_global = kj + gridsize if kj < 0 else kj
-                j = j_global - ℤ[slab.shape[0]*rank]
+                j_global = kj + gridsize*(kj < 0)
+                j = j_global - ℤ[slab_size_j*rank]
                 ki = ℤ[ki_start - ki_step]
-                for _ in range(ℤ[((ki_stop - ki_start) + (ki_step - 1))//ki_step]):
+                for iterate in range(ℤ[((ki_stop - ki_start) + (ki_step - 1))//ki_step]):
                     ki += ki_step
-                    i = ki + gridsize if ki < 0 else ki
+                    i = ki + gridsize*(ki < 0)
                     kk = ℤ[kk_start - kk_step]
-                    for _ in range(ℤ[((kk_stop - kk_start) + (kk_step - 1))//kk_step]):
+                    for iterate in range(ℤ[((kk_stop - kk_start) + (kk_step - 1))//kk_step]):
                         kk += kk_step
                         # Generate Gaussian random noise.
                         # In order to ensure the same random stream
@@ -3843,60 +3824,40 @@ def generate_primordial_noise(slab):
                         noise_im = r*sin(θ)
                         # Populate the local slab
                         with unswitch(2):
-                            if 0 <= j < ℤ[slab.shape[0]]:
+                            if 0 <= j < slab_size_j:
                                 k = 2*kk
                                 slab_jik = cython.address(slab[j, i, k:])
                                 slab_jik[0] = noise_re
                                 slab_jik[1] = noise_im
-                        # Populate the DC and Nyquist planes
+                        # Populate the z DC plane
                         if kk == 0:
-                            plane_ji = cython.address(plane_dc[j_global, i, :])
-                            plane_ji[0] = noise_re
-                            plane_ji[1] = noise_im
-                        elif kk == nyquist:
-                            plane_ji = cython.address(plane_nyquist[j_global, i, :])
-                            plane_ji[0] = noise_re
-                            plane_ji[1] = noise_im
-    # Enforce the complex conjugacy symmetry on the DC and Nyquist
-    # planes. We do this by replacing the random numbers for the
-    # elements in the lower j half of each plane with those of the
-    # "conjugated" element, situated at the negative k vector.
-    # For j_global == j_global_conj, the conjucation is purely along i,
-    # and so we may only edit half of the points along this line.
-    for k, plane in zip((0, 2*nyquist), (plane_dc, plane_nyquist)):
-        for j_global in range(gridsize//2 + 1):
-            j = j_global - ℤ[slab.shape[0]*rank]
-            # Each process can only change their local slab
-            if not (0 <= j < ℤ[slab.shape[0]]):
-                continue
-            j_global_conj = 0 if j_global == 0 else gridsize - j_global
-            for i in range(gridsize):
-                i_conj = 0 if i == 0 else gridsize - i
-                # Enforce complex conjugate symmetry if necessary.
-                # For j_global == j_global_conj, the conjucation is
-                # purely along i, and so we may only edit half of the
-                # points along this line.
-                if 𝔹[j_global == j_global_conj] and i == i_conj:
-                    # The complex number is its own conjugate,
-                    # so it has to be purely real. We want the magnitude
-                    # of the complex number to stay the same, and so we
-                    # rotate the number down onto the real axis.
-                    # In doing so, we retain the sign of the real
-                    # component (corresponding to the smallest rotation
-                    # which result in a real number).
-                    slab_jik = cython.address(slab[j, i, k:])
-                    r = sqrt(slab_jik[0]**2 + slab_jik[1]**2)
-                    if slab_jik[0] > 0:
-                        slab_jik[0] = +r
-                    else:
-                        slab_jik[0] = -r
-                    slab_jik[1] = 0
-                elif 𝔹[j_global != j_global_conj] or i < ℤ[gridsize//2]:
-                    # Enforce conjugacy
-                    slab_jik      = cython.address(slab [j            , i     , k:])
-                    plane_ji_conj = cython.address(plane[j_global_conj, i_conj,  :])
-                    slab_jik[0] = +plane_ji_conj[0]
-                    slab_jik[1] = -plane_ji_conj[1]
+                            dcplane_ji = cython.address(dcplane[j_global, i, :])
+                            dcplane_ji[0] = noise_re
+                            dcplane_ji[1] = noise_im
+    # Enforce the complex conjugacy symmetry on the z DC plane of the
+    # slabs. We do this by looping over half of the DC plane,
+    # specifically -nyquist < ki ≤ 0, -nyquist < kj < nyquist, with
+    # points ki = 0, 0 ≤ kj skipped. The inverted points at (-ki, -kj)
+    # from the DC plane are conjugated and copied onto the slab.
+    k = 0
+    ki_start          = -nyquist + 1
+    kj_start, kj_stop = -nyquist + 1, nyquist
+    for kj in range(kj_start, kj_stop):
+        j_global = kj + gridsize*(kj < 0)
+        j = j_global - ℤ[slab_size_j*rank]
+        # Each process can only change their local slab
+        if not (0 <= j < slab_size_j):
+            continue
+        j_global_conj = -kj + gridsize*(-kj < 0)
+        ki_stop = 1 - (kj >= 0)
+        for ki in range(ki_start, ki_stop):
+            i      =  ki + gridsize*( ki < 0)
+            i_conj = -ki + gridsize*(-ki < 0)
+            # Enforce conjugate symmetry for the slab
+            slab_jik        = cython.address(slab   [j            , i     , k:])
+            dcplane_ji_conj = cython.address(dcplane[j_global_conj, i_conj,  :])
+            slab_jik[0] = +dcplane_ji_conj[0]
+            slab_jik[1] = -dcplane_ji_conj[1]
     masterprint('done')
 
 # Function returning the linear power spectrum of a given component
