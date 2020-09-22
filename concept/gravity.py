@@ -56,6 +56,9 @@ cimport('from interactions import particle_particle')
     j='Py_ssize_t',
     particle_particle_t_begin='double',
     particle_particle_t_final='double',
+    periodic_offset_x='double',
+    periodic_offset_y='double',
+    periodic_offset_z='double',
     r3='double',
     rung_index_i='signed char',
     rung_index_j='signed char',
@@ -99,12 +102,13 @@ def gravity_pairwise(
     gravity_factors_ptr = cython.address(gravity_factors[:])
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
-    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
+    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
         rank_supplier, interaction_name, only_supply,
     ):
-        # Translate coordinates so they correspond to the nearest image
+        # Translate coordinates so that they
+        # correspond to the nearest image.
         if x_ji > ℝ[0.5*boxsize]:
             x_ji -= boxsize
         elif x_ji < ℝ[-0.5*boxsize]:
@@ -174,6 +178,9 @@ def gravity_pairwise(
     j='Py_ssize_t',
     particle_particle_t_begin='double',
     particle_particle_t_final='double',
+    periodic_offset_x='double',
+    periodic_offset_y='double',
+    periodic_offset_z='double',
     r2='double',
     rung_index_i='signed char',
     rung_index_j='signed char',
@@ -220,28 +227,20 @@ def gravity_pairwise_shortrange(
     gravity_factors_ptr = cython.address(gravity_factors[:])
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
-    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
+    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
         rank_supplier, interaction_name, only_supply,
     ):
-        # Translate coordinates so they correspond to the nearest image
-        if x_ji > ℝ[0.5*boxsize]:
-            x_ji -= boxsize
-        elif x_ji < ℝ[-0.5*boxsize]:
-            x_ji += boxsize
-        if y_ji > ℝ[0.5*boxsize]:
-            y_ji -= boxsize
-        elif y_ji < ℝ[-0.5*boxsize]:
-            y_ji += boxsize
-        if z_ji > ℝ[0.5*boxsize]:
-            z_ji -= boxsize
-        elif z_ji < ℝ[-0.5*boxsize]:
-            z_ji += boxsize
-        r2 = x_ji**2 + y_ji**2 + z_ji**2 + softening2
+        # Translate coordinates so that they
+        # correspond to the nearest image.
+        x_ji += periodic_offset_x
+        y_ji += periodic_offset_y
+        z_ji += periodic_offset_z
         # If the particle pair is separated by a distance larger
         # than the range of the short-range force,
         # ignore this interaction completely.
+        r2 = x_ji**2 + y_ji**2 + z_ji**2 + softening2
         if r2 > ℝ[shortrange_params['gravity']['range']**2]:
             continue
         # Compute the short-range force. Here the "force" is in units
@@ -357,6 +356,9 @@ shortrange_table_maxr2 = (1 + 1e-3)*shortrange_params['gravity']['range']**2
     j='Py_ssize_t',
     particle_particle_t_begin='double',
     particle_particle_t_final='double',
+    periodic_offset_x='double',
+    periodic_offset_y='double',
+    periodic_offset_z='double',
     r3='double',
     rung_index_i='signed char',
     rung_index_j='signed char',
@@ -397,7 +399,7 @@ def gravity_pairwise_nonperiodic(
     gravity_factors_ptr = cython.address(gravity_factors[:])
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
-    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
+    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
         rank_supplier, interaction_name, only_supply,

@@ -661,11 +661,11 @@ class Tiling:
         # Arguments
         tile_index='Py_ssize_t',
         # Locals
-        tile_index3D='Py_ssize_t[::1]',
-        returns='Py_ssize_t[::1]',
+        tile_index3D='Py_ssize_t*',
+        returns='Py_ssize_t*',
     )
     def tile_index3D(self, tile_index):
-        tile_index3D = self.layout_1Dto3D[tile_index, :]
+        tile_index3D = cython.address(self.layout_1Dto3D[tile_index, :])
         return tile_index3D
 
     # Method for sorting particles into tiles. If the arguments
@@ -2937,7 +2937,7 @@ class Component:
         subtiling='Tiling',
         tile_extent='double[::1]',
         tile_index='Py_ssize_t',
-        tile_index3D='Py_ssize_t[::1]',
+        tile_index3D='Py_ssize_t*',
         tiles_contain_particles='signed char*',
         tiling='Tiling',
         tiling_location='double[::1]',
@@ -4222,8 +4222,23 @@ def init_tiling(component, tiling_name, initial_rung_size=-1):
         )
         masterprint(f'Tile decomposition ({force}): {shape[0]}×{shape[1]}×{shape[2]}')
         tiling_shapes[tiling_name] = shape
-    # We need this tiling to have a size of at least 3
-    #  in every direction.
+    # The tiling needs to have a minimum number of tiles
+    # across each dimension. The minimum criteria are:
+    # - The logic used for the tile pairing assumes that all domain
+    #   tilings have immediate neighbour tiles which are different
+    #   from each other (and the tile in question itself).
+    #   We thus need at least 3 tiles along each dimension per tiling.
+    # - The shortest path between pairs of particles in different tiles
+    #   may either be the "direct" path or a path through the periodic
+    #   boundary of the box. With 3 tiles (or lower) along each
+    #   dimension, it is possible to have a mixture of these two
+    #   shortest path types for pairs of particles within a given
+    #   pair of tiles. That is, the tile locations alone cannot generally
+    #   tell us whether to use the "direct" or the periodic path,
+    #   but the implemented logic for the particle periodicity in fact
+    #   assumes that it can. We thus really need at least 4 tiles along
+    #   each dimension across the entire box (not for individual domain
+    #   tilings).
     if np.min(shape) < 3:
         message = [
             f'The {force} domain tiling needs a subdivision of at least 3 in every direction. '
@@ -4232,6 +4247,11 @@ def init_tiling(component, tiling_name, initial_rung_size=-1):
         if 1 != nprocs != int(round(cbrt(nprocs)))**3:
             message.append('It may also help to choose a lower and/or cubic number of processes.')
         abort(' '.join(message))
+    if np.min(asarray(shape)*asarray(domain_subdivisions)) < 4:
+        abort(
+            f'The global {force} tiling needs to have at least 4 tiles across the box in '
+            f'every direction. Consider lowering shortrange_params["{force}"]["tilesize"].'
+        )
     # If not already specified, the rungs within each tile start out
     # with half of the mean required memory per rung.
     if initial_rung_size == -1:

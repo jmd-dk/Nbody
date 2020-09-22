@@ -109,12 +109,13 @@ plt.tight_layout()
 plt.savefig(fig_file)
 
 # Printout error message for unsuccessful test
-tol = 1e-2
+tol = 1e-10
 if any(np.mean(np.array(d)/boxsize) > tol for d in dist.values()):
-    abort('Some or all pure Python runs with nprocs = {} yielded results\n'
-          'different from their compiled counterparts!\n'
-          'See "{}" for a visualization.'
-          .format(nprocs_list, fig_file))
+    abort(
+        f'Some or all pure Python runs with nprocs = {nprocs_list} yielded results '
+        f'different from their compiled counterparts!\n'
+        f'See "{fig_file}" for a visualization.'
+    )
 
 # Done analyzing
 masterprint('done')

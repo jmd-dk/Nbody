@@ -109,22 +109,25 @@ plt.tight_layout()
 plt.savefig(fig_file)
 
 # Printout error message for unsuccessful test
-tol = 1e-4
+tol = 1e-10
 if any(np.mean(np.array(d)/boxsize) > tol for d in dist.values()):
-    abort('Some or all pure Python runs with nprocs = {} yielded results\n'
-          'different from their compiled counterparts!\n'
-          'See "{}" for a visualization.'
-          .format(nprocs_list, fig_file))
+    abort(
+        f'Some or all pure Python runs with nprocs = {nprocs_list} yielded results '
+        f'different from their compiled counterparts!\n'
+        f'See "{fig_file}" for a visualization.'
+    )
 
 # Compare the two tabulated grids
 ewald_grid = {}
 for cp in ('cython', 'python'):
     with open_hdf5('{}/ewald_{}.hdf5'.format(this_dir, cp), mode='r') as hdf5_file:
         ewald_grid[cp] = hdf5_file['data'][...]
-δ, ϵ = 1e-6, 1e-6
+δ, ϵ = 1e-10, 1e-10
 if not all(np.isclose(ewald_grid['cython'], ewald_grid['python'], ϵ, δ)):
-    abort('The two tabulated Ewald grids "{}" and "{}" are far from being numerically identical!'
-          .format(*['{}/ewald_{}.hdf5'.format(this_dir, cp) for cp in ('cython', 'python')]))
+    abort(
+        'The two tabulated Ewald grids "{}" and "{}" are far from being numerically identical!'
+        .format(*[f'{this_dir}/ewald_{cp}.hdf5' for cp in ('cython', 'python')])
+    )
 
 # Done analyzing
 masterprint('done')

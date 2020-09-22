@@ -829,6 +829,7 @@ domain_domain_tile_indices_dict = {}
     pairings_N='Py_ssize_t*',
     pairs_N='Py_ssize_t',
     suppliertile_indices_3D_global_to_1D_local=dict,
+    tile_index3D='Py_ssize_t*',
     tile_index_3D_global_s=tuple,
     tile_index_r='Py_ssize_t',
     tile_index_s='Py_ssize_t',
@@ -944,7 +945,8 @@ def get_tile_pairings(
         suppliertile_indices_3D_global_to_1D_local = {}
         for j in range(tile_indices_supplier.shape[0]):
             tile_index_s = tile_indices_supplier[j]
-            tile_index_3D_s = asarray(tiling.tile_index3D(tile_index_s))
+            tile_index3D = tiling.tile_index3D(tile_index_s)
+            tile_index_3D_s = asarray([tile_index3D[dim] for dim in range(3)])
             tile_index_3D_global_s = tuple(tile_index_3D_s + tile_index_3D_s_start)
             suppliertile_indices_3D_global_to_1D_local[tile_index_3D_global_s] = tile_index_s
         # Pair each receiver tile with all neighbouring supplier tiles
@@ -952,7 +954,8 @@ def get_tile_pairings(
             neighbourtile_indices_supplier = tile_indices_receiver_supplier[i]
             # Construct global 3D index of this receiver tile
             tile_index_r = tile_indices_receiver[i]
-            tile_index_3D_r = asarray(tiling.tile_index3D(tile_index_r))
+            tile_index3D = tiling.tile_index3D(tile_index_r)
+            tile_index_3D_r = asarray([tile_index3D[dim] for dim in range(3)])
             tile_index_3D_global_r = tile_index_3D_r + tile_index_3D_r_start
             # Loop over all neighbouring receiver tiles
             # (including the tile itself).
@@ -1119,9 +1122,9 @@ tile_pairings_N_cache = malloc(tile_pairings_cache_size*sizeof('Py_ssize_t*'))
     size='Py_ssize_t',
     subtile_index_r='Py_ssize_t',
     subtile_index_s='Py_ssize_t',
-    subtile_index3D='Py_ssize_t[::1]',
+    subtile_index3D='Py_ssize_t*',
     subtile_index3D_r='Py_ssize_t[::1]',
-    subtile_index3D_s='Py_ssize_t[::1]',
+    subtile_index3D_s='Py_ssize_t*',
     subtile_pairings_index='Py_ssize_t',
     tile_extent='double[::1]',
     tile_pair_index='Py_ssize_t',
@@ -1129,6 +1132,7 @@ tile_pairings_N_cache = malloc(tile_pairings_cache_size*sizeof('Py_ssize_t*'))
     tiles_offset_i='Py_ssize_t',
     tiles_offset_j='Py_ssize_t',
     tiles_offset_k='Py_ssize_t',
+    tiles_offset_ptr='Py_ssize_t*',
     returns='Py_ssize_t',
 )
 def get_subtile_pairings(subtiling, forcerange, only_supply):
@@ -1167,20 +1171,21 @@ def get_subtile_pairings(subtiling, forcerange, only_supply):
     all_pairings_N = malloc(27*sizeof('Py_ssize_t*'))
     tiles_offset      = empty(3, dtype=C2np['Py_ssize_t'])
     subtile_index3D_r = empty(3, dtype=C2np['Py_ssize_t'])
+    tiles_offset_ptr = cython.address(tiles_offset[:])
     same_tile = False
     for tiles_offset_i in range(-1, 2):
-        tiles_offset[0] = tiles_offset_i
+        tiles_offset_ptr[0] = tiles_offset_i
         for tiles_offset_j in range(-1, 2):
-            tiles_offset[1] = tiles_offset_j
+            tiles_offset_ptr[1] = tiles_offset_j
             for tiles_offset_k in range(-1, 2):
-                tiles_offset[2] = tiles_offset_k
+                tiles_offset_ptr[2] = tiles_offset_k
                 # Does the tile offset correspond to
                 # a tile being paired with itself?
                 with unswitch:
                     if not only_supply:
                         same_tile = (tiles_offset_i == tiles_offset_j == tiles_offset_k == 0)
                 # Get 1D tile pair index from the 3D offset
-                tile_pair_index = get_neighbourtile_pair_index(tiles_offset)
+                tile_pair_index = get_neighbourtile_pair_index(tiles_offset_ptr)
                 # Allocate memory for subtile pairings
                 # for this particular tile pair.
                 pairings   = malloc(size*sizeof('Py_ssize_t*'))
@@ -1207,7 +1212,7 @@ def get_subtile_pairings(subtiling, forcerange, only_supply):
                     # physical separation. Note that subtile_index3D_r
                     # no longer represents the actual index in memory.
                     for dim in range(3):
-                        subtile_index3D_r[dim] -= tiles_offset[dim]*shape[dim]
+                        subtile_index3D_r[dim] -= tiles_offset_ptr[dim]*shape[dim]
                     # Allocate memory for subtile pairings with this
                     # particular receiver subtile.
                     # We give it the maximum possible needed memory.
@@ -1283,25 +1288,25 @@ subtile_pairings_N_cache = malloc(subtile_pairings_cache_size*sizeof('Py_ssize_t
 # Helper function for the get_subtile_pairings function
 @cython.header(
     # Arguments
-    tiles_offset='Py_ssize_t[::1]',
+    tiles_offset_ptr='Py_ssize_t*',
     # Locals
     dim='int',
     returns='Py_ssize_t',
 )
-def get_neighbourtile_pair_index(tiles_offset):
+def get_neighbourtile_pair_index(tiles_offset_ptr):
     # The passed tiles_offset is the relative offset between a pair of
     # neighbouring tiles, and so each of its three elements has to be
     # in {-1, 0, +1}. If any element is outside this range, it is due
     # to the periodic boundaries. Fix this now, as we do not care about
     # whether the tile pair is connected through the box boundary.
     for dim in range(3):
-        if tiles_offset[dim] > 1:
-            tiles_offset[dim] = -1
-        elif tiles_offset[dim] < -1:
-            tiles_offset[dim] = +1
+        if tiles_offset_ptr[dim] > 1:
+            tiles_offset_ptr[dim] = -1
+        elif tiles_offset_ptr[dim] < -1:
+            tiles_offset_ptr[dim] = +1
     # Compute 1D index from a 3×3×3 shape. We add 1 to each element,
     # as they range from -1 to +1.
-    return ((tiles_offset[0] + 1)*3 + (tiles_offset[1] + 1))*3 + (tiles_offset[2] + 1)
+    return ((tiles_offset_ptr[0] + 1)*3 + (tiles_offset_ptr[1] + 1))*3 + (tiles_offset_ptr[2] + 1)
 
 # Generic function implementing particle-particle pairing.
 # Note that this function returns a generator and so should only be
@@ -1309,6 +1314,7 @@ def get_neighbourtile_pair_index(tiles_offset):
 @cython.iterator(
     depends=[
         # Global variables used by particle_particle()
+        'periodic_offset',
         'tile_location_r',
         'tile_location_r_ptr',
         'tile_location_s',
@@ -1347,6 +1353,7 @@ def particle_particle(
         lowest_populated_rung_r='signed char',
         lowest_populated_rung_s='signed char',
         only_supply_communication='bint',
+        periodic_offset_ptr='double*',
         posx_r='double*',
         posx_s='double*',
         posy_r='double*',
@@ -1361,8 +1368,6 @@ def particle_particle(
         rung_N_s='Py_ssize_t',
         rung_index_r='signed char',
         rung_index_s='signed char',
-        rung_jump_r='signed char',
-        rung_jump_s='signed char',
         rung_jumps_r='signed char*',
         rung_jumps_s='signed char*',
         rung_r='Py_ssize_t*',
@@ -1391,16 +1396,18 @@ def particle_particle(
         subtiling_s='Tiling',
         subtiling_s_2='Tiling',
         tile_contain_particles_r='signed char',
+        tile_contain_particles_r_equal1='bint',
         tile_contain_particles_s='signed char',
         tile_extent='double*',
         tile_index_r='Py_ssize_t',
         tile_index_s='Py_ssize_t',
-        tile_index3D='Py_ssize_t[::1]',
         tile_index3D_r='Py_ssize_t*',
         tile_index3D_s='Py_ssize_t*',
         tile_indices_supplier='Py_ssize_t*',
         tile_indices_supplier_N='Py_ssize_t',
+        tile_location_s_dim='double',
         tile_pair_index='Py_ssize_t',
+        tile_separation='double',
         tiles_contain_particles_r='signed char*',
         tiles_contain_particles_s='signed char*',
         tiles_r='Py_ssize_t***',
@@ -1490,6 +1497,9 @@ def particle_particle(
     )
     all_subtile_pairings = subtile_pairings_cache[subtile_pairings_index]
     all_subtile_pairings_N = subtile_pairings_N_cache[subtile_pairings_index]
+    # Local pointer into the global array of particle position offsets
+    # due to the periodicity.
+    periodic_offset_ptr = cython.address(periodic_offset[:])
     # Flags specifying whether the force betweeen particle i and j
     # should be applied to i and j. If only_supply is True,
     # the values below are correct. Otherwise, other values
@@ -1519,9 +1529,10 @@ def particle_particle(
             else:
                 if tile_contain_particles_r < 2:
                     continue
+        # Only useful since below unswitching is commented
+        tile_contain_particles_r_equal1 = (tile_contain_particles_r == 1)
         # Sort particles within the receiver tile into subtiles
-        tile_index3D = tiling_r.tile_index3D(tile_index_r)
-        tile_index3D_r = cython.address(tile_index3D[:])
+        tile_index3D_r = tiling_r.tile_index3D(tile_index_r)
         for dim in range(3):
             tile_location_r_ptr[dim] = (
                 tiling_location_r[dim] + tile_index3D_r[dim]*tile_extent[dim]
@@ -1539,24 +1550,38 @@ def particle_particle(
             # If both the receiver and supplier tile contains particles
             # on inactive rows only, we skip this tile pair.
             if True:  # with unswitch(1):
-                if tile_contain_particles_r == 1:
+                if tile_contain_particles_r_equal1:
                     if tile_contain_particles_s == 1:
                         continue
             # Sort particles within the supplier tile into subtiles
-            tile_index3D = tiling_s.tile_index3D(tile_index_s)
-            tile_index3D_s = cython.address(tile_index3D[:])
+            tile_index3D_s = tiling_s.tile_index3D(tile_index_s)
             for dim in range(3):
-                tile_location_s_ptr[dim] = (
-                    tiling_location_s[dim] + tile_index3D_s[dim]*tile_extent[dim]
+                # While in this loop, also determine the tile offset
+                tiles_offset_ptr[dim] = ℤ[tile_index3D_s[dim]] - tile_index3D_r[dim]
+                # Set floating supplier tile location
+                tile_location_s_dim = (
+                    tiling_location_s[dim] + ℤ[tile_index3D_s[dim]]*tile_extent[dim]
                 )
+                tile_location_s_ptr[dim] = tile_location_s_dim
+                # While in this loop, also determine
+                # the periodic particle offset.
+                tile_separation = tile_location_s_dim - tile_location_r_ptr[dim]
+                if tile_separation > ℝ[0.5*boxsize]:
+                    periodic_offset_ptr[dim] = boxsize
+                elif tile_separation < ℝ[-0.5*boxsize]:
+                    periodic_offset_ptr[dim] = ℝ[-boxsize]
+                else:
+                    periodic_offset_ptr[dim] = 0
             subtiling_s.relocate(tile_location_s)
             subtiling_s.sort(tiling_s, tile_index_s)
             subtiles_rungs_N_s = subtiling_s.tiles_rungs_N
+            # Extract the values from periodic_offset_ptr as an optimization
+            periodic_offset_x = periodic_offset_ptr[0]
+            periodic_offset_y = periodic_offset_ptr[1]
+            periodic_offset_z = periodic_offset_ptr[2]
             # Get the needed subtile pairings for the selected receiver
             # and supplier tiles (which should be neighbour tiles).
-            for dim in range(3):
-                tiles_offset_ptr[dim] = tile_index3D_s[dim] - tile_index3D_r[dim]
-            tile_pair_index = get_neighbourtile_pair_index(tiles_offset)
+            tile_pair_index = get_neighbourtile_pair_index(tiles_offset_ptr)
             subtile_pairings   = all_subtile_pairings  [tile_pair_index]
             subtile_pairings_N = all_subtile_pairings_N[tile_pair_index]
             # Loop over all subtiles in the selected receiver tile
@@ -1661,19 +1686,12 @@ def particle_particle(
                                 # corresponds to any actual rung,
                                 # but it can be used to correctly index
                                 # into arrays of time step integrals.
+                                rung_index_i = rung_index_r
                                 if True:  #with unswitch(7):
                                     if 𝔹[receiver.use_rungs]:
                                         if True:  # with unswitch(4):
-                                            if subtile_contain_particles_r == 3:
-                                                rung_jump_r = rung_jumps_r[i]
-                                                if rung_jump_r == 0:
-                                                    rung_index_i = rung_index_r
-                                                else:
-                                                    rung_index_i = rung_index_r + rung_jump_r
-                                            else:
-                                                rung_index_i = rung_index_r
-                                    else:
-                                        rung_index_i = rung_index_r
+                                            if 𝔹[subtile_contain_particles_r == 3]:
+                                                rung_index_i += rung_jumps_r[i]
                                 # Get coordinates of receiver particle
                                 xi = posx_r[i]
                                 yi = posy_r[i]
@@ -1705,28 +1723,22 @@ def particle_particle(
                                     # Get supplier particle index
                                     j = rung_s[rung_particle_index_s]
                                     # Construct rung_index_j
+                                    rung_index_j = rung_index_s
                                     if True:  # with unswitch(8):
                                         if 𝔹[not only_supply and supplier.use_rungs]:
                                             if True:  # with unswitch(4):
-                                                if subtile_contain_particles_s == 3:
-                                                    rung_jump_s = rung_jumps_s[j]
-                                                    if rung_jump_s == 0:
-                                                        rung_index_j = rung_index_s
-                                                    else:
-                                                        rung_index_j = rung_index_s + rung_jump_s
-                                                else:
-                                                    rung_index_j = rung_index_s
-                                        else:
-                                            rung_index_j = rung_index_s
+                                                if 𝔹[subtile_contain_particles_s == 3]:
+                                                    rung_index_j += rung_jumps_s[j]
                                     # "Vector" from particle j
                                     # to particle i.
                                     x_ji = xi - posx_s[j]
                                     y_ji = yi - posy_s[j]
                                     z_ji = zi - posz_s[j]
                                     # Yield the needed variables
-                                    yield i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r
+                                    yield i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r
 # Variables used by the particle_particle function
 cython.declare(
+    periodic_offset='double[::1]',
     tile_location_r='double[::1]',
     tile_location_r_ptr='double*',
     tile_location_s='double[::1]',
@@ -1734,6 +1746,7 @@ cython.declare(
     tiles_offset='Py_ssize_t[::1]',
     tiles_offset_ptr='Py_ssize_t*',
 )
+periodic_offset = empty(3, dtype=C2np['double'])
 tile_location_r = empty(3, dtype=C2np['double'])
 tile_location_s = empty(3, dtype=C2np['double'])
 tiles_offset    = empty(3, dtype=C2np['Py_ssize_t'])
