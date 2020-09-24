@@ -4233,12 +4233,12 @@ def init_tiling(component, tiling_name, initial_rung_size=-1):
     #   boundary of the box. With 3 tiles (or lower) along each
     #   dimension, it is possible to have a mixture of these two
     #   shortest path types for pairs of particles within a given
-    #   pair of tiles. That is, the tile locations alone cannot generally
-    #   tell us whether to use the "direct" or the periodic path,
-    #   but the implemented logic for the particle periodicity in fact
-    #   assumes that it can. We thus really need at least 4 tiles along
-    #   each dimension across the entire box (not for individual domain
-    #   tilings).
+    #   pair of tiles. That is, the tile locations alone cannot
+    #   generally tell us whether to use the "direct" or the periodic
+    #   path, but the implemented logic for the particle periodicity in
+    #   fact assumes that it can. We thus really need at least 4 tiles
+    #   along each dimension across the entire box (not for individual
+    #   domain tilings).
     if np.min(shape) < 3:
         message = [
             f'The {force} domain tiling needs a subdivision of at least 3 in every direction. '

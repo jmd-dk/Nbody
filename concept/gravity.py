@@ -28,6 +28,8 @@ from commons import *
 cimport('from ewald import ewald')
 cimport('from interactions import particle_particle')
 
+
+
 # Function implementing pairwise gravity (full/periodic)
 @cython.header(
     # Arguments
@@ -45,13 +47,14 @@ cimport('from interactions import particle_particle')
     # Locals
     apply_to_i='bint',
     apply_to_j='bint',
+    factor_i='double',
+    factor_j='double',
+    factors='const double[::1]',
+    factors_ptr='const double*',
     force_ij='double*',
     forcex_ij='double',
     forcey_ij='double',
     forcez_ij='double',
-    gravity_factor='double',
-    gravity_factors='const double[::1]',
-    gravity_factors_ptr='const double*',
     i='Py_ssize_t',
     j='Py_ssize_t',
     particle_particle_t_begin='double',
@@ -62,15 +65,21 @@ cimport('from interactions import particle_particle')
     r3='double',
     rung_index_i='signed char',
     rung_index_j='signed char',
+    rung_index_s='signed char',
+    rung_jumps_s='signed char*',
     softening2='double',
+    subtile_contain_particles_s_equal3='bint',
     subtiling_r='Tiling',
     x_ji='double',
     y_ji='double',
     z_ji='double',
+    Δmomx='double',
     Δmomx_r='double*',
     Δmomx_s='double*',
+    Δmomy='double',
     Δmomy_r='double*',
     Δmomy_s='double*',
+    Δmomz='double',
     Δmomz_r='double*',
     Δmomz_s='double*',
     returns='void',
@@ -80,6 +89,7 @@ def gravity_pairwise(
     tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
     extra_args,
 ):
+    rung_jumps_s = supplier.rung_jumps
     # Extract momentum update buffers
     Δmomx_r = receiver.Δmomx
     Δmomy_r = receiver.Δmomy
@@ -97,15 +107,16 @@ def gravity_pairwise(
     # Below we integrate over the time dependence.
     # The array should be indexed with the rung_index
     # of the receiver/supplier particle.
-    gravity_factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
-        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name]
-    gravity_factors_ptr = cython.address(gravity_factors[:])
+    factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
+        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name,
+    ]
+    factors_ptr = cython.address(factors[:])
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
-    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
+    for i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_particles_s_equal3, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-        rank_supplier, interaction_name, only_supply,
+        rank_supplier, interaction_name, only_supply, factors_ptr,
     ):
         # Translate coordinates so that they
         # correspond to the nearest image.
@@ -133,19 +144,30 @@ def gravity_pairwise(
         # Momentum change of particle i due to particle j
         with unswitch(3):
             if apply_to_i:
-                gravity_factor = gravity_factors_ptr[rung_index_i]
-                Δmomx_r[i] += forcex_ij*gravity_factor
-                Δmomy_r[i] += forcey_ij*gravity_factor
-                Δmomz_r[i] += forcez_ij*gravity_factor
+                Δmomx = factor_i*forcex_ij
+                Δmomy = factor_i*forcey_ij
+                Δmomz = factor_i*forcez_ij
+                Δmomx_r[i] += Δmomx
+                Δmomy_r[i] += Δmomy
+                Δmomz_r[i] += Δmomz
         # Momentum change of particle j due to particle i
         with unswitch:
             if 𝔹[not only_supply]:
                 with unswitch(2):
                     if apply_to_j:
-                        gravity_factor = gravity_factors_ptr[rung_index_j]
-                        Δmomx_s[j] -= forcex_ij*gravity_factor
-                        Δmomy_s[j] -= forcey_ij*gravity_factor
-                        Δmomz_s[j] -= forcez_ij*gravity_factor
+                        if subtile_contain_particles_s_equal3:
+                            rung_index_j = rung_index_s + rung_jumps_s[j]
+                        else:
+                            rung_index_j = rung_index_s
+                        if apply_to_i and rung_index_i == rung_index_j:
+                            Δmomx_s[j] -= Δmomx
+                            Δmomy_s[j] -= Δmomy
+                            Δmomz_s[j] -= Δmomz
+                        else:
+                            factor_j = factors_ptr[rung_index_j]
+                            Δmomx_s[j] -= factor_j*forcex_ij
+                            Δmomy_s[j] -= factor_j*forcey_ij
+                            Δmomz_s[j] -= factor_j*forcez_ij
     # Add computation time to the running total,
     # for use with automatic subtiling refinement.
     if j != -1:
@@ -169,11 +191,13 @@ def gravity_pairwise(
     # Locals
     apply_to_i='bint',
     apply_to_j='bint',
+    factor_i='double',
+    factor_j='double',
+    factors='const double[::1]',
+    factors_ptr='const double*',
     forcex_ij='double',
     forcey_ij='double',
     forcez_ij='double',
-    gravity_factors='const double[::1]',
-    gravity_factors_ptr='const double*',
     i='Py_ssize_t',
     j='Py_ssize_t',
     particle_particle_t_begin='double',
@@ -182,20 +206,28 @@ def gravity_pairwise(
     periodic_offset_y='double',
     periodic_offset_z='double',
     r2='double',
+    r2_index_scaling='double',
+    r2_max='double',
     rung_index_i='signed char',
     rung_index_j='signed char',
+    rung_index_s='signed char',
+    rung_jumps_s='signed char*',
     shortrange_factor='double',
     shortrange_index='Py_ssize_t',
     softening2='double',
+    subtile_contain_particles_s_equal3='bint',
     subtiling_r='Tiling',
     total_factor='double',
     x_ji='double',
     y_ji='double',
     z_ji='double',
+    Δmomx='double',
     Δmomx_r='double*',
     Δmomx_s='double*',
+    Δmomy='double',
     Δmomy_r='double*',
     Δmomy_s='double*',
+    Δmomz='double',
     Δmomz_r='double*',
     Δmomz_s='double*',
     returns='void',
@@ -205,6 +237,7 @@ def gravity_pairwise_shortrange(
     tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
     extra_args,
 ):
+    rung_jumps_s = supplier.rung_jumps
     # Extract momentum update buffers
     Δmomx_r = receiver.Δmomx
     Δmomy_r = receiver.Δmomy
@@ -222,15 +255,20 @@ def gravity_pairwise_shortrange(
     # Below we integrate over the time dependence.
     # The array should be indexed with the rung_index
     # of the receiver/supplier particle.
-    gravity_factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
-        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name]
-    gravity_factors_ptr = cython.address(gravity_factors[:])
+    factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
+        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name,
+    ]
+    factors_ptr = cython.address(factors[:])
+    # Maximum r² beyond which the interaction is ignored
+    r2_max = ℝ[shortrange_params['gravity']['range']**2]
+    # Factor used to scale r² to produce an index into the table
+    r2_index_scaling = ℝ[(shortrange_table_size - 1)/shortrange_table_maxr2]
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
-    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
+    for i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_particles_s_equal3, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-        rank_supplier, interaction_name, only_supply,
+        rank_supplier, interaction_name, only_supply, factors_ptr,
     ):
         # Translate coordinates so that they
         # correspond to the nearest image.
@@ -241,7 +279,7 @@ def gravity_pairwise_shortrange(
         # than the range of the short-range force,
         # ignore this interaction completely.
         r2 = x_ji**2 + y_ji**2 + z_ji**2 + softening2
-        if r2 > ℝ[shortrange_params['gravity']['range']**2]:
+        if r2 > r2_max:
             continue
         # Compute the short-range force. Here the "force" is in units
         # of inverse length squared, given by
@@ -249,24 +287,37 @@ def gravity_pairwise_shortrange(
         # where x = r/scale with scale the long/short-range
         # force split scale.
         # We have this whole expression except for r⃗ already tabulated.
-        shortrange_index = int(r2*ℝ[(shortrange_table_size - 1)/shortrange_table_maxr2])
+        shortrange_index = int(r2*r2_index_scaling)
         shortrange_factor = shortrange_table_ptr[shortrange_index]
         # Momentum change of particle i due to particle j
         with unswitch(3):
             if apply_to_i:
-                total_factor = shortrange_factor*gravity_factors_ptr[rung_index_i]
-                Δmomx_r[i] += x_ji*total_factor
-                Δmomy_r[i] += y_ji*total_factor
-                Δmomz_r[i] += z_ji*total_factor
+                total_factor = factor_i*shortrange_factor
+                Δmomx = x_ji*total_factor
+                Δmomy = y_ji*total_factor
+                Δmomz = z_ji*total_factor
+                Δmomx_r[i] += Δmomx
+                Δmomy_r[i] += Δmomy
+                Δmomz_r[i] += Δmomz
         # Momentum change of particle j due to particle i
         with unswitch:
             if 𝔹[not only_supply]:
                 with unswitch(2):
                     if apply_to_j:
-                        total_factor = shortrange_factor*gravity_factors_ptr[rung_index_j]
-                        Δmomx_s[j] -= x_ji*total_factor
-                        Δmomy_s[j] -= y_ji*total_factor
-                        Δmomz_s[j] -= z_ji*total_factor
+                        if subtile_contain_particles_s_equal3:
+                            rung_index_j = rung_index_s + rung_jumps_s[j]
+                        else:
+                            rung_index_j = rung_index_s
+                        if apply_to_i and rung_index_i == rung_index_j:
+                            Δmomx_s[j] -= Δmomx
+                            Δmomy_s[j] -= Δmomy
+                            Δmomz_s[j] -= Δmomz
+                        else:
+                            factor_j = factors_ptr[rung_index_j]
+                            total_factor = factor_j*shortrange_factor
+                            Δmomx_s[j] -= x_ji*total_factor
+                            Δmomy_s[j] -= y_ji*total_factor
+                            Δmomz_s[j] -= z_ji*total_factor
     # Add computation time to the running total,
     # for use with automatic subtiling refinement.
     if j != -1:
@@ -346,12 +397,13 @@ shortrange_table_maxr2 = (1 + 1e-3)*shortrange_params['gravity']['range']**2
     # Locals
     apply_to_i='bint',
     apply_to_j='bint',
+    factor_i='double',
+    factor_j='double',
+    factors='const double[::1]',
+    factors_ptr='const double*',
     forcex_ij='double',
     forcey_ij='double',
     forcez_ij='double',
-    gravity_factor='double',
-    gravity_factors='const double[::1]',
-    gravity_factors_ptr='const double*',
     i='Py_ssize_t',
     j='Py_ssize_t',
     particle_particle_t_begin='double',
@@ -362,14 +414,20 @@ shortrange_table_maxr2 = (1 + 1e-3)*shortrange_params['gravity']['range']**2
     r3='double',
     rung_index_i='signed char',
     rung_index_j='signed char',
+    rung_index_s='signed char',
+    rung_jumps_s='signed char*',
+    subtile_contain_particles_s_equal3='bint',
     subtiling_r='Tiling',
     x_ji='double',
     y_ji='double',
     z_ji='double',
+    Δmomx='double',
     Δmomx_r='double*',
     Δmomx_s='double*',
+    Δmomy='double',
     Δmomy_r='double*',
     Δmomy_s='double*',
+    Δmomz='double',
     Δmomz_r='double*',
     Δmomz_s='double*',
     returns='void',
@@ -379,6 +437,7 @@ def gravity_pairwise_nonperiodic(
     tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
     extra_args,
 ):
+    rung_jumps_s = supplier.rung_jumps
     # Extract momentum update buffers
     Δmomx_r = receiver.Δmomx
     Δmomy_r = receiver.Δmomy
@@ -394,15 +453,16 @@ def gravity_pairwise_nonperiodic(
     # Below we integrate over the time dependence.
     # The array should be indexed with the rung_index
     # of the receiver/supplier particle.
-    gravity_factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
-        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name]
-    gravity_factors_ptr = cython.address(gravity_factors[:])
+    factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
+        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name,
+    ]
+    factors_ptr = cython.address(factors[:])
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
-    for i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r in particle_particle(
+    for i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_particles_s_equal3, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-        rank_supplier, interaction_name, only_supply,
+        rank_supplier, interaction_name, only_supply, factors_ptr,
     ):
         # The direct force on particle i from particle j
         r3 = (x_ji**2 + y_ji**2 + z_ji**2
@@ -415,19 +475,30 @@ def gravity_pairwise_nonperiodic(
         # Momentum change to particle i due to particle j
         with unswitch(3):
             if apply_to_i:
-                gravity_factor = gravity_factors_ptr[rung_index_i]
-                Δmomx_r[i] += forcex_ij*gravity_factor
-                Δmomy_r[i] += forcey_ij*gravity_factor
-                Δmomz_r[i] += forcez_ij*gravity_factor
+                Δmomx = factor_i*forcex_ij
+                Δmomy = factor_i*forcey_ij
+                Δmomz = factor_i*forcez_ij
+                Δmomx_r[i] += Δmomx
+                Δmomy_r[i] += Δmomy
+                Δmomz_r[i] += Δmomz
         # Momentum change of particle j due to particle i
         with unswitch:
             if 𝔹[not only_supply]:
                 with unswitch(2):
                     if apply_to_j:
-                        gravity_factor = gravity_factors_ptr[rung_index_j]
-                        Δmomx_s[j] -= forcex_ij*gravity_factor
-                        Δmomy_s[j] -= forcey_ij*gravity_factor
-                        Δmomz_s[j] -= forcez_ij*gravity_factor
+                        if subtile_contain_particles_s_equal3:
+                            rung_index_j = rung_index_s + rung_jumps_s[j]
+                        else:
+                            rung_index_j = rung_index_s
+                        if apply_to_i and rung_index_i == rung_index_j:
+                            Δmomx_s[j] -= Δmomx
+                            Δmomy_s[j] -= Δmomy
+                            Δmomz_s[j] -= Δmomz
+                        else:
+                            factor_j = factors_ptr[rung_index_j]
+                            Δmomx_s[j] -= factor_j*forcex_ij
+                            Δmomy_s[j] -= factor_j*forcey_ij
+                            Δmomz_s[j] -= factor_j*forcez_ij
     # Add computation time to the running total,
     # for use with automatic subtiling refinement.
     if j != -1:

@@ -1335,7 +1335,7 @@ def get_neighbourtile_pair_index(tiles_offset_ptr):
 def particle_particle(
     receiver, supplier, pairing_level,
     tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-    rank_supplier, interaction_name, only_supply,
+    rank_supplier, interaction_name, only_supply, factors_ptr,
 ):
     # Cython declarations for variables used for the iteration,
     # not including those to yield.
@@ -1348,6 +1348,9 @@ def particle_particle(
         forcerange='double',
         highest_populated_rung_r='signed char',
         highest_populated_rung_s='signed char',
+        local_interaction_flag_0='bint',
+        local_interaction_flag_1='bint',
+        local_interaction_flag_2='bint',
         lowest_active_rung_r='signed char',
         lowest_active_rung_s='signed char',
         lowest_populated_rung_r='signed char',
@@ -1360,21 +1363,21 @@ def particle_particle(
         posy_s='double*',
         posz_r='double*',
         posz_s='double*',
-        rung_index_s_start='signed char',
         rung_particle_index_r='Py_ssize_t',
         rung_particle_index_s='Py_ssize_t',
         rung_particle_index_s_start='Py_ssize_t',
         rung_N_r='Py_ssize_t',
         rung_N_s='Py_ssize_t',
         rung_index_r='signed char',
-        rung_index_s='signed char',
+        rung_index_s_start='signed char',
         rung_jumps_r='signed char*',
-        rung_jumps_s='signed char*',
         rung_r='Py_ssize_t*',
         rung_s='Py_ssize_t*',
         rungs_N_r='Py_ssize_t*',
         rungs_N_s='Py_ssize_t*',
         subtile_contain_particles_r='signed char',
+        subtile_contain_particles_r_equal1='bint',
+        subtile_contain_particles_r_equal3='bint',
         subtile_contain_particles_s='signed char',
         subtile_index_r='Py_ssize_t',
         subtile_index_s='Py_ssize_t',
@@ -1428,6 +1431,7 @@ def particle_particle(
     lowest_active_rung_r     = receiver.lowest_active_rung
     lowest_populated_rung_r  = receiver.lowest_populated_rung
     highest_populated_rung_r = receiver.highest_populated_rung
+    rung_jumps_r = receiver.rung_jumps
     # Extract particle variables from the supplier
     # (the external) component.
     posx_s = supplier.posx
@@ -1436,8 +1440,6 @@ def particle_particle(
     lowest_active_rung_s     = supplier.lowest_active_rung
     lowest_populated_rung_s  = supplier.lowest_populated_rung
     highest_populated_rung_s = supplier.highest_populated_rung
-    rung_jumps_r = receiver.rung_jumps
-    rung_jumps_s = supplier.rung_jumps
     # The names used to refer to the domain and tile level tiling
     # (tiles and subtiles). In the case of pairing_level == 'domain',
     # we always use the trivial tiling.
@@ -1500,6 +1502,9 @@ def particle_particle(
     # Local pointer into the global array of particle position offsets
     # due to the periodicity.
     periodic_offset_ptr = cython.address(periodic_offset[:])
+    # Some default values to yield
+    rung_index_i = 0
+    factor_i = 0
     # Flags specifying whether the force betweeen particle i and j
     # should be applied to i and j. If only_supply is True,
     # the values below are correct. Otherwise, other values
@@ -1529,7 +1534,6 @@ def particle_particle(
             else:
                 if tile_contain_particles_r < 2:
                     continue
-        # Only useful since below unswitching is commented
         tile_contain_particles_r_equal1 = (tile_contain_particles_r == 1)
         # Sort particles within the receiver tile into subtiles
         tile_index3D_r = tiling_r.tile_index3D(tile_index_r)
@@ -1549,7 +1553,7 @@ def particle_particle(
                 continue
             # If both the receiver and supplier tile contains particles
             # on inactive rows only, we skip this tile pair.
-            if True:  # with unswitch(1):
+            with unswitch(1):
                 if tile_contain_particles_r_equal1:
                     if tile_contain_particles_s == 1:
                         continue
@@ -1584,6 +1588,11 @@ def particle_particle(
             tile_pair_index = get_neighbourtile_pair_index(tiles_offset_ptr)
             subtile_pairings   = all_subtile_pairings  [tile_pair_index]
             subtile_pairings_N = all_subtile_pairings_N[tile_pair_index]
+            # Flag specifying whether this is a local interaction
+            local_interaction_flag_0 = (
+                𝔹[receiver.name == supplier.name and rank == rank_supplier]
+                and (tile_index_r == tile_index_s)
+            )
             # Loop over all subtiles in the selected receiver tile
             for subtile_index_r in range(N_subtiles):
                 # Skip subtile if it does not contain
@@ -1597,6 +1606,8 @@ def particle_particle(
                     else:
                         if subtile_contain_particles_r < 2:
                             continue
+                subtile_contain_particles_r_equal1 = (subtile_contain_particles_r == 1)
+                subtile_contain_particles_r_equal3 = (subtile_contain_particles_r == 3)
                 subtile_r = subtiles_r[subtile_index_r]
                 rungs_N_r = subtiles_rungs_N_r[subtile_index_r]
                 subtile_pairings_r   = subtile_pairings  [subtile_index_r]
@@ -1612,12 +1623,18 @@ def particle_particle(
                     # If both the receiver and supplier subtile contains
                     # particles on inactive rows only, we skip this
                     # subtile pair.
-                    if True:  # with unswitch(1):
-                        if subtile_contain_particles_r == 1:
+                    with unswitch(1):
+                        if subtile_contain_particles_r_equal1:
                             if subtile_contain_particles_s == 1:
                                 continue
+                    subtile_contain_particles_s_equal3 = (subtile_contain_particles_s == 3)
                     subtile_s = subtiles_s[subtile_index_s]
                     rungs_N_s = subtiles_rungs_N_s[subtile_index_s]
+                    # Flag specifying whether this is a local interaction
+                    local_interaction_flag_1 = (
+                        local_interaction_flag_0
+                        and (subtile_index_r == subtile_index_s)
+                    )
                     # Loop over all rungs in the receiver subtile
                     for rung_index_r in range(
                         ℤ[lowest_active_rung_r if only_supply else lowest_populated_rung_r],
@@ -1651,14 +1668,8 @@ def particle_particle(
                         # local means that the current components,
                         # domains, tiles and subtiles for the receiver
                         # and supplier are all the same.
-                        with unswitch(5):
-                            if 𝔹[receiver.name == supplier.name and rank == rank_supplier]:
-                                with unswitch(3):
-                                    if 𝔹[tile_index_r == tile_index_s]:
-                                        with unswitch(1):
-                                            if 𝔹[subtile_index_r == subtile_index_s]:
-                                                if rung_index_s_start < rung_index_r:
-                                                    rung_index_s_start = rung_index_r
+                        if local_interaction_flag_1 and (rung_index_s_start < rung_index_r):
+                            rung_index_s_start = rung_index_r
                         # Loop over the needed supplier rungs
                         for rung_index_s in range(
                             rung_index_s_start, ℤ[highest_populated_rung_s + 1]
@@ -1674,6 +1685,11 @@ def particle_particle(
                             with unswitch(6):
                                 if 𝔹[not only_supply]:
                                     apply_to_j = (rung_index_s >= lowest_active_rung_s)
+                            # Flag specifying whether this is a local interaction
+                            local_interaction_flag_2 = (
+                                local_interaction_flag_1
+                                and (rung_index_r == rung_index_s)
+                            )
                             # Loop over all particles
                             # in the receiver rung.
                             for rung_particle_index_r in range(rung_N_r):
@@ -1686,12 +1702,15 @@ def particle_particle(
                                 # corresponds to any actual rung,
                                 # but it can be used to correctly index
                                 # into arrays of time step integrals.
-                                rung_index_i = rung_index_r
-                                if True:  #with unswitch(7):
-                                    if 𝔹[receiver.use_rungs]:
+                                with unswitch(2):
+                                    if apply_to_i:
                                         if True:  # with unswitch(4):
-                                            if 𝔹[subtile_contain_particles_r == 3]:
-                                                rung_index_i += rung_jumps_r[i]
+                                            if subtile_contain_particles_r_equal3:
+                                                rung_index_i = rung_index_r + rung_jumps_r[i]
+                                            else:
+                                                rung_index_i = rung_index_r
+                                        # Fetch the corresponding factor
+                                        factor_i = factors_ptr[rung_index_i]
                                 # Get coordinates of receiver particle
                                 xi = posx_r[i]
                                 yi = posy_r[i]
@@ -1703,18 +1722,9 @@ def particle_particle(
                                 # tiles, subtiles and rungs for the
                                 # receiver and supplier are all
                                 # the same.
-                                rung_particle_index_s_start = 0
-                                with unswitch(7):
-                                    if 𝔹[receiver.name == supplier.name and rank == rank_supplier]:
-                                        with unswitch(5):
-                                            if 𝔹[tile_index_r == tile_index_s]:
-                                                with unswitch(3):
-                                                    if 𝔹[subtile_index_r == subtile_index_s]:
-                                                        with unswitch(1):
-                                                            if 𝔹[rung_index_r == rung_index_s]:
-                                                                rung_particle_index_s_start = (
-                                                                    rung_particle_index_r + 1
-                                                                )
+                                rung_particle_index_s_start = (
+                                    local_interaction_flag_2*(rung_particle_index_r + 1)
+                                )
                                 # Loop over the needed particles
                                 # in the supplier rung.
                                 for rung_particle_index_s in range(
@@ -1722,21 +1732,14 @@ def particle_particle(
                                 ):
                                     # Get supplier particle index
                                     j = rung_s[rung_particle_index_s]
-                                    # Construct rung_index_j
-                                    rung_index_j = rung_index_s
-                                    if True:  # with unswitch(8):
-                                        if 𝔹[not only_supply and supplier.use_rungs]:
-                                            if True:  # with unswitch(4):
-                                                if 𝔹[subtile_contain_particles_s == 3]:
-                                                    rung_index_j += rung_jumps_s[j]
                                     # "Vector" from particle j
                                     # to particle i.
                                     x_ji = xi - posx_s[j]
                                     y_ji = yi - posy_s[j]
                                     z_ji = zi - posz_s[j]
                                     # Yield the needed variables
-                                    yield i, j, rung_index_i, rung_index_j, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, particle_particle_t_begin, subtiling_r
-# Variables used by the particle_particle function
+                                    yield i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_particles_s_equal3, particle_particle_t_begin, subtiling_r
+# Variables used by the particle_particle() function
 cython.declare(
     periodic_offset='double[::1]',
     tile_location_r='double[::1]',
