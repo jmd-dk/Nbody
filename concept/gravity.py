@@ -31,6 +31,7 @@ cimport('from interactions import particle_particle')
 
 
 # Function implementing pairwise gravity (full/periodic)
+@cython.nounswitching
 @cython.header(
     # Arguments
     interaction_name=str,
@@ -381,6 +382,7 @@ shortrange_table_size = 2**14  # Lower value improves caching, but leads to inac
 shortrange_table_maxr2 = (1 + 1e-3)*shortrange_params['gravity']['range']**2
 
 # Function implementing pairwise gravity (non-periodic)
+@cython.nounswitching
 @cython.header(
     # Arguments
     interaction_name=str,

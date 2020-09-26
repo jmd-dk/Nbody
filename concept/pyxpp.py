@@ -1360,7 +1360,9 @@ def constant_expressions(lines, no_optimization, first_call=True):
                 expressions.append(expression)
                 expression_cython = blackboard_bold_symbol + '_' + expression.replace(' ', '')
                 for op, op_name in operators.items():
-                    expression_cython = expression_cython.replace(op, '__{}__'.format(op_name))
+                    expression_cython = expression_cython.replace(op, f'�{op_name}�')
+                expression_cython = expression_cython.replace('��', '�').strip('�')
+                expression_cython = expression_cython.replace('�', '_')
                 expressions_cython.append(expression_cython)
                 lines[i] = '{}\n'.format(line.replace(R_statement, expression_cython))
                 # Find out where the declaration should be
@@ -1641,28 +1643,75 @@ def constant_expressions(lines, no_optimization, first_call=True):
 
 
 def loop_unswitching(lines, no_optimization):
-    # The following constructs will be recognized as loop unswitching:
-    # with unswitch:
-    #    ...
-    # with unswitch():
-    #    ...
-    # with unswitch(n):  # With n an integer literal or expression
-    #    ...
-    # For the algorithm in this function to work correctly,
-    # the unswitching need to be done in order of indentation level:
-    # Unswitching at lower indentation level should be carried out
-    # first. To help with this, we first run through all lines
-    # and replace 'unswitch' with 'unswitch_lvl', where 'lvl' is the
-    # indentation level.
-    pattern = r'with +unswitch *(\(.*\))? *:'
-    unswitch_lvls = set()
-    for i, line in enumerate(lines):
-        match = re.search(pattern, line.strip())
-        if match and not line.lstrip().startswith('#'):
-            unswitch_lvl = (len(line) - len(line.lstrip()))//4
-            unswitch_lvls.add(unswitch_lvl)
-            lines[i] = line.replace('unswitch', 'unswitch_{}'.format(unswitch_lvl))
-    unswitch_lvls = sorted(unswitch_lvls)
+    """The following constructs will be recognized
+    as loop unswitching:
+      with unswitch:
+          ...
+      with unswitch():
+          ...
+      with unswitch(n):  # With n an integer literal or expression
+          ...
+    """
+    # The strategy of this function is to perform one complete unswitch
+    # at a time. To this end, we first go through the lines nad replace
+    # 'unswitch' with 'unswitch_nr', where 'nr' (0, 1, 2, ...) uniquely
+    # identifies the unswitch.
+    def extract_n(match):
+        if not match:
+            return -1
+        n = match.group(1)
+        if not n:
+            return float('inf')
+        n = n[1:-1]
+        if not n:
+            return float('inf')
+        return eval(n)
+    def loop_over_unswitched_lines(lines):
+        pattern = r'with +unswitch *(\(.*\))? *:'
+        for i, line in enumerate(lines):
+            line_stripped = line.strip()
+            if line_stripped.startswith('#'):
+                continue
+            match = re.search(pattern, line_stripped)
+            if not match:
+                continue
+            yield i, line, match
+    def build_ordering_key(indentation_lvl, n, index):
+        # This function returns its integer arguments packed into
+        # a tuple. The lexicographical ordering ordering of such
+        # tuples determine the 'nr' in 'unswitch_nr' and thus the
+        # order in which the unswitches are carried out.
+        # The algorithm of this function is such that we need to
+        # perform the outer unswitches before the inner ones,
+        # in case of nested unswitches. Thus, indentation_lvl
+        # should be the first element of the tuple.
+        # For two consecutive unswitches at the same indentation
+        # level, the order in which we carry out the unswitching
+        # does not matter. If we however do the first encountered
+        # unswitch first, the spacing of the comments will remain
+        # correct. Thus index is chosen as the second key in the
+        # tuple. As this index is unique to the unswitch, it means
+        # that the remaining argument, n, does not play a role.
+        # We add it to the key anyway.
+        return (indentation_lvl, index, n)
+    ordering_keys = []
+    for i, line, match in loop_over_unswitched_lines(lines):
+        indentation_lvl = (len(line) - len(line.lstrip()))//4
+        n = extract_n(match)
+        index = len(ordering_keys)
+        ordering_key = build_ordering_key(indentation_lvl, n, index)
+        ordering_keys.append(ordering_key)
+    n_unswitches = len(ordering_keys)
+    ordering_keys = sorted(ordering_keys)
+    ordering_keys2 = []
+    for i, line, match in loop_over_unswitched_lines(lines):
+        indentation_lvl = (len(line) - len(line.lstrip()))//4
+        n = extract_n(match)
+        index = len(ordering_keys2)
+        ordering_key2 = build_ordering_key(indentation_lvl, n, index)
+        ordering_keys2.append(ordering_key2)
+        unswitch_nr = ordering_keys.index(ordering_key2)
+        lines[i] = lines[i].replace('unswitch', f'unswitch_{unswitch_nr}')
     # Potentially much too many if statements will be
     # inserted, creating code with a structure like this:
     # if condition:      # Keep
@@ -1987,10 +2036,20 @@ def loop_unswitching(lines, no_optimization):
                 continue
         return new_lines
     # Run through the lines and replace any unswitch context manager
-    # with the unswitched loop(s). Do this for each unswitch lvl
-    # separately, starting with the lower levels (least indented).
-    for current_unswitch_lvl in unswitch_lvls:
-        pattern = r'^ *with +unswitch_{} *(\(.*\))? *:'.format(current_unswitch_lvl)
+    # with the unswitched loop(s). Do this one unswitch nr at a time.
+    def construct_trivial_statement(line):
+        indentation = ' '*(len(line) - len(line.lstrip()))
+        statement_lines = []
+        statement_lines.append(
+            ''.join([
+                indentation,
+                '# unswitch context manager replaced with trivial if statement\n',
+            ])
+        )
+        statement_lines.append(f'{indentation}if True:\n')
+        return statement_lines
+    for current_unswitch_nr in range(n_unswitches):
+        pattern = rf'^ *with +unswitch_{current_unswitch_nr} *(\(.*\))? *:'
         new_lines = []
         while True:
             # Repeatedly apply the remove_* functions until all
@@ -2001,12 +2060,33 @@ def loop_unswitching(lines, no_optimization):
                 lines = remove_double_if    (lines)
                 lines = remove_impossible_if(lines)
                 lines = remove_falsy_if     (lines)
+            nounswitching = False
+            nounswitching_counter = 0
             skip = 0
             for i, line in enumerate(lines):
                 # Should this line be skipped?
                 if skip > 0:
                     skip -= 1
                     continue
+                # Set the state of nounswitching from
+                # cython.nounswitching(bool) decorators.
+                # We rely on this decorator not being used
+                # on functions containing closures.
+                line_lstripped = line.lstrip()
+                match = re.search(r'^@ *cython *\. *nounswitching *(\(.*\))?', line_lstripped)
+                if match:
+                    nounswitching = True
+                    nounswitching_arg = match.group(1)
+                    if nounswitching_arg:
+                        nounswitching_arg = nounswitching_arg[1:-1]
+                        if nounswitching_arg:
+                            nounswitching = eval(nounswitching_arg)
+                    if nounswitching:
+                        nounswitching_counter = 2
+                elif line_lstripped.startswith('def '):
+                    nounswitching_counter -= 1
+                    if nounswitching_counter == 0:
+                        nounswitching = False
                 # Search for unswitch context managers with an unswitch
                 # level matching the current level.
                 line_no_inline_comment = line
@@ -2014,33 +2094,22 @@ def loop_unswitching(lines, no_optimization):
                     line_no_inline_comment = (
                         line_no_inline_comment[:line_no_inline_comment.index('#')].rstrip() + '\n')
                 match = re.search(pattern, line_no_inline_comment.strip())
-                if match and not line.lstrip().startswith('#'):
+                if match and not line_lstripped.startswith('#'):
                     # Loop unswitching found.
-                    # If optimizations are disabled, simply replace the
+                    # If optimizations are disabled or we are in a function with
+                    # explicit disabling of unswitching, simply replace the
                     # with statement with "if True:".
-                    if no_optimization:
-                        indentation = ' '*(len(line) - len(line.lstrip()))
-                        new_lines.append(
-                            indentation
-                            + '# unswitch context manager replaced '
-                            + 'with trivial if statement\n')
-                        new_lines.append(indentation + 'if True:\n')
+                    if no_optimization or nounswitching:
+                        new_lines += construct_trivial_statement(line)
                         continue
                     # Determine the number of indentation levels to do
                     # loop unswitching on. This is the n in unswitch(n).
                     # If not specified, this is set to infinity.
-                    n = match.group(1)
-                    if n:
-                        n = n[1:-1]
-                        if n:
-                            n = eval(n)
-                        else:
-                            n = float('inf')
-                    else:
-                        n = float('inf')
+                    n = extract_n(match)
                     # If n is zero or negative,
                     # no loop unswitching shold be performed.
                     if n < 1:
+                        new_lines += construct_trivial_statement(line)
                         continue
                     # Search n nested loops upwards.
                     # Allowed constructs to pass are
@@ -2049,9 +2118,9 @@ def loop_unswitching(lines, no_optimization):
                     # - if/elif/else statements
                     # - with statements
                     # - try/except/finally statements
-                    unswitch_lvl = (len(line) - len(line.lstrip()))//4
+                    indentation_lvl = (len(line) - len(line.lstrip()))//4
                     n_nested_loops = 0
-                    smallest_lvl = unswitch_lvl
+                    smallest_lvl = indentation_lvl
                     for j, line in enumerate(reversed(lines[:i])):
                         # Skip empty lines and comment lines
                         line_stripped = line.strip()
@@ -2090,9 +2159,9 @@ def loop_unswitching(lines, no_optimization):
                     # Now search downwards to find the if statements
                     # indented under the unswitch context manager.
                     outer_loop_lvl = (len(loop_lines[0]) - len(loop_lines[0].lstrip()))//4
-                    patterns = ['{}if .*:'  .format('    '*(unswitch_lvl + 1)),
-                                '{}elif .*:'.format('    '*(unswitch_lvl + 1)),
-                                '{}else *:' .format('    '*(unswitch_lvl + 1)),
+                    patterns = ['{}if .*:'  .format('    '*(indentation_lvl + 1)),
+                                '{}elif .*:'.format('    '*(indentation_lvl + 1)),
+                                '{}else *:' .format('    '*(indentation_lvl + 1)),
                                 ]
                     if_headers = []
                     if_bodies = []
@@ -2108,7 +2177,7 @@ def loop_unswitching(lines, no_optimization):
                         lvl = (len(line) - len(line.lstrip()))//4
                         # Determine whether or not we are out of the
                         # unswitch context manager.
-                        if lvl <= unswitch_lvl:
+                        if lvl <= indentation_lvl:
                             under_unswitch = False
                         # Break out when all nested loops have ended
                         if lvl <= outer_loop_lvl:
@@ -2127,7 +2196,7 @@ def loop_unswitching(lines, no_optimization):
                                 after_if.append(line)
                                 continue
                             else:
-                                if lvl == unswitch_lvl + 1:
+                                if lvl == indentation_lvl + 1:
                                     if any(re.search(pattern, line_no_inline_comment_rstripped)
                                            for pattern in patterns):
                                         if_headers.append(line)
@@ -2164,7 +2233,7 @@ def loop_unswitching(lines, no_optimization):
                                         empty_else = False
                                         break
                         if not empty_else:
-                            indentation = '    '*(unswitch_lvl + 1)
+                            indentation = '    '*(indentation_lvl + 1)
                             if_headers.append(
                                 f'{indentation}else:  # This is an autoinserted else block\n'
                             )
@@ -2211,7 +2280,7 @@ def loop_unswitching(lines, no_optimization):
             # Done with all lines. Run them through again, in case of
             # nested use of the unswitching context manager.
             # Break out when no change has happened to any line.
-            if len(lines) == len(new_lines):
+            if lines == new_lines:
                 break
             lines = new_lines
             new_lines = []
@@ -2225,7 +2294,13 @@ def loop_unswitching(lines, no_optimization):
         lines = remove_impossible_if(lines)
         lines = remove_falsy_if     (lines)
         lines = remove_empty_loop   (lines)
-    return lines
+    # Remove the cython.nounswitching decorator
+    new_lines = []
+    for line in lines:
+        if line.lstrip().startswith('@cython.nounswitching'):
+            continue
+        new_lines.append(line)
+    return new_lines
 
 
 
@@ -2655,13 +2730,13 @@ def power2product(lines, no_optimization):
         while line_old != line:
             line_old = line
             line = line.replace(starstar_replacement, '**')
-        new_lines.append(line)
+        new_lines.append(line.rstrip() + '\n')
     return new_lines
 # Variable name of inserted variables used for the addition
 # chain exponentiations. The full variable name (in both Python and C)
 # of these variables will be some name followed by this str followed
 # by an integer.
-addition_chain_exponentiation_varname = '__addition_chain_exponentiation__'
+addition_chain_exponentiation_varname = '_addition_chain_exponentiation_'
 
 
 
@@ -2757,7 +2832,7 @@ def add_types_to_addition_chain_exponentiation_variables(lines, clines, no_optim
                             is_pyobject = True
                         elif is_pyobject:
                             # A line like
-                            # __pyx_v_a__addition_chain_exponentiation__0 = __pyx_t_8;
+                            # __pyx_v_a_addition_chain_exponentiation_0 = __pyx_t_8;
                             # has been reached.
                             tmp_varname = match.group(1)
                             search_backwards(tmp_varname, variable_numer, clines[:i])
@@ -2766,7 +2841,7 @@ def add_types_to_addition_chain_exponentiation_variables(lines, clines, no_optim
                         match = re.search(pattern_pyobject, cline)
                         if match:
                             # A line like
-                            # __Pyx_XDECREF_SET(__pyx_v_a__addition_chain_exponentiation__0, __pyx_t_7);
+                            # __Pyx_XDECREF_SET(__pyx_v_a_addition_chain_exponentiation_0, __pyx_t_7);
                             # have been reached. Search upward to
                             # find the line where the temporary
                             # variable is defined.

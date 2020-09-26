@@ -766,6 +766,7 @@ if not cython.compiled:
         'header',
         'pheader',
         'iterator',
+        'nounswitching',
     ):
         setattr(cython, directive, dummy_decorator)
     # Address (pointers into arrays)
@@ -1061,23 +1062,26 @@ from libc.math cimport (
 # Unicode functions #
 #####################
 # The pyxpp script convert all Unicode source code characters into
-# ASCII using the below function.
-@cython.pheader(# Arguments
-                s=str,
-                # Locals
-                c=str,
-                char_list=list,
-                in_unicode_char='bint',
-                pat=str,
-                sub=str,
-                unicode_char=str,
-                unicode_name=str,
-                returns=str,
-                )
+# ASCII using the below function. It is also used during runtime.
+@cython.pheader(
+    # Arguments
+    s=str,
+    # Locals
+    c=str,
+    char_list=list,
+    in_unicode_char='bint',
+    pat=str,
+    sub=str,
+    unicode_char=str,
+    unicode_name=str,
+    returns=str,
+)
 def asciify(s):
     char_list = []
     in_unicode_char = False
     unicode_char = ''
+    begin = unicode_tags['begin']
+    end = unicode_tags['end']
     for c in s:
         if in_unicode_char or ord(c) > 127:
             # Unicode
@@ -1086,44 +1090,45 @@ def asciify(s):
             try:
                 unicode_name = unicodedata.name(unicode_char)
                 # unicode_char is a string (of length 1 or more)
-                # regarded as a single univode character.
+                # regarded as a single unicode character.
                 for pat, sub in unicode_subs.items():
                     unicode_name = unicode_name.replace(pat, sub)
-                char_list.append('{}{}{}'.format(unicode_tags['begin'],
-                                                 unicode_name,
-                                                 unicode_tags['end'],
-                                                 )
-                                 )
+                char_list.append(f'{begin}{unicode_name}{end}')
                 in_unicode_char = False
                 unicode_char = ''
             except:
-                ...
+                pass
         else:
             # ASCII
             char_list.append(c)
     return ''.join(char_list)
 cython.declare(unicode_subs=dict, unicode_tags=dict)
-unicode_subs = {' ': '__SPACE__',
-                '-': '__DASH__',
-                }
-unicode_tags = {'begin': 'BEGIN_UNICODE__',
-                'end':   '__END_UNICODE',
-                }
+unicode_subs = {
+    ' ': '__SPACE__',
+    '-': '__DASH__',
+}
+unicode_tags = {
+    'begin': 'UNICODE_',
+    'end'  : '_EDOCINU',
+}
 
 # The function below grants the code access to
 # Unicode string literals by undoing the convertion of the
 # asciify function above.
 @cython.pheader(s=str, returns=str)
 def unicode(s):
-    return re.sub('{}(.*?){}'.format(unicode_tags['begin'], unicode_tags['end']), unicode_repl, s)
-@cython.pheader(# Arguments
-                match=object,  # re.match object
-                # Locals
-                pat=str,
-                s=str,
-                sub=str,
-                returns=str,
-                )
+    begin = unicode_tags['begin']
+    end = unicode_tags['end']
+    return re.sub(f'{begin}(.*?){end}', unicode_repl, s)
+@cython.pheader(
+    # Arguments
+    match=object,  # re.Match
+    # Locals
+    pat=str,
+    s=str,
+    sub=str,
+    returns=str,
+)
 def unicode_repl(match):
     s = match.group(1)
     for pat, sub in unicode_subs.items():
