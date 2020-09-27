@@ -561,7 +561,7 @@ class Tiling:
         #   -> At least 1 active particle
         # contain_particles[tile_index] == 3
         #   -> At least 1 active particle,
-        #      at least 1 of which is flagged as undergoing a rung jump
+        #      at least 1 of which have an upcoming rung jump
         self.tiles             = malloc(self.size*sizeof('Py_ssize_t**'))
         self.tiles_rungs_sizes = malloc(self.size*sizeof('Py_ssize_t*'))
         self.tiles_rungs_N     = malloc(self.size*sizeof('Py_ssize_t*'))
@@ -685,6 +685,7 @@ class Tiling:
         coarse_rung_particle_index='Py_ssize_t',
         coarse_rungs_N='Py_ssize_t*',
         coarse_tile='Py_ssize_t**',
+        component='Component',
         contain_particles='signed char*',
         contains='signed char',
         i='Py_ssize_t',
@@ -699,9 +700,9 @@ class Tiling:
         rung='Py_ssize_t*',
         rung_N='Py_ssize_t',
         rung_index='signed char',
+        rung_index_jumped='signed char',
         rung_indices='signed char*',
-        rung_jump='signed char',
-        rung_jumps='signed char*',
+        rung_indices_jumped='signed char*',
         rungs_N='Py_ssize_t*',
         tile_index='Py_ssize_t',
         tiles='Py_ssize_t***',
@@ -712,12 +713,13 @@ class Tiling:
     def sort(self, coarse_tiling=None, coarse_tile_index=-1):
         # Extract variables
         layout = self.layout
-        rung_indices       = self.component.rung_indices
-        rung_jumps         = self.component.rung_jumps
-        posx               = self.component.posx
-        posy               = self.component.posy
-        posz               = self.component.posz
-        lowest_active_rung = self.component.lowest_active_rung
+        component = self.component
+        rung_indices        = component.rung_indices
+        rung_indices_jumped = component.rung_indices_jumped
+        posx                = component.posx
+        posy                = component.posy
+        posz                = component.posz
+        lowest_active_rung  = component.lowest_active_rung
         tiles             = self.tiles
         tiles_rungs_sizes = self.tiles_rungs_sizes
         tiles_rungs_N     = self.tiles_rungs_N
@@ -741,11 +743,11 @@ class Tiling:
             contain_particles[tile_index] = 0
         # Place each particle into a tile. If any of the particles
         # are outside of the tiling, this will fail.
-        coarse_rung_N = 1  # Needed when not using a coarse tile
-        rung_index = 0     # Needed when not using rungs
-        rung_jump = 0      # Needed when not using rungs
-        tile_index = 0     # Used if this is the trivial tiling
-        for particle_index in range(self.component.N_local if coarse_tiling is None else N_rungs):
+        coarse_rung_N = 1      # Needed when not using a coarse tile
+        rung_index = 0         # Needed when not using rungs
+        rung_index_jumped = 0  # Needed when not using rungs
+        tile_index = 0         # Used if this is the trivial tiling
+        for particle_index in range(component.N_local if coarse_tiling is None else N_rungs):
             # When a coarse tile is in use, the particle_index
             # variable is really the rung_index for the coarse tile.
             # Use it to pick out the coarse rung.
@@ -772,11 +774,12 @@ class Tiling:
                         k = cast((posz[particle_index] - ℝ[self.location[2]])
                             *ℝ[1/self.tile_extent[2]], 'Py_ssize_t')
                         tile_index = layout[i, j, k]
-                # Get the index of the rung for this particle
+                # Get the index of the rung and the jump
+                # for this particle.
                 with unswitch:
                     if self.component.use_rungs:
-                        rung_index = rung_indices[particle_index]
-                        rung_jump  = rung_jumps  [particle_index]
+                        rung_index         = rung_indices       [particle_index]
+                        rung_index_jumped  = rung_indices_jumped[particle_index]
                 # Resize this rung within the tile, if needed
                 rungs_N = tiles_rungs_N[tile_index]
                 rung_N = rungs_N[rung_index]
@@ -786,19 +789,27 @@ class Tiling:
                 rung = tiles[tile_index][rung_index]
                 rung[rung_N] = particle_index
                 rungs_N[rung_index] += 1
-                # Update tile content
+                # Update tile content using the mapping documented
+                # in Tiling.__init__. The possible values are:
+                #   1: Particle sits on an inactive rung.
+                #   2: Particle sits on an active rung
+                #      and is not flagged to jump.
+                #   3: Particle sits on active rung
+                #      and is flagged to jump.
                 if rung_index < lowest_active_rung:
                     # This particle sits on an inactive rung
                     contains = 1
-                elif rung_jump == 0:
+                elif rung_index_jumped < N_rungs:
                     # This particle sits on an active rung
+                    # and is not flagged to jump.
                     contains = 2
                 else:
                     # This particle sits on active rung
-                    # and is flagged to undergo a rung-jump.
+                    # and is flagged to jump.
                     contains = 3
                 if contain_particles[tile_index] < contains:
                     contain_particles[tile_index] = contains
+
     # This method is automaticlly called when a Tiling instance
     # is garbage collected. All manually allocated memory is freed.
     def __dealloc__(self):
@@ -972,8 +983,8 @@ class Component:
         Py_ssize_t* rungs_N
         signed char* rung_indices
         signed char[::1] rung_indices_mv
-        signed char* rung_jumps
-        signed char[::1] rung_jumps_mv
+        signed char* rung_indices_jumped
+        signed char[::1] rung_indices_jumped_mv
         # Dict used for storing Tiling instances
         public dict tilings
         public object n_interactions  # collections.defaultdict
@@ -1506,10 +1517,10 @@ class Component:
         self.rung_indices_mv = cast(self.rung_indices, 'signed char[:self.N_local]')
         for i in range(self.N_local):
             self.rung_indices[i] = 0
-        self.rung_jumps = malloc(self.N_local*sizeof('signed char'))
+        self.rung_indices_jumped = malloc(self.N_local*sizeof('signed char'))
         for i in range(self.N_local):
-            self.rung_jumps[i] = 0
-        self.rung_jumps_mv = cast(self.rung_jumps, 'signed char[:self.N_local]')
+            self.rung_indices_jumped[i] = 0
+        self.rung_indices_jumped_mv = cast(self.rung_indices_jumped, 'signed char[:self.N_local]')
         # Dict used for storing Tiling instances
         self.tilings = {}
         # Fluid attributes
@@ -2024,7 +2035,7 @@ class Component:
                 self.Δmomx_mv[size_old:size] = 0
                 self.Δmomy_mv[size_old:size] = 0
                 self.Δmomz_mv[size_old:size] = 0
-                # Reallocate rung indices and jumps, if rungs are in use
+                # Reallocate indices of rungs and jumps
                 if self.use_rungs:
                     self.rung_indices = realloc(
                         self.rung_indices,
@@ -2034,16 +2045,16 @@ class Component:
                         self.rung_indices,
                         'signed char[:self.N_allocated]',
                     )
-                    self.rung_indices_mv[size_old:size] = 0  # New particles default to rung 0
-                    self.rung_jumps = realloc(
-                        self.rung_jumps,
+                    self.rung_indices_mv[size_old:size] = 0  # new particles default to rung 0
+                    self.rung_indices_jumped = realloc(
+                        self.rung_indices_jumped,
                         self.N_allocated*sizeof('signed char'),
                     )
-                    self.rung_jumps_mv = cast(
-                        self.rung_jumps,
+                    self.rung_indices_jumped_mv = cast(
+                        self.rung_indices_jumped,
                         'signed char[:self.N_allocated]',
                     )
-                    self.rung_jumps_mv[size_old:size] = 0
+                    self.rung_indices_jumped_mv[size_old:size] = 0  # no jumps
         elif self.representation == 'fluid':
             shape_noghosts = tuple(any2list(size_or_shape_noghosts))
             if len(shape_noghosts) == 1:
@@ -2586,6 +2597,7 @@ class Component:
     @cython.header(
         # Arguments
         ᔑdt_rungs=dict,
+        any_rung_jumps='bint',
         # Locals
         convertion_factor='double',
         convertion_factors='double[::1]',
@@ -2593,15 +2605,16 @@ class Component:
         i='Py_ssize_t',
         lowest_active_rung='signed char',
         rung_index='signed char',
+        rung_index_jumped='signed char',
         rung_indices='signed char*',
-        rung_jumps='signed char*',
+        rung_indices_jumped='signed char*',
         w_eff='double',
         Δmomx='double*',
         Δmomy='double*',
         Δmomz='double*',
         returns='void',
     )
-    def convert_Δmom_to_acc(self, ᔑdt_rungs):
+    def convert_Δmom_to_acc(self, ᔑdt_rungs, any_rung_jumps=False):
         # The acceleration is only used for the rung assignment,
         # and so we skip the convertion if this component
         # does not make use of rungs.
@@ -2617,8 +2630,8 @@ class Component:
         Δmomx = self.Δmomx
         Δmomy = self.Δmomy
         Δmomz = self.Δmomz
-        rung_indices = self.rung_indices
-        rung_jumps = self.rung_jumps
+        rung_indices        = self.rung_indices
+        rung_indices_jumped = self.rung_indices_jumped
         lowest_active_rung = self.lowest_active_rung
         w_eff = self.w_eff(a=universals.a)
         convertion_factors = universals.a**(3*w_eff)/(
@@ -2628,7 +2641,12 @@ class Component:
             rung_index = rung_indices[i]
             if rung_index < lowest_active_rung:
                 continue
-            convertion_factor = convertion_factors[rung_index + rung_jumps[i]]
+            with unswitch:
+                if any_rung_jumps:
+                    rung_index_jumped = rung_indices_jumped[i]
+                else:
+                    rung_index_jumped = rung_index
+            convertion_factor = convertion_factors[rung_index_jumped]
             Δmomx[i] *= convertion_factor
             Δmomy[i] *= convertion_factor
             Δmomz[i] *= convertion_factor
@@ -2704,8 +2722,8 @@ class Component:
     # stored in the Δmom buffers, together with the current time step
     # size Δt and a tuning factor fac_softening. The current rungs will
     # not be taken into consideration, i.e. a particle may "jump"
-    # several rungs. Any flagged rung jumps are then rendered
-    # meaningless, and are thus nullified.
+    # several rungs. Existing values of jumped rung indices are then
+    # rendered meaningless and are thus reset.
     @cython.header(
         # Arguments
         Δt='double',
@@ -2715,7 +2733,7 @@ class Component:
         rung_factor='double',
         rung_index='signed char',
         rung_indices='signed char*',
-        rung_jumps='signed char*',
+        rung_indices_jumped='signed char*',
         rungs_N='Py_ssize_t*',
         returns='void',
     )
@@ -2725,25 +2743,23 @@ class Component:
             # The rung indices themselves are not needed.
             self.rungs_N[0] = self.N_local
             return
-        rung_indices = self.rung_indices
-        rung_jumps   = self.rung_jumps
-        rungs_N      = self.rungs_N
+        rung_indices        = self.rung_indices
+        rung_indices_jumped = self.rung_indices_jumped
+        rungs_N = self.rungs_N
         # Nullify the rung count
         for rung_index in range(N_rungs):
             rungs_N[rung_index] = 0
-        # Nullify flagged rung jumps
-        for i in range(self.N_local):
-            rung_jumps[i] = 0
         # Assign each particle to a rung
         rung_factor = self.get_rung_factor(Δt, fac_softening)
         for i in range(self.N_local):
             rung_index = self.get_rung(i, rung_factor)
-            rung_indices[i] = rung_index
+            rung_indices       [i] = rung_index
+            rung_indices_jumped[i] = rung_index  # no jump
             rungs_N[rung_index] += 1
         # Flag the lowest and highest populated rungs
         self.set_lowest_highest_populated_rung()
 
-    # Method for flagging particle inter-rung jumps to come
+    # Method for flagging particle rung jumps to come
     @cython.header(
         # Arguments
         Δt='double',
@@ -2762,23 +2778,23 @@ class Component:
         rung_index='signed char',
         rung_index_ought='signed char',
         rung_indices='signed char*',
-        rung_jumps='signed char*',
+        rung_indices_jumped='signed char*',
+        rung_jump_down='signed char',
         returns='bint',
     )
     def flag_rung_jumps(self, Δt, Δt_jump_fac, fac_softening, ᔑdt_rungs):
-        """This method sets self.rung_jumps[:]. Values of 0 correspond
-        to no jumps. For jumping up one rung, a value of 2*N_rungs is
-        assigned. For jumping down one rung, a value of N_rungs is
-        assigned. This is chosen so that
-        ᔑdt_rungs[integrand][rung_index + rung_jump]
-        maps to the correct integral.
+        """This method sets self.rung_indices_jumped[:] equal to
+        self.rung_indics[:] in case of no jumps. For jumping up one
+        rung, a value of 2*N_rungs is added. For jumping down one rung,
+        a value of N_rungs is added. This is chosen so that
+        ᔑdt_rungs[integrand][rung_jump] maps to the correct integral.
         """
         any_rung_jumps = False
         if not self.use_rungs:
             return any_rung_jumps
         integrals = ᔑdt_rungs['1']
-        rung_indices       = self.rung_indices
-        rung_jumps         = self.rung_jumps
+        rung_indices        = self.rung_indices
+        rung_indices_jumped = self.rung_indices_jumped
         lowest_active_rung = self.lowest_active_rung
         rung_factor_up   = self.get_rung_factor(Δt*Δt_jump_fac, fac_softening)
         rung_factor_down = self.get_rung_factor(Δt/Δt_jump_fac, fac_softening)
@@ -2794,53 +2810,57 @@ class Component:
             # integrals[rung_index + N_rungs] is set to -1.
             rung_index_ought = self.get_rung(i, rung_factor_up)
             if rung_index_ought > rung_index:
-                # Flag up-jump
+                # Signal to jump up
                 any_rung_jumps = True
-                rung_jumps[i] = jump_up
-            elif integrals[rung_index + jump_down] != -1:
+                rung_indices_jumped[i] = rung_index + jump_up
+            else:
+                rung_jump_down = rung_index + jump_down
+                if integrals[rung_jump_down] == -1:
+                    continue
                 rung_index_ought = self.get_rung(i, rung_factor_down)
                 if rung_index_ought < rung_index:
-                    # Flag down-jump
+                    # Signal to jump down
                     any_rung_jumps = True
-                    rung_jumps[i] = jump_down
+                    rung_indices_jumped[i] = rung_jump_down
         return any_rung_jumps
 
-    # Method for applying flagged particle inter-rung jumps
+    # Method for applying particle rung jumps
     @cython.header(
         # Locals
         i='Py_ssize_t',
         rung_index='signed char',
+        rung_index_jumped='signed char',
         rung_indices='signed char*',
-        rung_jump='signed char',
-        rung_jumps='signed char*',
+        rung_indices_jumped='signed char*',
         rungs_N='Py_ssize_t*',
         returns='void',
     )
     def apply_rung_jumps(self):
         if not self.use_rungs:
             return
-        # Here, "applying" inter-rung jumps means updating rung_indices
-        # and rungs_N based on rung_jumps.
-        # Also, rung_jumps is left nullified.
-        rung_indices = self.rung_indices
-        rung_jumps   = self.rung_jumps
-        rungs_N      = self.rungs_N
+        # Here, "applying" rung jumps means updating rung_indices
+        # and rungs_N based on rung_indices_jumped.
+        # Also, rung_indices_jumped is set equal to (the updated)
+        # run_indices, signalling no further jumps.
+        rung_indices        = self.rung_indices
+        rung_indices_jumped = self.rung_indices_jumped
+        rungs_N = self.rungs_N
         for i in range(self.N_local):
-            rung_jump = rung_jumps[i]
-            if rung_jump == 0:
+            rung_index_jumped = rung_indices_jumped[i]
+            if rung_index_jumped < N_rungs:
                 continue
-            # Particle i has undergone an inter-rung jump
+            # Particle i has undergone a rung jump
             rung_index = rung_indices[i]
             rungs_N[rung_index] -= 1
-            if rung_jump == N_rungs:
+            if rung_index_jumped < 2*N_rungs:
                 # Particle jumped down
                 rung_index -= 1
-            else:  # rung_jump == 2*N_rungs
+            else:
                 # Particle jumped up
                 rung_index += 1
             rungs_N[rung_index] += 1
-            rung_indices[i] = rung_index
-            rung_jumps[i] = 0
+            rung_indices[       i] = rung_index
+            rung_indices_jumped[i] = rung_index  # done with jump
         # Flag the lowest and highest populated rungs
         self.set_lowest_highest_populated_rung()
 
@@ -2927,6 +2947,7 @@ class Component:
         quantityz='double*',
         rung='Py_ssize_t*',
         rung_indices='signed char*',
+        rung_indices_jumped='signed char*',
         rung_particle_index='Py_ssize_t',
         rungs_N='Py_ssize_t*',
         subtile='Py_ssize_t**',
@@ -3015,7 +3036,8 @@ class Component:
         tmpx = self.Δmomx
         tmpy = self.Δmomy
         tmpz = self.Δmomz
-        rung_indices = self.rung_indices
+        rung_indices        = self.rung_indices
+        rung_indices_jumped = self.rung_indices_jumped
         if self.use_rungs and rung_indices_arr.shape[0] < self.N_local:
             rung_indices_arr.resize(self.N_local, refcheck=False)
         tmp_rung_indices_mv = rung_indices_arr
@@ -3073,7 +3095,9 @@ class Component:
                 quantityz[i] = tmpz[i]
             if self.use_rungs and quantity == 1:
                 for i in range(self.N_local):
-                    rung_indices[i] = tmp_rung_indices[i]
+                    rung_index = tmp_rung_indices[i]
+                    rung_indices       [i] = rung_index
+                    rung_indices_jumped[i] = rung_index  # no jump
         # Finally we need to re-sort the tiling
         tiling.sort(coarse_tiling, coarse_tile_index)
         masterprint('done')
@@ -4092,7 +4116,7 @@ class Component:
         free(self.Δmom)
         free(self.rungs_N)
         free(self.rung_indices)
-        free(self.rung_jumps)
+        free(self.rung_indices_jumped)
 
     # String representation
     def __repr__(self):

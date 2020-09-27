@@ -586,7 +586,7 @@ def fancyprint(
             # If the text ends with '...', it is the start of a
             # progress message. In that case, the last line should
             # have some left over space to the right
-            # for the upcomming time delta.
+            # for the upcoming time delta.
             if is_progress_message:
                 maxlength = terminal_width - progressprint['maxintervallength'] - 1
                 # Separate the last line from the rest
@@ -620,7 +620,7 @@ def fancyprint(
             # If the text ends with '...', it is the start of a
             # progress message. In that case, the text should
             # have some left over space to the right
-            # for the upcomming time delta.
+            # for the upcoming time delta.
             if is_progress_message:
                 progressprint['length'] = len(text)
         # General progress message handling

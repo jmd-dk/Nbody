@@ -141,7 +141,7 @@ def component_component(
         tiling_name = subtiling_name = 'trivial'
     # Set flags anticipate_refinement, attempt_refinement and
     # judge_refinement. The first signals whether a tentative subtiling
-    # refinement attempt is comming up soon, in which case we should
+    # refinement attempt is coming up soon, in which case we should
     # be collecting computation time data of the current subtiling.
     # The second specifies whether a tentative refinement of the
     # subtilings in use should be performed now, meaning prior to
@@ -1370,14 +1370,14 @@ def particle_particle(
         rung_N_s='Py_ssize_t',
         rung_index_r='signed char',
         rung_index_s_start='signed char',
-        rung_jumps_r='signed char*',
+        rung_indices_jumped_r='signed char*',
         rung_r='Py_ssize_t*',
         rung_s='Py_ssize_t*',
         rungs_N_r='Py_ssize_t*',
         rungs_N_s='Py_ssize_t*',
+        subtile_contain_jumping_r='bint',
+        subtile_contain_onlyinactive_r='bint',
         subtile_contain_particles_r='signed char',
-        subtile_contain_particles_r_equal1='bint',
-        subtile_contain_particles_r_equal3='bint',
         subtile_contain_particles_s='signed char',
         subtile_index_r='Py_ssize_t',
         subtile_index_s='Py_ssize_t',
@@ -1398,8 +1398,8 @@ def particle_particle(
         subtiling_name_2=str,
         subtiling_s='Tiling',
         subtiling_s_2='Tiling',
+        tile_contain_onlyinactive_r='bint',
         tile_contain_particles_r='signed char',
-        tile_contain_particles_r_equal1='bint',
         tile_contain_particles_s='signed char',
         tile_extent='double*',
         tile_index_r='Py_ssize_t',
@@ -1431,7 +1431,7 @@ def particle_particle(
     lowest_active_rung_r     = receiver.lowest_active_rung
     lowest_populated_rung_r  = receiver.lowest_populated_rung
     highest_populated_rung_r = receiver.highest_populated_rung
-    rung_jumps_r = receiver.rung_jumps
+    rung_indices_jumped_r = receiver.rung_indices_jumped
     # Extract particle variables from the supplier
     # (the external) component.
     posx_s = supplier.posx
@@ -1534,7 +1534,7 @@ def particle_particle(
             else:
                 if tile_contain_particles_r < 2:
                     continue
-        tile_contain_particles_r_equal1 = (tile_contain_particles_r == 1)
+        tile_contain_onlyinactive_r = (tile_contain_particles_r == 1)
         # Sort particles within the receiver tile into subtiles
         tile_index3D_r = tiling_r.tile_index3D(tile_index_r)
         for dim in range(3):
@@ -1554,7 +1554,7 @@ def particle_particle(
             # If both the receiver and supplier tile contains particles
             # on inactive rows only, we skip this tile pair.
             with unswitch(1):
-                if tile_contain_particles_r_equal1:
+                if tile_contain_onlyinactive_r:
                     if tile_contain_particles_s == 1:
                         continue
             # Sort particles within the supplier tile into subtiles
@@ -1606,8 +1606,8 @@ def particle_particle(
                     else:
                         if subtile_contain_particles_r < 2:
                             continue
-                subtile_contain_particles_r_equal1 = (subtile_contain_particles_r == 1)
-                subtile_contain_particles_r_equal3 = (subtile_contain_particles_r == 3)
+                subtile_contain_onlyinactive_r = (subtile_contain_particles_r == 1)
+                subtile_contain_jumping_r = (subtile_contain_particles_r == 3)
                 subtile_r = subtiles_r[subtile_index_r]
                 rungs_N_r = subtiles_rungs_N_r[subtile_index_r]
                 subtile_pairings_r   = subtile_pairings  [subtile_index_r]
@@ -1624,10 +1624,10 @@ def particle_particle(
                     # particles on inactive rows only, we skip this
                     # subtile pair.
                     with unswitch(1):
-                        if subtile_contain_particles_r_equal1:
+                        if subtile_contain_onlyinactive_r:
                             if subtile_contain_particles_s == 1:
                                 continue
-                    subtile_contain_particles_s_equal3 = (subtile_contain_particles_s == 3)
+                    subtile_contain_jumping_s = (subtile_contain_particles_s == 3)
                     subtile_s = subtiles_s[subtile_index_s]
                     rungs_N_s = subtiles_rungs_N_s[subtile_index_s]
                     # Flag specifying whether this is a local interaction
@@ -1695,18 +1695,22 @@ def particle_particle(
                             for rung_particle_index_r in range(rung_N_r):
                                 # Get receiver particle index
                                 i = rung_r[rung_particle_index_r]
-                                # Construct rung_index_i. This is equal
-                                # to rung_index_r, except for when a
-                                # particle jump to another rung.
-                                # In this case, rung_index_i no longer
-                                # corresponds to any actual rung,
-                                # but it can be used to correctly index
-                                # into arrays of time step integrals.
+                                # Get the jumped rung index for
+                                # particle i, which is given by
+                                # rung_indices_jumped_r[i]. In the
+                                # common case of no jumping, this
+                                # equals the non-jumped rung index,
+                                # which is given by rung_index_r.
+                                # In an attempt to avoid the lookup,
+                                # we test whether the current receiver
+                                # subtile contains any particles that
+                                # jumps and get the jumped/non-jumped
+                                # index accordingly.
                                 with unswitch(2):
                                     if apply_to_i:
-                                        if True:  # with unswitch(4):
-                                            if subtile_contain_particles_r_equal3:
-                                                rung_index_i = rung_index_r + rung_jumps_r[i]
+                                        with unswitch(4):
+                                            if subtile_contain_jumping_r:
+                                                rung_index_i = rung_indices_jumped_r[i]
                                             else:
                                                 rung_index_i = rung_index_r
                                         # Fetch the corresponding factor
@@ -1738,7 +1742,7 @@ def particle_particle(
                                     y_ji = yi - posy_s[j]
                                     z_ji = zi - posz_s[j]
                                     # Yield the needed variables
-                                    yield i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_particles_s_equal3, particle_particle_t_begin, subtiling_r
+                                    yield i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_jumping_s, particle_particle_t_begin, subtiling_r
 # Variables used by the particle_particle() function
 cython.declare(
     periodic_offset='double[::1]',

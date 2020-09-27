@@ -1217,8 +1217,9 @@ def drift_fluids(components, Δt, sync_time):
     Δt='double',
     sync_time='double',
     # Locals
-    any_rung_jumps_arr='int[::1]',
     any_kicks='bint',
+    any_rung_jumps='bint',
+    any_rung_jumps_arr='int[::1]',
     component='Component',
     driftkick_index='Py_ssize_t',
     force=str,
@@ -1468,7 +1469,7 @@ def driftkick_short(components, Δt, sync_time):
                 masterprint(text, indent=4, bullet='•')
             masterprint('...', indent=4, wrap=False)
             printout = False
-        # Flag inter-rung jumps and nullify Δmom.
+        # Flag rung jumps and nullify Δmom.
         # Only particles currently on active rungs will be affected.
         # Whether or not any rung jumping takes place in a given
         # particle component is stored in any_rung_jumps_arr.
@@ -1505,7 +1506,9 @@ def driftkick_short(components, Δt, sync_time):
             )
         for receiver in receivers_all:
             receiver.apply_Δmom()
-            receiver.convert_Δmom_to_acc(ᔑdt_rungs)
+            i = particle_components.index(receiver)
+            any_rung_jumps = any_rung_jumps_arr[i]
+            receiver.convert_Δmom_to_acc(ᔑdt_rungs, any_rung_jumps)
         for i, component in enumerate(particle_components):
             if any_rung_jumps_arr[i]:
                 component.apply_rung_jumps()

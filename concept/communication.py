@@ -149,6 +149,7 @@ def find_N_recv(N_send):
     rung_index='signed char',
     rung_indices='signed char*',
     rung_indices_buf='signed char[::1]',
+    rung_indices_jumped='signed char*',
     rung_indices_mv='signed char[::1]',
     rungs_N='Py_ssize_t*',
     sendbuf_mv='double[::1]',
@@ -256,9 +257,10 @@ def exchange(component, reset_buffers=False):
     Δmomy_mv = component.Δmomy_mv
     Δmomz_mv = component.Δmomz_mv
     # Extract rung information
-    rungs_N         = component.rungs_N
-    rung_indices    = component.rung_indices
-    rung_indices_mv = component.rung_indices_mv
+    rungs_N             = component.rungs_N
+    rung_indices        = component.rung_indices
+    rung_indices_mv     = component.rung_indices_mv
+    rung_indices_jumped = component.rung_indices_jumped
     # Start index for received data
     index_recv_j = N_local
     # Exchange particles between processes
@@ -343,8 +345,13 @@ def exchange(component, reset_buffers=False):
                     source=ID_recv,
                 )
                 # Increment rung population due to received particles
+                # and set the jumped rung indices.
                 for i in range(index_recv_j, index_recv_j + N_recv_j):
-                    rungs_N[rung_indices[i]] += 1
+                    rung_index = rung_indices[i]
+                    rungs_N[rung_index] += 1
+                    # Set the jumped rung index equal to
+                    # the rung index, signalling no upcoming jump.
+                    rung_indices_jumped[i] = rung_index
                 # Send/receive Δmomx
                 for i in range(N_send_j):
                     sendbuf_mv[i] = Δmomx[indices_send_j[i]]
@@ -401,7 +408,9 @@ def exchange(component, reset_buffers=False):
                 momz[k] = momz[i]
                 with unswitch:
                     if component.use_rungs:
-                        rung_indices[k] = rung_indices[i]
+                        rung_index = rung_indices[i]
+                        rung_indices       [k] = rung_index
+                        rung_indices_jumped[k] = rung_index  # no jump
                         Δmomx[k] = Δmomx[i]
                         Δmomy[k] = Δmomy[i]
                         Δmomz[k] = Δmomz[i]
@@ -703,8 +712,8 @@ def rank_neighbouring_domain(i, j, k):
     rung_index='signed char',
     rung_indices='signed char*',
     rung_indices_buf='signed char[::1]',
-    rung_jumps='signed char*',
-    rung_jumps_buf='signed char[::1]',
+    rung_indices_jumped='signed char*',
+    rung_indices_jumped_buf='signed char[::1]',
     rungs_N='Py_ssize_t*',
     subtiling_name=str,
     tile='Py_ssize_t**',
@@ -821,7 +830,8 @@ def sendrecv_component(
         component_buffer.N_local = N_particles_recv
         if component_buffer.N_allocated < component_buffer.N_local:
             # Temporarily set use_rungs = True to ensure that the
-            # rung_indices and rung_jumps get resized as well.
+            # rung_indices and rung_indices_jumped
+            # get resized as well.
             use_rungs = component_buffer.use_rungs
             component_buffer.use_rungs = True
             component_buffer.resize(component_buffer.N_local)
@@ -921,8 +931,6 @@ def sendrecv_component(
         if rung_indices_arr.shape[0] < N_particles:
             rung_indices_arr.resize(N_particles, refcheck=False)
         rung_indices_buf = rung_indices_arr
-        # We reuse the buffer for rung jumps as well
-        rung_jumps_buf = rung_indices_buf
         n = 0
         for i in range(tile_indices_send.shape[0]):
             tile_index = tile_indices_send[i]
@@ -937,8 +945,10 @@ def sendrecv_component(
         # Communicate rung indices
         Sendrecv(rung_indices_buf[:n],
             recvbuf=component_recv.rung_indices_mv, dest=dest, source=source)
-        # Fill buffer with rung jumps and communicate these as well
-        rung_jumps = component_send.rung_jumps
+        # Fill buffer with jumped rung indices
+        # and communicate these as well.
+        rung_indices_jumped = component_send.rung_indices_jumped
+        rung_indices_jumped_buf = rung_indices_buf  # reuse buffer
         n = 0
         for i in range(tile_indices_send.shape[0]):
             tile_index = tile_indices_send[i]
@@ -950,10 +960,10 @@ def sendrecv_component(
             ):
                 rung = tile[rung_index]
                 for j in range(rungs_N[rung_index]):
-                    rung_jumps_buf[n] = rung_jumps[rung[j]]
+                    rung_indices_jumped_buf[n] = rung_indices_jumped[rung[j]]
                     n += 1
-        Sendrecv(rung_jumps_buf[:n],
-            recvbuf=component_recv.rung_jumps_mv, dest=dest, source=source)
+        Sendrecv(rung_indices_jumped_buf[:n],
+            recvbuf=component_recv.rung_indices_jumped_mv, dest=dest, source=source)
         # Count up how many particles occupy each rung
         rung_indices = component_recv.rung_indices
         rungs_N = component_recv.rungs_N
