@@ -2006,6 +2006,7 @@ cython.declare(
     select_realization_options=dict,
     select_lives=dict,
     select_approximations=dict,
+    softening_kernel=str,
     select_softening_length=dict,
     # Simlation options
     Δt_base_background_factor='double',
@@ -2709,6 +2710,9 @@ if user_params.get('select_approximations'):
             replace_ellipsis(d)
 select_approximations['default'] = {'P=wρ': False}
 user_params['select_approximations'] = select_approximations
+softening_kernel = user_params.get('softening_kernel', 'spline')
+softening_kernel = softening_kernel.lower()
+user_params['softening_kernel'] = softening_kernel
 select_softening_length = {}
 if user_params.get('select_softening_length'):
     if isinstance(user_params['select_softening_length'], dict):

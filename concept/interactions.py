@@ -68,6 +68,7 @@ ctypedef void (*func_interaction)(
     Py_ssize_t[::1],  # tile_indices_receiver
     Py_ssize_t**,     # tile_indices_supplier_paired
     Py_ssize_t*,      # tile_indices_supplier_paired_N
+    const double*,    # table
     dict,             # interaction_extra_args
 )
 """)
@@ -104,6 +105,7 @@ ctypedef void (*func_interaction)(
     refinement_offset='Py_ssize_t',
     refinement_period='Py_ssize_t',
     rung_index='signed char',
+    softening='double',
     subtiles_computation_times_N_interaction='Py_ssize_t[::1]',
     subtiles_computation_times_interaction='double[::1]',
     subtiles_computation_times_sq_interaction='double[::1]',
@@ -112,6 +114,7 @@ ctypedef void (*func_interaction)(
     subtiling_name=str,
     subtiling_name_2=str,
     supplier='Component',
+    table='const double*',
     tile_sorted=set,
     tiling_name=str,
     returns='void',
@@ -226,6 +229,7 @@ def component_component(
         tentatively_refine_subtiling(interaction_name)
     # Pair each receiver with all suppliers and let them interact
     pairs = []
+    table = NULL
     tile_sorted = set()
     computation_time = 0  # Total tile-tile computation time for this call to component_component()
     for receiver in receivers:
@@ -234,6 +238,17 @@ def component_component(
             if pair in pairs:
                 continue
             pairs.append(pair)
+            # Get tabulations needed for this
+            # {receiver, supplier} pair and interaction.
+            with unswitch:
+                if interaction is gravity_pairwise_shortrange:
+                    # Get table of softened gravitational
+                    # short-range forces.
+                    softening = combine_softening_lengths(
+                        receiver.softening_length,
+                        supplier.softening_length,
+                    )
+                    table = get_shortrange_gravity_table(softening)
             # Make sure that the tile sorting of particles
             # in the two components are up-to-date.
             with unswitch(1):
@@ -263,6 +278,7 @@ def component_component(
                 only_supply,
                 deterministic,
                 pairing_level,
+                table,
                 interaction_extra_args,
             )
         # The interactions between the receiver and all suppliers are
@@ -371,6 +387,7 @@ subtiling_shapes_judged = empty(3*nprocs, dtype=C2np['Py_ssize_t']) if master el
     only_supply='bint',
     deterministic='bint',
     pairing_level=str,
+    table='const double*',
     interaction_extra_args=dict,
     # Locals
     domain_pair_nr='Py_ssize_t',
@@ -394,7 +411,7 @@ subtiling_shapes_judged = empty(3*nprocs, dtype=C2np['Py_ssize_t']) if master el
 )
 def domain_domain(
     interaction_name, receiver, supplier, interaction, ᔑdt_rungs, dependent, affected,
-    only_supply, deterministic, pairing_level, interaction_extra_args,
+    only_supply, deterministic, pairing_level, table, interaction_extra_args,
 ):
     """This function takes care of pairings between the domains
     containing particles/fluid elements of the passed receiver and
@@ -564,6 +581,7 @@ def domain_domain(
                     tile_indices_receiver,
                     tile_indices_supplier_paired,
                     tile_indices_supplier_paired_N,
+                    table,
                     interaction_extra_args,
                 )
         # Send the populated buffers (e.g. Δmom for gravity) back to the
@@ -1761,6 +1779,112 @@ tile_location_r_ptr = cython.address(tile_location_r[:])
 tile_location_s_ptr = cython.address(tile_location_s[:])
 tiles_offset_ptr    = cython.address(tiles_offset[:])
 
+# Function for converting a pair of softening lengths
+# into a single softening length.
+@cython.header(
+    # Arguments
+    ϵᵢ='double',
+    ϵⱼ='double',
+    # Locals
+    ϵ='double',
+    returns='double',
+)
+def combine_softening_lengths(ϵᵢ, ϵⱼ):
+    # Combining softening lengths may be done in several
+    # different ways, e.g.
+    #   ϵ = sqrt(ϵᵢ² + ϵⱼ²)
+    #   ϵ = (ϵᵢ + ϵⱼ)/2
+    #   ϵ = min(ϵᵢ, ϵⱼ)
+    #   ϵ = max(ϵᵢ, ϵⱼ)
+    # Here we settle for the arithmetic mean.
+    # This has been used by e.g. Hernquist & Barnes 1990.
+    ϵ = 0.5*(ϵᵢ + ϵⱼ)
+    return ϵ
+
+# Function for computing the softened r⁻³.
+# Instead of calling this function many times for some fixed
+# softening length, consider tabulating its results.
+@cython.header(
+    # Arguments
+    r2='double',
+    ϵ='double',
+    # Locals
+    h='double',
+    r='double',
+    r2_softened='double',
+    r3='double',
+    u='double',
+    returns='double',
+)
+def get_softened_r3inv(r2, ϵ):
+    # The ϵ argument is the Plummer softening length,
+    # regardless of which softening kernel is used (set by the
+    # softening_kernel parameter). Each implemented softening kernel is
+    # described in the code below. What is returned is always a
+    # softened version of r⁻³, intended for replacement in the
+    # gravitational force F⃗(r⃗) ∝ r⃗ r⁻³.
+    #
+    # References:
+    #   [1] https://arxiv.org/abs/astro-ph/0011568
+    if 𝔹[softening_kernel == 'none']:
+        # Do not soften the force at all.
+        # In terms of a kernel, this corresponds to
+        #      W(r) = δ³(r)
+        #   ⟹  F⃗(r⃗) ∝ r⃗ r⁻³.
+        # Using this in simulations with any appreciable clustering
+        # will lead to generation of large amounts of spurious energy.
+        # To at least remove the divergence at r = 0,
+        # we return 0 here.
+        r3 = r2*sqrt(r2)
+        return (0 if r3 == 0 else 1/r3)
+    elif 𝔹[softening_kernel == 'plummer']:
+        # This is the simplest softening kernel. As it has non-compact
+        # support it softens the force at all scales.
+        #      W(r) = 3/(4πϵ³) [1 + (r/ϵ)²]⁻⁵ᐟ²
+        #   ⟹  F⃗(r⃗) ∝ r⃗ (r² + ϵ²)⁻³ᐟ².
+        r2_softened = r**2 + ϵ**2
+        return 1/(r2_softened*sqrt(r2_softened))
+    elif 𝔹[softening_kernel == 'spline']:
+        # This is the cubic spline kernel of
+        # Monaghan & Lattanzio (1985), often used in SPH.
+        # It is the gravitational softening used in GADGET2.
+        #                     ⎧ 1 - 6(r/h)² + 6(r/h)³    0 ≤ r < h/2
+        #      W(r) = 8/(πh³) ⎨ 2(1 - r/h)³            h/2 ≤ r < h
+        #                     ⎩ 0                        h ≤ r
+        #               ⎧ 32/h³ [1/3 - 6/5(r/h)² + (r/h)³]                                 0 ≤ r < h/2
+        #   ⟹  F⃗(r⃗) ∝ r⃗ ⎨ 32/h³ [2/3 - 3/2(r/h) + 6/5(r/h)² - 1/3(r/h)³ - 1/480(r/h)⁻³]  h/2 ≤ r < h
+        #               ⎩ r⁻³                                                              h ≤ r,
+        # where h is the spline softening length "equivalent" to the
+        # Plummer softening length ϵ. If we require F⃗(ϵ) for the
+        # spline softening to equal F⃗(ϵ) for the Plummer softening,
+        # we get h = 2.7116122709425334ϵ. GADGET2 uses h = 2.8ϵ.
+        # We choose to follow GADGET2.
+        h = 2.8*ϵ
+        r = sqrt(r2)
+        if r >= h:
+            return 1/(r2*r)
+        u = r/h
+        if u < 0.5:
+            return 32/h**3*(1./3. + u**2*(-6./5. + u))
+        return 32/(3*r**3)*(u**3*(2 + u*(-9./2. + u*(18./5. - u))) - 3./480.)
+    elif 𝔹[softening_kernel == 'epanechnikov']:
+        # This kernel is described in e.g. [1] (where it is called F₁),
+        # where it is shown to be superior to the cubic spline kernel
+        # as it features a smaller mean integrated
+        # squared force error.
+        abort('Softening kernel "Epanechnikov" not yet implemented')
+    elif 𝔹[softening_kernel == 'compensate']:
+        # This is the kernel described in [1] under the name K₁.
+        # It is reminiscent of the Epanechnikov kernel,
+        # but compensates for the softened force at small r by
+        # overestimating the force around the softening length,
+        # supposedly leading to an even smaller mean integrated
+        # squared force error.
+        abort('Softening kernel "compensate" not yet implemented')
+    # The speified softening kernel is not implemented
+    abort(f'Softening kernel "{softening_kernel}" not understood')
+    return 0  # To satisfy the compiler
+
 # Generic function implementing particle-mesh interactions
 # for both particle and fluid componenets.
 @cython.header(
@@ -2658,7 +2782,6 @@ def gravity(method, receivers, suppliers, ᔑdt, interaction_type, printout):
             )
         # The short-range PP part
         if 𝔹['any' in interaction_type] or 𝔹['short' in interaction_type]:
-            tabulate_shortrange_gravity()
             component_component(
                 force, receivers, suppliers, gravity_pairwise_shortrange, ᔑdt,
                 pairing_level='tile',
