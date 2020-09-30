@@ -447,6 +447,13 @@ $(foreach ext,c html,$(addsuffix .$(ext), mesh)): fft.c
 # Target dependencies which strictly speaking should be
 # taken into account, but can be ignored using the --unsafe-building flag.
 ifneq ($(unsafe_building),True)
+    # Use of inline iterators defined in other modules
+    # makes the .pyx files depend on the .py file
+    # of the module implementing the iterator.
+    gravity.pyx:      interactions.py  # particle_particle()
+    analysis.pyx:     mesh.py          # slab_fourier_loop()
+    interactions.pyx: mesh.py          # slab_fourier_loop()
+    linear.pyx:       mesh.py          # slab_fourier_loop()
     # Because modules cimport stuff from each other, some .c
     # (and therefore also .html) files depend on the .pxd files of
     # other modules.
