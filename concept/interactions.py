@@ -68,7 +68,6 @@ ctypedef void (*func_interaction)(
     Py_ssize_t[::1],  # tile_indices_receiver
     Py_ssize_t**,     # tile_indices_supplier_paired
     Py_ssize_t*,      # tile_indices_supplier_paired_N
-    const double*,    # table
     dict,             # interaction_extra_args
 )
 """)
@@ -114,7 +113,6 @@ ctypedef void (*func_interaction)(
     subtiling_name=str,
     subtiling_name_2=str,
     supplier='Component',
-    table='const double*',
     tile_sorted=set,
     tiling_name=str,
     returns='void',
@@ -229,7 +227,6 @@ def component_component(
         tentatively_refine_subtiling(interaction_name)
     # Pair each receiver with all suppliers and let them interact
     pairs = []
-    table = NULL
     tile_sorted = set()
     computation_time = 0  # Total tile-tile computation time for this call to component_component()
     for receiver in receivers:
@@ -238,17 +235,6 @@ def component_component(
             if pair in pairs:
                 continue
             pairs.append(pair)
-            # Get tabulations needed for this
-            # {receiver, supplier} pair and interaction.
-            with unswitch:
-                if interaction is gravity_pairwise_shortrange:
-                    # Get table of softened gravitational
-                    # short-range forces.
-                    softening = combine_softening_lengths(
-                        receiver.softening_length,
-                        supplier.softening_length,
-                    )
-                    table = get_shortrange_gravity_table(softening)
             # Make sure that the tile sorting of particles
             # in the two components are up-to-date.
             with unswitch(1):
@@ -278,7 +264,6 @@ def component_component(
                 only_supply,
                 deterministic,
                 pairing_level,
-                table,
                 interaction_extra_args,
             )
         # The interactions between the receiver and all suppliers are
@@ -387,7 +372,6 @@ subtiling_shapes_judged = empty(3*nprocs, dtype=C2np['Py_ssize_t']) if master el
     only_supply='bint',
     deterministic='bint',
     pairing_level=str,
-    table='const double*',
     interaction_extra_args=dict,
     # Locals
     domain_pair_nr='Py_ssize_t',
@@ -411,7 +395,7 @@ subtiling_shapes_judged = empty(3*nprocs, dtype=C2np['Py_ssize_t']) if master el
 )
 def domain_domain(
     interaction_name, receiver, supplier, interaction, ᔑdt_rungs, dependent, affected,
-    only_supply, deterministic, pairing_level, table, interaction_extra_args,
+    only_supply, deterministic, pairing_level, interaction_extra_args,
 ):
     """This function takes care of pairings between the domains
     containing particles/fluid elements of the passed receiver and
@@ -581,7 +565,6 @@ def domain_domain(
                     tile_indices_receiver,
                     tile_indices_supplier_paired,
                     tile_indices_supplier_paired_N,
-                    table,
                     interaction_extra_args,
                 )
         # Send the populated buffers (e.g. Δmom for gravity) back to the
@@ -1353,17 +1336,19 @@ def get_neighbourtile_pair_index(tiles_offset_ptr):
 def particle_particle(
     receiver, supplier, pairing_level,
     tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-    rank_supplier, interaction_name, only_supply, factors_ptr,
+    rank_supplier, interaction_name, only_supply, factors, forcerange=-1,
 ):
     # Cython declarations for variables used for the iteration,
     # not including those to yield.
     # Do not write these using the decorator syntax above this function.
     cython.declare(
+        # Keyword arguments
+        forcerange='double',
+        # Locals
         N_subtiles='Py_ssize_t',
         all_subtile_pairings='Py_ssize_t***',
         all_subtile_pairings_N='Py_ssize_t**',
         dim='int',
-        forcerange='double',
         highest_populated_rung_r='signed char',
         highest_populated_rung_s='signed char',
         local_interaction_flag_0='bint',
@@ -1511,7 +1496,8 @@ def particle_particle(
     # Get subtile pairings between each
     # of the 27 possible tile pairings.
     only_supply_communication = (only_supply if receiver.name == supplier.name else True)
-    forcerange = get_shortrange_param((receiver, supplier), interaction_name, 'range')
+    if forcerange == -1:
+        forcerange = get_shortrange_param((receiver, supplier), interaction_name, 'range')
     subtile_pairings_index = get_subtile_pairings(
         subtiling_r, forcerange, only_supply_communication,
     )
@@ -1732,7 +1718,7 @@ def particle_particle(
                                             else:
                                                 rung_index_i = rung_index_r
                                         # Fetch the corresponding factor
-                                        factor_i = factors_ptr[rung_index_i]
+                                        factor_i = factors[rung_index_i]
                                 # Get coordinates of receiver particle
                                 xi = posx_r[i]
                                 yi = posy_r[i]
@@ -1842,7 +1828,7 @@ def get_softened_r3inv(r2, ϵ):
         # support it softens the force at all scales.
         #      W(r) = 3/(4πϵ³) [1 + (r/ϵ)²]⁻⁵ᐟ²
         #   ⟹  F⃗(r⃗) ∝ r⃗ (r² + ϵ²)⁻³ᐟ².
-        r2_softened = r**2 + ϵ**2
+        r2_softened = r2 + ϵ**2
         return 1/(r2_softened*sqrt(r2_softened))
     elif 𝔹[softening_kernel == 'spline']:
         # This is the cubic spline kernel of

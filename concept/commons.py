@@ -2402,12 +2402,14 @@ shortrange_params_defaults = {
         'range'    : ထ,
         'tilesize' : ထ,
         'subtiling': (1, 1, 1),
+        'tablesize': -1,
     },
     'gravity': {
         'scale'    : '1.25*boxsize/gridsize',
         'range'    : '4.5*scale',
         'tilesize' : 'range',
         'subtiling': 'automatic',
+        'tablesize': 2**14,
     },
 }
 for force, d in shortrange_params_defaults.items():
@@ -2491,6 +2493,8 @@ for force, d in shortrange_params.items():
             if isinstance(subtiling[0], str) and subtiling[0].lower().startswith('auto'):
                 subtiling = ('automatic', int(subtiling[1]))
         d['subtiling'] = subtiling
+    tablesize = int(round(d.get('tablesize', -1)))
+    d['tablesize'] = tablesize
 user_params['shortrange_params'] = shortrange_params
 powerspec_options_defaults = {
     'upstream gridsize': {
@@ -4491,7 +4495,7 @@ if autosave_interval < 0:
 # Check keys and values in shortrange_params
 for d in shortrange_params.values():
     for key, val in d.items():
-        if key not in {'scale', 'range', 'tilesize', 'subtiling'}:
+        if key not in {'scale', 'range', 'tilesize', 'subtiling', 'tablesize'}:
             masterwarn(f'Unrecognized parameter "{key}" in shortrange_params')
         if key == 'subtiling':
             if isinstance(val, str) and val != 'automatic':

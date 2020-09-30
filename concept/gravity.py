@@ -35,6 +35,37 @@ cimport(
 
 
 
+# Function for computing the gravitational factor
+# G*mass_r*mass_s*Δt/a for all time step integrals.
+@cython.header(
+    # Arguments
+    receiver='Component',
+    supplier='Component',
+    ᔑdt_rungs=dict,
+    # Locals
+    rung_index='signed char',
+    ᔑdt_arr='double[::1]',
+    ᔑdt_ptr='double*',
+    returns='const double*',
+)
+def compute_factors(receiver, supplier, ᔑdt_rungs):
+    # This function computes the factors used for momentum updates
+    # due to gravitational interaction:
+    #   Δmom = -r⃗/r³*(G*mass_r*mass_s*Δt/a).
+    # In the general case of decaying particles,
+    # the mass of each particle is
+    #   mass(a) = component.mass*a**(-3*component.w_eff(a=a)).
+    # For each rung we integrate over the time step through lookup
+    # in the supplied ᔑdt_rungs dict.
+    ᔑdt_arr = ᔑdt_rungs['a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name]
+    ᔑdt_ptr = cython.address(ᔑdt_arr[:])
+    for rung_index in range(ᔑdt_arr.shape[0]):
+        factors[rung_index] = ℝ[G_Newton*receiver.mass*supplier.mass]*ᔑdt_ptr[rung_index]
+    return factors
+# Global array used by the compute_factors() function
+cython.declare(factors='double*')
+factors = malloc(3*N_rungs*sizeof('double'))
+
 # Function implementing pairwise gravity (full/periodic)
 @cython.nounswitching
 @cython.header(
@@ -49,15 +80,13 @@ cimport(
     tile_indices_receiver='Py_ssize_t[::1]',
     tile_indices_supplier_paired='Py_ssize_t**',
     tile_indices_supplier_paired_N='Py_ssize_t*',
-    table='const double*',
     extra_args=dict,
     # Locals
     apply_to_i='bint',
     apply_to_j='bint',
     factor_i='double',
     factor_j='double',
-    factors='const double[::1]',
-    factors_ptr='const double*',
+    factors='const double*',
     force_ij='double*',
     forcex_ij='double',
     forcey_ij='double',
@@ -94,7 +123,7 @@ cimport(
 )
 def gravity_pairwise(
     interaction_name, receiver, supplier, ᔑdt_rungs, rank_supplier, only_supply, pairing_level,
-    tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N, table,
+    tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
     extra_args,
 ):
     # Extract momentum update buffers
@@ -112,24 +141,17 @@ def gravity_pairwise(
         receiver.softening_length,
         supplier.softening_length,
     )
-    # Construct array of factors used for momentum updates:
-    #   Δmom = -r⃗/r³*G*mass_r*mass_s*Δt/a.
-    # In the general case of decaying particles,
-    # the mass of each particle is
-    #   mass(a) = component.mass*a**(-3*component.w_eff(a=a)).
-    # Below we integrate over the time dependence.
-    # The array should be indexed with the rung_index
+    # Get array of factors used for momentum updates;
+    #   Δmom = -r⃗/r³*(G*mass_r*mass_s*Δt/a).
+    # This array is indexed by the jumped rung index
     # of the receiver/supplier particle.
-    factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
-        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name,
-    ]
-    factors_ptr = cython.address(factors[:])
+    factors = compute_factors(receiver, supplier, ᔑdt_rungs)
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
     for i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_jumping_s, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-        rank_supplier, interaction_name, only_supply, factors_ptr,
+        rank_supplier, interaction_name, only_supply, factors,
     ):
         # Translate coordinates so that they
         # correspond to the nearest image.
@@ -180,7 +202,7 @@ def gravity_pairwise(
                                     Δmomy_s[j] -= Δmomy
                                     Δmomz_s[j] -= Δmomz
                                     continue
-                        factor_j = factors_ptr[rung_index_j]
+                        factor_j = factors[rung_index_j]
                         Δmomx_s[j] -= factor_j*forcex_ij
                         Δmomy_s[j] -= factor_j*forcey_ij
                         Δmomz_s[j] -= factor_j*forcez_ij
@@ -203,15 +225,13 @@ def gravity_pairwise(
     tile_indices_receiver='Py_ssize_t[::1]',
     tile_indices_supplier_paired='Py_ssize_t**',
     tile_indices_supplier_paired_N='Py_ssize_t*',
-    table='const double*',
     extra_args=dict,
     # Locals
     apply_to_i='bint',
     apply_to_j='bint',
     factor_i='double',
     factor_j='double',
-    factors='const double[::1]',
-    factors_ptr='const double*',
+    factors='const double*',
     forcex_ij='double',
     forcey_ij='double',
     forcez_ij='double',
@@ -231,8 +251,10 @@ def gravity_pairwise(
     rung_indices_jumped_s='signed char*',
     shortrange_factor='double',
     shortrange_index='Py_ssize_t',
+    softening='double',
     subtile_contain_jumping_s='bint',
     subtiling_r='Tiling',
+    table='const double*',
     total_factor='double',
     x_ji='double',
     y_ji='double',
@@ -250,7 +272,7 @@ def gravity_pairwise(
 )
 def gravity_pairwise_shortrange(
     interaction_name, receiver, supplier, ᔑdt_rungs, rank_supplier, only_supply, pairing_level,
-    tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N, table,
+    tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
     extra_args,
 ):
     # Extract momentum update buffers
@@ -263,20 +285,19 @@ def gravity_pairwise_shortrange(
     # Extract jumped rung indices of the supplier
     # (the receiver is handled by particles_particles() below).
     rung_indices_jumped_s = supplier.rung_indices_jumped
-    # Construct array of factors used for momentum updates:
-    #   Δmom = -r⃗/r³*G*mass_r*mass_s*Δt/a.
-    # In the general case of decaying particles,
-    # the mass of each particle is
-    #   mass(a) = component.mass*a**(-3*component.w_eff(a=a)).
-    # Below we integrate over the time dependence.
-    # The array should be indexed with the rung_index
+    # Get table of softened gravitational short-range forces
+    softening = combine_softening_lengths(
+        receiver.softening_length,
+        supplier.softening_length,
+    )
+    table = get_shortrange_table(softening)
+    # Get array of factors used for momentum updates;
+    #   Δmom = -r⃗/r³*(G*mass_r*mass_s*Δt/a).
+    # This array is indexed by the jumped rung index
     # of the receiver/supplier particle.
-    factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
-        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name,
-    ]
-    factors_ptr = cython.address(factors[:])
+    factors = compute_factors(receiver, supplier, ᔑdt_rungs)
     # Maximum r² beyond which the interaction is ignored
-    r2_max = shortrange_range2
+    r2_max = ℝ[shortrange_range**2]
     # Factor used to scale r² to produce an index into the table
     r2_index_scaling = ℝ[(shortrange_table_size - 1)/shortrange_table_maxr2]
     # Loop over all (receiver, supplier) particle pairs (i, j)
@@ -284,7 +305,7 @@ def gravity_pairwise_shortrange(
     for i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_jumping_s, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-        rank_supplier, interaction_name, only_supply, factors_ptr,
+        rank_supplier, interaction_name, only_supply, factors, forcerange=shortrange_range,
     ):
         # Translate coordinates so that they
         # correspond to the nearest image.
@@ -299,7 +320,7 @@ def gravity_pairwise_shortrange(
             continue
         # Compute the short-range force. Here the "force" is in units
         # of inverse length squared, given by
-        # force = -r⃗/r³ (x/sqrt(π) exp(-x²/4) + erfc(x/2)),
+        #   force = -r⃗/r³ (x/sqrt(π) exp(-x²/4) + erfc(x/2)),
         # where x = r/scale with scale the long/short-range
         # force split scale.
         # We have this whole expression except for r⃗ already tabulated.
@@ -333,7 +354,7 @@ def gravity_pairwise_shortrange(
                                     Δmomy_s[j] -= Δmomy
                                     Δmomz_s[j] -= Δmomz
                                     continue
-                        factor_j = factors_ptr[rung_index_j]
+                        factor_j = factors[rung_index_j]
                         total_factor = factor_j*shortrange_factor
                         Δmomx_s[j] -= x_ji*total_factor
                         Δmomy_s[j] -= y_ji*total_factor
@@ -355,30 +376,27 @@ def gravity_pairwise_shortrange(
     r3_inv_softened='double',
     r_tabulation='double[::1]',
     table='double[::1]',
-    table_const='const double[::1]',
-    table_const_ptr='const double*',
+    table_ptr='double*',
     x='double',
     returns='const double*',
 )
-def get_shortrange_gravity_table(softening):
-    """This function tabulates the short-range factor
-    -r⁻³(x/sqrt(π)exp(-x²/4) + erfc(x/2)),
-    with the front factor r⁻³ softened according to the passed
-    softening length.
-    The tabulation is quadratic in r, which is the distance
-    between two particles, while x = r/scale with scale the
-    long/short-range force split scale.
-    We only need the tabulation for 0 <= r <= range, where range
-    is the maximum reach of the short-range force.
-    All tables are cached.
-    """
+def get_shortrange_table(softening):
+    # This function tabulates the short-range factor
+    #   -r⁻³(x/sqrt(π)exp(-x²/4) + erfc(x/2)),
+    # with the front factor r⁻³ softened according to the passed
+    # softening length.
+    # The tabulation is quadratic in r, which is the distance
+    # between two particles, while x = r/scale with scale the
+    # long/short-range force split scale.
+    # We only need the tabulation for 0 <= r <= range, where range
+    # is the maximum reach of the short-range force.
+    # All tables are cached.
     # Look up table in the cache
     table = shortrange_tables.get(softening)
     if table is not None:
-        # Table found. Return constant pointer.
-        table_const = table
-        table_const_ptr = cython.address(table_const[:])
-        return table_const_ptr
+        # Table found
+        table_ptr = cython.address(table[:])
+        return table_ptr
     # The distances at which the tabulation will be carried out,
     # quadratically spaced.
     r_tabulation = np.sqrt(
@@ -394,31 +412,33 @@ def get_shortrange_gravity_table(softening):
     table = empty(shortrange_table_size, dtype=C2np['double'])
     for i in range(shortrange_table_size - 1):
         r2 = 0.5*(r_tabulation[i]**2 + r_tabulation[i+1]**2)
-        x = sqrt(r2)*ℝ[1/shortrange_params['gravity']['scale']]
+        x = sqrt(r2)*ℝ[1/shortrange_scale]
         r3_inv_softened = get_softened_r3inv(r2, softening)
         table[i] = -r3_inv_softened*(
             ℝ[1/sqrt(π)]*x*exp(-ℝ[0.5*x]**2) + erfc(ℝ[0.5*x])
         )
     # The last element in table is not populated above.
     # This element is guaranteed to never be accessed as it would
-    # require an r > sqrt(shortrange_range2) due to the
-    # way shortrange_table_maxr2 is constructed. To demonstrate our
+    # require an r > shortrange_range due to the way
+    # shortrange_table_maxr2 is constructed. To demonstrate our
     # trust in this, we here assign it NaN.
     table[shortrange_table_size - 1] = NaN
     # Store in cache and return pointer by calling this function anew
     shortrange_tables[softening] = table
-    return get_shortrange_gravity_table(softening)
-# Global variables used by the get_shortrange_gravity_table()
+    return get_shortrange_table(softening)
+# Global variables used by the get_shortrange_table()
 # and gravity_pairwise_shortrange() functions.
 cython.declare(
+    shortrange_scale='double',
+    shortrange_range='double',
     shortrange_table_size='Py_ssize_t',
-    shortrange_range2='double',
     shortrange_table_maxr2='double',
     shortrange_tables=dict,
 )
-shortrange_table_size = 2**14  # Lower value improves caching, but leads to inaccurate lookups
-shortrange_range2 = shortrange_params['gravity']['range']**2
-shortrange_table_maxr2 = (1 + 1/shortrange_table_size)*shortrange_range2
+shortrange_scale      = shortrange_params['gravity']['scale'    ]
+shortrange_range      = shortrange_params['gravity']['range'    ]
+shortrange_table_size = shortrange_params['gravity']['tablesize']
+shortrange_table_maxr2 = (1 + 1/shortrange_table_size)*shortrange_range**2
 shortrange_tables = {}
 
 # Function implementing pairwise gravity (non-periodic)
@@ -435,15 +455,13 @@ shortrange_tables = {}
     tile_indices_receiver='Py_ssize_t[::1]',
     tile_indices_supplier_paired='Py_ssize_t**',
     tile_indices_supplier_paired_N='Py_ssize_t*',
-    table='const double*',
     extra_args=dict,
     # Locals
     apply_to_i='bint',
     apply_to_j='bint',
     factor_i='double',
     factor_j='double',
-    factors='const double[::1]',
-    factors_ptr='const double*',
+    factors='const double*',
     forcex_ij='double',
     forcey_ij='double',
     forcez_ij='double',
@@ -479,7 +497,7 @@ shortrange_tables = {}
 )
 def gravity_pairwise_nonperiodic(
     interaction_name, receiver, supplier, ᔑdt_rungs, rank_supplier, only_supply, pairing_level,
-    tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N, table,
+    tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
     extra_args,
 ):
     # Extract momentum update buffers
@@ -497,24 +515,17 @@ def gravity_pairwise_nonperiodic(
         receiver.softening_length,
         supplier.softening_length,
     )
-    # Construct array of factors used for momentum updates:
-    #   Δmom = -r⃗/r³*G*mass_r*mass_s*Δt/a.
-    # In the general case of decaying particles,
-    # the mass of each particle is
-    #   mass(a) = component.mass*a**(-3*component.w_eff(a=a)).
-    # Below we integrate over the time dependence.
-    # The array should be indexed with the rung_index
+    # Get array of factors used for momentum updates;
+    #   Δmom = -r⃗/r³*(G*mass_r*mass_s*Δt/a).
+    # This array is indexed by the jumped rung index
     # of the receiver/supplier particle.
-    factors = G_Newton*receiver.mass*supplier.mass*ᔑdt_rungs[
-        'a**(-3*w_eff₀-3*w_eff₁-1)', receiver.name, supplier.name,
-    ]
-    factors_ptr = cython.address(factors[:])
+    factors = compute_factors(receiver, supplier, ᔑdt_rungs)
     # Loop over all (receiver, supplier) particle pairs (i, j)
     j = -1
     for i, j, rung_index_i, rung_index_s, x_ji, y_ji, z_ji, periodic_offset_x, periodic_offset_y, periodic_offset_z, apply_to_i, apply_to_j, factor_i, subtile_contain_jumping_s, particle_particle_t_begin, subtiling_r in particle_particle(
         receiver, supplier, pairing_level,
         tile_indices_receiver, tile_indices_supplier_paired, tile_indices_supplier_paired_N,
-        rank_supplier, interaction_name, only_supply, factors_ptr,
+        rank_supplier, interaction_name, only_supply, factors,
     ):
         # The direct, softened force on particle i from particle j
         r2 = x_ji**2 + y_ji**2 + z_ji**2
@@ -548,7 +559,7 @@ def gravity_pairwise_nonperiodic(
                                     Δmomy_s[j] -= Δmomy
                                     Δmomz_s[j] -= Δmomz
                                     continue
-                        factor_j = factors_ptr[rung_index_j]
+                        factor_j = factors[rung_index_j]
                         Δmomx_s[j] -= factor_j*forcex_ij
                         Δmomy_s[j] -= factor_j*forcey_ij
                         Δmomz_s[j] -= factor_j*forcez_ij
