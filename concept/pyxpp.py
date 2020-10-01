@@ -1398,7 +1398,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                     'sqrt', 'cbrt',
                     'erf', 'erfc',
                     'floor', 'ceil', 'round',
-                    'mod', 'fmod',
+                    'abs', 'mod',
                 }
                 variables = list(set(variables) - nonvariables)
                 linenr_where_defined = [-1]*len(variables)

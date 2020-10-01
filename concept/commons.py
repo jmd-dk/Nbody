@@ -839,7 +839,7 @@ if not cython.compiled:
             # Extension type (Python class in pure Python)
             return a
     # Dummy fused types
-    number = number2 = integer = floating = signed_number = signed_number2 = number_mv = []
+    fused_numeric = fused_numeric2 = fused_integral = fused_floating = []
     # Mathematical functions
     from numpy import (
         sin, cos, tan,
@@ -847,10 +847,9 @@ if not cython.compiled:
         sinh, cosh, tanh,
         arcsinh, arccosh, arctanh,
         exp, log, log2, log10,
-        sqrt,
+        sqrt, cbrt,
         floor, ceil, round,
     )
-    cbrt = lambda x: x**(1/3)
     from math import erf, erfc
     # The closest thing to a Null pointer in pure Python
     # is the None object.
@@ -997,38 +996,32 @@ pxd("""
 from cython_gsl cimport *
 # Functions for manual memory management
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
-# Create a fused number type containing all necessary numerical types
-ctypedef fused number:
-    cython.int
-    cython.size_t
-    cython.Py_ssize_t
-    cython.float
-    cython.double
-# Create another fused number type, so that function arguments can have
-# different specializations.
-ctypedef fused number2:
-    cython.int
-    cython.size_t
-    cython.Py_ssize_t
-    cython.float
-    cython.double
-# Create integer and floating fused types
-ctypedef fused integer:
-    cython.int
-    cython.size_t
-    cython.Py_ssize_t
-ctypedef fused floating:
-    cython.float
-    cython.double
-# Create two identical signed number fused types
-ctypedef fused signed_number:
-    cython.int
-    cython.float
-    cython.double
-ctypedef fused signed_number2:
-    cython.int
-    cython.float
-    cython.double
+# Create a fused integral type consisting of all the (signed) integral
+# types used by the code.
+ctypedef fused fused_integral:
+    signed char
+    int
+    Py_ssize_t
+# Create a fused floating type consisting of all the floating
+# types used by the code.
+ctypedef fused fused_floating:
+    float
+    double
+# Create a fused numeric type consisting of the union of integral
+# and floating types above. In fact we make two, useful for separate
+# specializations of separate function arguments.
+ctypedef fused fused_numeric:
+    signed char
+    int
+    Py_ssize_t
+    float
+    double
+ctypedef fused fused_numeric2:
+    signed char
+    int
+    Py_ssize_t
+    float
+    double
 # Mathematical functions
 from libc.math cimport (
     sin, cos, tan,
@@ -1044,8 +1037,9 @@ from libc.math cimport (
     sqrt, cbrt,
     erf, erfc,
     floor, ceil, round,
-    fmod, fabs,
 )
+from libc.math   cimport  fabs
+from libc.stdlib cimport llabs
 """)
 # Custom extension types using @cython.cclass will be found by the
 # pyxpp preprocessor. A comment containing such types will be placed in
@@ -3555,13 +3549,15 @@ if not cython.compiled:
     # Use NumPy's abs function in pure Python
     abs = np.abs
 else:
-    @cython.header(x=signed_number,
-                   returns=signed_number,
-                   )
+    @cython.header(
+        x=fused_numeric,
+        returns=fused_numeric,
+    )
     def abs(x):
-        if x < 0:
-            return -x
-        return x
+        if fused_numeric in fused_floating:
+            return fabs(x)
+        else:
+            return llabs(x)
 
 # Max function for 1D memory views of numbers
 if not cython.compiled:
@@ -3569,11 +3565,11 @@ if not cython.compiled:
     max = np.max
 else:
     """
-    @cython.header(returns=number)
-    def max(number[::1] a):
+    @cython.header(returns=fused_numeric)
+    def max(fused_numeric[::1] a):
         cdef:
             Py_ssize_t i
-            number m
+            fused_numeric m
         m = a[0]
         for i in range(1, a.shape[0]):
             if a[i] > m:
@@ -3587,11 +3583,11 @@ if not cython.compiled:
     min = np.min
 else:
     """
-    @cython.header(returns=number)
-    def min(number[::1] a):
+    @cython.header(returns=fused_numeric)
+    def min(fused_numeric[::1] a):
         cdef:
             Py_ssize_t i
-            number m
+            fused_numeric m
         m = a[0]
         for i in range(1, a.shape[0]):
             if a[i] < m:
@@ -3600,59 +3596,51 @@ else:
     """
 
 # Max function for pairs of numbers
-@cython.header(a=number, b=number, returns=number)
+@cython.header(a=fused_numeric, b=fused_numeric, returns=fused_numeric)
 def pairmax(a, b):
     if a > b:
         return a
     return b
 
 # Min function for pairs of numbers
-@cython.header(a=number, b=number, returns=number)
+@cython.header(a=fused_numeric, b=fused_numeric, returns=fused_numeric)
 def pairmin(a, b):
     if a < b:
         return a
     return b
 
-# Modulo function for numbers
+# Proper modulo function mod(x, length) for scalars,
+# with x ∈ [0, length) for length > 0.
+# Note that this is different from both x%length
+# and fmod(x, lengt) in C.
 if not cython.compiled:
     def mod(x, length):
-        result = np.mod(x, length)
-        if result == length:
+        x = np.mod(x, length)
+        # Ensure x ∈ [0, length)
+        if x == length:
             return 0
-        return result
+        return x
 else:
     @cython.header(
         # Arguments
-        x=signed_number,
-        length=signed_number,
+        x=fused_numeric,
+        length=fused_numeric2,
         # Locals
-        remainder_i='Py_ssize_t',
-        returns=signed_number,
+        returns=fused_numeric,
     )
     def mod(x, length):
-        """This function computes the proper modulos, which (given a
-        positive length) is always positive. Note that this is different
-        from x%length in C, which results in the signed remainder.
-        Note that mod(floating, integer) is not supported.
-        """
-        if signed_number in floating:
-            remainder_f = fmod(x, length)
-            if remainder_f == 0:
-                return 0
-            elif x < 0:
-                result = remainder_f + length
-            else:
-                result = remainder_f
-            if result == length:
-                return 0
-            return result
+        if fused_numeric in fused_integral and fused_numeric2 in fused_floating:
+            # Not supported
+            return -1
         else:
-            remainder_i = x%length
-            if remainder_i == 0:
-                return 0
-            elif x < 0:
-                return remainder_i + length
-            return remainder_i
+            while x >= length:
+                x -= length
+            while x < 0:
+                x += length
+            if fused_numeric in fused_floating:
+                if x == length:
+                    return 0
+            return x
 
 # Summation function for 1D memory views of numbers
 if not cython.compiled:
@@ -3660,10 +3648,10 @@ if not cython.compiled:
     sum = np.sum
 else:
     """
-    @cython.header(returns=number)
-    def sum(number[::1] a):
+    @cython.header(returns=fused_numeric)
+    def sum(fused_numeric[::1] a):
         cdef:
-            number Σ
+            fused_numeric Σ
             Py_ssize_t N
             Py_ssize_t i
         N = a.shape[0]
@@ -3681,10 +3669,10 @@ if not cython.compiled:
     prod = np.prod
 else:
     """
-    @cython.header(returns=number)
-    def prod(number[::1] a):
+    @cython.header(returns=fused_numeric)
+    def prod(fused_numeric[::1] a):
         cdef:
-            number Π
+            fused_numeric Π
             Py_ssize_t N
             Py_ssize_t i
         N = a.shape[0]
@@ -3702,16 +3690,16 @@ if not cython.compiled:
     mean = np.mean
 else:
     """
-    @cython.header(returns=number)
-    def mean(number[::1] a):
+    @cython.header(returns=fused_numeric)
+    def mean(fused_numeric[::1] a):
         return sum(a)/a.shape[0]
     """
 
 # Function that compares two numbers (identical to math.isclose)
 @cython.pheader(
     # Arguments
-    a=number,
-    b=number,
+    a=fused_numeric,
+    b=fused_numeric,
     rel_tol='double',
     abs_tol='double',
     # Locals
@@ -3740,11 +3728,12 @@ def isclose(a, b, rel_tol=1e-9, abs_tol=0):
 
 # Function that checks if a (floating point) number
 # is actually an integer.
-@cython.header(x='double',
-               rel_tol='double',
-               abs_tol='double',
-               returns='bint',
-               )
+@cython.header(
+    x='double',
+    rel_tol='double',
+    abs_tol='double',
+    returns='bint',
+)
 def isint(x, abs_tol=1e-6):
     return isclose(x, round(x), 0, abs_tol)
 
