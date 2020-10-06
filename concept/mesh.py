@@ -2340,113 +2340,592 @@ def free_fftw_slab(gridsize, buffer_name):
 
 # Function for checking that the slabs satisfy the required symmetry
 # of a Fourier transformed real field.
-@cython.pheader(# Arguments
-                slab='double[:, :, ::1]',
-                rel_tol='double',
-                abs_tol='double',
-                # Locals
-                bad_pairs=set,
-                global_slab='double[:, :, ::1]',
-                gridsize='Py_ssize_t',
-                i='Py_ssize_t',
-                i_conj='Py_ssize_t',
-                im1='double',
-                im2='double',
-                j='Py_ssize_t',
-                j_conj='Py_ssize_t',
-                j1='Py_ssize_t',
-                j2='Py_ssize_t',
-                k='Py_ssize_t',
-                plane='int',
-                re1='double',
-                re2='double',
-                slab_jik='double*',
-                slab_jik_conj='double*',
-                slave='int',
-                t1=tuple,
-                t2=tuple,
-                )
-def slabs_check_symmetry(slab, rel_tol=1e-9, abs_tol=machine_ϵ):
-    """This function will go through the slabs and check whether they
-    satisfy the symmetry condition of the Fourier transform of a
-    real-valued field, namely
-    field(kx, ky, kz) = field(-kx, -ky, -kz)*,
-    where * is complex conjugation.
-    A warning will be printed for each pair of grid points
-    that does not satisfy this symmetry.
-    The check is carried out in a rather ineffective manner,
-    so you should not call this function during a real simulation.
+def slabs_check_symmetry(
+    slab, nullified_nyquist=False,
+    gridsize=-1, allow_zeros=False, pure_embedding=True, count_information=True,
+    rel_tol=1e-12, abs_tol=machine_ϵ,
+):
+    """This function checks and reports on the symmetries that a Fourier
+    transformed 3D grid (passed as FFTW slabs) of real data should obey.
+    Two distinct symmetries exist:
+    - Bulk inversion through the origin, i.e. grid point
+      [ki, kj, kk] should be the complex conjugate of [-ki, -kj, -kk].
+    - Plane inversion through the center of each Nyquist plane,
+      e.g. the grid point [-nyquist, kj, kk] should be the complex
+      conjugate of [-nyquist, -kj, -kk].
+    In the above, {ki, kj, kk} are the components of the physical k
+    vector (in grid units in the code below), not indices i, j, k.
+    Also, nyquist = gridsize//2.
+    A standard 3D grid is tabulated at
+      ki ∈ [-nyquist, -nyquist + 1, ..., nyquist - 1],
+      kj ∈ [-nyquist, -nyquist + 1, ..., nyquist - 1],
+      kk ∈ [0, 1, ..., nyquist],
+    i.e. the z direction is cut roughly in half and the positive x and
+    y Nyquist planes are not part of the tabulation. The surviving
+    Nyquist planes are then the negative x and y and the positive z.
+
+    From the bulk and Nyqist plane inversion symmetries it follows that
+    (see the docstring of get_purely_reals() below) the grid point at
+    the origin, grid points at centers of Nyquist planes, at centers of
+    Nyquist edges and at corners must all be real. This is also checked.
+
+    An example of a Nyquist edge could be [-nyquist, kj, nyquist]. Such
+    edges are subject to three of the four symmetries. Applying all
+    three, we have
+        grid[-nyquist, +kj, +nyquist]
+      → grid[+nyquist, -kj, -nyquist]*  (bulk inversion)
+      → grid[+nyquist, +kj, +nyquist]   (x Nyquist plane inversion)
+      → grid[-nyquist, -kj, +nyquist]*  (z Nyquist plane inversion)
+    i.e. we effectively have a new symmetry; edge inversion, again under
+    complex conjugation. Though this follows logically from the basic
+    bulk and plane inversion symmetries, it is possible to satisfy these
+    individually but not combined. Thus, a separate check for this edge
+    symmetry is carried out. Note that all relevant edges lie in the
+    positive z Nyquist plane, and that only two (one at ki = -nyquist
+    and one at kj = -nyquist) are within the tabulated region.
+
+    If a gridsize is further supplied to this function, it signals that
+    the passed grid contains within it a smaller, embedded grid of the
+    given size. This brings the positive x and y Nyquist planes within
+    the tabulated region as well, and so the symmetry conditions will
+    also be checked here. Note that the symmetry of plane inversion for
+    the positive x and y Nyquist planes are not distinct symmetries, but
+    follows from bulk inversion and the negative Nyquist plane
+    symmetries. Thus, even in the case of an embedded grid, checking the
+    bulk symmetry (now including ki, kj = +nyquist) and the three
+    original Nyquist plane symmetries suffice. Similarly, combining the
+    bulk symmetry with one of the Nyquist plane symmetries, a "new"
+    symmetry is produced, akin to the aforementioned edge symmetries:
+        grid[-nyquist, +kj, +kk]
+      → grid[+nyquist, -kj, -kk]*  (bulk inversion)
+      → grid[+nyquist, +kj, +kk]   (x Nyquist plane inversion)
+    i.e. pairs of parallel Nyquist planes are identical copies of one
+    another, without doing plane inversion or conjugation. Again, since
+    this symmetry is implied by the basic bulk and three Nyquist plane
+    symmetries (and automatically enforced once each of these are
+    satisfied — unlike the edge symmetry), this will not be checked
+    explicitly. Finally, note that the edge symmetries at kk = +nyquist
+    and ki = +nyquist or kj = +nyquist are also guaranteed to be
+    satistied if the bulk symmetry and the corresponding ki = -nyquist
+    and kj = -nyquist symmetries are satisfied, and so these two extra
+    edge symmetries will also not be explicitly checked.
+
+    For further explanation of symmetries and data layout,
+    see the comments and especially docstrings below.
+
+    An easy way to falsely satisfy the symmetry conditions is by having
+    grid cells being equal to zero. When allow_zeros is False, any zeros
+    found within the embedded grid will be interpreted as failures.
+
+    If an embedded grid is passed and pure_embedding is True,
+    it is further checked that all modes outside of the small grid
+    are exactly zero.
+
+    Too much symmetry — as in wrongly copied data points — is also bad.
+    When count_information is True, all (real and imaginary) numbers in
+    the grid are compared against one another in order to find the total
+    information content of the grid. This is then compared to what it
+    should be for a Fourier transformed grid which had no symmetries at
+    all in real space, i.e. each Fourier mode is independent. If the
+    input grid is the Fourier transform of some tabulated analytical
+    function, you should probably set count_information to zero.
+
+    If nullified_nyquist is True, it signals that the grid is supposed
+    to have nullified Nyquist planes. This will be taken into account
+    when searching for (non-)zeros and when counting the information
+    content. Also, a check that the Nyquist planes really are nullified
+    will be added.
+
+    Note that this function is not written with performance in mind
+    and should not be called during actual simualtion, and never with
+    large grids.
     """
-    masterprint('Checking the symmetry of the slabs ...')
-    # Gather all slabs into global_slab on the master process
-    gridsize = slab.shape[1]
-    if nprocs == 1:
-        global_slab = slab
+    # Get grid size
+    gridsize_large = slab.shape[1]
+    if gridsize == -1:
+        gridsize = gridsize_large
+        pure_embedding = False
+    if gridsize%2:
+        abort(f'Cannot check symmetry of grid of odd grid size {gridsize}')
+    if gridsize_large%2:
+        abort(
+            f'Cannot check symmetry of grid embedded within a larger grid '
+            f'of odd grid size {gridsize_large}'
+        )
+    if gridsize_large < gridsize:
+        abort(
+            f'The passed gridsize ({gridsize}) should be less than the '
+            f'grid size of the grid ({gridsize_large})'
+        )
+    nyquist = gridsize//2
+    nyquist_large = gridsize_large//2
+    masterprint('Checking slab symmetries ...')
+    # Gather all slabs into global grid on the master process
+    if master:
+        grid = empty((gridsize, gridsize, slab.shape[2]), dtype=C2np['double'])
+        grid[:slab.shape[0], :, :] = slab[...]
+        for slave in range(1, nprocs):
+            j_bgn = slab.shape[0]*slave
+            j_end = j_bgn + slab.shape[0]
+            smart_mpi(grid[j_bgn:j_end, :, :], source=slave, mpifun='recv')
     else:
-        if master:
-            global_slab = empty((gridsize, gridsize, slab.shape[2]), dtype=C2np['double'])
-            global_slab[:slab.shape[0], :, :] = slab[...]
-            for slave in range(1, nprocs):
-                j1 = slab.shape[0]*slave
-                j2 = j1 + slab.shape[0]
-                smart_mpi(global_slab[j1:j2, :, :], source=slave, mpifun='recv')
+        smart_mpi(slab, dest=master_rank, mpifun='send')
+        return
+    # Create set of [ki, kj, kk] where grid points
+    # ought to be purely real.
+    def get_purely_reals(nyquist):
+        """Purely real grid points occur when an odd number of
+        applications of some of the basic symmetry inversions results in
+        the identity transformation (as each inversion comes with a
+        complex conjugation, having an odd number of these bringing a
+        grid point back to itself implies that it should equal its own
+        complex conjugate and hence be real).
+        As an example, consider bulk inversion followed by x Nyquist
+        plane inversion followed by y Nyquist plane inversion,
+        on the grid point [ki = ±nyquist, kj = ±nyquist, kk = m]:
+            grid[±nyquist, ±nyquist, +m]
+          → grid[∓nyquist, ∓nyquist, -m]*  (bulk inversion)
+          → grid[∓nyquist, ±nyquist, +m]   (x Nyquist plane inversion)
+          → grid[±nyquist, ±nyquist, -m]*  (y Nyquist plane inversion)
+        from which we see that [ki = ±nyquist, kj = ±nyquist, kk = m]
+        should be real for m = 0.
+        Similarly, [ki = ±nyquist, kj = ±nyquist, kk = ±nyquist] can be
+        found to be real by applying all three Nyquist plane inversions.
+        More trivially, applying just bulk inversions leaves [0, 0, 0]
+        invariant, and applying just e.g. the x Nyquist plane inversions
+        leaves [±nyquist, 0, 0] invariant. In total, all possible
+        triplets [ki, kj, kk] with ki, kj, kk ∈  {0, ±nyquist} should
+        be purely real. This corresponds to the center or the bulk
+        (the origin), the center of each of the 6 Nyquist faces,
+        the center of each of the 12 Nyquist edges
+        and the 8 Nyquist corners.
+        """
+        return set(itertools.product(*[(0, +nyquist, -nyquist)]*3))
+    purely_reals = get_purely_reals(nyquist)
+    # Generator for looping over the grid
+    def visit(nyquist=nyquist, sparse=False):
+        """When sparse is False, all points within |nyquist| will be
+        visited except kk < 0. This includes points with ki or kj equal
+        to +nyquist. When sparse is True, we only visit points that are
+        tabulated (i.e. we exclude ki and kj equal to +nyquist), and we
+        also only visits one grid point from each conjugate grid point
+        pair. To perform this sparse iteration, note that all conjugate
+        pairs with both members in the tabulated region are situated
+        either in the positive z Nyquist plane (kk == nyquist) or on the
+        z DC plane (kk == 0). Both of these planes are symmetric with
+        respect to inversion through their center (and complex
+        conjugation), with the DC plane inheriting this symmetry from
+        the bulk inversion symmetry. To only hit half of the points in
+        these planes, we skip points with ki > 0. Furthermore, when
+        ki == 0, we skip points with kj > 0, which reduces the remaining
+        four symmetric lines to half lines. To better understand these
+        four lines, consider:
+          z DC plane:
+            - grid[       0, kj, 0] == grid[       0, -kj, 0]* (bulk inversion)
+            - grid[-nyquist, kj, 0] == grid[-nyquist, -kj, 0]* (x Nyquist plane inversion)
+          z Nyquist plane:
+            - grid[       0, kj, nyquist] == grid[       0, -kj, nyquist]* (z Nyquist plane inversion)
+            - grid[-nyquist, kj, nyquist] == grid[-nyquist, -kj, nyquist]* (all three above inversions together)
+        As a bonus, this sparse sampling allows us to calculate the
+        number of independent grid points. Defining
+          n_bulk      = (gridsize//2 + 1)*gridsize*gridsize
+          n_halfplane = (gridsize//2 - 1)*gridsize
+          n_halfline   = (gridsize//2 - 1)
+        as the number of grid points in the bulk, in one of the half
+        planes that we skip, in one of the half lines that we skip,
+        respectively, the total number comes out to be
+          n_independent = n_bulk - 2*(n_halfplane + 2*n_halfline)
+                        = gridsize**3//2 + 4
+        """
+        if not sparse:
+            for         ki in range(-nyquist, nyquist + 1):
+                for     kj in range(-nyquist, nyquist + 1):
+                    for kk in range(       0, nyquist + 1):
+                        yield ki, kj, kk
         else:
-            smart_mpi(slab, dest=master_rank, mpifun='send')
-            return
-    # Loop through the lower (kk = 0)
-    # and upper (kk = slab_size_padding//2, where
-    # slab_size_padding = 2*(gridsize//2 + 1)) xy planes only.
-    for plane in range(2):
-        bad_pairs = set()
-        # Loop through the complete j-dimension
-        for j in range(gridsize):
-            j_conj = 0 if j == 0 else gridsize - j
-            # Loop through the complete i-dimension
-            for i in range(gridsize):
-                i_conj = 0 if i == 0 else gridsize - i
-                k = 0 if plane == 0 else slab.shape[2] - 2
-                # Pointer to the [j, i, k]'th element and to its
-                # conjugate.
-                # The complex numbers is then given as e.g.
-                # Re = slab_jik[0], Im = slab_jik[1].
-                slab_jik      = cython.address(global_slab[j     , i     , k:])
-                slab_jik_conj = cython.address(global_slab[j_conj, i_conj, k:])
-                # Extract the two complex numbers,
-                # which should be complex conjugates of each other
-                # as required by the symmetry.
-                re1 = slab_jik[0]
-                im1 = slab_jik[1]
-                re2 = slab_jik_conj[0]
-                im2 = slab_jik_conj[1]
-                # Check that the symmetry holds
-                if i == i_conj and j == j_conj:
-                    # Do not double count bad pairs
-                    t1 = (i, j)
-                    t2 = (i_conj, j_conj)
-                    if (t1, t2) in bad_pairs or (t2, t1) in bad_pairs:
-                        continue
-                    bad_pairs.add((t1, t2))
-                    bad_pairs.add((t2, t1))
-                    # At origin of xy-plane.
-                    # Here the value should be purely real.
-                    if not isclose(im1, 0, rel_tol, abs_tol):
-                        masterwarn(f'global_slab[{j}, {i}, {k}] = {complex(re1, im1)} ∉ ℝ',
-                                   prefix='')
-                elif (   not isclose(re1,  re2, rel_tol, abs_tol)
-                      or not isclose(im1, -im2, rel_tol, abs_tol)
-                      ):
-                    # Do not double count bad pairs
-                    t1 = (i, j)
-                    t2 = (i_conj, j_conj)
-                    if (t1, t2) in bad_pairs or (t2, t1) in bad_pairs:
-                        continue
-                    bad_pairs.add((t1, t2))
-                    bad_pairs.add((t2, t1))
-                    masterwarn(f'global_slab[{j}, {i}, {k}] = {complex(re1, im1)} \n'
-                               '≠\n'
-                               f'global_slab[{j_conj}, {i_conj}, {k}]* = {complex(re2, -im2)}',
-                               prefix='')
+            for         ki in range(-nyquist, nyquist    ):
+                for     kj in range(-nyquist, nyquist    ):
+                    for kk in range(       0, nyquist + 1):
+                        if kk == 0 or kk == nyquist:
+                            if ki > 0:
+                                continue
+                            if (ki == 0 or ki == -nyquist) and kj > 0:
+                                continue
+                        yield ki, kj, kk
+    # Function for checking that [ki, kj, kk] is within
+    # the tabulated region.
+    def is_within_tabulation(ki, kj, kk):
+        if not (-nyquist_large <= ki < nyquist_large):
+            return False
+        if not (-nyquist_large <= kj < nyquist_large):
+            return False
+        if not (0 <= kk <= nyquist_large):
+            return False
+        return True
+    # Function for looking up a complex grid point
+    def lookup(ki, kj, kk):
+        i = ki + gridsize_large*(ki < 0)
+        j = kj + gridsize_large*(kj < 0)
+        k = 2*kk
+        return complex(*grid[i, j, k:k+2])
+    # Function checking the reality condition
+    # which applies for certain grid points.
+    def check_reality(ki, kj, kk):
+        """A return value of True signals that
+        a non-zero imaginary part was found.
+        """
+        if not is_within_tabulation(ki, kj, kk):
+            return False
+        # Skip if this grid point is not one of those
+        # that should be purely real.
+        if (ki, kj, kk) not in purely_reals:
+            return False
+        # Check for non-zero imaginary part
+        c = lookup(ki, kj, kk)
+        if np.abs(c.imag) > abs_tol:
+            name = {
+                0: 'center of bulk (origin)',
+                1: 'center of face',
+                2: 'center of edge',
+                3: 'corner',
+            }[(np.abs(ki) == nyquist) + (np.abs(kj) == nyquist) + (np.abs(kk) == nyquist)]
+            fancyprint(
+                f'Should be real ({name}): [ki = {ki}, kj = {kj}, kk = {kk}] → {c}',
+                wrap=False,
+                file=sys.stderr,
+            )
+            return True
+        return False
+    # Function checking for existence of zeros inside embedded grid
+    def check_zero_within_embedding(ki, kj, kk):
+        """A return value of True signals that
+        a zero has been found.
+        """
+        if not is_within_tabulation(ki, kj, kk):
+            return False
+        if nullified_nyquist and (nyquist in np.abs((ki, kj, kk))):
+            return False
+        # Check for zero
+        c = lookup(ki, kj, kk)
+        found_zero = False
+        should_be_real = ((ki, kj, kk) in purely_reals)
+        if should_be_real:
+            if c.real == 0:
+                found_zero = True
+                fancyprint(
+                    f'Found zero (should be real): [ki = {ki}, kj = {kj}, kk = {kk}] → {c}',
+                    wrap=False,
+                    file=sys.stderr,
+                )
+        else:
+            if c.real == 0 or c.imag == 0:
+                found_zero = True
+                fancyprint(
+                    f'Found zero: [ki = {ki}, kj = {kj}, kk = {kk}] → {c}',
+                    wrap=False,
+                    file=sys.stderr,
+                )
+        return found_zero
+    # Function checking for existence of non-zeros outside embedded grid
+    def check_nonzero_beyond_embedding(ki, kj, kk):
+        """A return value of True signals that
+        a non-zero has been found.
+        """
+        if not is_within_tabulation(ki, kj, kk):
+            return False
+        # Skip if [ki, kj, kk] is within the embedding
+        if np.abs(ki) <= nyquist or np.abs(kj) <= nyquist or np.abs(kk) <= nyquist:
+            return False
+        # Check for non-zero (exact)
+        c = lookup(ki, kj, kk)
+        if c != 0:
+            fancyprint(
+                f'Found non-zero outside embedding: [ki = {ki}, kj = {kj}, kk = {kk}] → {c}',
+                wrap=False,
+                file=sys.stderr,
+            )
+            return True
+        return False
+    # Function checking for existence of non-zeros at Nyquist planes
+    def check_nonzero_at_nyquist(ki, kj, kk):
+        """A return value of True signals that
+        a non-zero has been found.
+        """
+        if not is_within_tabulation(ki, kj, kk):
+            return False
+        # Skip non-Nyquist points
+        if nyquist not in np.abs((ki, kj, kk)):
+            return False
+        # Check for non-zero (exact)
+        c = lookup(ki, kj, kk)
+        if c != 0:
+            fancyprint(
+                f'Found non-zero at Nyquist plane: [ki = {ki}, kj = {kj}, kk = {kk}] → {c}',
+                wrap=False,
+                file=sys.stderr,
+            )
+            return True
+        return False
+    # Function factory for generating inversion functions
+    # capable of checking conjugate symmetries.
+    def generate_check(accept, invert, name):
+        def check(ki, kj, kk, *, visited=set()):
+            """A return value of True signals broken symmetry"""
+            # Skip if [ki, kj, kk] not within region of interest
+            if not accept(ki, kj, kk):
+                return False
+            # Skip if [ki, kj, kk] not within tabulated region
+            if not is_within_tabulation(ki, kj, kk):
+                return False
+            # Skip if inverted [ki, kj, kk] not within tabulated region
+            ki_inv, kj_inv, kk_inv = invert(ki, kj, kk)
+            if not is_within_tabulation(ki_inv, kj_inv, kk_inv):
+                return False
+            # Skip if [ki, kj, kk] has already been visited.
+            # If not, add [ki, kj, kk] and its inversion
+            # as visited sites.
+            if (ki, kj, kk) in visited:
+                return False
+            visited.add((ki,     kj,     kk     ))
+            visited.add((ki_inv, kj_inv, kk_inv))
+            # If [ki, kj, kk] and its inversion are one and the same
+            # point, the conjugate symmetry implies that this point
+            # should be real. We could also just look up (ki, kj, kk)
+            # in the purely_reals set.
+            should_be_real = ((ki, kj, kk) == (ki_inv, kj_inv, kk_inv))
+            # Check symmetry
+            c     = lookup(ki,     kj,     kk    )
+            c_inv = lookup(ki_inv, kj_inv, kk_inv)
+            symmetry_broken = False
+            if not (
+                    np.isclose(c.real,  c_inv.real, rel_tol, abs_tol)
+                and np.isclose(c.imag, -c_inv.imag, rel_tol, abs_tol)
+            ):
+                symmetry_broken = True
+                if should_be_real:
+                    # This grid point has a non-zero imaginary part
+                    # while it ought to be purely real. Though this
+                    # is counted as an error, we do not print anything,
+                    # as a separate reality check will also
+                    # be carried out.
+                    pass
+                else:
+                    fancyprint(
+                        f'Should be conjugate pair ({name}): '
+                        f'[ki = {ki}, kj = {kj}, kk = {kk}] → {c} vs. '
+                        f'[ki = {ki_inv}, kj = {kj_inv}, kk = {kk_inv}] → {c_inv}',
+                        wrap=False,
+                        file=sys.stderr,
+                    )
+            return symmetry_broken
+        return check
+    checks = []
+    # Symmetry of inverting everything through the origin.
+    # Tack on checking of zeros.
+    checks.append(
+        generate_check(
+            lambda ki, kj, kk: True,
+            lambda ki, kj, kk: (-ki, -kj, -kk),
+            'inversion through origin',
+        )
+    )
+    # Symmetry of inverting the negative x Nyquist plane
+    # through its center.
+    checks.append(
+        generate_check(
+            lambda ki, kj, kk: (ki == -nyquist),
+            lambda ki, kj, kk: (+ki, -kj, -kk),
+            'inversion through center of ki = -nyquist plane',
+        )
+    )
+    # Symmetry of inverting the negative y Nyquist plane
+    # through its center.
+    checks.append(
+        generate_check(
+            lambda ki, kj, kk: (kj == -nyquist),
+            lambda ki, kj, kk: (-ki, +kj, -kk),
+            'inversion through center of kj = -nyquist plane',
+        )
+    )
+    # Symmetry of inverting the positive z Nyquist plane
+    # through its center.
+    checks.append(
+        generate_check(
+            lambda ki, kj, kk: (kk == +nyquist),
+            lambda ki, kj, kk: (-ki, -kj, +kk),
+            'inversion through center of kk = +nyquist plane',
+        )
+    )
+    # Symmetry of inverting the negative x, positive z Nyquist edge
+    # through its center.
+    checks.append(
+        generate_check(
+            lambda ki, kj, kk: (ki == -nyquist and kk == +nyquist),
+            lambda ki, kj, kk: (+ki, -kj, +kk),
+            'inversion through center of ki = -nyquist, kk = +nyquist edge',
+        )
+    )
+    # Symmetry of inverting the negative y, positive z Nyquist edge
+    # through its center.
+    checks.append(
+        generate_check(
+            lambda ki, kj, kk: (kj == -nyquist and kk == +nyquist),
+            lambda ki, kj, kk: (-ki, +kj, +kk),
+            'inversion through center of kj = -nyquist, kk = +nyquist edge',
+        )
+    )
+    # Reality of special points
+    checks.append(check_reality)
+    # Check symmetries throughoout the small grid
+    symmetry_broken = False
+    for check in checks:
+        for ki, kj, kk in visit():
+            symmetry_broken |= check(ki, kj, kk)
+    # Check for zeros in the bulk, if requested
+    if not allow_zeros:
+        for ki, kj, kk in visit():
+            symmetry_broken |= check_zero_within_embedding(ki, kj, kk)
+    # Check that non-tabulated modes are nullified, if requested
+    if pure_embedding:
+        for ki, kj, kk in visit(nyquist_large):
+            symmetry_broken |= check_nonzero_beyond_embedding(ki, kj, kk)
+    # Check that the Nyquist planes are nullified, if requested
+    if nullified_nyquist:
+        for ki, kj, kk in visit(nyquist_large):
+            symmetry_broken |= check_nonzero_at_nyquist(ki, kj, kk)
+    # Tally up the total amount of information and compare
+    # against the expected value, if requested.
+    if count_information:
+        # Count up the number of different real numbers within the grid,
+        # including both the real and imaginary part
+        # and disregarding signs.
+        decimals = int(round(-log10(rel_tol)))
+        information_full = len(set(np.round(
+              list(np.abs(grid[:, :, 0::2].flatten()))
+            + list(np.abs(grid[:, :, 1::2].flatten())),
+            decimals,
+        )))
+        if gridsize_large > gridsize:
+            if not pure_embedding:
+                # The grid is embedded within a larger non-zero grid,
+                # meaning that the above count contains lots of points
+                # outside of the small grid. Discard the count.
+                information_full = -1
+        # We also iterate over the grid in a way that samples each
+        # unique complex grid point once, recording the real values
+        # (from both the real and imaginary parts).
+        information = set()
+        for ki, kj, kk in visit(sparse=True):
+            c = lookup(ki, kj, kk)
+            information.add(np.round(np.abs(c.real), decimals))
+            information.add(np.round(np.abs(c.imag), decimals))
+        information = len(information)
+        # A general real, cubic grid consists of gridsize**3
+        # unique real numbers, and so we expect the same number to
+        # exist in the Fourier transformed grid. As some complex grid
+        # points must be real, the number 0 is guaranteed to exist
+        # in the Fourier grid. Disregarding the off change that some
+        # complex mode is 0 (as in 0 + 0j), this ups the information
+        # count by 1.
+        # If we have nullified Nyquist planes, we need to count more
+        # careful. Ignoring the Nyquist planes as well as the z DC
+        # plane leaves us with points which do not have a conjugate
+        # partner within the tabulation. This block of points has
+        # gridsize - 1 points along the x and y directions and
+        # nyquist - 1 points along the z direction. That this, it has
+        #   block = 2*(nyquist - 1)*(gridsize - 1)**2
+        # unique real numbers. The remaining z DC plane consists purely
+        # of conjugate pairs. That is, it has (gridsize - 1)**2 complex
+        # grid points, exactly half of which are redundant. The
+        # exception is the origin, which we should count as contributing
+        # two real numbers (though one of them is a zero). That is, the
+        # z DC plane contains
+        #   plane = (gridsize - 1)**2 + 1
+        # unique real numbers. In total, we have
+        #   block + plane = gridsize**3 + 3*gridsize*(1 - gridsize)
+        # unique real numbers.
+        if nullified_nyquist:
+            information_expected = gridsize**3 + 3*gridsize*(1 - gridsize)
+            information_expected_str = (
+                f'{gridsize}³ + 3*{gridsize}(1 - {gridsize}) + 1 = {information_expected}'
+            )
+        else:
+            information_expected = gridsize**3 + 1
+            information_expected_str = f'{gridsize}³ + 1 = {information_expected}'
+        if len({information_full, information, information_expected} - {-1}) != 1:
+            symmetry_broken = True
+            msg_information_full = ''
+            if information_full != -1:
+                msg_information_full = f'{information_full} (counted over entire grid), '
+            fancyprint(
+                f'Dispute about number of unique absolute values '
+                f'of real and imaginary parts of grid points: '
+                f'{msg_information_full}'
+                f'{information} (found through sparse iteration), '
+                f'while we expect {information_expected_str} for a random grid.',
+                wrap=False,
+                file=sys.stderr,
+            )
+        # As a further check, we want to tally up the number of unique
+        # complex number in the grid, with complex conjugate pairs
+        # deemed non-unique. Count up number of unique complex number
+        # in the entire grid.
+        n_unique_full = len(set(np.round(
+            np.sqrt((grid[:, :, 0::2]**2 + grid[:, :, 1::2]**2).flatten()),
+            decimals,
+        )))
+        if gridsize_large > gridsize:
+            if pure_embedding:
+                # The grid is embedded purely, i.e. the grid contains
+                # zeros outside of the Nyquist frequencies. These all
+                # count as an additional unique complex grid point.
+                n_unique_full -= 1
+            else:
+                # The grid is embedded within a larger non-zero grid,
+                # meaning that the above count contains lots of points
+                # outside of the small grid. Discard the count.
+                n_unique_full = -1
+        # We also iterate over the grid in a way that samples each
+        # unique complex grid point once, recording the absolute values.
+        absolutes = set()
+        for ki, kj, kk in visit(sparse=True):
+            absolutes.add(np.abs(lookup(ki, kj, kk)))
+        n_unique = len(absolutes)
+        # The Fourier transform of a 3D random real grid has exactly
+        # gridsize**3//2 + 4 complex grid points with unique absolute
+        # values (see the docstring of visit() for details).
+        # If the Nyquist planes are nullified, the z DC plane contains
+        # ((gridsize - 1)**2 - 1)//2 unique complex points, plus the
+        # origin. The remaining block contains
+        # (nyquist - 1)*(gridsize - 1)**2 unique points.
+        # In total we have
+        #    (gridsize**3 + 3*gridsize*(1 - gridsize))//2
+        # unique absolute values.
+        if nullified_nyquist:
+            n_unique_full -= 1  # Ignore zeros at Nyquist points
+            n_unique      -= 1  # Ignore zeros at Nyquist points
+            n_unique_expected = (gridsize**3 + 3*gridsize*(1 - gridsize))//2
+            n_unique_expected_str = (
+                f'({gridsize}³ + 3*{gridsize}(1 - {gridsize}))//2 = {n_unique_expected}'
+            )
+        else:
+            n_unique_expected = gridsize**3//2 + 4
+            n_unique_expected_str = f'{gridsize}³//2 + 4 = {n_unique_expected}'
+        if len({n_unique_full, n_unique, n_unique_expected} - {-1}) != 1:
+            symmetry_broken = True
+            msg_n_unique_full = ''
+            if n_unique_full != -1:
+                msg_n_unique_full = f'{n_unique_full} (counted over entire grid), '
+            fancyprint(
+                f'Dispute about number of unique absolute values of complex grid points: '
+                f'{msg_n_unique_full}'
+                f'{n_unique} (found through sparse iteration), '
+                f'while we expect {n_unique_expected} for a random grid.',
+                wrap=False,
+                file=sys.stderr,
+            )
     masterprint('done')
+    return not symmetry_broken
 
 # Function for differentiating domain grids
 @cython.pheader(
