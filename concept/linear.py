@@ -1064,7 +1064,7 @@ class CosmoResults:
             # Construct the γ_lapse potential
             aH = a*H
             k_magnitude2 = k_magnitude**2
-            k2γ_lapse = ℝ[-1/3]*a*(aH*dda_H_Tʹ + (H - ddt_H/H)*H_Tʹ)
+            k2γ_lapse = -1./3.*a*(aH*dda_H_Tʹ + (H - ddt_H/H)*H_Tʹ)
             # Construct the δ perturbation (in N-body gauge)
             δ = k2γ_lapse/(ℝ[4*π*G_Newton]*a**2*ρ_lapse)
             # Transform from N-body gauge to synchronous gauge
@@ -1784,7 +1784,7 @@ class TransferFunction:
                     if perturbation is not None:
                         perturbation_values_auxiliary = perturbation
                         for i in range(perturbation_values.shape[0]):
-                            if not (0 <= perturbation_values_auxiliary[i] <= ℝ[1/3]):
+                            if not (0 <= perturbation_values_auxiliary[i] <= 1./3.):
                                 outliers_list.append(i)
             if outliers_list:
                 # We want to keep the points at both ends of a_values,

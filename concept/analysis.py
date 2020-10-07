@@ -865,7 +865,7 @@ def compute_powerspec_σ(declaration, linear=False):
         kR = k_magnitude*R_tophat
         if kR < 1e-3:
             # Use a Taylor expansion of W/3 around kR = 0
-            W = ℝ[1/3] - ℝ[1/30]*kR**2
+            W = 1./3. - 1./30.*kR**2
         else:
             W = (sin(kR) - kR*cos(kR))/kR**3
         σ2_integrand[k_bin_index] = (k_magnitude*W)**2*power[k_bin_index]

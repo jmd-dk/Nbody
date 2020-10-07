@@ -3096,7 +3096,7 @@ def diff_domaingrid(
                                 + grid[indices_i_p[2], indices_j_p[2], indices_k_p[2]]
                                 - grid[indices_i_m[2], indices_j_m[2], indices_k_m[2]]
                             )
-                            + ℝ[10 + 2/3]*(
+                            + 32./3.*(
                                 + grid[indices_i_p[3], indices_j_p[3], indices_k_p[3]]
                                 - grid[indices_i_m[3], indices_j_m[3], indices_k_m[3]]
                             )
@@ -3221,9 +3221,9 @@ def set_weights_PCS(x, weights):
     tmp = 2 - dist
     tmp2 = tmp**2
     tmp3 = tmp*tmp2
-    weights[0] = ℝ[1/6]*tmp3
-    weights[2] = ℝ[2/3] - tmp2 + 0.5*tmp3
-    weights[3] = ℝ[1/6]*(dist - 1)**3
+    weights[0] = 1./6.*tmp3
+    weights[2] = 2./3. - tmp2 + 0.5*tmp3
+    weights[3] = 1./6.*(dist - 1)**3
     weights[1] = 1 - (weights[0] + weights[2] + weights[3])
     return index
 # Allocate global weights arrays to be used with the above functions

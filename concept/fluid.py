@@ -597,7 +597,7 @@ def flux_limiter_minmod(r):
 def flux_limiter_monotonized_central(r):
     if r > 3:
         return 2
-    if r > ℝ[1/3]:
+    if r > 1./3.:
         return 0.5*(r + 1)
     if r > 0:
         return 2*r
@@ -666,7 +666,7 @@ def flux_limiter_koren(r):
     if r > 2.5:
         return 2
     if r > 0.25:
-        return (1 + 2*r)*ℝ[1/3]
+        return 1./3.*(1 + 2*r)
     if r > 0:
         return 2*r
     return 0
@@ -1185,7 +1185,7 @@ def correct_vacuum(component, mc_step):
     # a vacuum cell will be replaced with a weighted average of its
     # 26 neighbour cells (all of the original cell will be distributed
     # among these neighbours).
-    fac_smoothing = ℝ[1/(6/1 + 12/2 + 8/3)]*is_selected(
+    fac_smoothing = 1./(6 + 12./2. + 8./3.)*is_selected(
         component,
         fluid_options['maccormack']['smoothing_select'],
     )

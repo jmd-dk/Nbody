@@ -1396,7 +1396,7 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                 # The size is chosen such that the particles stand side
                 # by side in a homogeneous universe (more or less).
                 N = component.N
-                scatter_size = 1550*np.prod(fig.get_size_inches())/N**ℝ[2/3]
+                scatter_size = 1550*np.prod(fig.get_size_inches())/N**(2./3.)
                 # Determine the α value which ensures that a homogeneous
                 # column through the entire box will result in a
                 # combined α value of α_homogeneous. Alpha blending
@@ -1462,7 +1462,7 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                 # The size is chosen such that the particles stand side
                 # by side in a homogeneous universe (more or less).
                 N = gridsize**3
-                scatter_size = 1550*np.prod(fig.get_size_inches())/N**ℝ[2/3]
+                scatter_size = 1550*np.prod(fig.get_size_inches())/N**(2./3.)
                 # Determine the α multiplication factor which ensures
                 # that a homogeneous column through the entire box will
                 # result in an α value of α_homogeneous. Alpha blending

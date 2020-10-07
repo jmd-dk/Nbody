@@ -4374,7 +4374,7 @@ def init_subtiling(component, subtiling_name, initial_rung_size=-1):
                     float(component.N)/(
                         nprocs*np.prod(asarray(coarse_tiling.shape)*shape)*particles_per_subtile
                     )
-                )**ℝ[1/3]
+                )**(1./3.)
                 shape = asarray(np.round(shape), dtype=C2np['Py_ssize_t'])
                 shape[shape == 0] = 1
                 shape_candidates.append(shape)
