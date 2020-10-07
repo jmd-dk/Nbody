@@ -14,7 +14,7 @@ jobs:
         outputs:
             scheduled: ${{ steps.check_schedule.outputs.scheduled }}
         steps:
-          - name: Check schedule ⏰
+          - name: ⏰ Check schedule
             id: check_schedule
             env:
                 schedule_build: ${{ secrets.SCHEDULE_BUILD }}
@@ -30,14 +30,14 @@ jobs:
         needs: check_schedule
         if: needs.check_schedule.outputs.scheduled
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Install 🔧
+          - name: 🔧 Install
             run: |
                 rm -f concept/docs/_static/*.pdf
                 docker build --pull --no-cache -t concept:latest .
-          - name: Test suite 🤖
+          - name: 🤖 Run test suite
             run: docker run --rm concept:latest concept -t all
-          - name: Build docs 📖
+          - name: 📖 Build docs
             run: docker run --rm concept:latest make docs
 

@@ -18,17 +18,17 @@ jobs:
     test_basic:
         runs-on: [self-hosted, linux, heavy]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -46,7 +46,7 @@ jobs:
                         && cp "${concept_dir}/"*.so /github/build/ \
                         && chmod a+rw /github/build/ \
                     '
-          - name: Upload build 📤
+          - name: 📤 Upload build
             uses: actions/upload-artifact@v2
             with:
                 name: build
@@ -56,22 +56,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -91,22 +91,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -126,22 +126,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -161,22 +161,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -196,22 +196,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -231,22 +231,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -266,22 +266,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -301,22 +301,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -336,22 +336,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -371,22 +371,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -406,22 +406,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -441,22 +441,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -476,22 +476,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -511,22 +511,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -546,22 +546,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -581,22 +581,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -616,22 +616,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -651,22 +651,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, heavy]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -686,22 +686,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -721,22 +721,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -756,22 +756,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -791,22 +791,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -826,22 +826,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -861,22 +861,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -896,22 +896,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -931,22 +931,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, heavy]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -966,22 +966,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, heavy]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \
@@ -1001,22 +1001,22 @@ jobs:
         needs: test_basic
         runs-on: [self-hosted, linux, light]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Download build 📥
+          - name: 📥 Download build
             uses: actions/download-artifact@v2
             with:
                 name: build
                 path: build
-          - name: Run test 🤖
+          - name: 🤖 Run test
             run: |
                 docker run \
                     -e GITHUB_JOB \

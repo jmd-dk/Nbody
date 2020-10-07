@@ -12,20 +12,20 @@ jobs:
     deploy_docs:
         runs-on: ubuntu-20.04
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Set Docker username 📝
+          - name: 📝 Set Docker username
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             run: |
                 [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "::set-env name=docker_username::${docker_username}"
-          - name: Pull Docker image 🐋
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
             run: docker pull ${docker_username}/concept:latest
-          - name: Build docs 📖
+          - name: 📖 Build docs
             run: |
                 docker run \
-                    -v ${GITHUB_WORKSPACE}:/github \
+                    -v "${GITHUB_WORKSPACE}":/github \
                     --rm \
                     ${docker_username}/concept:latest \
                     bash -c ': \
@@ -36,7 +36,7 @@ jobs:
                         && (cd "${concept_dir}" && make clean_docs && make docs) \
                         && cp -r "${docs_dir}/publish" /github/ \
                     '
-          - name: Deploy docs 🚀
+          - name: 🚀 Deploy docs
             uses: peaceiris/actions-gh-pages@v3
             with:
                 github_token: ${{ secrets.GITHUB_TOKEN }}

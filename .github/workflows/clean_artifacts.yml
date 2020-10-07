@@ -9,7 +9,7 @@ jobs:
     clean_artifacts:
         runs-on: ubuntu-20.04
         steps:
-          - name: Clean up artifacts 🧹
+          - name: 🧹 Clean up artifacts
             uses: kolpav/purge-artifacts-action@v1
             with:
                 token: ${{ secrets.GITHUB_TOKEN }}

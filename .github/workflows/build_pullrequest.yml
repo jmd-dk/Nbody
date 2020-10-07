@@ -17,17 +17,17 @@ jobs:
     build:
         runs-on: [self-hosted, linux, heavy]
         steps:
-          - name: Checkout 🛎
+          - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: Install 🔧
+          - name: 🔧 Install
             run: |
                 rm -f concept/docs/_static/*.pdf
                 docker build --pull --no-cache -t concept:test-build .
-          - name: Test suite 🤖
+          - name: 🤖 Run test suite
             run: docker run --rm concept:test-build concept -t all
-          - name: Build docs 📖
+          - name: 📖 Build docs
             run: docker run --rm concept:test-build make docs
-          - name: Push to Docker Hub 🐋
+          - name: 🐋 Push Docker image
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
             if: env.docker_username
