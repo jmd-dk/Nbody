@@ -154,7 +154,6 @@ $(shell $(python) -B -c "pass;
 ")
 endef
 
-
 # The python configuration script
 python_config = $(shell readlink -f $$(which $(python)))-config
 # Options passed when cythonizing .pyx files
@@ -168,7 +167,7 @@ python_incl = $(shell $(python_config) --includes)
 includes    = $(fftw_incl) $(gsl_incl) $(mpi_incl) $(python_incl)
 # Compiler options
 CC = $(mpicc)
-CC_implementation = $(shell                             \
+compiler = $(shell                                      \
     info="$$($(CC) --version | head -n 1 || :)";        \
     if   echo "$${info}" | grep -i gcc >/dev/null; then \
         echo "gcc";                                     \
@@ -182,62 +181,58 @@ unwanted_warnings =            \
     uninitialized              \
     missing-field-initializers \
     unused-but-set-variable    \
+    unused-result              \
     implicit-fallthrough       \
     strict-overflow            \
 
-python_cflags = $(filter-out $(addprefix -W,$(unwanted_warnings)) \
-    -g -O -O0 -O1 -O2 -O3 -O4 -Os -Ofast -fwrapv,                 \
-    $(shell $(python_config) --cflags)                            \
+python_cflags = $(filter-out                     \
+    $(addprefix -W,$(unwanted_warnings))         \
+    -g -O -O0 -O1 -O2 -O3 -O4 -Os -Ofast -fwrapv \
+    ,                                            \
+    $(shell $(python_config) --cflags)           \
 )
 other_cflags =                              \
-    -pthread                                \
     -std=c99                                \
-    -fno-strict-aliasing                    \
+    -pthread                                \
     -fPIC                                   \
-    -fno-var-tracking                       \
     -Wall                                   \
     -Wextra                                 \
     $(addprefix -Wno-,$(unwanted_warnings)) \
 
-# General optimization options
+# Optimization options
 ifneq ($(no_optimizations),True)
-    optimizations += -O3 -funroll-loops
-    # Native optimization options
+    # General optimizations
+    optimizations        += -O3 -funroll-loops
+    optimizations_linker += -O3
+    # Floating point optimizations
+    ifeq ($(compiler),gcc)
+        optimizations += -ffast-math
+    else ifeq ($(compiler),icc)
+        optimizations += -fp-model fast=2
+    endif
+    # Better inlining
+    ifeq ($(compiler),gcc)
+        optimizations += --param max-inline-insns-auto=100 --param early-inlining-insns=200
+    else ifeq ($(compiler),icc)
+        optimizations += -inline-factor=200
+    endif
+    # Native optimizations
     ifeq ($(native_optimizations),True)
         optimizations += -march=native
     endif
-    # Check whether the -flto option is recognized
-    lto_warning = $(shell \
+    # Link time optimizations
+    lto_warning = $(shell                                           \
         echo "int main(void){ return 0; }" > .lto_test.c;           \
         $(CC) -flto -c -o .lto_test.o .lto_test.c 2>&1 | grep flto; \
         $(RM) -f .lto_test.c .lto_test.o                            \
     )
-    lto_recognized = False
     ifeq ("$(lto_warning)","")
-        lto_recognized = True
-    endif
-    ifeq ($(lto_recognized),True)
-        optimizations += -flto
+        optimizations        += -flto
+        optimizations_linker += -flto
     endif
 endif
 # Options specific to the compiler implementation
-ifeq ($(CC_implementation),gcc)
-    # Optimization options
-    ifneq ($(no_optimizations),True)
-        # Fast floating point operations
-        optimizations += -ffast-math
-        # Better inlining
-        optimizations += --param max-inline-insns-auto=100 --param early-inlining-insns=200
-    endif
-endif
-ifeq ($(CC_implementation),icc)
-    # Optimization options
-    ifneq ($(no_optimizations),True)
-        # Fast floating point operations
-        optimizations += -fp-model fast=2
-        # Increase amount of inlining
-        optimizations += -inline-factor=200
-    endif
+ifeq ($(compiler),icc)
     # Filter out warnings
     other_cflags += -wd111               # Unreachable statement
     other_cflags += -wd10148             # Option not supported
@@ -245,15 +240,11 @@ ifeq ($(CC_implementation),icc)
     other_cflags += -wd11076             # How to get full report
     other_cflags += -diag-disable=10006  # Ignoring unknown option
     # Remove unrecognized flags
-    python_cflags_cp := $(python_cflags)
-    python_cflags = $(filter-out  \
-        -Wno-unused-result        \
-        , $(python_cflags_cp)     \
-    )
-    other_cflags_cp := $(other_cflags)
     other_cflags = $(filter-out   \
+        -Wno-unused-result        \
         -Wno-implicit-fallthrough \
-        , $(other_cflags_cp)      \
+        ,                         \
+        $(other_cflags_cp)        \
     )
 endif
 CFLAGS += $(call unique, $(call sensible_paths, \
@@ -295,17 +286,12 @@ LDLIBS += $(call unique, $(call sensible_paths, \
 # Linker options
 python_ldflags = $(shell $(python_config) --ldflags)
 other_ldflags  = -shared
-ifneq ($(no_optimizations),True)
-    linker_optimizations = -Wl,-O3
-    ifeq ($(lto_recognized),True)
-        linker_optimizations += -Wl,-flto
-    endif
-endif
-LDFLAGS += $(call unique, $(call sensible_paths, \
-    $(python_ldflags)                            \
-    $(other_ldflags)                             \
-    $(optimizations)                             \
-    $(linker_optimizations)                      \
+comma = ,
+LDFLAGS += $(call unique, $(call sensible_paths,      \
+    $(python_ldflags)                                 \
+    $(other_ldflags)                                  \
+    $(optimizations)                                  \
+    $(addprefix -Wl$(comma),$(optimizations_linker))  \
 ))
 
 
