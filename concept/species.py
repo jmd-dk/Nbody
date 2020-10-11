@@ -3577,7 +3577,7 @@ class Component:
                                 var = match.group(1 + i)
                                 if var[0] == 't':
                                     self.w_type = 'tabulated (t)'
-                                    unit_match = re.search('\((.*)\)', var)  # Applied later
+                                    unit_match = re.search(r'\((.*)\)', var)  # Applied later
                                 elif var[0] == 'a':
                                     self.w_type = 'tabulated (a)'
                                 elif var[0] == 'w':

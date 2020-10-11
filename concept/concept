@@ -222,7 +222,7 @@ for i, color in enumerate(colors):
     print('\\x1b]4;{};rgb:{}/{}/{}\\x1b\\\\'
         .format(16 + i, colorhex[1:3], colorhex[3:5], colorhex[5:]), end='')
 # Construct the colored logo
-logo='''${logo}'''
+logo=r'''${logo}'''
 logo = logo[1:-1]
 rows = logo.split('\\n')
 ANSI = []
@@ -560,7 +560,7 @@ def memory(value):
     # Convert to (whole) bytes
     value = value.lower()
     value = value.replace(' ', '').replace('b', '')
-    value = re.subn('([0-9]+)([a-z]+)', '\g<1>*\g<2>', value)[0]
+    value = re.subn(r'([0-9]+)([a-z]+)', r'\g<1>*\g<2>', value)[0]
     units = {'k': 2**10,
              'm': 2**20,
              'g': 2**30,
@@ -598,7 +598,7 @@ def time(value):
     # like '2hr + 30mins'.
     if isinstance(value, str):
         value = value.lower()
-        value = re.subn('([0-9]+)([a-z]+)', '\g<1>*\g<2>', value)[0]
+        value = re.subn(r'([0-9]+)([a-z]+)', r'\g<1>*\g<2>', value)[0]
         try:
             value = int(math.ceil(float(eval(value, units))))
         except:
@@ -1034,6 +1034,13 @@ This is counted as a test failure." "red"
                 exit 1
             fi
         }
+    fi
+    # Enable warnings that are ignored by default.
+    # We do this in order to get notified about deprecated code usage.
+    # Due to the above test_check_err_logs(), any such warning will
+    # lead to test failure if starting with an empty logs directory.
+    if [ -z "${PYTHONWARNINGS}" ]; then
+        export PYTHONWARNINGS=default
     fi
     # Do the test(s)
     if [ "${test}" == "all" ]; then

@@ -344,17 +344,16 @@ matplotlib.rcParams.update({
 })
 # Function used to set the minor tick formatting in log plots
 def fix_minor_tick_labels(fig=None):
-    """In matplotlib 2.x and 3.x, tick labels are automatically placed
-    at minor ticks in log plots if the axis range is less than a
-    full decade. Here, a \times glyph is used, which is not handled
-    correctly due to it being inclosed in \mathdefault{}, leading to a
-    MathTextWarning and the \times being replaced
-    with a dummy symbol. The problem is fully described here:
-    https://stackoverflow.com/questions/47253462
-    /matplotlib-2-mathtext-glyph-errors-in-tick-labels
-    This function serves as a workaround. To avoid the warning,
-    you must call this function before calling tight_layout().
-    """
+    # In matplotlib 2.x and 3.x, tick labels are automatically placed
+    # at minor ticks in log plots if the axis range is less than a
+    # full decade. Here, a \times glyph is used, which is not handled
+    # correctly due to it being inclosed in \mathdefault{}, leading to
+    # a MathTextWarning and the \times being replaced
+    # with a dummy symbol. The problem is fully described here:
+    # https://stackoverflow.com/questions/47253462
+    # /matplotlib-2-mathtext-glyph-errors-in-tick-labels
+    # This function serves as a workaround. To avoid the warning,
+    # you must call this function before calling tight_layout().
     import logging
     if fig is None:
         fig = plt.gcf()
@@ -595,7 +594,11 @@ def fancyprint(
                 if last_line == '...':
                     last_line = lines.pop().lstrip() + ' ...'
                 # Replace spaces before ... with underscores
-                last_line = re.sub('( +)\.\.\.$', lambda m: '_'*len(m.group(1)) + '...', last_line)
+                last_line = re.sub(
+                    r'( +)\.\.\.$',
+                    lambda m: '_'*len(m.group(1)) + '...',
+                    last_line,
+                )
                 # Add the wrapped and indented last line
                 # back in with the rest.
                 lines += textwrap.wrap(last_line, maxlength,
@@ -606,7 +609,11 @@ def fancyprint(
                                        break_on_hyphens=False,
                                        )
                 # Convert the inserted underscores back into spaces
-                lines[-1] = re.sub('(_+)\.\.\.$', lambda m: ' '*len(m.group(1)) + '...', lines[-1])
+                lines[-1] = re.sub(
+                    r'(_+)\.\.\.$',
+                    lambda m: ' '*len(m.group(1)) + '...',
+                    lines[-1],
+                )
                 progressprint['length'] = len(lines[-1])
             text = '\n'.join(lines)
         else:
@@ -816,7 +823,7 @@ if not cython.compiled:
     def cast(a, dtype):
         if not isinstance(dtype, str):
             dtype = dtype.__name__
-        match = re.search('(.*)\[', dtype)
+        match = re.search(r'(.*)\[', dtype)
         if match:
             # Pointer to array cast assumed
             shape = dtype.replace(':', '')
@@ -3521,7 +3528,7 @@ def call_class(extra_params=None, sleep_time=0.1, mode='single node', class_call
             message = 'Node {}, thread {}: Evolving mode k = {}/Mpc ({}/{})\n'.format(*inserts)
             message = fancyprint(message % ((0, )*len(inserts)), do_print=False)
             for insert in inserts:
-                message = re.subn((insert%0).replace('+', '\+'), insert, message, 1)[0]
+                message = re.subn((insert%0).replace(r'+', r'\+'), insert, message, 1)[0]
         message = bcast(message)
     cosmo = Class(node=node, num_threads=num_threads, message=message)
     cosmo.set(params_specialized)

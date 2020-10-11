@@ -294,12 +294,12 @@ def format_pxdhints(lines, no_optimization):
         if skip > 0:
             skip -= 1
             continue
-        if re.search('^pxd *\(', line):
+        if re.search(r'^pxd *\(', line):
             if line.count('(') == line.count(')'):
-                new_lines.append(re.sub('^pxd *\((.*)\)', 'pxd = \g<1>', line))
+                new_lines.append(re.sub(r'^pxd *\((.*)\)', r'pxd = \g<1>', line))
             else:
                 # Multiline via triple quotes
-                new_lines.append(re.sub('^pxd *\(', 'pxd = ', line))
+                new_lines.append(re.sub(r'^pxd *\(', 'pxd = ', line))
                 quote_type = '"""' if '"""' in line else "'''"
                 quote_ended = False
                 for line in lines[i + 1:]:
@@ -408,7 +408,7 @@ def cython_structs(lines, no_optimization):
                 else:
                     name = part[(part.rindex(',') + 1):].strip()
                 decl = struct_content[i + 1][:struct_content[i + 1].rindex(',')]
-                if re.search('\(.*,', decl.replace(' ', '')):
+                if re.search(r'\(.*,', decl.replace(' ', '')):
                     # Both type and value given.
                     # Find type.
                     ctype_start = len(decl)
@@ -607,7 +607,7 @@ def cimport_function(lines, no_optimization):
                 )
                 sys.exit(1)
             line = re.sub(
-                'cimport.*\((.*?)\)',
+                r'cimport.*\((.*?)\)',
                 lambda match: eval(match.group(1)).replace('import ', 'cimport '),
                 line
             ).rstrip(' ,\n')
@@ -1242,7 +1242,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
             if still_inside:
                 # Inside the statement.
                 # Look for defined/updated variables.
-                candidates = [s for s in re.findall('\w+', line)
+                candidates = [s for s in re.findall(r'\w+', line)
                               if s.isidentifier() and not keyword.iskeyword(s)]
                 for candidate in candidates:
                     if candidate not in varnames and variable_changed(candidate, line):
@@ -1313,7 +1313,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                 elif len(line) > 0 and line[0] not in ' #':
                     module_scope = True
                     function_scope_indentation_level = 0
-                search = re.search(blackboard_bold_symbol + '\[.+\]', line)
+                search = re.search(blackboard_bold_symbol + r'\[.+\]', line)
                 if not search or line.replace(' ', '').startswith('#'):
                     continue
                 # Blackboard bold symbol found on this line
@@ -1428,7 +1428,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                             line2 = (' '*(len(line2) - len(line2.lstrip()))
                                      + line2.replace(' ', ''))
                             if (    line2_ori.lstrip().startswith('def ')
-                                and re.search('[\(,]{}[,=\)]'.format(var), line2)):
+                                and re.search(r'[\(,]{}[,=\)]'.format(var), line2)):
                                 # var as function argument
                                 linenr_where_defined[v] = end - 1 - j
                                 defined_in_function[v] = (w == 0)
@@ -2324,7 +2324,7 @@ def remove_duplicate_declarations(lines, no_optimization):
         declarations = declarations_inner if in_function else declarations_outer
         if line.lstrip().startswith('cython.declare('):
             indentation = ' '*(len(line) - len(line.lstrip()))
-            info = re.search('cython\.declare\((.*)\)', line).group(1).split('=')
+            info = re.search(r'cython\.declare\((.*)\)', line).group(1).split('=')
             for i, (varname, vartype) in enumerate(zip(info[:-1], info[1:])):
                 if i > 0:
                     index = varname.rfind(',')
@@ -3005,13 +3005,13 @@ def malloc_realloc(lines, no_optimization):
             if line.lstrip().startswith('free('):
                 # Normal frees
                 indent_lvl = len(line) - len(line.lstrip())
-                ptr = re.search('free\((.+?)\)', line).group(1)
+                ptr = re.search(r'free\((.+?)\)', line).group(1)
                 new_lines.append(' '*indent_lvl + 'if ' + ptr + ' is not NULL:\n')
                 new_lines.append(' '*4 + line.replace('free(', 'PyMem_Free('))
-            elif re.search('^gsl_.+?_free\(', line.lstrip()):
+            elif re.search(r'^gsl_.+?_free\(', line.lstrip()):
                 # GSL frees
                 indent_lvl = len(line) - len(line.lstrip())
-                ptr = re.search('gsl_.+?_free\((.+?)\)', line).group(1)
+                ptr = re.search(r'gsl_.+?_free\((.+?)\)', line).group(1)
                 new_lines.append(' '*indent_lvl + 'if ' + ptr + ' is not NULL:\n')
                 new_lines.append(' '*4 + line)
             else:
@@ -3155,12 +3155,12 @@ def make_pxd(filename, no_optimization):
                 pxd_lines.append(text + '\n')
     # Find pxd hints of the form "pxd('...')"
     for line in code:
-        m = re.match('^pxd *\( *"(.*)" *\)', line)
+        m = re.match(r'^pxd *\( *"(.*)" *\)', line)
         if m:
             text = m.group(1).strip()
             if text != '"':
                 pxd_lines.append(text + '\n')
-        m = re.match("^pxd *\( *'(.*)' *\)", line)
+        m = re.match(r"^pxd *\( *'(.*)' *\)", line)
         if m:
             text = m.group(1).strip()
             if text != "'":
@@ -3474,10 +3474,7 @@ def make_pxd(filename, no_optimization):
             if line.startswith('cython.declare('):
                 done = False
                 declaration = line[14:]
-
-                #declaration = re.sub("'.*?'", '', declaration)
-                declaration = re.sub('=.*\)', '', declaration) + ')'
-
+                declaration = re.sub(r'=.*\)', '', declaration) + ')'
                 declaration = declaration.replace('=', '')
                 globals_code = (globals_code[:i] + ['@cython.cfunc',
                                                    '@cython.locals' + line[14:],

@@ -58,7 +58,7 @@ plt.plot(np.concatenate((a, a)), np.concatenate((x0_gadget, x1_gadget)),
          label='GADGET',
          )
 plt.xlabel('$a$')
-plt.ylabel(r'$x\,\mathrm{{[{}]}}$'.format(unit_length))
+plt.ylabel(rf'$x\,\mathrm{{[{unit_length}]}}$')
 plt.ylim(0, boxsize)
 plt.legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()

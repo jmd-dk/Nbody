@@ -188,7 +188,7 @@ with open(path) as fname:
 # Find all 2D terminal rendered component combinations
 component_combinations = []
 for component_combination_match in re.finditer(
-    f'Rendering 2D projection of (.+?) \.{{3}}(?:\n|{ANSI_ESC})',
+    f'Rendering 2D projection of (.+?) \\\\.{{3}}(?:\n|{ANSI_ESC})',
     text,
     flags=re.DOTALL,
 ):
@@ -235,7 +235,7 @@ colormaps_ANSI = {}
 for component_combination, colormap_ANSI_match in zip(
         component_combinations,
         re.finditer(
-            rf'({ANSI_ESC}\]4;[0-9]{{2,3}};rgb:'
+            rf'({ANSI_ESC}\\]4;[0-9]{{2,3}};rgb:'
             rf'[0-9a-f]{{2}}/[0-9a-f]{{2}}/[0-9a-f]{{2}}'
             rf'{ANSI_ESC}\\\\){{238}}',
             text,
@@ -248,7 +248,7 @@ frames_dict = {component_combination: [] for component_combination in component_
 for frames, frame_ANSI_MATCH in zip(
         itertools.cycle(frames_dict.values()),
         re.finditer(
-            f'(({ANSI_ESC}\[48;5;[0-9]{{2,3}}m )+{ANSI_ESC}\[0m\n)+',
+            f'(({ANSI_ESC}\\\\[48;5;[0-9]{{2,3}}m )+{ANSI_ESC}\\\\[0m\n)+',
             text,
         ),
     ):
@@ -273,7 +273,7 @@ a_stamps = []
 for match in re.finditer(
     'Rendering 2D projection of'
     '.+?'
-    '(Scale factor: +[0-1]\.[0-9]+?\n)?'
+    '(Scale factor: +[0-1]\\\\.[0-9]+?\n)?'
     '((?:Cosmic time|Time): +[^\n]+?)\n',
     text,
     flags=re.DOTALL,

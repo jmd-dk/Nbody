@@ -94,8 +94,10 @@ for i in range(N_snapshots):
 # Finalize plot
 fig_file = this_dir + '/result.png'
 plt.xlabel('Particle number')
-plt.ylabel('$|\mathbf{x}_{\mathrm{CO}N\mathrm{CEPT}}'
-           '-\mathbf{x}_{\mathrm{GADGET}}|/\mathrm{boxsize}$')
+plt.ylabel(
+    r'$|\mathbf{x}_{\mathrm{CO}N\mathrm{CEPT}} - \mathbf{x}_{\mathrm{GADGET}}|'
+    r'/\mathrm{boxsize}$'
+)
 plt.xlim(0, N - 1)
 plt.legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()

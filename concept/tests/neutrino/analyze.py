@@ -61,7 +61,7 @@ for a, ax in zip(scalefactors, axes):
         '--k',
         label=r'CLASS',
     )
-    ax.set_ylabel(rf'$k^3 P_{{\nu}}$')
+    ax.set_ylabel(r'$k^3 P_{\nu}$')
     ax.text(0.5, 0.85, f'$a = {a}$',
         horizontalalignment='center',
         verticalalignment='center',

@@ -51,16 +51,20 @@ for kind, markersize in zip(('particles', 'fluid'), (15, 10)):
                   alpha=0.7,
                   label=(kind.rstrip('s').capitalize() + ' simulation'),
                   )
-        ax_i.set_ylabel(r'$\varrho$ $\mathrm{{[{}\,m_{{\odot}}\,{}^{{-3}}]}}$'
-                        .format(significant_figures(1/units.m_sun,
-                                                    3,
-                                                    fmt='tex',
-                                                    incl_zeros=False,
-                                                    scientific=False,
-                                                    ),
-                                unit_length)
-                        )
-        ax_i.set_title(r'$t={:.3g}\,\mathrm{{{}}}$'.format(t, unit_time))
+        ax_i.set_ylabel(
+            r'$\varrho$ $\mathrm{{[{}\,m_{{\odot}}\,{}^{{-3}}]}}$'
+            .format(
+                significant_figures(
+                    1/units.m_sun,
+                    3,
+                    fmt='tex',
+                    incl_zeros=False,
+                    scientific=False,
+                ),
+                unit_length,
+            )
+        )
+        ax_i.set_title(rf'$t={t:.3g}\,\mathrm{{{unit_time}}}$')
 plt.xlim(0, boxsize)
 plt.xlabel(r'$x\,\mathrm{{[{}]}}$'.format(unit_length))
 ax[0].legend(loc='best').get_frame().set_alpha(0.7)

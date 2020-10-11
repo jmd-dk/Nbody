@@ -98,8 +98,10 @@ for n, d, ax_i in zip(dist.keys(), dist.values(), ax):
                       label='$a={}$'.format(a[i]),
                       zorder=-i,
                       )
-    ax_i.set_ylabel('$|\mathbf{{x}}_{{\mathrm{{pp}}{n}}} - \mathbf{{x}}_{{\mathrm{{c}}{n}}}|'
-                    '/\mathrm{{boxsize}}$'.format(n=n))
+    ax_i.set_ylabel(
+        rf'$|\mathbf{{x}}_{{\mathrm{{pp}}{n}}} - \mathbf{{x}}_{{\mathrm{{c}}{n}}}|'
+        rf'/\mathrm{{boxsize}}$'
+    )
 ax[-1].set_xlabel('Particle number')
 plt.xlim(0, N - 1)
 fig.subplots_adjust(hspace=0)

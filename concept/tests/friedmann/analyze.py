@@ -30,7 +30,7 @@ np.savetxt(f'{this_dir}/t_{mode}.dat', cosmic_times)
 
 # If all four data files exist, plot and analyze these
 data_filenames = glob(f'{this_dir}/*.dat')
-if sum([bool(re.search(f'^{this_dir}/t_class=(True|False)_compiled=(True|False)\.dat$' , fname))
+if sum([bool(re.search(rf'^{this_dir}/t_class=(True|False)_compiled=(True|False)\.dat$' , fname))
        for fname in data_filenames]) == 4:
     masterprint('Analyzing {} data ...'.format(this_test))
     # Load in the data
@@ -57,7 +57,7 @@ if sum([bool(re.search(f'^{this_dir}/t_class=(True|False)_compiled=(True|False)\
         markersize -= 10
     plt.xlim(a_begin, 1)
     plt.xlabel('$a$')
-    plt.ylabel(r'$t\,\mathrm{{[{}]}}$'.format(unit_time))
+    plt.ylabel(rf'$t\,\mathrm{{[{unit_time}]}}$')
     # Using CLASS or not makes a differnce at early times
     # due to the inclusion of e.g. radiation and neutrinos.
     # Find the latest time at which this difference is still important.

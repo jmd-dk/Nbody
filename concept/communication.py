@@ -1155,7 +1155,12 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
         mpifun = reverse_mpifun_mapping[mpifun]
     # If only receiving, block_recv should be
     # accessible as the first argument.
-    if not sending and recving and block_send != () and block_recv == ():
+    if (
+            not sending
+        and     recving
+        and not (isinstance(block_send, tuple) and len(block_send) == 0)  # block_send != ()
+        and     (isinstance(block_recv, tuple) and len(block_recv) == 0)  # block_recv == ()
+    ):
         block_send, block_recv = block_recv, block_send
     # If block_recv is an int or str,
     # this designates a specific buffer to use as recvbuf.

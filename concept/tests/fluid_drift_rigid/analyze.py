@@ -74,19 +74,23 @@ for ax_i, particles, ϱ_i, y_i, y_interp_i, a_i in zip(ax, particle_components, 
                               [y_i[index_min]])),
               '-', label='Particle simulation')
     ax_i.plot(x_fluid, ϱ_i, '.', markersize=10, alpha=0.7, label='Fluid simulation')
-    ax_i.set_ylabel('scaled and shifted $y$,\n'
-                    r'$\varrho$ $\mathrm{{[{}\,m_{{\odot}}\,{}^{{-3}}]}}$'
-                    .format(significant_figures(1/units.m_sun,
-                                                3,
-                                                fmt='tex',
-                                                incl_zeros=False,
-                                                scientific=False,
-                                                ),
-                            unit_length)
-                    )
-    ax_i.set_title(r'$a={:.3g}$'.format(a_i))
+    ax_i.set_ylabel(
+        'scaled and shifted $y$,\n'
+        r'$\varrho$ $\mathrm{{[{}\,m_{{\odot}}\,{}^{{-3}}]}}$'
+        .format(
+            significant_figures(
+                1/units.m_sun,
+                3,
+                fmt='tex',
+                incl_zeros=False,
+                scientific=False,
+            ),
+            unit_length,
+        )
+    )
+    ax_i.set_title(rf'$a={a_i:.3g}$')
 plt.xlim(0, boxsize)
-plt.xlabel(r'$x\,\mathrm{{[{}]}}$'.format(unit_length))
+plt.xlabel(rf'$x\,\mathrm{{[{unit_length}]}}$')
 ax[0].legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()
 plt.savefig(fig_file)

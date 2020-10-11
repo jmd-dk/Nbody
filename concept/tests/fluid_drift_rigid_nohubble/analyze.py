@@ -45,18 +45,22 @@ for ax_i, fluid, t, phase in zip(ax, fluids, times, phases):
     ϱ_snapshot.append(fluid.ϱ.grid_noghosts[:gridsize, 0, 0])
     ax_i.plot(x, ϱ[-1], '-', label='Analytical solution')
     ax_i.plot(x, ϱ_snapshot[-1], '.', markersize=10, alpha=0.7, label='Simulation')
-    ax_i.set_ylabel(r'$\varrho$ $\mathrm{{[{}\,m_{{\odot}}\,{}^{{-3}}]}}$'
-                    .format(significant_figures(1/units.m_sun,
-                                                3,
-                                                fmt='tex',
-                                                incl_zeros=False,
-                                                scientific=False,
-                                                ),
-                            unit_length)
-                    )
-    ax_i.set_title(r'$t={:.3g}\,\mathrm{{{}}}$'.format(t, unit_time))
+    ax_i.set_ylabel(
+        r'$\varrho$ $\mathrm{{[{}\,m_{{\odot}}\,{}^{{-3}}]}}$'
+        .format(
+            significant_figures(
+                1/units.m_sun,
+                3,
+                fmt='tex',
+                incl_zeros=False,
+                scientific=False,
+            ),
+            unit_length,
+        )
+    )
+    ax_i.set_title(rf'$t={t:.3g}\,\mathrm{{{unit_time}}}$')
 plt.xlim(0, boxsize)
-plt.xlabel(r'$x\,\mathrm{{[{}]}}$'.format(unit_length))
+plt.xlabel(rf'$x\,\mathrm{{[{unit_length}]}}$')
 ax[0].legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()
 plt.savefig(fig_file)

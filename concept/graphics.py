@@ -1600,8 +1600,10 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
         # Print the current cosmic time and scale factor on the figure
         if master:
             t_str = a_str = ''
-            t_str = '$t = {}\, \mathrm{{{}}}$'.format(significant_figures(universals.t, 4, 'tex'),
-                                                      unit_time)
+            t_str = (
+                r'$t = {}\, \mathrm{{{}}}$'
+                .format(significant_figures(universals.t, 4, 'tex'), unit_time)
+            )
             artists_text['t'].set_text(t_str)
             if enable_Hubble:
                 a_str = '$a = {}$'.format(significant_figures(universals.a, 4, 'tex'))

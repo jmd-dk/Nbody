@@ -40,7 +40,7 @@ plt.text(0.5*max(a), 0.93*boxsize, r'$\uparrow$ End of simulation box $\uparrow$
 plt.plot(a, x       , '.', markersize=15, alpha=0.7, label='CO$N$CEPT')
 plt.plot(a, x_gadget, '.', markersize=10, alpha=0.7, label='GADGET')
 plt.xlabel('$a$')
-plt.ylabel(r'$x\,\mathrm{{[{}]}}$'.format(unit_length))
+plt.ylabel(rf'$x\,\mathrm{{[{unit_length}]}}$')
 plt.ylim(0, boxsize)
 plt.legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()
