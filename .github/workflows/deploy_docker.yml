@@ -17,6 +17,15 @@ jobs:
             if: env.docker_username
             run: |
                 docker pull ${{ secrets.DOCKER_USERNAME }}/concept:test-build
+                docker pull ${{ secrets.DOCKER_USERNAME }}/concept:latest
+                if [ \
+                    "$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.DOCKER_USERNAME }}/concept:test-build)" \
+                    == \
+                    "$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.DOCKER_USERNAME }}/concept:latest)" \
+                ]; then
+                    echo "No change to Docker image"
+                    exit 0
+                fi
                 docker tag \
                     ${{ secrets.DOCKER_USERNAME }}/concept:test-build \
                     ${{ secrets.DOCKER_USERNAME }}/concept:latest
