@@ -158,7 +158,7 @@ endef
 python_config = $(shell readlink -f $$(which $(python)))-config
 # Options passed when cythonizing .pyx files
 python_version_major = $(shell $(python) -B -c "import sys; print(sys.version_info.major)")
-cythonflags = -$(python_version_major) -a
+cythonflags = -$(python_version_major) -D -a
 # Includes
 fftw_incl   = -I$(fftw_dir)/include
 gsl_incl    = -I$(gsl_dir)/include
@@ -185,11 +185,13 @@ unwanted_warnings =            \
     implicit-fallthrough       \
     strict-overflow            \
 
-python_cflags = $(filter-out                     \
-    $(addprefix -W,$(unwanted_warnings))         \
-    -g -O -O0 -O1 -O2 -O3 -O4 -Os -Ofast -fwrapv \
-    ,                                            \
-    $(shell $(python_config) --cflags)           \
+python_cflags = $(filter-out             \
+    $(addprefix -W,$(unwanted_warnings)) \
+    -g -g0 -g1 -g2 -g3                   \
+    -O -O0 -O1 -O2 -O3 -Og -Os -Ofast    \
+    -fwrapv                              \
+    ,                                    \
+    $(shell $(python_config) --cflags)   \
 )
 other_cflags =                              \
     -std=c99                                \
