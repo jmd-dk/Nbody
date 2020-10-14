@@ -1,5 +1,7 @@
-# GitHub workflow for deploying the Docker image to Docker Hub
-# by retagging concept:test-build to concept:latest.
+# GitHub workflow for deploying the Docker image to Docker Hub.
+# This is done by substituting and compiling the code
+# from the master branch into the concept:test-build image,
+# then pushing it as concept:latest.
 name: deploy_docker
 
 on:
@@ -8,31 +10,66 @@ on:
           - master
 
 jobs:
-    deploy_docker:
+    check_deploy:
         runs-on: ubuntu-20.04
+        outputs:
+            deploy: ${{ steps.check_deploy.outputs.deploy }}
         steps:
-          - name: 🚀 Deploy Docker image
+          - name: 📝 Check whether to deploy
+            id: check_deploy
             env:
                 docker_username: ${{ secrets.DOCKER_USERNAME }}
-            if: env.docker_username
             run: |
-                docker pull ${{ secrets.DOCKER_USERNAME }}/concept:test-build
-                docker pull ${{ secrets.DOCKER_USERNAME }}/concept:latest
-                if [ \
-                    "$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.DOCKER_USERNAME }}/concept:test-build)" \
-                    == \
-                    "$(docker inspect --format='{{index .RepoDigests 0}}' ${{ secrets.DOCKER_USERNAME }}/concept:latest)" \
-                ]; then
-                    echo "No change to Docker image"
-                    exit 0
+                if [ -n "${docker_username}" ]; then
+                    echo "Will be deployed"
+                    echo "::set-output name=deploy::1"
+                else
+                    echo "Will not be deployed"
                 fi
-                docker tag \
-                    ${{ secrets.DOCKER_USERNAME }}/concept:test-build \
-                    ${{ secrets.DOCKER_USERNAME }}/concept:latest
+
+    deploy_docker:
+        runs-on: ubuntu-20.04
+        needs: check_deploy
+        if: needs.check_deploy.outputs.deploy
+        steps:
+          - name: 🛎 Checkout
+            uses: actions/checkout@v2
+          - name: 📝 Set Docker username
+            env:
+                docker_username: ${{ secrets.DOCKER_USERNAME }}
+            run: |
+                [ -n "${docker_username}" ] || docker_username=jmddk
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
+            run: docker pull ${docker_username}/concept:test-build
+          - name: 🔧 Build code
+            run: |
+                rm -f concept/docs/_static/*.pdf
+                docker rm -f concept-tmp 2>/dev/null || :
+                docker run \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --name concept-tmp \
+                    ${docker_username}/concept:test-build \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && (cd "${concept_dir}" && make distclean) \
+                        && concept \
+                        && (cd "${concept_dir}" && make clean_logs clean_params_cp) \
+                    '
+                docker commit \
+                    --change='CMD ["bash"]' \
+                    concept-tmp \
+                    ${docker_username}/concept:latest
+                docker rm -f concept-tmp 2>/dev/null || :
+          - name: 🚀 Deploy Docker image
+            run: |
                 docker login \
                     -u ${{ secrets.DOCKER_USERNAME }} \
                     -p ${{ secrets.DOCKER_PASSWORD }} \
                     2>/dev/null
-                docker push ${{ secrets.DOCKER_USERNAME }}/concept:latest
+                docker push ${docker_username}/concept:latest
                 docker logout
 

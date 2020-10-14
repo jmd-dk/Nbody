@@ -14,7 +14,7 @@ jobs:
         outputs:
             scheduled: ${{ steps.check_schedule.outputs.scheduled }}
         steps:
-          - name: ⏰ Check schedule
+          - name: 📝 Check schedule
             id: check_schedule
             env:
                 schedule_build: ${{ secrets.SCHEDULE_BUILD }}

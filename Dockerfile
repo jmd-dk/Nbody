@@ -1,6 +1,7 @@
 # Base
 FROM debian:10.4-slim
 SHELL ["/usr/bin/env", "bash", "-c"]
+CMD ["bash"]
 
 # Installation options
 ARG concept_version=/source
