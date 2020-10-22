@@ -857,7 +857,7 @@ if not cython.compiled:
         sqrt, cbrt,
         floor, ceil, round,
     )
-    from math import erf, erfc
+    from scipy.special import erf, erfc
     # The closest thing to a Null pointer in pure Python
     # is the None object.
     NULL = None
