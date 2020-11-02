@@ -178,12 +178,14 @@ compiler = $(shell                                      \
     fi                                                  \
 )
 unwanted_warnings =            \
-    uninitialized              \
+    implicit-fallthrough       \
+    misleading-indentation     \
     missing-field-initializers \
+    strict-overflow            \
+    uninitialized              \
+    unknown-warning-option     \
     unused-but-set-variable    \
     unused-result              \
-    implicit-fallthrough       \
-    strict-overflow            \
 
 python_cflags = $(filter-out             \
     $(addprefix -W,$(unwanted_warnings)) \
@@ -201,6 +203,15 @@ other_cflags =                              \
     -Wextra                                 \
     $(addprefix -Wno-,$(unwanted_warnings)) \
 
+# Options specific to the compiler implementation
+ifeq ($(compiler),icc)
+    # Filter out warnings
+    other_cflags += -wd111    # Unreachable statement
+    other_cflags += -wd10006  # Ignoring unknown option
+    other_cflags += -wd10148  # Option not supported
+    other_cflags += -wd11074  # Inlining inhibited
+    other_cflags += -wd11076  # How to get full report
+endif
 # Optimization options
 ifneq ($(no_optimizations),True)
     # General optimizations
@@ -232,22 +243,6 @@ ifneq ($(no_optimizations),True)
         optimizations        += -flto
         optimizations_linker += -flto
     endif
-endif
-# Options specific to the compiler implementation
-ifeq ($(compiler),icc)
-    # Filter out warnings
-    other_cflags += -wd111               # Unreachable statement
-    other_cflags += -wd10148             # Option not supported
-    other_cflags += -wd11074             # Inlining inhibited
-    other_cflags += -wd11076             # How to get full report
-    other_cflags += -diag-disable=10006  # Ignoring unknown option
-    # Remove unrecognized flags
-    other_cflags = $(filter-out   \
-        -Wno-unused-result        \
-        -Wno-implicit-fallthrough \
-        ,                         \
-        $(other_cflags_cp)        \
-    )
 endif
 CFLAGS += $(call unique, $(call sensible_paths, \
     $(python_cflags)                            \
