@@ -764,16 +764,12 @@ if not cython.compiled:
             # Called as @dummy_decorator(*args, **kwargs).
             # Return decorator
             return dummy_decorator
-    # Already builtin: cfunc, inline, locals, returns
     for directive in (
-        'boundscheck',
-        'cdivision',
-        'initializedcheck',
-        'wraparound',
         'header',
-        'pheader',
         'iterator',
         'nounswitching',
+        'pheader',
+        'remove',
     ):
         setattr(cython, directive, dummy_decorator)
     # Address (pointers into arrays)

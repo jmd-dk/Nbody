@@ -253,6 +253,58 @@ def oneline(lines, no_optimization=None):
 
 
 
+def remove_functions(lines, no_optimization):
+    new_lines = []
+    remove = False
+    def_encountered = False
+    for line in lines:
+        if remove:
+            if not def_encountered:
+                if line.startswith('def '):
+                    def_encountered = True
+                continue
+            if (
+                line.strip()
+                and not line.startswith(' ')
+                and not line.startswith('#')
+                and not line.startswith('"')
+                and not line.startswith("'")
+            ):
+                # Outside function to be removed
+                remove = False
+                new_lines.append(line)
+                continue
+            # Do not include this line
+            # unless a left-aligned comment.
+            if line.startswith('#'):
+                new_lines.append(line)
+            continue
+        # Check for @cython.remove
+        match = re.search(r'^@cython *\. *remove *(.*)', line)
+        if not match:
+            new_lines.append(line)
+            continue
+        remove = True
+        def_encountered = False
+        arg = match.group(1)
+        arg = re.search(r'^\(.*\)', arg)
+        if arg:
+            arg = arg.group()
+            if arg:
+                arg = eval(arg)
+                if not arg:
+                    # Encountered @cython.remove(False)
+                    remove = False
+                    continue
+        # Encountered @cython.remove.
+        # Pop previous decorators from new_lines.
+        while new_lines[-1].startswith('@'):
+            new_lines.pop()
+        new_lines.append('\n')
+    return new_lines
+
+
+
 def walrus(lines, no_optimization):
     """Remove this function once Python 3.8 assignment expressions get
     implemented in Cython.
@@ -3657,6 +3709,7 @@ if __name__ == '__main__':
             # Apply transformations (stage 1) on the lines
             lines = cimport_cython               (lines, no_optimization)
             lines = oneline                      (lines, no_optimization)
+            lines = remove_functions             (lines, no_optimization)
             lines = walrus                       (lines, no_optimization)
             lines = format_pxdhints              (lines, no_optimization)
             lines = cythonstring2code            (lines, no_optimization)

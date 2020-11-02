@@ -2340,6 +2340,7 @@ def free_fftw_slab(gridsize, buffer_name):
 
 # Function for checking that the slabs satisfy the required symmetry
 # of a Fourier transformed real field.
+@cython.remove
 def slabs_check_symmetry(
     slab, nullified_nyquist=False,
     gridsize=-1, allow_zeros=False, pure_embedding=True, count_information=True,
