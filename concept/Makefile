@@ -144,7 +144,7 @@ $(foreach path,$(paths),$(eval $(path)=$(call sensible_paths,$($(path)))))
 define unique
 $(shell $(python) -B -c "pass;
     import re;
-    unique_word_patterns = {r'^-I', r'^-L', r'^-l', r'^-W'};
+    unique_word_patterns = {r'^-D', r'^-I', r'^-L', r'^-O', r'^-W', r'^-l'};
     words = [word for word in '$1'.split() if word];
     words_prev = set();
     words = [(word, words_prev.add(word))[0] for word in words if not word in words_prev
@@ -215,7 +215,7 @@ endif
 # Optimization options
 ifneq ($(no_optimizations),True)
     # General optimizations
-    optimizations        += -O3 -funroll-loops
+    optimizations        += -DNDEBUG -O3 -funroll-loops
     optimizations_linker += -O3
     # Floating point optimizations
     ifeq ($(compiler),gcc)
