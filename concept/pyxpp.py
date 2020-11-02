@@ -692,6 +692,56 @@ def cimport_function(lines, no_optimization):
 
 
 
+def float_literals(lines, no_optimization):
+    literals = {
+        'π'        : commons.π,
+        'machine_ϵ': commons.machine_ϵ,
+    }
+    for name, value in literals.copy().items():
+        for fun in commons.asciify, commons.unicode:
+            literals[fun(name)] = f'({value})'
+    new_lines = []
+    for line in lines:
+        if not line.lstrip().startswith('#'):
+            for name, value in literals.items():
+                while True:
+                    for match in re.finditer(name, line):
+                        line_modified = line.replace('==', ' +')
+                        index_equal = -1
+                        if '=' in line_modified:
+                            index_equal = len(line_modified) - 1 - line_modified[::-1].index('=')
+                        # Check that name is not used
+                        # as a subname of an identifier.
+                        index_bgn, index_end = match.span()
+                        if index_bgn > 0:
+                            if line[index_bgn-1:index_end].isidentifier():
+                                continue
+                        if index_end < len(line):
+                            if line[index_bgn:index_end+1].isidentifier():
+                                continue
+                        # Check that name is not assigned to
+                        if index_bgn < index_equal:
+                            continue
+                        # Check that the name is not used inside a string
+                        quote = ''
+                        for c in line[:index_bgn]:
+                            if c in ('"', "'"):
+                                if not quote:
+                                    quote = c
+                                elif c == quote:
+                                    quote = ''
+                        if quote:
+                            continue
+                        # Do replacement
+                        line = line[:index_bgn] + value + line[index_end:]
+                        break
+                    else:
+                        break
+        new_lines.append(line)
+    return new_lines
+
+
+
 def inline_iterators(lines, no_optimization):
     # We need to import the *.py file given by the global
     # "filename" variable, and then investigate its content.
@@ -3716,6 +3766,7 @@ if __name__ == '__main__':
             lines = cython_structs               (lines, no_optimization)
             lines = cimport_commons              (lines, no_optimization)
             lines = cimport_function             (lines, no_optimization)
+            lines = float_literals               (lines, no_optimization)
             lines = inline_iterators             (lines, no_optimization)
             lines = constant_expressions         (lines, no_optimization)
             lines = unicode2ASCII                (lines, no_optimization)
