@@ -29,8 +29,8 @@ jobs:
             run: docker run --rm concept:test-build make docs
           - name: 🐋 Push Docker image
             env:
-                docker_username: ${{ secrets.DOCKER_USERNAME }}
-            if: env.docker_username
+                docker_password: ${{ secrets.DOCKER_PASSWORD }}
+            if: env.docker_password
             run: |
                 docker tag concept:test-build ${{ secrets.DOCKER_USERNAME }}/concept:test-build
                 docker login \

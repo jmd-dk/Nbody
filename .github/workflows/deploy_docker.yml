@@ -18,9 +18,9 @@ jobs:
           - name: 📝 Check whether to deploy
             id: check_deploy
             env:
-                docker_username: ${{ secrets.DOCKER_USERNAME }}
+                docker_password: ${{ secrets.DOCKER_PASSWORD }}
             run: |
-                if [ -n "${docker_username}" ]; then
+                if [ -n "${docker_password}" ]; then
                     echo "Will be deployed"
                     echo "::set-output name=deploy::1"
                 else
@@ -34,14 +34,8 @@ jobs:
         steps:
           - name: 🛎 Checkout
             uses: actions/checkout@v2
-          - name: 📝 Set Docker username
-            env:
-                docker_username: ${{ secrets.DOCKER_USERNAME }}
-            run: |
-                [ -n "${docker_username}" ] || docker_username=jmddk
-                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
           - name: 🐋 Pull Docker image
-            run: docker pull ${docker_username}/concept:test-build
+            run: docker pull ${{ secrets.DOCKER_USERNAME }}/concept:test-build
           - name: 🔧 Build code
             run: |
                 rm -f concept/docs/_static/*.pdf
@@ -49,7 +43,7 @@ jobs:
                 docker run \
                     -v "${GITHUB_WORKSPACE}":/github \
                     --name concept-tmp \
-                    ${docker_username}/concept:test-build \
+                    ${{ secrets.DOCKER_USERNAME }}/concept:test-build \
                     bash -c ': \
                         && cd / \
                         && source ~/.bashrc \
@@ -62,7 +56,7 @@ jobs:
                 docker commit \
                     --change='CMD ["bash"]' \
                     concept-tmp \
-                    ${docker_username}/concept:latest
+                    ${{ secrets.DOCKER_USERNAME }}/concept:latest
                 docker rm -f concept-tmp 2>/dev/null || :
           - name: 🚀 Deploy Docker image
             run: |
@@ -70,6 +64,6 @@ jobs:
                     -u ${{ secrets.DOCKER_USERNAME }} \
                     -p ${{ secrets.DOCKER_PASSWORD }} \
                     2>/dev/null
-                docker push ${docker_username}/concept:latest
+                docker push ${{ secrets.DOCKER_USERNAME }}/concept:latest
                 docker logout
 
