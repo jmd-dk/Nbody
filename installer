@@ -3303,8 +3303,11 @@ pip_installed="False"
 if [ -n "${python_dir}" ]; then
     for python_version_major in 3 2; do
         if [ -f "${python_dir}/bin/python${python_version_major}" ]; then
-            python_version_major_dot_minor=$("${python_dir}/bin/python${python_version_major}" -c \
-                "from sys import version_info as v; print(str(v.major) + '.' + str(v.minor))")
+            python_version_major_dot_minor=$(                                                     \
+                "${python_dir}/bin/python${python_version_major}"                                 \
+                    -B -c                                                                         \
+                    "from sys import version_info as v; print(str(v.major) + '.' + str(v.minor))" \
+            )
             python="${python_dir}/bin/python${python_version_major_dot_minor}"
             break
         fi
@@ -6047,8 +6050,11 @@ install "Python"                                                    \
 if [ -n "${python_dir}" ]; then
     for python_version_major in 3 2; do
         if [ -f "${python_dir}/bin/python${python_version_major}" ]; then
-            python_version_major_dot_minor=$("${python_dir}/bin/python${python_version_major}" -c \
-                "from sys import version_info as v; print(str(v.major) + '.' + str(v.minor))")
+            python_version_major_dot_minor=$(                                                     \
+                "${python_dir}/bin/python${python_version_major}"                                 \
+                    -B -c                                                                         \
+                    "from sys import version_info as v; print(str(v.major) + '.' + str(v.minor))" \
+            )
             python="${python_dir}/bin/python${python_version_major_dot_minor}"
             break
         fi
@@ -6542,6 +6548,29 @@ Attempting to install CythonGSL with compiler=${compiler}\n\n"
         pip_install_pypackage "CythonGSL" "${cythongsl_version}"
         if [ "$(check_pypackage_installed cythongsl)" == "False" ]; then
             continue
+        fi
+        # At least in 0.2.2, some GSL_* variables are wrongly
+        # (re)declared in gsl_integration.pxd, leading to warnings
+        # about redeclaration when compiling CO𝘕CEPT.
+        # Here we fix this by removing these declarations.
+        # Note that these variables are already (properly)
+        # declared in __init__.pxd.
+        cythongsl_dir="$(                                                               \
+            dirname "$(                                                                 \
+                "${python}" -B -c                                                       \
+                'import inspect; import cython_gsl; print(inspect.getfile(cython_gsl))' \
+                || :                                                                    \
+            )"                                                                          \
+        )"
+        if [ -f "${cythongsl_dir}/gsl_integration.pxd" ]; then
+            for varname in     \
+                "GSL_EMAXITER" \
+                "GSL_EROUND"   \
+                "GSL_ESING"    \
+                "GSL_EDIVERGE" \
+            ; do
+                sed -i "/${varname}/d" "${cythongsl_dir}/gsl_integration.pxd" || :
+            done
         fi
         install_success="True"
         break

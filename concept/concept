@@ -1199,9 +1199,7 @@ test:
                     rm -rf "${top_dir}/tmp" 2>/dev/null || :
                 fi
             fi
-            # Compile all the modules in parallel.
-            # Cython might warn about redeclarations in CythonGSL,
-            # which we filter out as we do not want to worry about them.
+            # Compile all the modules in parallel
             start_time_build=$("${python}" -B -c "import time; print(time.time())")
             exec 4>&1
             make_output="$(
@@ -1210,7 +1208,6 @@ test:
                     no_optimizations="${no_optimizations}"         \
                     unsafe_building="${unsafe_building}"           \
                     ${make_jobs}                                   \
-                    2> >(grep -v 'GSL_.* redeclared' 1>&2)         \
                     | tee >(cat >&4)                               \
                     ; echo "concept_exit_code = ${PIPESTATUS[0]}"  \
             )"
