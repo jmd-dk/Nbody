@@ -137,7 +137,7 @@ files.
 
 .. tip::
    To view the logged output of e.g. CO\ *N*\ CEPT run 1 with proper
-   coloring, use ``less -r logs/1``. Arrow keys to navigate, ``q`` to quit.
+   coloring, use ``less -rf logs/1``. Arrow keys to navigate, ``q`` to quit.
 
 
 

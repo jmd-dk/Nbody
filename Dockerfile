@@ -1,5 +1,5 @@
 # Base
-FROM debian:10.4-slim
+FROM debian:10.6-slim
 SHELL ["/usr/bin/env", "bash", "-c"]
 CMD ["bash"]
 
@@ -28,7 +28,7 @@ RUN : \
     # Set up CO𝘕CEPT and Python environment
     && sed -i "1i source \"${top_dir}/concept/concept\"" ~/.bashrc \
     && apt-get install -y --no-install-recommends less \
-    && echo "[ ! -t 0 ] || alias less='less -r'" >> ~/.bashrc \
+    && echo "[ ! -t 0 ] || alias less='less -r -f'" >> ~/.bashrc \
     && ln -s "${top_dir}/python/bin/python3" "${top_dir}/python/bin/python" \
     # Set up Bash autocompletion
     && apt-get install -y --no-install-recommends bash-completion \
