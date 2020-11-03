@@ -60,7 +60,6 @@ the following changes happens to the source code (in the .pyx file):
   Py_ssize_t variable and '𝔹[expression]' with a bint variable which is
   equal to 'expression' and defined on a suitable line.
 - Unicode non-ASCII letters will be replaced with ASCII-strings.
-- Integer powers will be replaced by products.
 - Loop unswitching is performed on if statements under an unswitch
   context manager, which are indented under one or more loops.
 - Replaces the cython.header and cython.pheader decorators with
@@ -2567,418 +2566,6 @@ def cython_decorators(lines, no_optimization):
 
 
 
-def power2product(lines, no_optimization):
-    # Do not do anything if optimizations are disabled
-    if no_optimization:
-        return lines
-    # Taken from
-    # https://en.wikipedia.org/wiki/Addition-chain_exponentiation
-    addition_chain_exponentiations = {
-        'a': 'base',
-        'b': 'a*a',
-        'c': 'a*a*a',
-        'd': 'b*b',
-        'e': 'b*b*a',
-        'h': 'd*d',
-        0 : '1',
-        1 : 'a',
-        2 : 'a*a',
-        3 : 'a*a*a',
-        4 : 'b*b',
-        5 : 'b*b*a',
-        6 : 'b*b*b',
-        7 : 'b*b*b*a',
-        8 : 'd*d',
-        9 : 'c*c*c',
-        10: 'd*d*b',
-        11: 'd*d*b*a',
-        12: 'd*d*d',
-        13: 'd*d*d*a',
-        14: 'd*d*d*b',
-        15: 'e*e*e',
-        16: 'h*h',
-        }
-    maxint = 16
-    def transform_power(base, exponent, varname_suffix=''):
-        """Given a str base and str exponent, this function
-        will return a list of lines (totally unindented)
-        which will compute this exponent. Helper variables
-        will have single letter names, wheres the final
-        result will be called "result". The varname_suffix
-        will be added to both the helper variables and the
-        result variable.
-        """
-        # Convert str exponent to int
-        exponent_val = int(eval(str(exponent), {}, {}))
-        # Treat negative exponents as positive, for now
-        exponent_sign = +1
-        if exponent_val < 0:
-            exponent_sign = -1
-            exponent_val *= -1
-        # If the passed exponent is not in the
-        # addition_chain_exponentiations dict,
-        # nothing should be done.
-        if exponent_val not in addition_chain_exponentiations:
-            return None
-        # Small integer exponent.
-        # Create multi-line multiplication statement.
-        varnames = []
-        statements = []
-        def lookup(varname):
-            if varname in ('base', '1'):
-                return
-            expression = addition_chain_exponentiations[varname]
-            if not statements:
-                varname = 'result'
-            varname_with_suffix = varname + varname_suffix
-            if varname_with_suffix not in varnames:
-                varnames.append(varname_with_suffix)
-            expression_with_suffix = '*'.join([fac + varname_suffix
-                                               for fac in expression.split('*')])
-            declaration = ''
-            casting = ''
-            if exponent_sign == -1:
-                # Negative exponents always implies doubles
-                declaration = "cython.declare({}='double')\n".format(varname_with_suffix)
-                if varname == 'a':
-                    casting = '<double>'
-            statement = '{} = {}{}\n'.format(varname_with_suffix,
-                                               casting,
-                                               expression_with_suffix)
-            if statement in statements:
-                return
-            statements.append(statement)
-            if declaration:
-                statements.append(declaration)
-            for varname in sorted(set(expression.split('*')), reverse=True):
-                lookup(varname)
-        lookup(exponent_val)
-        statements = list(reversed(statements))
-        # Handle negative exponents
-        if exponent_sign == -1:
-            statements.append('result{} = 1.0/result{}\n'.format(varname_suffix, varname_suffix))
-        return statements
-    operators = r' +-*/^&|@,:;=!<>#$%?~'
-    starstar_replacement = '*__POWER__*'
-    power_counter = 0
-    new_lines = []
-    for line in lines:
-        if line.lstrip().startswith('#') or not '**' in line:
-            new_lines.append(line)
-            continue
-        # '**' in line
-        line_ori = line
-        while '**' in line:
-            starstar_index = line.index('**')
-            # If the exponentiation should not be replaced with
-            # a series of multiplications, replace line with this,
-            # ensuring that this instance of '**' will not be
-            # picked up again.
-            line_replace = '{}{}{}'.format(line[:starstar_index],
-                                           starstar_replacement,
-                                           line[(starstar_index + 2):])
-            # Find exponent
-            paren = bracket = 0
-            chars = []
-            for i, c in enumerate(line[(starstar_index + 2):]):
-                chars.append(c)
-                if c == '(':
-                    paren += 1
-                elif c == ')':
-                    paren -= 1
-                    if paren < 0:
-                        break
-                if c == '[':
-                    bracket += 1
-                elif c == ']':
-                    bracket -= 1
-                    if bracket < 0:
-                        break
-                if paren == 0 and bracket == 0 and c in operators:
-                    if (set(chars) - set(' +-')):
-                        break
-            exponent_indices = (starstar_index + 2, starstar_index + 2 + i)
-            exponent = line[exponent_indices[0]:exponent_indices[1]]
-            # Test whether this exponent is an integer
-            exponent_is_int = False
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter('ignore')
-                    exponent_value = eval(exponent, {}, {})
-                    if int(exponent_value) == float(exponent_value):
-                        exponent_is_int = True
-                        exponent_value = int(exponent_value)
-            except:
-                ...
-            if not exponent_is_int or abs(exponent_value) > maxint:
-                # Exponent is not an integer,
-                # or it is larger than the limit.
-                line = line_replace
-                continue
-            # Ignore this exponentiation if it is inside a quote
-            inside_quote = {"'": False, '"': False}
-            for c in line[exponent_indices[1]:]:
-                if   c == "'" and not inside_quote['"']:
-                    inside_quote["'"] = (not inside_quote["'"])
-                elif c == '"' and not inside_quote["'"]:
-                    inside_quote['"'] = (not inside_quote['"'])
-            if inside_quote["'"] or inside_quote['"']:
-                # Exponentiation happens inside a string
-                line = line_replace
-                continue
-            # We cannot deploy this optimization inside list/dict/set
-            # comprehensions and generator expressions.
-            if ' for ' in line:
-                inside_comprehension = False
-                for_indices = [m.start() for m in re.finditer(' for ', line)]
-                for for_index in for_indices:
-                    # Find boundaries of this comprehension
-                    paren = bracket = curly = 0
-                    for i, c in enumerate(line[for_index:]):
-                        if c == '(':
-                            paren += 1
-                        elif c == ')':
-                            paren -= 1
-                            if paren < 0:
-                                break
-                        if c == '[':
-                            bracket += 1
-                        elif c == ']':
-                            bracket -= 1
-                            if bracket < 0:
-                                break
-                        if c == '{':
-                            curly += 1
-                        elif c == '}':
-                            curly -= 1
-                            if curly < 0:
-                                break
-                    comprehension_end = for_index + i + 1
-                    paren = bracket = curly = 0
-                    for i, c in enumerate(reversed(line[:for_index])):
-                        if c == '(':
-                            paren += 1
-                            if paren > 0:
-                                break
-                        elif c == ')':
-                            paren -= 1
-                        if c == '[':
-                            bracket += 1
-                            if bracket > 0:
-                                break
-                        elif c == ']':
-                            bracket -= 1
-                        if c == '{':
-                            curly += 1
-                            if curly > 0:
-                                break
-                        elif c == '':
-                            curly -= 1
-                    comprehension_start = for_index - i - 1
-                    if (    exponent_indices[0] > comprehension_start
-                        and exponent_indices[1] < comprehension_end
-                        ):
-                        inside_comprehension = True
-                        break
-                if inside_comprehension:
-                    # Exponentiation happens inside list/dict/set
-                    # comprehenstions or generator expressions.
-                    line = line_replace
-                    continue
-            # Locate base
-            paren = bracket = 0
-            for i, c in enumerate(reversed(line[:starstar_index])):
-                if c == '(':
-                    paren += 1
-                    if paren > 0:
-                        break
-                elif c == ')':
-                    paren -= 1
-                if c == '[':
-                    bracket += 1
-                    if bracket > 0:
-                        break
-                elif c == ']':
-                    bracket -= 1
-                if paren == 0 and bracket == 0 and c in operators:
-                    break
-            base_indices = (starstar_index - i, starstar_index)
-            base = '({})'.format(line[base_indices[0]:base_indices[1]].strip())
-            # Replace power with chain of multiplication expressions
-            varname_suffix = '{}{}'.format(addition_chain_exponentiation_varname, power_counter)
-            statements = transform_power(base, exponent, varname_suffix)
-            indentation = ' '*(len(line) - len(line.lstrip()))
-            statements = [indentation + statement for statement in statements]
-            header_line = ('{}# Begin addition chain exponentiation nr. {}\n'
-                           .format(indentation, power_counter))
-            new_lines.append(header_line)
-            header_line = ('{}# Original exponentiation: {}\n'
-                           .format(indentation, line[base_indices[0]:exponent_indices[1]]))
-            new_lines.append(header_line.replace(starstar_replacement, '**'))
-            base_varname = 'base' + varname_suffix
-            for statement in statements:
-                statement = statement.replace(base_varname, base)
-                new_lines.append(statement.replace(starstar_replacement, '**'))
-            footer_line = ('{}# End addition chain exponentiation nr. {}\n'
-                           .format(indentation, power_counter))
-            new_lines.append(footer_line)
-            power_counter += 1
-            line = '{} {} {}'.format(line[:base_indices[0]],
-                                     'result' + varname_suffix,
-                                     line[exponent_indices[1]:])
-        # Done replacing '**' in this line.
-        # Remove any temporarily inserted strings.
-        line_old = None
-        while line_old != line:
-            line_old = line
-            line = line.replace(starstar_replacement, '**')
-        new_lines.append(line.rstrip() + '\n')
-    return new_lines
-# Variable name of inserted variables used for the addition
-# chain exponentiations. The full variable name (in both Python and C)
-# of these variables will be some name followed by this str followed
-# by an integer.
-addition_chain_exponentiation_varname = '_addition_chain_exponentiation_'
-
-
-
-def add_types_to_addition_chain_exponentiation_variables(lines, clines, no_optimization):
-    # Do not do anything if optimizations are disabled
-    if no_optimization:
-        return lines
-    # To improve the performance, remove all comment and macro lines
-    # from the clines.
-    new_clines = []
-    for cline in clines:
-        cline_lstripped = cline.lstrip()
-        if not (   cline_lstripped.startswith('*')
-                or cline_lstripped.startswith('#')
-                or cline_lstripped.startswith('/*')
-                ):
-            new_clines.append(cline)
-    clines = new_clines
-    # This function will search the .pyx lines and find chain
-    # exponentiation variables inserted by the power2product function.
-    # These variables are not explicitly typed in the Python code,
-    # leading Cython to auto-type them as either doubles or PyObject*
-    # (or no type at all for module level variables which may be treated
-    # separately by Cython). Whenever a PyObject* declaration is found
-    # for such a variable, it really should have the type Py_ssize_t.
-    funcsuffixes2types = {
-        # Integers
-        'char'      : 'char',
-        'signedchar': 'signed char',
-        'short'     : 'short',
-        'int'       : 'int',
-        'long'      : 'long int',
-        'pylonglong': 'long long int',
-        'ptrdifft'  : 'ptrdiff_t',
-        # Unsgined integers
-        'unsignedchar'      : 'unsigned char',
-        'unsignedshort'     : 'unsigned short',
-        'unsignedint'       : 'unsigned int',
-        'unsignedlong'      : 'unsigned long int',
-        'unsignedpylonglong': 'unsigned long long int',
-        'ssizet'            : 'Py_ssize_t',
-        # Floating-point numbers
-        'double': 'double',
-    }
-    def search_backwards(tmp_varname, variable_numer, prev_clines):
-        pattern = r'{} *= *([^\W0-9]\w*) *\('
-        for prev_cline in reversed(prev_clines):
-            prev_cline_lstripped = prev_cline.lstrip()
-            if (   prev_cline_lstripped.startswith('*')
-                or prev_cline_lstripped.startswith('/*')
-                ):
-                # Some comments hit.
-                # Searching further up would be
-                # irresponsible.
-                break
-            match = re.search(pattern.format(tmp_varname), prev_cline)
-            if match:
-                # A line like
-                # __pyx_t_7 = PyInt_FromSsize_t(...);
-                # have been reached.
-                func_name = match.group(1)
-                variable_type = func_name.replace('_', '').lower()
-                if 'from' in variable_type:
-                    variable_type = variable_type[(variable_type.index('from') + 4):]
-                    variable_type = funcsuffixes2types[variable_type]
-                    variable_types[variable_numer] = variable_type
-                break
-    # Search through the lines and find the types of the base addition
-    # chain exponentiation variables (those which names starts with
-    # an 'a'). The results will be stored in the variable_types dict.
-    variable_types = {}
-    addition_chain_exponentiation_basevarname = 'a' + addition_chain_exponentiation_varname
-    addition_chain_exponentiation_pattern = addition_chain_exponentiation_basevarname + '[0-9]+'
-    pattern_fmt = r'\w*{} *= *([^\W0-9]\w*) *;'
-    pattern_pyobject_fmt = r'\( *\w*{} *, *([^\W0-9]\w*) *\) *;'
-    for line in lines:
-        match = re.search(addition_chain_exponentiation_pattern, line)
-        if match:
-            # Base addition chain exponentiation found.
-            # Get the variable name.
-            variable = match.group()
-            variable_numer = int(variable[(variable.rindex('_') + 1):])
-            pattern = pattern_fmt.format(variable)
-            pattern_pyobject = pattern_pyobject_fmt.format(variable)
-            if variable_numer not in variable_types:
-                variable_types[variable_numer] = None
-                # New  addition chain exponentiation variable number
-                is_pyobject = False
-                for i, cline in enumerate(clines):
-                    match = re.search(pattern, cline)
-                    if match:
-                        if not is_pyobject and cline.lstrip().startswith('PyObject'):
-                            is_pyobject = True
-                        elif is_pyobject:
-                            # A line like
-                            # __pyx_v_a_addition_chain_exponentiation_0 = __pyx_t_8;
-                            # has been reached.
-                            tmp_varname = match.group(1)
-                            search_backwards(tmp_varname, variable_numer, clines[:i])
-                            break
-                    elif is_pyobject:
-                        match = re.search(pattern_pyobject, cline)
-                        if match:
-                            # A line like
-                            # __Pyx_XDECREF_SET(__pyx_v_a_addition_chain_exponentiation_0, __pyx_t_7);
-                            # have been reached. Search upward to
-                            # find the line where the temporary
-                            # variable is defined.
-                            tmp_varname = match.group(1)
-                            search_backwards(tmp_varname, variable_numer, clines[:i])
-                            break
-    # Run through the lines and add declarations to addition chain
-    # exponentiation variables. All such variables of the same number
-    # (those belonging to the same chain) have the same type.
-    previous_variables = set()
-    new_lines = []
-    for line in lines:
-        if addition_chain_exponentiation_varname in line:
-            # Addition chain exponentiation found.
-            # Get the variable name.
-            match = re.search(r'[^\W0-9]\w*{}[0-9]+'
-                              .format(addition_chain_exponentiation_varname),
-                              line)
-            if match:
-                variable = match.group()
-                if variable not in previous_variables:
-                    previous_variables.add(variable)
-                    # Lookup the type of this variable
-                    variable_numer = int(variable[(variable.rindex('_') + 1):])
-                    variable_type = variable_types.get(variable_numer)
-                    if variable_type:
-                        # Insert declaration
-                        indentation = ' '*(len(line) - len(line.lstrip()))
-                        new_lines.append("{}cython.declare({}='{}')\n"
-                                         .format(indentation, variable, variable_type))
-        new_lines.append(line)
-    return new_lines
-
-
-
 def __init__2__cinit__(lines, no_optimization):
     new_lines = []
     in_cclass = False
@@ -3709,25 +3296,9 @@ def make_pxd(filename, no_optimization):
 if __name__ == '__main__':
     # Interpret input argument
     filename = sys.argv[1]
-    c_file_passed = False
-    if sys.argv[2].endswith('.c'):
-        filename_c = sys.argv[2]
-        c_file_passed = True
-    else:
-        filename_commons = sys.argv[2]
-        # Import the non-compiled commons module
-        commons_name = filename_commons[:-3]
-        @contextlib.contextmanager
-        def suppress_stdout():
-            with open(os.devnull, "w") as devnull:
-                old_stdout = sys.stdout
-                sys.stdout = devnull
-                try:
-                    yield
-                finally:
-                    sys.stdout = old_stdout
-        with suppress_stdout():
-            commons = import_py_module('commons')
+    if not filename.endswith('.py') and not filename.endswith('.pyx'):
+        raise Exception(f'Got "{filename}", which is neither a .py nor a .pyx file')
+    filename_commons = sys.argv[2]
     no_optimization = False
     if len(sys.argv) > 3:
         if sys.argv[3] == '--no-optimizations':
@@ -3736,27 +3307,38 @@ if __name__ == '__main__':
             filename_types = sys.argv[3]
             if not filename_types.endswith('.pyx'):
                 raise Exception(
-                    f'Got "{filename_types}" as the third argument, which should be either '
-                    f'a .pyx file or the "--no-optimizations" flag'
+                    f'Got "{filename_types}" as the third argument, '
+                    f'which should be either a .pyx file or '
+                    f'the "--no-optimizations" flag'
                 )
     if len(sys.argv) > 4:
         all_pyxfiles = sys.argv[4:]
+        if not filename.endswith('.pyx'):
+            raise Exception(
+                f'Got "{filename}" which is not a .pyx file as the '
+                f'first argument, while receiving more than three arguments'
+            )
+    # Import the non-compiled commons module
+    commons_name = filename_commons[:-3]
+    @contextlib.contextmanager
+    def suppress_stdout():
+        with open(os.devnull, 'w') as devnull:
+            old_stdout = sys.stdout
+            sys.stdout = devnull
+            try:
+                yield
+            finally:
+                sys.stdout = old_stdout
+    with suppress_stdout():
+        commons = import_py_module('commons')
     # Perform operations
-    if len(sys.argv) > 4:
-        # Make the types file, containing the definitions of all custom
-        # types implemented in the .pyx files.
-        if filename.endswith('.pyx'):
-            make_types(filename, no_optimization)  # filename == filename_types
-        else:
-            raise Exception('Got "{}" which is not a .pyx file as the first argument, '
-                            'while receiving more than three arguments'.format(filename))
-    else:
+    if len(sys.argv) < 5:
         if filename.endswith('.py'):
             # A .py-file is passed.
             # Read in the lines of the file.
             with open(filename, 'r', encoding='utf-8') as pyfile:
                 lines = pyfile.readlines()
-            # Apply transformations (stage 1) on the lines
+            # Apply transformations on the lines
             lines = cimport_cython               (lines, no_optimization)
             lines = oneline                      (lines, no_optimization)
             lines = remove_functions             (lines, no_optimization)
@@ -3770,7 +3352,6 @@ if __name__ == '__main__':
             lines = inline_iterators             (lines, no_optimization)
             lines = constant_expressions         (lines, no_optimization)
             lines = unicode2ASCII                (lines, no_optimization)
-            lines = power2product                (lines, no_optimization)
             lines = loop_unswitching             (lines, no_optimization)
             lines = remove_duplicate_declarations(lines, no_optimization)
             lines = cython_decorators            (lines, no_optimization)
@@ -3784,23 +3365,12 @@ if __name__ == '__main__':
             with open(filename_pyx, 'w', encoding='utf-8') as pyxfile:
                 pyxfile.writelines(lines)
         elif filename.endswith('.pyx'):
-            # A .pyx-file is passed
-            if c_file_passed:
-                # A .pyx and its .c file is passed.
-                # This .c file is a result of cythonization after
-                # stage 1. Execute stage 2.
-                with open(filename, 'r', encoding='utf-8') as pyxfile:
-                    lines = pyxfile.readlines()
-                with open(filename_c, 'r', encoding='utf-8') as cfile:
-                    clines = cfile.readlines()
-                lines = add_types_to_addition_chain_exponentiation_variables(
-                    lines, clines, no_optimization,
-                )
-                # Write the modified lines to the .pyx-file
-                with open(filename, 'w', encoding='utf-8') as pyxfile:
-                    pyxfile.writelines(lines)
-            else:
-                # Make the .pxd
-                make_pxd(filename, no_optimization)
-        else:
-            raise Exception('Got "{}", which is neither a .py nor a .pyx file'.format(filename))
+            # A .pyx-file is passed.
+            # Make the .pxd file.
+            make_pxd(filename, no_optimization)
+    else:
+        # All the .pyx files are passed.
+        # Make the types file, containing the definitions of all custom
+        # types implemented in the .pyx files.
+        make_types(filename, no_optimization)  # filename == filename_types
+

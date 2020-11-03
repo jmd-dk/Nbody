@@ -352,39 +352,12 @@ $(addsuffix .o, $(pyfiles)): %.o: %.c
 
 # Cythonize .pyx and .pxd files into C source files
 # (and also produce the annotated .html file).
-# The final .c file is created in two stages, because the pyxpp script
-# needs information from the .c file to complete the .pyx file.
-# This updates the .pyx file which scrambles the build order
-# when not in unsafe mode. We fix this by updating
-# some time stamps by hand.
 $(addsuffix .c, $(pyfiles)): %.c: %.pyx %.pxd
 	@$(call heading)
-ifeq ($(no_optimizations),True)
 	$(python) -m cython $(cythonflags) $<
-else
-	$(python) -m cython $(filter-out -a, $(cythonflags)) $<
-	$(python) -B $(pyxpp) $< $@
-	$(python) -m cython $(cythonflags) $<
-ifneq ($(unsafe_building),True)
-	@touch $(types)
-	@touch $(addsuffix .pxd, $(pyfiles))
-	@touch $@
-endif
-endif
 # Same as above (for explicit builds of html)
 $(addsuffix .html, $(pyfiles)): %.html: %.pyx %.pxd
-ifeq ($(no_optimizations),True)
 	$(python) -m cython $(cythonflags) $<
-else
-	$(python) -m cython $(filter-out -a, $(cythonflags)) $<
-	$(python) -B $(pyxpp) $< $(@:.html=.c)
-	$(python) -m cython $(cythonflags) $<
-ifneq ($(unsafe_building),True)
-	@touch $(types)
-	@touch $(addsuffix .pxd, $(pyfiles))
-	@touch $@
-endif
-endif
 
 # Write .pxd files from .pyx files together with the types file
 # using the pyxpp script.
