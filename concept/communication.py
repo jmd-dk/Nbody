@@ -1020,47 +1020,45 @@ component_buffer = None
 rung_indices_arr = empty(1, dtype=C2np['signed char'])
 
 # Very general function for different MPI communications
-@cython.pheader(# Arguments
-                block_send=object,  # Memoryview of dimension 1, 2 or 3
-                block_recv=object,  # Memoryview of dimension 1, 2 or 3, or int
-                dest='int',
-                source='int',
-                root='int',
-                reverse='bint',
-                mpifun=str,
-                operation=str,
-                # Local
-                arr_recv=object,  # NumPy aray
-                arr_send=object,  # NumPy aray
-                block_recv_passed_as_scalar='bint',
-                contiguous_recv='bint',
-                contiguous_send='bint',
-                data_recv=object,  # NumPy aray
-                data_send=object,  # NumPy aray
-                dims_recv='Py_ssize_t',
-                dims_send='Py_ssize_t',
-                i='Py_ssize_t',
-                index='Py_ssize_t',
-                j='Py_ssize_t',
-                k='Py_ssize_t',
-                mv_1D='double[:]',
-                mv_2D='double[:, :]',
-                mv_3D='double[:, :, :]',
-                recving='bint',
-                sending='bint',
-                shape_send=tuple,
-                size_recv='Py_ssize_t',
-                size_send='Py_ssize_t',
-                sizes_recv='Py_ssize_t[::1]',
-                recvbuf_mv='double[::1]',
-                recvbuf_name=object,  # int or str
-                reverse_mpifun_mapping=dict,
-                sendbuf_mv='double[::1]',
-                using_recvbuf='bint',
-                returns=object,  # NumPy array or mpi4py.MPI.Request
-                )
-def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank,
-              reverse=False, mpifun='', operation='='):
+@cython.pheader(
+    # Arguments
+    block_send=object,  # Memoryview of dimension 1, 2 or 3
+    block_recv=object,  # Memoryview of dimension 1, 2 or 3, or int
+    dest='int',
+    source='int',
+    root='int',
+    reverse='bint',
+    mpifun=str,
+    operation=str,
+    # Local
+    arr_recv=object,  # NumPy aray
+    arr_send=object,  # NumPy aray
+    block_recv_passed_as_scalar='bint',
+    contiguous_recv='bint',
+    contiguous_send='bint',
+    data_recv=object,  # NumPy aray
+    data_send=object,  # NumPy aray
+    i='Py_ssize_t',
+    index='Py_ssize_t',
+    j='Py_ssize_t',
+    k='Py_ssize_t',
+    recving='bint',
+    sending='bint',
+    shape_send=tuple,
+    size_recv='Py_ssize_t',
+    size_send='Py_ssize_t',
+    sizes_recv='Py_ssize_t[::1]',
+    recvbuf_mv='double[::1]',
+    recvbuf_name=object,  # int or str
+    reverse_mpifun_mapping=dict,
+    sendbuf_mv='double[::1]',
+    using_recvbuf='bint',
+    returns=object,  # NumPy array or mpi4py.MPI.Request
+)
+def smart_mpi(
+    block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank,
+    reverse=False, mpifun='', operation='=',
+):
     """This function will do MPI communication. It will send the data in
     the array/memoryview block_send to the process of rank dest
     and receive data into array/memoryview block_recv from rank source.
@@ -1136,7 +1134,7 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
             recving = (rank == root)
     if not sending and not recving:
         if mpifun:
-            abort('MPI function "{}" not understood'.format(mpifun))
+            abort(f'MPI function "{mpifun}" not understood')
         else:
             abort('Which MPI function to use is not specified')
     # If requested, reverse the communication direction
@@ -1151,7 +1149,7 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
                                   'sendrecv': 'sendrecv',
                                    }
         if mpifun not in reverse_mpifun_mapping:
-            abort('MPI function "{}" cannot be reversed'.format(mpifun))
+            abort(f'MPI function "{mpifun}" cannot be reversed')
         mpifun = reverse_mpifun_mapping[mpifun]
     # If only receiving, block_recv should be
     # accessible as the first argument.
@@ -1184,19 +1182,14 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
     # Are the passed arrays contiguous?
     contiguous_send = arr_send.flags.c_contiguous
     contiguous_recv = arr_recv.flags.c_contiguous
-    # Get the dimensionality and sizes of the passed arrays
-    dims_send = arr_send.ndim
-    dims_recv = arr_recv.ndim
     # The send and recv blocks cannot be scalar NumPy arrays.
     # Do an in-place reshape to 1D-arrays of size 1.
-    if dims_send == 0:
+    if arr_send.ndim == 0:
         arr_send.resize(1, refcheck=False)
-        dims_send = 1
     block_recv_passed_as_scalar = False
-    if dims_recv == 0:
+    if arr_recv.ndim == 0:
         block_recv_passed_as_scalar = True
         arr_recv.resize(1, refcheck=False)
-        dims_recv = 1
     size_send = arr_send.size
     shape_send = arr_send.shape
     # Figure out the size of the data to be received
@@ -1260,24 +1253,7 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
         data_recv = recvbuf_mv
     # Fill send buffer if this is to be used
     if sending and not contiguous_send:
-        index = 0
-        if dims_send == 1:
-            mv_1D = arr_send
-            for i in range(ℤ[mv_1D.shape[0]]):
-                sendbuf_mv[i] = mv_1D[i]
-        elif dims_send == 2:
-            mv_2D = arr_send
-            for     i in range(ℤ[mv_2D.shape[0]]):
-                for j in range(ℤ[mv_2D.shape[1]]):
-                    sendbuf_mv[index] = mv_2D[i, j]
-                    index += 1
-        elif dims_send == 3:
-            mv_3D = arr_send
-            for         i in range(ℤ[mv_3D.shape[0]]):
-                for     j in range(ℤ[mv_3D.shape[1]]):
-                    for k in range(ℤ[mv_3D.shape[2]]):
-                        sendbuf_mv[index] = mv_3D[i, j, k]
-                        index += 1
+        copy_to_contiguous(arr_send, sendbuf_mv)
     # Do the communication
     if mpifun == 'allgather':
         Allgather(data_send, data_recv)
@@ -1310,47 +1286,8 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
         return arr_recv[:0]
     # Copy or add the received data from the buffer
     # to the passed block_recv (arr_recv), if needed.
-    index = 0
-    if operation == '=' and not contiguous_recv:
-        if dims_recv == 1:
-            mv_1D = arr_recv
-            for i in range(size_recv):
-                mv_1D[i] = recvbuf_mv[i]
-        elif dims_recv == 2:
-            mv_2D = arr_recv
-            for     i in range(ℤ[mv_2D.shape[0]]):
-                for j in range(ℤ[mv_2D.shape[1]]):
-                    mv_2D[i, j] = recvbuf_mv[index]
-                    index += 1
-        elif dims_recv == 3:
-            mv_3D = arr_recv
-            for         i in range(ℤ[mv_3D.shape[0]]):
-                for     j in range(ℤ[mv_3D.shape[1]]):
-                    for k in range(ℤ[mv_3D.shape[2]]):
-                        mv_3D[i, j, k] = recvbuf_mv[index]
-                        index += 1
-        else:
-            abort('Cannot handle block_recv of dimension {}'.format(dims_recv))
-    elif operation == '+=':
-        if dims_recv == 1:
-            mv_1D = arr_recv
-            for i in range(size_recv):
-                mv_1D[i] += recvbuf_mv[i]
-        elif dims_recv == 2:
-            mv_2D = arr_recv
-            for     i in range(ℤ[mv_2D.shape[0]]):
-                for j in range(ℤ[mv_2D.shape[1]]):
-                    mv_2D[i, j] += recvbuf_mv[index]
-                    index += 1
-        elif dims_recv == 3:
-            mv_3D = arr_recv
-            for         i in range(ℤ[mv_3D.shape[0]]):
-                for     j in range(ℤ[mv_3D.shape[1]]):
-                    for k in range(ℤ[mv_3D.shape[2]]):
-                        mv_3D[i, j, k] += recvbuf_mv[index]
-                        index += 1
-        else:
-            abort('Cannot handle block_recv of dimension {}'.format(dims_recv))
+    if (operation == '=' and not contiguous_recv) or operation == '+=':
+        copy_to_noncontiguous(recvbuf_mv, arr_recv, operation)
     # If both sending and receiving, the two blocks of data
     # should (probably) have the same shape. If no block_recv was
     # supplied, arr_recv will always be 1D.
@@ -1363,6 +1300,151 @@ def smart_mpi(block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank
         arr_recv = arr_recv.reshape(shape_recv)
     # Return the now populated arr_recv
     return arr_recv
+
+# Function for copying a multi-dimensional non-contiguous
+# array into a 1D contiguous buffer.
+@cython.header(
+    # Arguments
+    arr=object,  # np.ndarray
+    buf='double[::1]',
+    # Locals
+    bufptr='double*',
+    bufview1D='double[::1]',
+    bufview2D='double[:, ::1]',
+    bufview3D='double[:, :, ::1]',
+    i='Py_ssize_t',
+    index='Py_ssize_t',
+    index_i='Py_ssize_t',
+    index_ij='Py_ssize_t',
+    j='Py_ssize_t',
+    k='Py_ssize_t',
+    ndim='int',
+    size='Py_ssize_t',
+    size_i='Py_ssize_t',
+    size_j='Py_ssize_t',
+    size_k='Py_ssize_t',
+    view1D='double[:]',
+    view2D='double[:, :]',
+    view3D='double[:, :, :]',
+    viewcontig='double[::1]',
+    returns='void',
+)
+def copy_to_contiguous(arr, buf):
+    """It is assumed that the contiguous buf is at least
+    as large as the arr, but it may be larger.
+    """
+    arr = asarray(arr, dtype=C2np['double'])
+    if arr.flags.c_contiguous:
+        size = arr.size
+        viewcontig = arr.reshape(size)
+        buf[:size] = viewcontig[:]
+        return
+    ndim = arr.ndim
+    bufptr = cython.address(buf[:])
+    if ndim == 1:
+        view1D = arr
+        bufview1D = cast(bufptr, 'double[:view1D.shape[0]]')
+        bufview1D[:] = view1D[:]
+    elif ndim == 2:
+        view2D = arr
+        bufview2D = cast(bufptr, 'double[:view2D.shape[0], :view2D.shape[1]]')
+        bufview2D[...] = view2D[...]
+    elif ndim == 3:
+        view3D = arr
+        bufview3D = cast(bufptr, 'double[:view3D.shape[0], :view3D.shape[1], :view3D.shape[2]]')
+        bufview3D[...] = view3D[...]
+    elif ndim == 0:
+        pass
+    else:
+        abort(f'copy_to_contiguous() got array with {ndim} dimensions')
+
+# Function for copying a 1D contiguous buffer into a
+# multi-dimensional non-contiguous array.
+@cython.header(
+    # Arguments
+    buf='double[::1]',
+    arr=object,  # np.ndarray
+    operation=str,
+    # Locals
+    bufptr='double*',
+    bufview1D='double[::1]',
+    bufview2D='double[:, ::1]',
+    bufview3D='double[:, :, ::1]',
+    i='Py_ssize_t',
+    index='Py_ssize_t',
+    index_i='Py_ssize_t',
+    index_ij='Py_ssize_t',
+    j='Py_ssize_t',
+    k='Py_ssize_t',
+    ndim='int',
+    size='Py_ssize_t',
+    size_i='Py_ssize_t',
+    size_j='Py_ssize_t',
+    size_k='Py_ssize_t',
+    view1D='double[:]',
+    view2D='double[:, :]',
+    view3D='double[:, :, :]',
+    viewcontig='double[::1]',
+    returns='void',
+)
+def copy_to_noncontiguous(buf, arr, operation='='):
+    """It is assumed that the contiguous buf is at least
+    as large as the arr, but it may be larger.
+    """
+    arr = asarray(arr, dtype=C2np['double'])
+    bufptr = cython.address(buf[:])
+    if arr.flags.c_contiguous:
+        size = arr.size
+        viewcontig = arr.reshape(size)
+        if operation == '=':
+            viewcontig[:] = buf[:size]
+        else:  # operation == '+='
+            for index in range(size):
+                viewcontig[index] += bufptr[index]
+        return
+    ndim = arr.ndim
+    if ndim == 1:
+        view1D = arr
+        size = view1D.shape[0]
+        if operation == '=':
+            bufview1D = cast(bufptr, 'double[:size]')
+            view1D[:] = bufview1D[:]
+        else:  # operation == '+='
+            for index in range(size):
+                view1D[index] += bufptr[index]
+    elif ndim == 2:
+        view2D = arr
+        size_i, size_j = view2D.shape[0], view2D.shape[1]
+        if operation == '=':
+            bufview2D = cast(bufptr, 'double[:size_i, :size_j]')
+            view2D[...] = bufview2D[...]
+        else:  # operation == '+='
+            index_i = -size_j
+            for i in range(size_i):
+                index_i += size_j
+                for j in range(size_j):
+                    index = index_i + j
+                    view2D[i, j] += bufptr[index]
+    elif ndim == 3:
+        view3D = arr
+        size_i, size_j, size_k = view3D.shape[0], view3D.shape[1], view3D.shape[2]
+        if operation == '=':
+            bufview3D = cast(bufptr, 'double[:size_i, :size_j, :size_k]')
+            view3D[...] = bufview3D[...]
+        else:  # operation == '+='
+            index_i = -size_j
+            for i in range(size_i):
+                index_i += size_j
+                index_ij = (index_i - 1)*size_k
+                for j in range(size_j):
+                    index_ij += size_k
+                    for k in range(size_k):
+                        index = index_ij + k
+                        view3D[i, j, k] += bufptr[index]
+    elif ndim == 0:
+        pass
+    else:
+        abort(f'copy_to_noncontiguous() got array with {ndim} dimensions')
 
 # Function which manages buffers used by other functions
 @cython.pheader(
