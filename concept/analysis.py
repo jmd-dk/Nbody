@@ -780,11 +780,11 @@ def get_powerspec_header(declarations):
         if column_heading.strip() == column_headings['k']:
             if col > 0:
                 width -= group_spacing
-                group_header_underlines.append('/' + unicode('‾')*(width - 2) + '\\')
+                group_header_underlines.append(unicode('╭' + unicode('─')*(width - 2) + '╮'))
             width = len(column_heading)
         else:
             width += len(delimiter) + len(column_heading)
-    group_header_underlines.append('/' + unicode('‾')*(width - 2) + '\\')
+    group_header_underlines.append(unicode('╭' + unicode('─')*(width - 2) + '╮'))
     group_headers = []
     for (gridsize, binsize), group_header_underline in zip(
         declaration_groups, group_header_underlines,
