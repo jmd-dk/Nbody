@@ -7,7 +7,6 @@ CMD ["bash"]
 ARG concept_version=/source
 ARG top_dir="/concept"
 ARG slim=True
-ARG native_optimizations=False
 ARG mpi=mpich
 ARG mpi_configure_options="+= --with-device=ch3:sock"
 ARG blas_no_avx=True

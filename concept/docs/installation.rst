@@ -452,19 +452,6 @@ dependencies (should any be missing), which require root access.
 .. raw:: html
 
    <h6>
-     Native optimizations:
-     <code class="docutils literal notranslate"><span class="pre">
-       --native-optimizations
-     </span></code>
-   </h6>
-
-This passes the
-:ref:`\\\\-\\\\-native-optimizations flag <native_optimizations>` on to the
-CO\ *N*\ CEPT compilation.
-
-.. raw:: html
-
-   <h6>
      Slim:
      <code class="docutils literal notranslate"><span class="pre">
        --slim
