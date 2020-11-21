@@ -274,6 +274,7 @@ static_timestepping = None          # File to write/read static time-stepping in
 N_rungs = 10                        # Number of available rungs for adaptive time stepping
 fftw_wisdom_rigor = 'measure'       # Rigor level when acquiring FFTW wisdom
 fftw_wisdom_reuse = True            # Reuse FFTW wisdom from earlier runs?
+fftw_wisdom_share = False           # Share FFTW wisdom across nodes?
 random_generator = 'PCG64'          # Pseudo-random number generator to use
 random_seed = 0                     # Seed for pseudo-random numbers
 primordial_amplitude_fixed = False  # Replace Gaussian noise with noise of fixed amplitude and uniform random phase?

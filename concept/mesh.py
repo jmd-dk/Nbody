@@ -1961,13 +1961,12 @@ def nullify_modes(slab_or_slabs, nullifications):
     buffer_name=object,  # int or str
     nullify='bint',
     # Locals
+    acquire='bint',
     as_expected='bint',
     fftw_plans_index='Py_ssize_t',
     fftw_struct=fftw_return_struct,
     plan_backward=fftw_plan,
     plan_forward=fftw_plan,
-    rigor=str,
-    rigor_final=str,
     shape=tuple,
     slab='double[:, :, ::1]',
     slab_address='Py_ssize_t',
@@ -1997,12 +1996,12 @@ def get_fftw_slab(gridsize, buffer_name='slab_particles', nullify=False):
             slab[...] = 0
         return slab
     # Checks on the passed gridsize
-    if gridsize%nprocs != 0:
+    if gridsize%nprocs:
         abort(
             f'A grid size of {gridsize} was passed to the get_fftw_slab() function. '
             f'This grid size is not evenly divisible by {nprocs} processes.'
         )
-    if gridsize%2 != 0:
+    if gridsize%2:
         masterwarn(
             f'An odd grid size ({gridsize}) was passed to the get_fftw_slab() function. '
             f'Some operations may not function correctly.'
@@ -2019,55 +2018,27 @@ def get_fftw_slab(gridsize, buffer_name='slab_particles', nullify=False):
     if not cython.compiled:
         slab = empty(shape, dtype=C2np['double'])
     else:
-        # Determine what FFTW rigor to use.
-        # The rigor to use will be stored as rigor_final.
-        if master:
-            if fftw_wisdom_reuse:
-                for rigor in fftw_wisdom_rigors:
-                    wisdom_filename = get_wisdom_filename(gridsize, rigor)
-                    # At least be as rigorous as defined by
-                    # the fftw_wisdom_rigor user parameter.
-                    if rigor == fftw_wisdom_rigor:
-                        break
-                    # Use a better rigor if wisdom already exist
-                    if os.path.isfile(wisdom_filename):
-                        break
-                rigor_final = rigor
-            else:
-                rigor_final = fftw_wisdom_rigor
-            # If less rigorous wisdom exists for the same problem,
-            # delete it.
-            for rigor in reversed(fftw_wisdom_rigors):
-                if rigor == rigor_final:
-                    break
-                wisdom_filename = get_wisdom_filename(gridsize, rigor)
-                if os.path.isfile(wisdom_filename):
-                    os.remove(wisdom_filename)
-        rigor_final = bcast(rigor_final if master else None)
-        wisdom_filename = bcast(get_wisdom_filename(gridsize, rigor_final) if master else None)
+        # Get path to FFTW wisdom file
+        wisdom_filename = get_wisdom_filename(gridsize)
         # Initialize fftw_mpi, allocate the grid, initialize the
         # local grid sizes and start indices and do FFTW planning.
-        # All this is handled by fftw_setup from fft.c.
-        # Note that FFTW will reuse wisdom between calls within the same
-        # MPI session. The global wisdom_acquired dict keeps track of
-        # what wisdom FFTW have already acquired, ensuring correct
-        # progress messages.
+        acquire = False
         if master:
             os.makedirs(os.path.dirname(wisdom_filename), exist_ok=True)
-            reuse = (fftw_wisdom_reuse and os.path.isfile(wisdom_filename))
-        reuse = bcast(reuse if master else None)
-        if not reuse and not wisdom_acquired.get((gridsize, nprocs, rigor_final)):
-            masterprint(
-                f'Acquiring FFTW wisdom ({rigor_final}) for grid size {gridsize} ...'
-            )
-        fftw_struct = fftw_setup(gridsize, gridsize, gridsize,
-                                 bytes(rigor_final, encoding='ascii'),
-                                 reuse,
-                                 bytes(wisdom_filename, encoding='ascii'),
-                                 )
-        if not reuse and not wisdom_acquired.get((gridsize, nprocs, rigor_final)):
+            if gridsize not in wisdom_acquired and not os.path.isfile(wisdom_filename):
+                acquire = True
+                masterprint(
+                    f'Acquiring FFTW wisdom ({fftw_wisdom_rigor}) for grid size {gridsize} ...'
+                )
+        fftw_struct = fftw_setup(
+            gridsize, gridsize, gridsize,
+            bytes(fftw_wisdom_rigor, encoding='ascii'),
+            fftw_wisdom_reuse,
+            bytes(wisdom_filename, encoding='ascii'),
+        )
+        if acquire:
             masterprint('done')
-        wisdom_acquired[gridsize, nprocs, rigor_final] = True
+        wisdom_acquired[gridsize] = True
         # Unpack every variable from fftw_struct
         # and compare to expected values.
         slab_size_i   = int(fftw_struct.gridsize_local_i)
@@ -2078,22 +2049,24 @@ def get_fftw_slab(gridsize, buffer_name='slab_particles', nullify=False):
         plan_backward = fftw_struct.plan_backward
         slab_ptr      = fftw_struct.grid
         as_expected = True
-        if (   slab_size_i  != ℤ[shape[0]]
+        if (
+               slab_size_i  != ℤ[shape[0]]
             or slab_size_j  != ℤ[shape[0]]
             or slab_start_i != ℤ[shape[0]*rank]
             or slab_start_j != ℤ[shape[0]*rank]
-            ):
+        ):
             as_expected = False
-            warn(f'FFTW has distributed a slab of grid size {gridsize} differently '
-                 f'from what was expected on rank {rank}:\n'
-                 f'    slab_size_i  = {slab_size_i}, expected {shape[0]},\n'
-                 f'    slab_size_j  = {slab_size_j}, expected {shape[0]},\n'
-                 f'    slab_start_i = {slab_start_i}, expected {shape[0]*rank},\n'
-                 f'    slab_start_j = {slab_start_j}, expected {shape[0]*rank},\n'
-                 )
+            warn(
+                f'FFTW has distributed a slab of grid size {gridsize} differently '
+                f'from what was expected on rank {rank}:\n'
+                f'    slab_size_i  = {slab_size_i}, expected {shape[0]},\n'
+                f'    slab_size_j  = {slab_size_j}, expected {shape[0]},\n'
+                f'    slab_start_i = {slab_start_i}, expected {shape[0]*rank},\n'
+                f'    slab_start_j = {slab_start_j}, expected {shape[0]*rank},\n'
+            )
         as_expected = allreduce(as_expected, op=MPI.LOR)
         if not as_expected:
-            abort('Refusing to carry on with this non-expected decomposition.')
+            abort('Refusing to carry on with this non-expected decomposition')
         # Wrap the slab pointer in a memory view. Looping over this
         # memory view should be done as noted in fft.c, but use
         # slab[i, j, k] when in real space and slab[j, i, k]
@@ -2117,17 +2090,15 @@ def get_fftw_slab(gridsize, buffer_name='slab_particles', nullify=False):
     if nullify:
         slab[...] = 0
     return slab
-# Tuple of all possible FFTW rigor levels, in descending order
-cython.declare(fftw_wisdom_rigors=tuple)
-fftw_wisdom_rigors = ('exhaustive', 'patient', 'measure', 'estimate')
 # Cache storing slabs. The keys have the format (gridsize, buffer_name).
 cython.declare(slabs=dict)
 slabs = {}
 # Arrays of FFTW plans
-cython.declare(fftw_plans_size='Py_ssize_t',
-               fftw_plans_forward ='fftw_plan*',
-               fftw_plans_backward='fftw_plan*',
-               )
+cython.declare(
+    fftw_plans_size='Py_ssize_t',
+    fftw_plans_forward ='fftw_plan*',
+    fftw_plans_backward='fftw_plan*',
+)
 fftw_plans_size = 0
 fftw_plans_forward  = malloc(fftw_plans_size*sizeof('fftw_plan'))
 fftw_plans_backward = malloc(fftw_plans_size*sizeof('fftw_plan'))
@@ -2139,68 +2110,96 @@ fftw_plans_mapping = {}
 cython.declare(wisdom_acquired=dict)
 wisdom_acquired = {}
 
-# Helper function for the get_fftw_slab function,
+# Helper function for the get_fftw_slab() function,
 # which construct the absolute path to the wisdome file to use.
 @cython.header(
     # Arguments
     gridsize='Py_ssize_t',
-    rigor=str,
     # Locals
+    content=str,
     fftw_pkgconfig_filename=str,
-    mpi_layout=list,
+    index='Py_ssize_t',
+    match=object,  # re.Match
+    node_process_count=object,  # collections.Counter
+    other_node='int',
+    other_node_name=str,
+    primary_nodes=list,
+    process_count='Py_ssize_t',
+    process_count_max='Py_ssize_t',
+    sha_length='int',
     wisdom_filename=str,
     wisdom_hash=str,
     returns=str,
 )
-def get_wisdom_filename(gridsize, rigor):
-    global fftw_version
+def get_wisdom_filename(gridsize):
+    """The FFTW wisdom file name is built as a hash of several things:
+    - The passed grid size.
+    - The total number of processes.
+    - The global FFTW wisdom rigor.
+    - The FFTW version.
+    - The name of the node "owning" the wisdom in the case of
+      fftw_wisdom_share being True. Here a node is said to own the
+      wisdom if i hosts the majority of the processes. A more elaborate
+      key like the complete MPI layout is of no use, as FFTW wisdom is
+      really generated on each process, after which the wisdom of one is
+      chosen arbitrarily as the wisdom to stick with.
+      When fftw_wisdom_share is False, this part of the key is constant.
+    """
+    global fftw_version, wisdom_owner
+    # The master process constructs the file name
+    # and then broadcasts it.
     if not master:
-        abort('Only the master process may call get_wisdom_filename()')
-    # Get the FFTW version
+        return bcast()
+    # Get the version of FFTW in use
     if not fftw_version:
-        fftw_pkgconfig_filename = '/'.join([
-            paths['fftw_dir'],
-            'lib',
-            'pkgconfig',
-            'fftw3.pc',
-        ])
-        try:
+        fftw_version = '<unknown>'
+        fftw_pkgconfig_filename = paths['fftw_dir'] + f'/lib/pkgconfig/fftw3.pc'
+        if os.path.exists(fftw_pkgconfig_filename):
             with open(fftw_pkgconfig_filename, 'r') as fftw_pkgconfig_file:
-                fftw_version = re.search(
-                    'Version.*?([0-9].*)',
-                    fftw_pkgconfig_file.read(),
-                ).group(1)
-        except:
-            masterwarn(f'Failed to determine FFTW version')
-            fftw_version = '?'
-    # Construct a hash based on the FFTW problem (gridsize and rigor),
-    # as well as the FFTW version and the MPI layout (the nodes and CPUs
-    # in use for the current job). It is important to include the
-    # MPI layout, as reusing FFTW wisdom across different nodes or even
-    # CPUs within the same node may not be optimal due to e.g. different
-    # communication prototols in use.
-    mpi_layout = []
-    for other_node in range(nnodes):
-        other_node_name = node_numbers2names[other_node]
-        other_ranks = np.where(asarray(nodes) == other_node)[0]
-        mpi_layout.append((other_node_name, get_integerset_strrep(other_ranks)))
+                content = fftw_pkgconfig_file.read()
+            match = re.search('Version.*?([0-9].*)', content)
+            if match:
+                fftw_version = match.group(1)
+            else:
+                masterwarn('Failed to determine FFTW version from fftw3.pc')
+        else:
+            masterwarn('Could not find the fftw3.pc file needed to determine the FFTW version')
+    # Get the name of the node owning the wisdom
+    if not wisdom_owner:
+        if fftw_wisdom_share:
+            wisdom_owner = '<shared>'
+        else:
+            node_process_count = collections.Counter()
+            for other_node in range(nnodes):
+                other_node_name = node_numbers2names[other_node]
+                node_process_count[other_node_name] += np.sum(asarray(nodes) == other_node)
+            primary_nodes = node_process_count.most_common(len(node_process_count))
+            process_count_max = primary_nodes[0][1]
+            for index, (other_node_name, process_count) in enumerate(primary_nodes):
+                if process_count < process_count_max:
+                    primary_nodes = primary_nodes[:index]
+                    break
+            wisdom_owner = sorted([  # guarantees deterministic outcome in case of ties
+                other_node_name
+                for other_node_name, process_count in primary_nodes
+            ])[0]
+    # Construct hash
     sha_length = 10  # 10 -> 50% chance of 1 hash collision after ~10⁶ hashes
     wisdom_hash = hashlib.sha1(str((
         gridsize,
-        rigor,
+        nprocs,
+        fftw_wisdom_rigor,
         fftw_version,
-        mpi_layout,
+        wisdom_owner,
     )).encode()).hexdigest()[:sha_length]
     # The full path to the wisdom file
-    wisdom_filename = '/'.join([
-        paths['reusables_dir'],
-        'fftw',
-        wisdom_hash,
-    ]) + '.wisdom'
-    return wisdom_filename
-# The version of FFTW, used in the get_wisdom_filename function
-cython.declare(fftw_version=str)
-fftw_version=''
+    wisdom_filename = paths['reusables_dir'] + f'/fftw/{wisdom_hash}.wisdom'
+    # Broadcast and return result
+    return bcast(wisdom_filename)
+# Constant strings set and used by the get_wisdom_filename function
+cython.declare(fftw_version=str, wisdom_owner=str)
+fftw_version = ''
+wisdom_owner = ''
 
 # Function performing Fourier transformations of slab decomposed grids
 @cython.header(

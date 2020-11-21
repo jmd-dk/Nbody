@@ -2014,6 +2014,7 @@ cython.declare(
     N_rungs='Py_ssize_t',
     fftw_wisdom_rigor=str,
     fftw_wisdom_reuse='bint',
+    fftw_wisdom_share='bint',
     random_generator=str,
     random_seed=object,  # Python int
     primordial_amplitude_fixed='bint',
@@ -2743,6 +2744,8 @@ fftw_wisdom_rigor = user_params.get('fftw_wisdom_rigor', 'measure').lower()
 user_params['fftw_wisdom_rigor'] = fftw_wisdom_rigor
 fftw_wisdom_reuse = bool(user_params.get('fftw_wisdom_reuse', True))
 user_params['fftw_wisdom_reuse'] = fftw_wisdom_reuse
+fftw_wisdom_share = bool(user_params.get('fftw_wisdom_share', False))
+user_params['fftw_wisdom_share'] = fftw_wisdom_share
 random_generator = user_params.get('random_generator', 'PCG64')
 user_params['random_generator'] = random_generator
 random_seed = to_int(user_params.get('random_seed', 0))

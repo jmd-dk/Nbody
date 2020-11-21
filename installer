@@ -865,9 +865,9 @@ cd "${top_dir}"
 
 # Print out values of common installation options
 heading "Installation options"
-echo "Path                  \"${top_dir}\""
+echo "Path               \"${top_dir}\""
 if [[ "${mpi_dir}" == "__top_dir__"* ]]; then
-    echo "MPI                   Dedicated ${mpi_formatted}"
+    echo "MPI                Dedicated ${mpi_formatted}"
 else
     if [ "${mpi_formatted}" == "unknown" ]; then
         echo "MPI                   \"${mpi_dir}\""
@@ -875,9 +875,9 @@ else
         echo "MPI                   \"${mpi_dir}\" (${mpi_formatted})"
     fi
 fi
-echo "Slim installation     ${slim}"
-echo "Yes to defaults       ${yes_to_defaults}"
-echo "Tests                 ${do_tests}"
+echo "Slim installation  ${slim}"
+echo "Yes to defaults    ${yes_to_defaults}"
+echo "Tests              ${do_tests}"
 if [ "${top_dir_reasonable}" == "False" ]; then
     sleep 2
 fi
@@ -5307,6 +5307,118 @@ Date:         $(date)
 " >> "${progdir}/.installation_finished"
 }
 
+# Function for adding optimization to compiler flags
+set_optimizations() {
+    # Determine the compiler in use.
+    # Only icc and gcc are implemented here. The gcc behaviour
+    # is chosen if some third compiler is really in use.
+    if [ "${compiler}" == "gnu" ]; then
+        CC_implementation="gcc"
+    elif [ "${compiler}" == "intel" ]; then
+        CC_implementation="icc"
+    else
+        info="$("${CC}" --version 2>/dev/null | head -n 1 || :)"
+        if echo "${info}" | grep -i "icc" >/dev/null; then
+            CC_implementation="icc"
+        elif echo "${info}" | grep -i "intel" >/dev/null; then
+            CC_implementation="icc"
+        else
+            # Assume gcc
+            CC_implementation="gcc"
+        fi
+    fi
+    # General optimizations
+    optimizations="-DNDEBUG -O3 -funroll-loops"
+    optimizations_linker="-O3"
+    # Floating point optimizations
+    if [ "${CC_implementation}" == "gcc" ]; then
+        optimizations="${optimizations} -ffast-math"
+    elif [ "${CC_implementation}" == "icc" ]; then
+        optimizations="${optimizations} -fp-model fast=2"
+    fi
+    # Better inlining
+    if [ "${CC_implementation}" == "gcc" ]; then
+        optimizations="${optimizations} \
+--param max-inline-insns-auto=100 --param early-inlining-insns=200"
+    elif [ "${CC_implementation}" == "icc" ]; then
+        optimizations="${optimizations} -inline-factor=200"
+    fi
+    # Link time optimizations
+    local current_dir="$(pwd)"
+    lto_test_dir="${top_dir}/tmp/lto_test"
+    rm -rf "${lto_test_dir}" || :
+    mkdir -p "${lto_test_dir}"
+    cd "${lto_test_dir}"
+    echo "int main(void){ return 0; }" > main.c
+    lto_warning=$("${CC}" -flto -c -o main.o main.c 2>&1 | grep flto || :)
+    cd "${current_dir}"
+    rm -rf "${lto_test_dir}" || :
+    if [ -z "${lto_warning}" ]; then
+        optimizations="${optimizations} -flto"
+        optimizations_linker="${optimizations_linker} -flto"
+    fi
+    # Remove unwanted flags from CFLAGS and CXXFLAGS
+    unwanted_flags=(                      \
+        -g -g0 -g1 -g2 -g3                \
+        -O -O0 -O1 -O2 -O3 -Og -Os -Ofast \
+    )
+    CFLAGS_ori="${CFLAGS}"
+    CFLAGS=""
+    for flag in ${CFLAGS_ori}; do
+        wanted="True"
+        for unwanted_flag in ${unwanted_flags[@]}; do
+            if [ "${flag}" == "${unwanted_flag}" ]; then
+                wanted="False"
+                break
+            fi
+        done
+        if [ "${wanted}" == "True" ]; then
+            CFLAGS="${CFLAGS} ${flag}"
+        fi
+    done
+    CXXFLAGS_ori="${CXXFLAGS}"
+    CXXFLAGS=""
+    for flag in ${CXXFLAGS_ori}; do
+        wanted="True"
+        for unwanted_flag in ${unwanted_flags[@]}; do
+            if [ "${flag}" == "${unwanted_flag}" ]; then
+                wanted="False"
+                break
+            fi
+        done
+        if [ "${wanted}" == "True" ]; then
+            CXXFLAGS="${CXXFLAGS} ${flag}"
+        fi
+    done
+    # Remove the same unwanted flags from LDFLAGS
+    LDFLAGS_ori="${LDFLAGS}"
+    LDFLAGS=""
+    for flag in ${LDFLAGS_ori}; do
+        wanted="True"
+        for unwanted_flag in ${unwanted_flags[@]}; do
+            if [ "${flag}" == "${unwanted_flag}" ] || [ "${flag}" == "-Wl,${unwanted_flag}" ]; then
+                wanted="False"
+                break
+            fi
+        done
+        if [ "${wanted}" == "True" ]; then
+            LDFLAGS="${LDFLAGS} ${flag}"
+        fi
+    done
+    # Add optimization flags to CFLAGS, CXXFLAGS and LDFLAGS
+    CFLAGS="${CFLAGS} ${optimizations}"
+    CXXFLAGS="${CXXFLAGS} ${optimizations}"
+    optimizations_linker_prefixed=""
+    for optimization in ${optimizations_linker}; do
+        optimizations_linker_prefixed="${optimizations_linker_prefixed} -Wl,${optimization}"
+    done
+    LDFLAGS="${LDFLAGS} ${optimizations_linker_prefixed}"
+    # Export mutated environment variables
+    export CFLAGS="${CFLAGS}"
+    export CXXFLAGS="${CXXFLAGS}"
+    export LDFLAGS="${LDFLAGS}"
+}
+
 
 
 # zlib
@@ -5626,22 +5738,17 @@ fftw_install_func() {
         export MPICC="${CC}"
         export MPILIBS="-lmpi ${MPILIBS}"
     fi
+    if [ -d "${perl_dir}" ]; then
+        export PATH="${perl_dir}/bin:${PATH}"
+    fi
     export CFLAGS="-O3 ${PIC} ${CFLAGS}"
     export CXXFLAGS="-O3 ${PIC} ${CXXFLAGS}"
     export LDFLAGS="${LDFLAGS} -Wl,-O3 ${shared} ${PIC}"
     if [ "${extra_optimizations}" == "True" ]; then
-        info="$("${CC}" --version | head -n 1 || :)"
-        if echo "${info}" | grep -i icc >/dev/null; then
-            # icc
-            export CFLAGS="${CFLAGS} -fp-model fast=2 -inline-factor=200"
-        else
-            # Assume gcc
-            export CFLAGS="${CFLAGS} -ffast-math --param max-inline-insns-auto=100 \
---param early-inlining-insns=200"
-        fi
+        set_optimizations
     fi
-    if [ -d "${perl_dir}" ]; then
-        export PATH="${perl_dir}/bin:${PATH}"
+    if [ "${rm_no_gcc}" == "True" ]; then
+        sed -i 's/-no-gcc//g' configure || :
     fi
     # Double-precision
     simd_instructions=""
@@ -5710,6 +5817,7 @@ for ((n_simd = ${#simd_instructions_all[@]}; n_simd >= 0; n_simd -= 1)); do
 done
 install "FFTW"                                       \
     compiler "${compiler_possibilities_fftw[@]}" ";" \
+    rm_no_gcc "False" "True"                     ";" \
     extra_optimizations "True" "False"           ";" \
     n_simd ${n_simd_all}                         ";" \
     enable_shared "--enable-shared" ""           ";" \
@@ -8295,16 +8403,11 @@ fftw_for_gadget_install_func() {
     export CFLAGS="-O3 ${PIC} ${CFLAGS}"
     export CXXFLAGS="-O3 ${PIC} ${CXXFLAGS}"
     export LDFLAGS="${LDFLAGS} -Wl,-O3 ${shared} ${PIC}"
+    if [ -d "${perl_dir}" ]; then
+        export PATH="${perl_dir}/bin:${PATH}"
+    fi
     if [ "${extra_optimizations}" == "True" ]; then
-        info="$("${CC}" --version | head -n 1 || :)"
-        if echo "${info}" | grep -i icc >/dev/null; then
-            # icc
-            export CFLAGS="${CFLAGS} -fp-model fast=2 -inline-factor=200"
-        else
-            # Assume gcc
-            export CFLAGS="${CFLAGS} -ffast-math --param max-inline-insns-auto=100 \
---param early-inlining-insns=200"
-        fi
+        set_optimizations
     fi
     # Intel compilers may link against the NUMA library, which should be
     # placed in /usr/lib64. Add this directory to the LDFLAGS.
@@ -8324,9 +8427,6 @@ fftw_for_gadget_install_func() {
         ln -s "/usr/lib64/libnuma.so.1" "${numa_symlink_dir}/libnuma.so" > /dev/null 2>&1 || :
     fi
     export LDFLAGS="${LDFLAGS} -L${numa_symlink_dir}"
-    if [ -d "${perl_dir}" ]; then
-        export PATH="${perl_dir}/bin:${PATH}"
-    fi
     # Double-precision
     ./configure ${enable_shared} ${enable_mpi} --enable-type-prefix --disable-fortran ${with_pic} \
         --prefix="${fftw_for_gadget_dir}" 2>&1 || return 1
