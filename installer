@@ -5412,7 +5412,7 @@ set_optimizations() {
     for optimization in ${optimizations_linker}; do
         optimizations_linker_prefixed="${optimizations_linker_prefixed} -Wl,${optimization}"
     done
-    LDFLAGS="${LDFLAGS} ${optimizations_linker_prefixed}"
+    LDFLAGS="${LDFLAGS} ${optimizations} ${optimizations_linker_prefixed}"
     # Export mutated environment variables
     export CFLAGS="${CFLAGS}"
     export CXXFLAGS="${CXXFLAGS}"

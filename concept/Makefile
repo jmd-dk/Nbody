@@ -167,15 +167,17 @@ python_incl = $(shell $(python_config) --includes)
 includes    = $(fftw_incl) $(gsl_incl) $(mpi_incl) $(python_incl)
 # Compiler options
 CC = $(mpicc)
-compiler = $(shell                                      \
-    info="$$($(CC) --version | head -n 1 || :)";        \
-    if   echo "$${info}" | grep -i gcc >/dev/null; then \
-        echo "gcc";                                     \
-    elif echo "$${info}" | grep -i icc >/dev/null; then \
-        echo "icc";                                     \
-    else                                                \
-        echo "gcc";                                     \
-    fi                                                  \
+compiler = $(shell                                           \
+    info="$$($(CC) --version 2>/dev/null | head -n 1 || :)"; \
+    if echo "$${info}" | grep -i icc >/dev/null; then        \
+        echo "icc";                                          \
+    elif echo "$${info}" | grep -i intel >/dev/null; then    \
+        echo "icc";                                          \
+    elif echo "$${info}" | grep -i gcc >/dev/null; then      \
+        echo "gcc";                                          \
+    else                                                     \
+        echo "gcc";                                          \
+    fi                                                       \
 )
 unwanted_warnings =            \
     implicit-fallthrough       \
