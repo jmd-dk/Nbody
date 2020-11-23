@@ -9,7 +9,6 @@ ARG top_dir="/concept"
 ARG slim=True
 ARG mpi=mpich
 ARG mpi_configure_options="+= --with-device=ch3:sock"
-ARG blas_no_avx=True
 
 # Build
 COPY installer .env* COPYING* Dockerfile* README.md* .gitignore* /source/

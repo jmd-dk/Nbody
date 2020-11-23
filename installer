@@ -5933,9 +5933,6 @@ NO_AVX_possibilities=(               \
              "NO_AVX2=1 NO_AVX512=1" \
     "NO_AVX=1 NO_AVX2=1 NO_AVX512=1" \
 )
-if [ "${blas_no_avx}" == "True" ]; then
-    NO_AVX_possibilities=("${NO_AVX_possibilities[${#NO_AVX_possibilities[@]}-1]}")
-fi
 install "BLAS"                                  \
     openblas_gfortran "True" "False"        ";" \
     compiler "${compiler_possibilities[@]}" ";" \
