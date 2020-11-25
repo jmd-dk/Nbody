@@ -140,7 +140,7 @@ shortrange_params = {  # Short-range force parameters for each short-range force
         'scale'    : '1.25*boxsize/gridsize',  # The long/short-range force split scale
         'range'    : '4.5*scale',              # Maximum reach of short-range force
         'subtiling': 'automatic',              # Subtile decomposition
-        'tablesize': 2**14,                    # Size of tabulation of short-range forces
+        'tablesize': 2**12,                    # Size of tabulation of short-range forces
     },
 }
 powerspec_options = {  # Specifications of power spectra for individual and sets of components

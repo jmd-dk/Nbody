@@ -2407,7 +2407,7 @@ shortrange_params_defaults = {
         'range'    : '4.5*scale',
         'tilesize' : 'range',
         'subtiling': 'automatic',
-        'tablesize': 2**14,
+        'tablesize': 2**12,
     },
 }
 for force, d in shortrange_params_defaults.items():
