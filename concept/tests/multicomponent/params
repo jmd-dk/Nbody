@@ -37,9 +37,11 @@ if _subtest == 'tile':
         },
     }
     _tiles_lin = 6  # The global tiling will have a shape of _tiles_lin×_tiles_lin×_tiles_lin
-    potential_gridsizes = {
-        'gravity': {
-            'p3m': ceil(_tiles_lin*_range*_scale),
+    potential_options = {
+        'gridsize': {
+            'gravity': {
+                'p3m': ceil(_tiles_lin*_range*_scale),
+            },
         },
     }
 
@@ -64,7 +66,7 @@ select_softening_length = {
 N_rungs = 10
 
 # Graphics
-_gridsize = 210
+_gridsize = 420
 render2D_options = {
     'upstream gridsize': {
         'all': _gridsize,

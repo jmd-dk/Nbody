@@ -18,19 +18,21 @@ powerspec_select = {
 
 # Numerical parameters
 boxsize = 2048*Mpc
-potential_gridsizes = {
-    'gravity': {
-        'pm': _size,
+potential_options = {
+    'gridsize': {
+        'gravity': {
+            'pm': _size,
+        },
     },
-}
-force_interpolations = {
-    'gravity': {
-        'pm': 'PCS',
+    'interpolation': {
+        'gravity': {
+            'pm': 'PCS',
+        },
     },
-}
-force_differentiations = {
-    'gravity': {
-        'pm': 4,
+    'differentiation': {
+        'gravity': {
+            'pm': 4,
+        },
     },
 }
 powerspec_options = {

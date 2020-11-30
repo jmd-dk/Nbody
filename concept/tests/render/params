@@ -28,7 +28,10 @@ random_generator = 'PCG64'
 random_seed      = 5  # A value of 5 results in nice looking 2D renders
 
 # Graphics
+terminal_width = 80
 render2D_options = {
-    'terminal resolution': _size,
+    'terminal resolution': terminal_width,
+    'extent'             : 0.1*boxsize,
     'colormap'           : 'inferno',
+    'enhance'            : True,
 }

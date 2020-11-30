@@ -34,22 +34,24 @@ render2D_select = {
 
 # Numerical parameters
 boxsize = 512*Mpc
-potential_gridsizes = {
-    'gravity': {
-        'p3m': 2*_size,
-        'pm' :   _size,
+potential_options = {
+    'gridsize': {
+        'gravity': {
+            'p3m': 2*_size,
+            'pm' :   _size,
+        },
     },
-}
-force_interpolations = {
-    'gravity': {
-        'pm' : 'CIC',
-        'p3m': 'CIC',
+    'interpolation': {
+        'gravity': {
+            'pm' : 'CIC',
+            'p3m': 'CIC',
+        },
     },
-}
-force_differentiations = {
-    'gravity': {
-        'pm' : 2,
-        'p3m': 4,
+    'differentiation': {
+        'gravity': {
+            'pm' : 2,
+            'p3m': 4,
+        },
     },
 }
 shortrange_params = {

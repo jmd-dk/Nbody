@@ -614,8 +614,8 @@ def cosmic_time(a=-1, a_lower=machine_ϵ, t_lower=machine_ϵ, t_upper=-1):
     # Compute the cosmic time at which the scale factor had the value a,
     # using a binary search.
     a_test = a_test_prev = t = -1
-    while (    not isclose(a_test,  a,       0, ℝ[2*machine_ϵ])
-           and not isclose(t_upper, t_lower, 0, ℝ[2*machine_ϵ])):
+    while (    not isclose(a_test,  a,       0, 2*machine_ϵ)
+           and not isclose(t_upper, t_lower, 0, 2*machine_ϵ)):
         t = 0.5*(t_upper + t_lower)
         a_test = rkf45(ȧ_rkf, a_lower, t_min, t, abs_tol, rel_tol)
         if a_test == a_test_prev:
@@ -696,7 +696,7 @@ def rkf45(ḟ, f_start, t_start, t_end, abs_tol, rel_tol, save_intermediate=Fals
     global size_tab, t_tab, t_tab_mv
     # The maximum and minimum step size
     Δt = t_end - t_start
-    h_min = ℝ[10*machine_ϵ]
+    h_min = 10*machine_ϵ
     h_max = 0.01*Δt + h_min
     # Initial values
     h = h_max*rel_tol
@@ -706,7 +706,7 @@ def rkf45(ḟ, f_start, t_start, t_end, abs_tol, rel_tol, save_intermediate=Fals
     if Δt == 0:
         return f
     # Drive the method
-    while t_end - t >  ℝ[1e+3*machine_ϵ]:
+    while t_end - t >  1e+3*machine_ϵ:
         # The embedded Runge-Kutta-Fehlberg 4(5) step
         k1 = h*ḟ(t            , f)
         k2 = h*ḟ(t +  1./ 4.*h, f +     1./   4.*k1)
@@ -719,7 +719,7 @@ def rkf45(ḟ, f_start, t_start, t_end, abs_tol, rel_tol, save_intermediate=Fals
         # The error estimate
         error = abs(f5 - f4) + machine_ϵ
         # The local tolerance
-        tolerance = (rel_tol*abs(f5) + abs_tol)*sqrt(h/Δt) + ℝ[2*machine_ϵ]
+        tolerance = (rel_tol*abs(f5) + abs_tol)*sqrt(h/Δt) + 2*machine_ϵ
         if error < tolerance:
             # Step accepted
             t += h

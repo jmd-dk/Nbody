@@ -112,7 +112,7 @@ class Tensor:
         return self.data[multi_index]
     def __setitem__(self, multi_index, value):
         multi_index = self.process_multi_index(multi_index)
-        if not multi_index in self.data:
+        if multi_index not in self.data:
             abort('Attempted to access multi_index {} of {} tensor'
                   .format(multi_index, '×'.join(self.shape))
                   )
@@ -391,7 +391,7 @@ class FluidScalar:
             with unswitch:
                 if operation == '=':
                     gridˣ[i] = grid[i]
-                elif operation == '+=':
+                else:  # operation == '+='
                     gridˣ[i] += grid[i]
 
     # Method for copying the content of gridˣ into grid
@@ -409,7 +409,7 @@ class FluidScalar:
             with unswitch:
                 if operation == '=':
                     grid[i] = gridˣ[i]
-                elif operation == '+=':
+                else:  # operation == '+='
                     grid[i] += gridˣ[i]
 
     # This method is automaticlly called when a FluidScalar instance
@@ -1105,8 +1105,8 @@ class Component:
                         f'It is specified that {self.name} should use P³M {force}, '
                         f'but the grid size to use could not be determined. Please also '
                         f'specify the grid size to use in '
-                        f'potential_gridsizes["global"]["{force}"]["p3m"], and/or specify '
-                        f'shortrange_params["{force}"]["scale"].'
+                        f'potential_options["gridsize"]["global"]["{force}"]["p3m"], '
+                        f'and/or specify shortrange_params["{force}"]["scale"].'
                     )
         # Function for converting expressions involving
         # 'N' and 'gridsize' to floats.
@@ -1129,7 +1129,7 @@ class Component:
         self.potential_gridsizes = {
             key_force: dict_method_cleaned
             for key_force, dict_method in is_selected(
-                self, potential_gridsizes, accumulate=True, default={},
+                self, potential_options['gridsize'], accumulate=True, default={},
             ).items()
             if (
                 dict_method_cleaned := {
@@ -1154,7 +1154,7 @@ class Component:
                     gridsizes_default = self.gridsize
                 else:
                     gridsizes_default = (
-                        potential_gridsizes['global'].get(force, {}).get(method_extra)
+                        potential_options['gridsize']['global'].get(force, {}).get(method_extra)
                     )
                     if not gridsizes_default:
                         continue
@@ -2852,12 +2852,7 @@ class Component:
             # Particle i has undergone a rung jump
             rung_index = rung_indices[i]
             rungs_N[rung_index] -= 1
-            if rung_index_jumped < 2*N_rungs:
-                # Particle jumped down
-                rung_index -= 1
-            else:
-                # Particle jumped up
-                rung_index += 1
+            rung_index += 2*(rung_index_jumped >= ℤ[2*N_rungs]) - 1  # += 1 (jump up), += -1 (jump down)
             rungs_N[rung_index] += 1
             rung_indices[       i] = rung_index
             rung_indices_jumped[i] = rung_index  # done with jump
@@ -4241,7 +4236,8 @@ def init_tiling(component, tiling_name, initial_rung_size=-1):
     shape = tiling_shapes.get(tiling_name)
     if shape is None:
         shape = asarray(
-            (boxsize/asarray(domain_subdivisions))/shortrange_params_force['tilesize'],
+            (boxsize/asarray(domain_subdivisions))/shortrange_params_force['tilesize']
+            *(1 + machine_ϵ),
             dtype=C2np['Py_ssize_t'],
         )
         masterprint(f'Tile decomposition ({force}): {shape[0]}×{shape[1]}×{shape[2]}')

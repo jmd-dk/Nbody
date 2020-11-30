@@ -682,6 +682,41 @@ jobs:
                         && (cd "${concept_dir}" && make -t) \
                         && concept -t ${GITHUB_JOB/test_} \
                     '
+    test_multigrid:
+        needs: test_basic
+        runs-on: [self-hosted, linux, heavy]
+        steps:
+          - name: 🛎 Checkout
+            uses: actions/checkout@v2
+          - name: 📝 Set Docker username
+            env:
+                docker_username: ${{ secrets.DOCKER_USERNAME }}
+            run: |
+                [ -n "${docker_username}" ] || docker_username=jmddk
+                echo "docker_username=${docker_username}" >> "${GITHUB_ENV}"
+          - name: 🐋 Pull Docker image
+            run: docker pull ${docker_username}/concept:latest
+          - name: 📥 Download build
+            uses: actions/download-artifact@v2
+            with:
+                name: build
+                path: build
+          - name: 🤖 Run test
+            run: |
+                docker run \
+                    -e GITHUB_JOB \
+                    -v "${GITHUB_WORKSPACE}":/github \
+                    --rm \
+                    ${docker_username}/concept:latest \
+                    bash -c ': \
+                        && cd / \
+                        && source ~/.bashrc \
+                        && rm -rf "${concept_dir}" \
+                        && cp -r /github/concept "${concept_dir}" \
+                        && cp /github/build/* "${concept_dir}/" \
+                        && (cd "${concept_dir}" && make -t) \
+                        && concept -t ${GITHUB_JOB/test_} \
+                    '
     test_fluid_drift_rigid_nohubble:
         needs: test_basic
         runs-on: [self-hosted, linux, light]

@@ -299,6 +299,11 @@ def interpolate_domaingrid_to_particles(grid, component, variable, dim, order, f
             f'interpolate_domaingrid_to_particles() called with variable = "{variable}" '
             f'∉ {{"pos", "mom"}}'
         )
+    if not (1 <= order <= 4):
+        abort(
+            f'interpolate_domaingrid_to_particles() called '
+            f'with order = {order} ∉ {{1, 2, 3, 4}}'
+        )
     # Offsets and scalings needed for the interpolation
     cellsize = domain_size_x/(grid.shape[0] - ℤ[2*nghosts])  # We have cubic grid cells
     offset_x = domain_start_x - ℝ[(1 + machine_ϵ)*(nghosts - 0.5)*cellsize]
@@ -328,16 +333,10 @@ def interpolate_domaingrid_to_particles(grid, component, variable, dim, order, f
                 index_i = set_weights_TSC(x, weights_x)
                 index_j = set_weights_TSC(y, weights_y)
                 index_k = set_weights_TSC(z, weights_z)
-            elif order == 4:  # PCS interpolation
+            else:  # order == 4  # PCS interpolation
                 index_i = set_weights_PCS(x, weights_x)
                 index_j = set_weights_PCS(y, weights_y)
                 index_k = set_weights_PCS(z, weights_z)
-            else:
-                abort(
-                    f'interpolate_domaingrid_to_particles() called with order = {order} '
-                    f'∉ {{1 (NGP), 2 (CIC), 3 (TSC), 4 (PCS)}}'
-                )
-                index_i = index_j = index_k = 0  # To satisfy the compiler
         # Apply the update
         value = 0
         for         i in range(order):
@@ -355,7 +354,7 @@ def interpolate_domaingrid_to_particles(grid, component, variable, dim, order, f
 
 # Function for interpolating a certain quantity from components
 # (particles and fluids) onto global domain grids using intermediate
-# upstream grids and pixel mixing.
+# upstream grids.
 @cython.pheader(
     # Arguments
     components=list,
@@ -363,255 +362,987 @@ def interpolate_domaingrid_to_particles(grid, component, variable, dim, order, f
     gridsize_global='Py_ssize_t',
     quantity=str,
     order='int',
-    include_shifted_particles='bint',
     ᔑdt=dict,
+    deconvolve='bint',
+    interlace='bint',
+    output_space=str,
     do_ghost_communication='bint',
     # Locals
     component='Component',
+    fft_factor='double',
+    fluid_components=list,
     grid_global='double[:, :, ::1]',
     grid_upstream='double[:, :, ::1]',
-    grids_global=dict,
-    grids_upstream=dict,
-    gridshape_local=tuple,
+    gridshape_upstream_local=tuple,
     gridsize_upstream='Py_ssize_t',
-    group=list,
-    groups=object,  # collections.defaultdict(list)
-    representation=str,
-    returns=dict,
+    group=dict,
+    groups=dict,
+    particle_components=list,
+    shift='double',
+    shift_index='int',
+    slab_global='double[:, :, ::1]',
+    returns='double[:, :, ::1]',
 )
 def interpolate_upstream(
     components, gridsizes_upstream, gridsize_global, quantity, order,
-    include_shifted_particles=False, ᔑdt=None, do_ghost_communication=True,
+    ᔑdt=None, deconvolve=True, interlace=False,
+    output_space='real', do_ghost_communication=True,
 ):
     """Given a list of components, a list of corresponding upstream grid
     sizes and a single global grid size, this function interpolates the
-    components onto global grids by first interpolating directly onto
-    the upstream grids, which are then pixel mixed onto the global
-    grids.
-    See the interpolate_components() function for the remaining
-    arguments and the return value.
-    """
-    # Group components according to their upstream grid size
-    grids_global = {}
-    gridshape_local = get_gridshape_local(gridsize_global)
-    groups = collections.defaultdict(list)
-    for component, gridsize_upstream in zip(components, gridsizes_upstream):
-        groups[gridsize_upstream].append(component)
-        # Instantiate the needed global grids
-        if component.representation not in grids_global:
-            grids_global[component.representation] = get_buffer(
-                gridshape_local, f'global_grid_{component.representation}',
-                nullify=True,
-            )
-            if include_shifted_particles and component.representation == 'particles':
-                grids_global['particles_shifted'] = get_buffer(
-                    gridshape_local, 'global_grid_particles_shifted',
-                    nullify=True,
-                )
-    # Interpolate components onto global grids
-    for gridsize_upstream, group in groups.items():
-        if gridsize_upstream == gridsize_global:
-            # The upstream grid size is equal to the global grid size,
-            # and so we can interpolate the group of components
-            # directly onto the global grids.
-            interpolate_components(
-                group, quantity, gridsize_upstream, order,
-                include_shifted_particles, ᔑdt, grids_global,
-                do_ghost_communication=False,
-            )
-        else:
-            # Interpolate the group of components onto upstream grids
-            grids_upstream = interpolate_components(
-                group, quantity, gridsize_upstream, order,
-                include_shifted_particles, ᔑdt,
-                do_ghost_communication=False,
-            )
-            # Pixel mix upstream grids onto global grids
-            for representation, grid_upstream in grids_upstream.items():
-                # Particle grids need to have their ghost values
-                # added to their proper grid positions.
-                if representation.startswith('particles'):
-                    communicate_ghosts(grid_upstream, '+=')
-                # Now do the pixel mixing
-                interpolate_grid_to_grid(grid_upstream, grids_global[representation])
-    # Communicate ghost points
-    for representation, grid_global in grids_global.items():
-        # We only need to add the current ghost values in the particles
-        # slabs to their actual locations ('+='). No copying of values
-        # to the ghosts ('=') is needed, for particles or fluid slabs.
-        if representation.startswith('particles'):
-            communicate_ghosts(grid_global, '+=')
-        # Further populate ghost points if requested
-        with unswitch:
-            if do_ghost_communication:
-                communicate_ghosts(grid_global, '=')
-    # Return the global grids only
-    return grids_global
+    components onto a global grid by first interpolating directly onto
+    the upstream grids, which are then added together in Fourier space
+    to obtain the global grid.
 
-# Function for interpolating a certain quantity from components
-# (particles and fluids) onto domain grids.
-@cython.pheader(
-    # Arguments
-    component_or_components=object,  # Component or list of Components
-    quantity=str,
-    gridsize='Py_ssize_t',
-    order='int',
-    include_shifted_particles='bint',
-    ᔑdt=dict,
-    grids=dict,
-    do_ghost_communication='bint',
-    # Locals
-    any_fluid='bint',
-    any_particles='bint',
-    any_particles_shifted='bint',
-    components=list,
-    component='Component',
-    fluid_components=list,
-    grid='double[:, :, ::1]',
-    gridshape_local=tuple,
-    particle_components=list,
-    representation=str,
-    returns=dict,
-)
-def interpolate_components(
-    component_or_components, quantity, gridsize, order,
-    include_shifted_particles=False, ᔑdt=None, grids=None, do_ghost_communication=True,
-):
-    """This function interpolates a specified quantity of components to
-    a domain grid. A dict of the form
-    {
-        'particles'        : double[:, :, ::1],
-        'fluid'            : double[:, :, ::1],
-        'particles_shifted': double[:, :, ::1],
-    }
-    is returned, storing separate grids for particles and fluid
-    components, as well as for "shifted" particle components (more on
-    that later). If any of these three are not present, the returned
-    dict will not contain them either.
+    The (particle) interpolation order is given by the order argument.
+    No upstream interpolation takes place for fluid components,
+    i.e. the passed υpstream grid sizes are assumed to equal the
+    fluid grid size for fluid components.
 
-    The gridsize determines the global size of the grids. Reardless of
-    gridsize, the same persistent chunk of memory will be used, meaning
-    that you should never call this function before you are done with
-    the grids returned in the previous call.
-    If at the same time a dict of domain grids is supplied using the
-    grids argument (in the format shown for the return value above), the
-    components will be interpolated (and added) onto these grids instead
-    of using the persisent buffers.
+    Whether to apply particle deconvolution and interlacing can be
+    specified by deconvolve and interlace.
+    The deconvolution order will be the same as the interpolation order
+    (the order argument).
 
-    For particle components, the interpolation scheme is determined by
-    the order argument (1 for NGP, 2 for CIC, 3 for TSC, 4 for PCS).
-    For fluid components, the interpolation is carried out using the
-    "pixel mixing" scheme.
-
-    For the 'particles_shifted' grid to appear in the output dict, you
-    must set include_shifted_particles to True. This grid contains the
-    interpolated particle quantity, but with grid points shifted by half
-    a grid cell (0.5*boxsize/gridsize) for all three dimensions.
-
-    If do_ghost_communication is True, the returned grids will have
-    correctly set and populated boundary and ghost cells. If not, the
-    boundary cells of the particle grids will contain data that needs to
-    be communicated, and none of the grids will have correctly populated
-    ghost cells.
+    The returned grid may either be a real space domain grid or a
+    Fourier space slab, depending on the value of output_space
+    (either 'real' or 'Fourier'). If 'real', the domain grids will have
+    properly populated ghost points if do_ghost_communication is True.
 
     The quantity argument determines what should be interpolated onto
     the grid(s). Valid values are:
-    - 'ρ': The returned grid(s) will hold physical densities. Note that
-      ρ = a**(-3(1 + w_eff))*ϱ. Note that this physical 'ρ' is always
-      preferable to the conserved 'ϱ' when multiple components are to be
-      interpolated together, as only 'ρ' is additive across
-      components/species. Each particle will contribute with
-      a**(-3*w_eff)*mass/V_cell, a**(-3*w_eff)*mass being the current
-      mass of the particle (a**(-3*w_eff) taking decay into account) and
-      V_cell = (a*boxsize/gridsize)**3 being the physical grid cell
-      volume. In total, each particle contribute with
-      a**(-3*(1 + w_eff))*(gridsize/boxsize)**3*mass. Each fluid cell
-      will contribute with a**(-3*(1 + w_eff))*ϱᵢⱼₖ*V_cell_fluid/V_cell,
-      where a**(-3*(1 + w_eff))*ϱᵢⱼₖ = ρᵢⱼₖ is the physical density of
-      fluid cell [i, j, k] and
-      V_cell_fluid = (a*boxsize/gridsize_fluid)**3 is the physical cell
-      volume of the fluid grid. In total, each fluid cell contribute
-      with a**(-3*(1 + w_eff))*(gridsize/gridsize_fluid)**3*ϱᵢⱼₖ
-    - 'a²ρ': The returned grid(s) will hold physical densities times the
-      square of the scale factor. From the 'ρ' entry above, we then have
-      that each particle will contribute with
-      a**(-3*w_eff - 1)*(gridsize/boxsize)**3*mass and that each fluid
-      cell will contribute with
-      a**(-3*w_eff - 1)*(gridsize/gridsize_fluid)**3*ϱᵢⱼₖ.
-    - 'ϱ': The returned grid(s) will hold the conserved densities. From
-      the 'ρ' entry above, we then have that each particle will
-      contribute with ϱ = (gridsize/boxsize)**3*mass and that each fluid
-      cell will contribute with (gridsize/gridsize_fluid)**3*ϱᵢⱼₖ.
-    - 'Jx': The returned grid(s) will hold the conserved momentum
-      density Jₓ = a**4*(ρ + c⁻²P)*uₓ. As this is built from physical
-      quantities, this is additive across components/species. For
-      particles we set P = 0, leaving Jₓ = a**4*ρ*uₓ. The canonical
-      momentum momₓ and peculiar velocity uₓ is related by
-      momₓ = a*(a**(-3*w_eff)*mass)*uₓ, and so from the particle
-      construction of ρ above we get that each particle contribute with
-      (gridsize/boxsize)**3*momₓ. As each fluid cell already stores Jₓ,
-      they contribute by
-      V_cell_fluid/V_cell*Jₓ = (gridsize/gridsize_fluid)**3*Jₓ.
-    - 'Jy': Similar to Jx.
-    - 'Jz': Similar to Jx.
+    'ρ': The returned grid(s) will hold physical densities. Note that
+        ρ = a**(-3(1 + w_eff))*ϱ. Note that this physical 'ρ' is always
+        preferable to the conserved 'ϱ' when multiple components are to
+        be interpolated together, as only 'ρ' is additive across
+        components/species. Each particle will contribute with
+        a**(-3*w_eff)*mass/V_cell, a**(-3*w_eff)*mass being the current
+        mass of the particle (a**(-3*w_eff) taking decay into account)
+        and V_cell = (a*boxsize/gridsize)**3 being the physical grid
+        cell volume. In total, each particle contribute with
+        a**(-3*(1 + w_eff))*(gridsize/boxsize)**3*mass. Each fluid cell
+        will contribute with a**(-3*(1 + w_eff))*ϱᵢⱼₖ*V_cell_fluid/V_cell,
+        where a**(-3*(1 + w_eff))*ϱᵢⱼₖ = ρᵢⱼₖ is the physical density of
+        fluid cell [i, j, k] and
+        V_cell_fluid = (a*boxsize/gridsize_fluid)**3 is the physical
+        cell volume of the fluid grid. In total, each fluid cell
+        contribute with
+        a**(-3*(1 + w_eff))*(gridsize/gridsize_fluid)**3*ϱᵢⱼₖ
+    'a²ρ': The returned grid(s) will hold physical densities times the
+        square of the scale factor. From the 'ρ' entry above, we then
+        have that each particle will contribute with
+        a**(-3*w_eff - 1)*(gridsize/boxsize)**3*mass and that each fluid
+        cell will contribute with
+        a**(-3*w_eff - 1)*(gridsize/gridsize_fluid)**3*ϱᵢⱼₖ.
+    'ϱ': The returned grid(s) will hold the conserved densities. From
+        the 'ρ' entry above, we then have that each particle will
+        contribute with ϱ = (gridsize/boxsize)**3*mass and that each
+        fluid cell will contribute with (gridsize/gridsize_fluid)**3*ϱᵢⱼₖ.
+    'Jx', 'Jy', 'Jz'; described for Jx: The returned grid(s) will hold
+        the conserved momentum density Jₓ = a**4*(ρ + c⁻²P)*uₓ. As this
+        is built from physical quantities, this is additive across
+        components/species. For particles we set P = 0, leaving
+        Jₓ = a**4*ρ*uₓ. The canonical momentum momₓ and peculiar velocity
+        uₓ is related by momₓ = a*(a**(-3*w_eff)*mass)*uₓ, and so from
+        the particleconstruction of ρ above we get that each particle
+        contribute with (gridsize/boxsize)**3*momₓ. As each fluid cell
+        already stores Jₓ, they contribute by
+        V_cell_fluid/V_cell*Jₓ = (gridsize/gridsize_fluid)**3*Jₓ.
     In all of the above, expressions involving a = a(t) will be
     evaluated at the current universal time, unless a dict ᔑdt of time
     step integrals is passed, in which case the expressions will be
     integrated over the time step.
     """
-    if isinstance(component_or_components, list):
-        components = component_or_components
-    else:
-        components = [component_or_components]
-    # Separate out the components and make a flag
-    # for each of the three grid types.
-    particle_components = [
-        component for component in components if component.representation == 'particles'
-    ]
-    fluid_components = [
-        component for component in components if component.representation == 'fluid'
-    ]
-    any_particles = bool(particle_components)
-    any_fluid = bool(fluid_components)
-    any_particles_shifted = (any_particles and include_shifted_particles)
-    # Fetch grids as needed
-    if grids is None:
-        grids = {}
-        gridshape_local = get_gridshape_local(gridsize)
-        if any_particles:
-            grids['particles'] = get_buffer(
-                gridshape_local, 'grid_particles', nullify=True,
-            )
-        if any_fluid:
-            grids['fluid'] = get_buffer(
-                gridshape_local, 'grid_fluid', nullify=True,
-            )
-        if any_particles_shifted:
-            grids['particles_shifted'] = get_buffer(
-                gridshape_local, 'grid_particles_shifted', nullify=True,
-            )
-    # Interpolate particle components
-    for component in particle_components:
-        interpolate_particles(
-            component, gridsize, grids['particles'], quantity, order, ᔑdt,
-            do_ghost_communication=False,
+    output_space = output_space.lower()
+    if output_space not in ('real', 'fourier'):
+        abort(
+            f'interpolate_upstream() got output_space = "{output_space}" ∉ {{"real", "Fourier"}}'
         )
-        with unswitch:
-            if any_particles_shifted:
-                interpolate_particles(
-                    component, gridsize, grids['particles_shifted'], quantity, order, ᔑdt,
-                    shift=0.5, do_ghost_communication=False,
+    # Group components according to their upstream grid size.
+    # The order does not matter, except that we want the group with the
+    # downstream grid size equal to the global grid size to be
+    # the first, if indeed such a group exist.
+    groups = group_components(components, gridsizes_upstream, [gridsize_global, ...])
+    # The global Fourier slabs will be properly initialized below
+    slab_global = None
+    # For each group, interpolate the components onto upstream grids,
+    # Fourier transform these upstream grids and add them
+    # to the global slabs.
+    for gridsize_upstream, group in groups.items():
+        gridshape_upstream_local = get_gridshape_local(gridsize_upstream)
+        particle_components = group.get('particles', [])
+        fluid_components    = group.get('fluid',     [])
+        # Normalization factor needed after a forward FFT
+        fft_factor = float(gridsize_upstream)**(-3)
+        # Fluid components
+        if fluid_components:
+            # Copy fluid components onto upstream grid
+            grid_upstream = get_buffer(
+                gridshape_upstream_local, 'grid_updownstream',
+                nullify=False,
+            )
+            combine_fluids(fluid_components, grid_upstream, quantity, ᔑdt, fft_factor)
+            # Transform the upstream grid to Fourier space
+            # and add it to the global Fourier slabs.
+            slab_global = add_upstream_to_global_slabs(
+                grid_upstream, slab_global, gridsize_upstream, gridsize_global,
+            )
+        # Particle components
+        if particle_components:
+            # If interlacing is to be used, the particle interpolation
+            # (and subsequent Fourier transformation) needs to be
+            # carried out twice; with shift = 0 (standard)
+            # and with shift = 0.5.
+            for shift_index in range(1 + interlace):
+                shift = 0.5*shift_index
+                # Interpolate particle components onto upstream grid
+                grid_upstream = get_buffer(
+                    gridshape_upstream_local, 'grid_updownstream',
+                    nullify=True,
                 )
-    # Interpolate fluid components
-    for component in fluid_components:
-        interpolate_fluid(component, grids['fluid'], quantity, ᔑdt)
-    # Add ghost point contributions from the above interpolations
-    if do_ghost_communication:
-        for representation, grid in grids.items():
-            if representation.startswith('particles'):
-                communicate_ghosts(grid, '+=')
-            communicate_ghosts(grid, '=')
-    return grids
+                for component in particle_components:
+                    interpolate_particles(
+                        component, gridsize_upstream, grid_upstream, quantity, order, ᔑdt,
+                        shift, fft_factor, do_ghost_communication=False,
+                    )
+                communicate_ghosts(grid_upstream, '+=')
+                # Transform the upstream grid to Fourier space,
+                # perform deconvolution and interlacing and add
+                # the result to the global Fourier slabs.
+                slab_global = add_upstream_to_global_slabs(
+                    grid_upstream, slab_global, gridsize_upstream, gridsize_global,
+                    deconv_order=ℤ[deconvolve*order],
+                    interlace_flag=(interlace + shift_index),
+                )
+    # Global Fourier slabs complete. Note that we do not have to nullify
+    # the Nyquist planes of these global slabs as we have nullified the
+    # Nyquist planes of all upstream slabs from which the global slabs
+    # are built.
+    # Return now if Fourier space is what we want.
+    if output_space == 'fourier':
+        return slab_global
+    # Fourier transform the global slabs to real space
+    fft(slab_global, 'backward')
+    # Domain-decompose and return the global real space grid
+    grid_global = get_buffer(get_gridshape_local(gridsize_global), 'grid_global')
+    domain_decompose(slab_global, grid_global, do_ghost_communication=do_ghost_communication)
+    return grid_global
+
+# Helper function for interpolate_upstream(), taking in a real space
+# upstream grid and adding its Fourier modes to the global slabs.
+@cython.header(
+    # Arguments
+    grid_upstream='double[:, :, ::1]',
+    slab_global='double[:, :, ::1]',
+    gridsize_upstream='Py_ssize_t',
+    gridsize_global='Py_ssize_t',
+    deconv_order='int',
+    interlace_flag='int',
+    # Locals
+    nullification=str,
+    operation=str,
+    slab_upstream='double[:, :, ::1]',
+    use_upstream_as_global='bint',
+    returns='double[:, :, ::1]',
+)
+def add_upstream_to_global_slabs(
+    grid_upstream, slab_global, gridsize_upstream, gridsize_global,
+    deconv_order=0, interlace_flag=0,
+):
+    # If the global slabs have yet to be initialized, we must do so
+    # within this function. If at the same time the global and upstream
+    # grid sizes are equal, we will use the upstream slabs directly as
+    # the global slabs, rather than performing a copy.
+    use_upstream_as_global = (slab_global is None and gridsize_global == gridsize_upstream)
+    # Transform upstream slabs to Fourier space,
+    # using the 'slab_global' or 'slab_updownstream' buffer
+    # depending on the passed use_upstream_as_global.
+    slab_upstream = slab_decompose(
+        grid_upstream,
+        'slab_global' if use_upstream_as_global else 'slab_updownstream',
+        prepare_fft=True,
+    )
+    fft(slab_upstream, 'forward')
+    # Ensure nullified Nyquist planes
+    nullify_modes(slab_upstream, 'nyquist')
+    # Perform deconvolution and interlacing on the upstream slabs
+    # and assign/update the global slabs to/with the results.
+    if use_upstream_as_global:
+        # Perform in-place deconvolution and interlacing
+        deconvolve_and_interlace(slab_upstream, deconv_order, interlace_flag)
+        # The upstream slabs are really the global slabs
+        slab_global = slab_upstream
+    else:
+        # Add upstream slabs to the global slabs,
+        # performing deconvolution and interlacing on the way.
+        # If the global slabs have yet to be initialized,  we set the
+        # values directly, rather than adding to existing ones.
+        operation = '+='
+        if slab_global is None:
+            operation = '='
+            # Fetch slab to be used as the global one. Depending on
+            # whether this is constructed without scaling or through
+            # downscaling or upscaling of the υpstream slab, different
+            # sets of elements needs to be nullified. We could of course
+            # just always perform a complete nullification.
+            if gridsize_global == gridsize_upstream:
+                nullification = 'all'
+            elif gridsize_global < gridsize_upstream:
+                # Global slabs constructed through downscaling of the
+                # upstream slabs. All elements of slab_global will be
+                # set except the Nyquist planes, which then have
+                # to be nullified.
+                nullification = 'nyquist'
+            else:
+                # Global slabs constructed through upscaling of the
+                # upstream slabs. Only elements within a cube centered
+                # at the origin and of size gridsize_upstream will be
+                # set. We then need to nullify all elements beyond
+                # this cube.
+                nullification = f'beyond cube of |k| < {gridsize_upstream//2}'
+            slab_global = get_fftw_slab(gridsize_global, 'slab_global', nullification)
+        copy_modes(slab_upstream, slab_global, deconv_order, interlace_flag, operation)
+    return slab_global
+
+# Function for grouping components according to
+# associated grid sizes and their representation.
+def group_components(components, gridsizes, gridsizes_order=()):
+    """Given a list of components and a list of corresponding grid
+    sizes, this function returns a dict of components, grouped by their
+    grid size and representation, in the format
+        {
+            <gridsize 0>: {
+                'particles': [<component 0>],
+            },
+            <gridsize 2>: {
+                'particles': [<component 4>, <component 2>],
+                'fluid'    : [<component 1>],
+            },
+            <gridsize 1>: {
+                'fluid': [<component 5>, <component 3>],
+            },
+        }
+    A specific ordering of the grid sizes can be enforced by specifying
+    gridsizes_order. The above example can be obtained by one of
+        gridsizes_order = [..., <gridsize 2>, <gridsize 1>]
+        gridsizes_order = [<gridsize 0>, ..., <gridsize 1>]
+        gridsizes_order = [<gridsize 0>, <gridsize 2>, ...]
+    The ellipsis (...) signals any grid sizes not explicitly listed.
+    The passed gridsizes_order must contain exactly one ellipsis.
+    """
+    # Look up previous result in cache
+    key = (tuple(components), tuple(gridsizes), tuple(gridsizes_order))
+    groups = component_groups_cache.get(key)
+    if groups is not None:
+        return groups
+    # Perform the grouping
+    groups = collections.defaultdict(lambda: collections.defaultdict(list))
+    for component, gridsize in zip(components, gridsizes):
+        groups[gridsize][component.representation].append(component)
+    # Create list of ordered grid sizes
+    gridsizes_order = any2list(gridsizes_order)
+    if not gridsizes_order:
+        gridsizes_order = [...]
+    if gridsizes_order.count(...) != 1:
+        abort(
+            f'group_components() got gridsizes_order = {gridsizes_order}, '
+            f'but this must contain exactly one ellipsis (...)'
+        )
+    index = gridsizes_order.index(...)
+    gridsizes_first = gridsizes_order[:index]
+    gridsizes_last = gridsizes_order[index + 1:]
+    gridsizes_ordered = gridsizes_first.copy()
+    for gridsize in gridsizes:
+        if gridsize in gridsizes_ordered or gridsize in gridsizes_last:
+            continue
+        gridsizes_ordered.append(gridsize)
+    gridsizes_ordered += gridsizes_last
+    # Enforce correct ordering of the groups based on their grid sizes
+    groups = {
+        gridsize: dict(groups[gridsize])
+        for gridsize in gridsizes_ordered
+        if gridsize in gridsizes
+    }
+    # Cache and return result
+    component_groups_cache[key] = groups
+    return groups
+# Cache used by the group_components() function
+cython.declare(component_groups_cache=dict)
+component_groups_cache = {}
+
+# Function for resizing a real space domain grid
+# or Fourier space slabs, i.e. change the grid size.
+@cython.pheader(
+    # Arguments
+    grid_or_slab='double[:, :, ::1]',
+    gridsize_new='Py_ssize_t',
+    input_space=str,
+    output_space=str,
+    internal_slab_or_buffer_name=object,  # double[:, :, ::1] or int or str
+    output_grid_or_buffer_name=object,    # double[:, :, ::1] or int or str
+    output_slab_or_buffer_name=object,    # double[:, :, ::1] or int or str
+    inplace='bint',
+    apply_forward_fft_normalization='bint',
+    do_ghost_communication='bint',
+    # Locals
+    grid='double[:, :, ::1]',
+    grid_new='double[:, :, ::1]',
+    gridsize='Py_ssize_t',
+    nullification=str,
+    slab='double[:, :, ::1]',
+    slab_new='double[:, :, ::1]',
+    returns='double[:, :, ::1]',
+)
+def resize_grid(
+    grid_or_slab, gridsize_new, input_space,
+    output_space='same', internal_slab_or_buffer_name='slab_updownstream',
+    output_grid_or_buffer_name='grid_global', output_slab_or_buffer_name='slab_global',
+    inplace=True, apply_forward_fft_normalization=True, do_ghost_communication=True,
+):
+    """Given a real space domain grid or Fourier space slabs (specified
+    by input_space = 'real' or input_space = 'Fourier') and a new grid
+    size (gridsize_new), the grid/slab data will be copied over to a new
+    grid/slab with the new grid size. Whether to return a real space
+    grid or Fourier space slabs is specified by output_space.
+    If the output space is different from the input space, a new
+    grid/slab is needed to store the resized result. The grid/slab to
+    use for this is specified via output_grid_or_buffer_name (for real
+    space output) and output_slab_or_buffer_name (for Fourier space
+    output).
+    When a resizing is to be performed (the original and new grid size
+    are different) and the input is in real space, an additional
+    internal slab is needed, as the resizing is carried out in Fourier
+    space. The slab to use for this is specified as
+    internal_slab_or_buffer_name.
+    If the input and output space are the same and the original and new
+    grid size are also the same, the passed grid/slab is returned back
+    as is. No additional grid/slab will be used. Also, if the input
+    space is Fourier, the output space is real and the original and new
+    grid size are the same, the input slab will be transformed in-place.
+    To guarantee that the passed data is left untouched and that a new
+    grid/slab is returned, set inplace = False.
+    """
+    # Handle the input and output space
+    input_space = input_space.lower()
+    if input_space == 'real':
+        grid = grid_or_slab
+        gridsize = (grid.shape[0] - ℤ[2*nghosts])*domain_subdivisions[0]
+    elif input_space == 'fourier':
+        slab = grid_or_slab
+        gridsize = slab.shape[1]
+    else:
+        abort(f'resize_grid() got input_space = "{input_space}" ∉ {{"real", "Fourier"}}')
+    output_space = output_space.lower()
+    if output_space == 'same':
+        output_space = input_space
+    elif output_space not in ('real', 'fourier'):
+        abort(f'resize_grid() got output_space = "{output_space}" ∉ {{"real", "Fourier"}}')
+    # No resizing is required if the original and new grid size are the
+    # same. If the input and output space are also the same, just return
+    # the passed grid. Otherwise do the required FFT.
+    if gridsize == gridsize_new:
+        if input_space == output_space:
+            if inplace:
+                # In-place real to real or Fourier to Fourier
+                return grid_or_slab
+            elif input_space == 'real':
+                # Out-of-place real to real
+                if isinstance(output_grid_or_buffer_name, (int, str)):
+                    grid_new = get_buffer(get_gridshape_local(gridsize), output_grid_or_buffer_name)
+                else:
+                    grid_new = output_grid_or_buffer_name
+                grid_new[...] = grid
+                return grid_new
+            else:  # input_space == 'fourier'
+                # Out-of-place Fourier to Fourier
+                if isinstance(output_slab_or_buffer_name, (int, str)):
+                    slab_new = get_fftw_slab(gridsize, output_slab_or_buffer_name)
+                else:
+                    slab_new = output_slab_or_buffer_name
+                slab_new[...] = slab
+                return slab_new
+        elif output_space == 'fourier':
+            # From real to Fourier
+            slab_new = slab_decompose(grid, output_slab_or_buffer_name, prepare_fft=True)
+            fft(slab_new, 'forward', apply_forward_fft_normalization)
+            return slab_new
+        else:  # output_space == 'real'
+            # From Fourier to real
+            if not inplace:
+                if isinstance(internal_slab_or_buffer_name, (int, str)):
+                    slab_internal = get_fftw_slab(gridsize, internal_slab_or_buffer_name)
+                else:
+                    slab_internal = internal_slab_or_buffer_name
+                slab_internal[...] = slab
+                slab = slab_internal
+            fft(slab, 'backward')
+            grid_new = domain_decompose(
+                slab, output_grid_or_buffer_name, do_ghost_communication,
+            )
+            return grid_new
+    # Resizing should take place. Go to Fourier space.
+    if input_space == 'real':
+        slab = slab_decompose(grid, internal_slab_or_buffer_name, prepare_fft=True)
+        fft(slab, 'forward', apply_forward_fft_normalization)
+    # Perform the resizing by copying the slab values into another
+    # slab decomposed grid with the new grid size.
+    if isinstance(output_slab_or_buffer_name, (int, str)):
+        slab_new = get_fftw_slab(gridsize_new, output_slab_or_buffer_name)
+    else:
+        slab_new = output_slab_or_buffer_name
+    if gridsize_new < gridsize:
+        # The grid is to be downscaled. All modes except the Nyquist
+        # ones will be set and so these need to be explicitly nullified.
+        nullification = 'nyquist'
+    else:  # gridsize_new > gridsize
+        # The grid is to be upscaled. New modes beyond the ones in the
+        # original grid will not be set and so these need to be
+        # explicitly nullified.
+        nullification = f'beyond cube of |k| < {gridsize//2}'
+    nullify_modes(slab_new, nullification)
+    copy_modes(slab, slab_new, operation='=')
+    # Return the slab as is or transform to real space and return the
+    # resulting grid, depending on the output space.
+    if output_space == 'real':
+        fft(slab_new, 'backward')
+        grid_new = domain_decompose(slab_new, output_grid_or_buffer_name, do_ghost_communication)
+        return grid_new
+    else:  # output_space == 'fourier'
+        return slab_new
+
+# Function for adding the Fourier modes of one slab to another
+@cython.pheader(
+    # Arguments
+    slab_from='double[:, :, ::1]',
+    slab_onto='double[:, :, ::1]',
+    deconv_order='int',
+    interlace_flag='int',
+    operation=str,
+    # Locals
+    cosθ='double',
+    factor='double',
+    gridsize_from='Py_ssize_t',
+    gridsize_large='Py_ssize_t',
+    gridsize_onto='Py_ssize_t',
+    gridsize_small='Py_ssize_t',
+    half_subslab_recv='double[:, :, ::1]',
+    i_from_bgn='Py_ssize_t',
+    i_from_end='Py_ssize_t',
+    i_onto_bgn='Py_ssize_t',
+    i_onto_end='Py_ssize_t',
+    i_ranges_from=list,
+    i_ranges_large=list,
+    i_ranges_onto=list,
+    i_ranges_small=list,
+    i_small_bgn='Py_ssize_t',
+    i_small_end='Py_ssize_t',
+    im='double',
+    index='Py_ssize_t',
+    index_from='Py_ssize_t',
+    index_large='Py_ssize_t',
+    index_onto='Py_ssize_t',
+    index_recv='Py_ssize_t',
+    index_small='Py_ssize_t',
+    j_from_bgn='Py_ssize_t',
+    j_from_end='Py_ssize_t',
+    j_global_large='Py_ssize_t',
+    j_onto_bgn='Py_ssize_t',
+    j_onto_end='Py_ssize_t',
+    j_small_bgn='Py_ssize_t',
+    j_small_end='Py_ssize_t',
+    k_end='Py_ssize_t',
+    ki='Py_ssize_t',
+    kj='Py_ssize_t',
+    kk='Py_ssize_t',
+    local='bint',
+    nyquist_large='Py_ssize_t',
+    nyquist_small='Py_ssize_t',
+    rank_from='int',
+    rank_onto='int',
+    re='double',
+    recv='bint',
+    request=object,  # mpi4py.MPI.Request
+    send='bint',
+    sinθ='double',
+    slab_from_ptr='double*',
+    slab_from_size_i='Py_ssize_t',
+    slab_from_size_j='Py_ssize_t',
+    slab_from_size_k='Py_ssize_t',
+    slab_large='double[:, :, ::1]',
+    slab_large_size_i='Py_ssize_t',
+    slab_large_size_j='Py_ssize_t',
+    slab_large_size_k='Py_ssize_t',
+    slab_onto_ptr='double*',
+    slab_onto_size_i='Py_ssize_t',
+    slab_onto_size_j='Py_ssize_t',
+    slab_onto_size_k='Py_ssize_t',
+    slab_read_ptr='double*',
+    slab_small='double[:, :, ::1]',
+    slab_small_size_i='Py_ssize_t',
+    slab_small_size_j='Py_ssize_t',
+    slab_small_size_k='Py_ssize_t',
+    subslabs_dict_from=dict,
+    subslabs_dict_large=dict,
+    subslabs_dict_onto=dict,
+    subslabs_dict_small=dict,
+    subslabs_ranges_from=list,
+    subslabs_ranges_onto=list,
+    upscaling='bint',
+    θ='double',
+    θ_total='double',
+    returns='double[:, :, ::1]',
+)
+def copy_modes(slab_from, slab_onto, deconv_order=0, interlace_flag=0, operation='='):
+    """The Fourier modes of slab_from will be copied into slab_onto.
+    Deconvolution will be performed according to deconv_order.
+    Set operation = '+=' to add the modes fom slab_from to slab_onto,
+    rather than overwriting them. By default no interlacing is
+    performed. To carry out interlacing you need to call this function
+    twice; once with the non-shifted grid (as slab_from) and
+    interlace_flag = 1, and once with the shifted grid and
+    interlace_flag = 2, with at least the last call using
+    operation = '+=' to not overwrite the results from the first call.
+    With interlace_flag = 1, the values of slab_from are simply
+    multiplied by 0.5 prior to adding them to slab_onto.
+    With interlace_flag = 2, the phases of the (complex) values are
+    additionally rotated as defined by harmonic averaging.
+    """
+    # Extract pointers
+    slab_onto_ptr = cython.address(slab_onto[:, :, :])
+    slab_from_ptr = cython.address(slab_from[:, :, :])
+    # Extract grid sizes
+    slab_onto_size_j, slab_onto_size_i, slab_onto_size_k = asarray(slab_onto).shape
+    slab_from_size_j, slab_from_size_i, slab_from_size_k = asarray(slab_from).shape
+    gridsize_from, gridsize_onto = slab_from_size_i, slab_onto_size_i
+    # Consider the easy case of equal grid sizes separately
+    if gridsize_from == gridsize_onto:
+        # As slab_from and slab_onto have identical grid sizes,
+        # we can copy the Fourier modes locally,
+        # i.e. without any MPI communication.
+        if deconv_order == 0 and interlace_flag != 2:
+            # Deconvolution should not be performed and no phase shift
+            # should be performed due to interlacing.
+            # Combine directly.
+            for index in range(slab_onto_size_j*slab_onto_size_i*slab_onto_size_k):
+                # Set the factor due to interlacing
+                factor = 1
+                with unswitch:
+                    if 𝔹[interlace_flag > 0]:
+                        factor = 0.5
+                # Write to slab_onto
+                with unswitch:
+                    if 𝔹[operation == '=']:
+                        slab_onto_ptr[index] = factor*slab_from_ptr[index]
+                    else:  # operation == '+='
+                        slab_onto_ptr[index] += factor*slab_from_ptr[index]
+        else:
+            # At least one of deconvolution or the non-trivial part of
+            # interlacing is to be performed.
+            # For this, we need proper iteration over ki, kj, kk.
+            for index, ki, kj, kk, factor, θ in fourier_loop(
+                gridsize_onto, deconv_order=deconv_order, interlace_flag=interlace_flag,
+            ):
+                # Extract real and imag part of this
+                # Fourier mode of slab_from.
+                re = slab_from_ptr[index    ]
+                im = slab_from_ptr[index + 1]
+                # Rotate the complex phase due to interlacing
+                with unswitch:
+                    if 𝔹[interlace_flag == 2]:
+                        cosθ = cos(θ)
+                        sinθ = sin(θ)
+                        re, im = (
+                            re*cosθ - im*sinθ,
+                            re*sinθ + im*cosθ,
+                        )
+                # Apply factor from deconvolution and interlacing
+                re *= factor
+                im *= factor
+                # Write to slab_onto
+                with unswitch:
+                    if 𝔹[operation == '=']:
+                        slab_onto_ptr[index    ] = re
+                        slab_onto_ptr[index + 1] = im
+                    else:  # operation == '+='
+                        slab_onto_ptr[index    ] += re
+                        slab_onto_ptr[index + 1] += im
+        # Easy case of equal grid sizes complete
+        return slab_onto
+    # The two grid sizes are not equal, and so the grid is to be
+    # scaled up or down. Assign some variables according to
+    # which of the two scenarios we are in.
+    upscaling = (gridsize_from < gridsize_onto)
+    if upscaling:
+        slab_small, slab_large = slab_from, slab_onto
+    else:  # downscaling
+        slab_small, slab_large = slab_onto, slab_from
+    slab_small_size_j, slab_small_size_i, slab_small_size_k = asarray(slab_small).shape
+    slab_large_size_j, slab_large_size_i, slab_large_size_k = asarray(slab_large).shape
+    gridsize_small, gridsize_large = slab_small_size_i, slab_large_size_i
+    nyquist_small, nyquist_large = gridsize_small//2, gridsize_large//2
+    # As slab_from and slab_onto have different grid sizes, a given
+    # Fourier mode situated within slab_from on process p may be
+    # situated outside slab_onto on process p, but instead within
+    # slab_onto on some other process q. Generally then, different grid
+    # sizes calls for interprocess communication. To do this
+    # communication, we subdivide both slab_from and slab_onto into
+    # subslabs, i.e. thinner (in the y direction only) slabs which
+    # together constite a full slab. For this subslab decomposition to
+    # be of any use, we require that the Fourier modes within a given
+    # subslab of slab_small on p is fully contained within just a single
+    # subslab of slab_large on q (which may or may not equal p), and in
+    # fact that these two corresponding subslabs span the same kj. Some
+    # freedom remains regarding the subslab decomposition, but the
+    # optimal choice is that which minimizes the number of subslabs.
+    # Find this subslab decomposition now (does not mutate any data).
+    subslabs_dict_small, subslabs_dict_large = get_subslabs(gridsize_small, gridsize_large)
+    if upscaling:
+        subslabs_dict_from, subslabs_dict_onto = subslabs_dict_small, subslabs_dict_large
+    else:  # downscaling
+        subslabs_dict_from, subslabs_dict_onto = subslabs_dict_large, subslabs_dict_small
+    # While the j range is set by the subslab in question, they all span
+    # the entire slab in the i and k dimension, but we are only
+    # interested in the region corresponding to slab_small, as Fourier
+    # modes beyond it cannot be copied between the two slabs. Set i and
+    # k ranges. Note that each subslab consists of two i ranges, i.e.
+    # two half subslabs. This is needed as these two halfs are not
+    # contiguous (due to the skipped larger Fourier modes in the large
+    # slab and the skipped Nyquist modes in the small slab). Also note
+    # that we implicitly have k_bgn = 0.
+    i_ranges_small = [(0, nyquist_small), (gridsize_small - nyquist_small + 1, gridsize_small)]
+    i_ranges_large = [(0, nyquist_small), (gridsize_large - nyquist_small + 1, gridsize_large)]
+    if upscaling:
+        i_ranges_from, i_ranges_onto = i_ranges_small, i_ranges_large
+    else:  # downscaling
+        i_ranges_from, i_ranges_onto = i_ranges_large, i_ranges_small
+    k_end = slab_small_size_k - 2
+    # Loop over processes with which to communicate subslabs
+    for (
+        (rank_onto, subslabs_ranges_from),
+        (rank_from, subslabs_ranges_onto),
+    ) in zip(
+        subslabs_dict_from.items(),
+        subslabs_dict_onto.items(),
+    ):
+        # Flag specifying whether this is a purely local subslab,
+        # meaning that it resides entirely on the local process in
+        # both slab_from and slab_onto.
+        local = (rank_onto == rank)
+        # Loop over subslabs
+        for (
+            (j_from_bgn, j_from_end),
+            (j_onto_bgn, j_onto_end),
+        ) in zip(
+            subslabs_ranges_from,
+            subslabs_ranges_onto,
+        ):
+            # Flags specifying whether we should
+            # send/receive the subslab.
+            send = (not local and rank_onto >= 0 and j_from_bgn != -1)
+            recv = (not local and rank_from >= 0 and j_onto_bgn != -1)
+            # Loop over half subslabs (positive and negative ki)
+            for (
+                (i_from_bgn, i_from_end),
+                (i_onto_bgn, i_onto_end),
+            ) in zip(
+                i_ranges_from,
+                i_ranges_onto,
+            ):
+                # Send half subslab
+                if send:
+                    request = smart_mpi(
+                        slab_from[j_from_bgn:j_from_end, i_from_bgn:i_from_end, :k_end],
+                        dest=rank_onto,
+                        mpifun='Isend',
+                    )
+                # Receive half subslab
+                if recv:
+                    half_subslab_recv = get_buffer(
+                        (j_onto_end - j_onto_bgn, i_onto_end - i_onto_bgn, k_end),
+                        'subslab',
+                    )
+                    smart_mpi(
+                        half_subslab_recv,
+                        source=rank_from,
+                        mpifun='Recv',
+                    )
+                # Wait for the non-blocking send to complete
+                if send:
+                    request.wait()
+                # Done with subslab communication. Only carry on if the
+                # half subslab should be copied into the local slab_onto
+                # (i.e. if we are not at a local subslab which should
+                # only be send).
+                if not (local or recv):
+                    continue
+                # To copy the (local or received) Fourier modes over to
+                # slab_onto, we now need to loop over this slab, or
+                # rather some (half) subslab of it. However, we only
+                # want to set the modes within the small grid (even in
+                # the case of slab_onto = slab_large, as modes beyond it
+                # cannot be set from slab_from = slab_small), and so we
+                # need to loop only over the j range of the
+                # small subslab. Get this j range from
+                # j_onto_bgn and j_onto_end.
+                if upscaling:
+                    # When upscaling we have slab_onto = slab_large
+                    # and so the known j range of the onto slab is for
+                    # the subslab of the large slab, not the small.
+                    # Convert the bgn index.
+                    j_global_large = ℤ[slab_large_size_j*rank] + j_onto_bgn
+                    kj = j_global_large - gridsize_large*(j_global_large >= nyquist_large)
+                    j_small_bgn = kj + gridsize_small*(kj < 0) - ℤ[slab_small_size_j*rank]
+                    # Convert the end index, remembering to temporarily
+                    # treat it as inclusive rather than exclusive.
+                    j_global_large = ℤ[slab_large_size_j*rank] + j_onto_end - 1
+                    kj = j_global_large - gridsize_large*(j_global_large >= nyquist_large)
+                    j_small_end = kj + gridsize_small*(kj < 0) - ℤ[slab_small_size_j*rank] + 1
+                else:  # downscaling
+                    # When downscaling we have slab_onto = slab_small
+                    # and so the known j range of the onto slab is the
+                    # same as the j range of the small slab.
+                    j_small_bgn, j_small_end = j_onto_bgn, j_onto_end
+                # We further need the i range of the half subslab of the
+                # small slab. Here we can always just pick the correct
+                # pre-computed such range.
+                if upscaling:
+                    i_small_bgn, i_small_end = i_from_bgn, i_from_end
+                else:  # downscaling
+                    i_small_bgn, i_small_end = i_onto_bgn, i_onto_end
+                # Pointer to the slab from which
+                # the data should be copied.
+                if local:
+                    slab_read_ptr = slab_from_ptr
+                else:
+                    slab_read_ptr = cython.address(half_subslab_recv[:, :, :])
+                # Loop over the Fourier modes of the half small subslab,
+                # evaluating deconvolution and interlacing as if they
+                # belong to a grid of size gridsize_from
+                # (which they do).
+                for index_small, ki, kj, kk, factor, θ in fourier_loop(
+                    gridsize_small, gridsize_from,
+                    i_small_bgn, i_small_end,
+                    j_small_bgn, j_small_end,
+                    deconv_order=deconv_order, interlace_flag=interlace_flag,
+                ):
+                    # Corresponding index into the large subslab
+                    index_large = (
+                        ℤ[
+                            (
+                                ℤ[
+                                    (
+                                        kj + gridsize_large*(kj < 0) - ℤ[slab_large_size_j*rank]  # j_large
+                                    )*slab_large_size_i
+                                ]
+                                + ki + gridsize_large*(ki < 0)  # i_large
+                            )*slab_large_size_k
+                        ]
+                        + 2*kk  # k_large
+                    )
+                    # Corresponding index into the received half subslab
+                    index_recv = (
+                        ℤ[
+                            (
+                                ℤ[
+                                    (
+                                        (kj + gridsize_small*(kj < 0)) - ℤ[slab_small_size_j*rank + j_small_bgn]  # j_recv
+                                    )*ℤ[i_small_end - i_small_bgn]
+                                ]
+                                + ki + gridsize_small*(ki < 0) - i_small_bgn  # i_recv
+                            )*k_end
+                        ]
+                        + 2*kk  # k_recv
+                    )
+                    # Set indices into the read and write slab
+                    with unswitch(5):
+                        if 𝔹[local and upscaling]:
+                            # Local upscaling
+                            index_from = index_small
+                            index_onto = index_large
+                        elif 𝔹[local and not upscaling]:
+                            # Local downscaling
+                            index_from = index_large
+                            index_onto = index_small
+                        elif upscaling:
+                            # Non-local upscaling
+                            index_from = index_recv
+                            index_onto = index_large
+                        else:
+                            # Non-local downscaling
+                            index_from = index_recv
+                            index_onto = index_small
+                    # Extract real and imag part of this Fourier mode
+                    re = slab_read_ptr[index_from    ]
+                    im = slab_read_ptr[index_from + 1]
+                    # The total complex phase shift due to both change
+                    # of grid size and interlacing.
+                    θ_total = ℝ[π*(1/gridsize_onto - 1/gridsize_from)]*ℤ[ℤ[ki + kj] + kk]
+                    with unswitch(5):
+                        if 𝔹[interlace_flag == 2]:
+                            θ_total += θ
+                    # Apply factor and phase shift from deconvolution,
+                    # interlacing and change of grid size.
+                    cosθ = cos(θ_total)
+                    sinθ = sin(θ_total)
+                    re, im = (
+                        factor*(re*cosθ - im*sinθ),
+                        factor*(re*sinθ + im*cosθ),
+                    )
+                    # Write to slab_onto
+                    with unswitch(5):
+                        if 𝔹[operation == '=']:
+                            slab_onto_ptr[index_onto    ] = re
+                            slab_onto_ptr[index_onto + 1] = im
+                        else:  # operation == '+=':
+                            slab_onto_ptr[index_onto    ] += re
+                            slab_onto_ptr[index_onto + 1] += im
+    return slab_onto
+
+# Function for dividing up a pair of different sized slabs into
+# overlapping subslabs. The resulting subslab layout is returned,
+# while no slab is mutated.
+def get_subslabs(gridsize_small, gridsize_large):
+    """Given two grid sizes, one smaller than the other, this function
+    returns two corresponding dicts mapping process ranks to lists of
+    overlapping subslab ranges between the local process and the process
+    rank in question.
+    An example will illustrate the format. Name the two returned dicts
+    subslabs_dict_j_small and subslabs_dict_j_large and say we see
+    things from the perspective of process 1 while running with 4
+    processes and having gridsize_small = 12, gridsize_large = 20,
+    the result would then be
+        subslabs_dict_j_small = {1: [(2, 3)], 0: [(0, 2)]}  # process 1
+        subslabs_dict_j_large = {1: [(0, 1)]}               # process 1
+    This means that given these two grid sizes, the local (to process 1)
+    small slab is divided into two subslabs slab_small[j=0:2, i=:, k=:]
+    and slab_small[j=2:3, i=:, k=:], whereas only a single local subslab
+    slab_large[j=0:1, i=:, k=:] results from the local large slab. Note
+    that the union of all subslabs given may not result in the complete
+    slab, as some subslabs may be irrelevant (they contain no overlap
+    between the small and large slabs, or contain only Nyquist points
+    which are disregarded). The small local subslab
+    slab_small[j=0:2, i=:, k=:] overlaps with a large subslab on process
+    0 (note that by construction two small or two large subslabs may
+    never overlap). The details of this non-local overlapping large
+    subslab is not known to process 1, but is contained (among other
+    things) in the corresponding result
+        subslabs_dict_j_large = {0: [(0, 3)], 1: [(3, 5)]}  # process 0
+    on process 0. We see that the other small subslab
+    slab_small[j=2:3, i=:, k=:] local to process 1 overlaps with a large
+    subslab on process 1 itself. Indeed, looking at
+    subslabs_dict_j_large on process 1 we see this large subslab.
+    """
+    # Look up previous result in cache
+    key = (gridsize_small, gridsize_large)
+    subslabs_j_both = subslabs_cache.get(key)
+    if subslabs_j_both is not None:
+        return subslabs_j_both
+    # Sanity check on grid sizes
+    if gridsize_small > gridsize_large:
+        masterwarn(
+            f'get_subslabs() called with gridsize_small = {gridsize_small} '
+            f'> gridsize_large = {gridsize_large}. These arguments have '
+            f'been switched around.'
+        )
+        gridsize_smal, gridsize_large = gridsize_large, gridsize_small
+        return get_subslabs(gridsize_small, gridsize_large)
+    for varname, gridsize in {
+        'gridsize_small': gridsize_small,
+        'gridsize_large': gridsize_large,
+    }.items():
+        if gridsize%2:
+            abort(
+                f'get_subslabs() got {varname} = {gridsize}, but this must be even'
+            )
+        if gridsize%nprocs:
+            abort(
+                f'get_subslabs() got {varname} = {gridsize} '
+                f'which is not divisible by {nprocs} processes'
+            )
+    # Collect all local kj
+    def get_kj_sets(gridsize):
+        nyquist = gridsize//2
+        slab_size_j = gridsize//nprocs
+        kj_sets = []
+        for other_rank in range(nprocs):
+            kj_set = set()
+            for j in range(slab_size_j):
+                j_global = slab_size_j*other_rank + j
+                kj = j_global - gridsize*(j_global >= nyquist)
+                # Ignore Nyquist planes
+                if kj == -nyquist:
+                    continue
+                kj_set.add(kj)
+            kj_sets.append(kj_set)
+        return kj_sets
+    kj_sets_small = get_kj_sets(gridsize_small)
+    kj_sets_large = get_kj_sets(gridsize_large)
+    # Find groups of consecutive local kj, i.e. subslabs
+    def construct_subslabs_kj_dict(kj_set, kj_sets, sign):
+        subslabs_dict_kj = {}
+        for ℓ in range(nprocs):
+            other_rank = (rank + sign*ℓ)%nprocs  # determines rank communication order
+            other_kj_set = kj_sets[other_rank]
+            overlap = sorted(kj_set & other_kj_set)
+            if not overlap:
+                continue
+            subslabs_kj_ranges = []
+            subslabs_dict_kj[other_rank] = subslabs_kj_ranges
+            for _, groups in itertools.groupby(enumerate(overlap), lambda el: el[1] - el[0]):
+                subrange = [group[1] for group in groups]
+                kj_bgn, kj_end = subrange[0], subrange[-1]
+                # A subslab may not contain both
+                # negative and non-negative kj.
+                kj_bgn, kj_end = np.min((kj_bgn, kj_end)), np.max((kj_bgn, kj_end))
+                if kj_bgn < 0 and kj_end >= 0:
+                    subslabs_kj_ranges.append((kj_bgn, -1))
+                    subslabs_kj_ranges.append((0, kj_end))
+                else:
+                    subslabs_kj_ranges.append((kj_bgn, kj_end))
+        return subslabs_dict_kj
+    subslabs_dict_kj_small = construct_subslabs_kj_dict(kj_sets_small[rank], kj_sets_large, +1)
+    subslabs_dict_kj_large = construct_subslabs_kj_dict(kj_sets_large[rank], kj_sets_small, -1)
+    # Convert from kj to j
+    def convert_subslabs_kj_to_j(subslabs_kj_dict, gridsize):
+        slab_size_j = gridsize//nprocs
+        def kj_to_j(kj):
+            return kj + gridsize*(kj < 0) - slab_size_j*rank
+        subslabs_j_dict = {
+            other_rank: [
+                (kj_to_j(kj_bgn), kj_to_j(kj_end) + 1)  # use exclusive end point
+                for kj_bgn, kj_end in subslabs_kj_ranges
+            ]
+            for other_rank, subslabs_kj_ranges in subslabs_kj_dict.items()
+        }
+        return subslabs_j_dict
+    subslabs_dict_j_small = convert_subslabs_kj_to_j(subslabs_dict_kj_small, gridsize_small)
+    subslabs_dict_j_large = convert_subslabs_kj_to_j(subslabs_dict_kj_large, gridsize_large)
+    # Pad the small and large subslab dicts such that
+    # they contain the same number of items, with pairs of j ranges
+    # which also contain the same number of elements.
+    def pad_dict(subslabs_j, length):
+        fake_rank = -1
+        while len(subslabs_j) < length:
+            subslabs_j[fake_rank] = []
+            fake_rank -= 1
+    pad_dict(subslabs_dict_j_small, len(subslabs_dict_j_large))
+    pad_dict(subslabs_dict_j_large, len(subslabs_dict_j_small))
+    def pad_ranges(ranges, length):
+        while len(ranges) < length:
+            ranges.append((-1, -1))
+    for subslabs_j_ranges_small, subslabs_j_ranges_large in zip(
+        subslabs_dict_j_small.values(), subslabs_dict_j_large.values()
+    ):
+        length = np.max([len(subslabs_j_ranges_small), len(subslabs_j_ranges_large)])
+        pad_ranges(subslabs_j_ranges_small, length)
+        pad_ranges(subslabs_j_ranges_large, length)
+    # Cache results and return
+    subslabs_dict_j_both = (subslabs_dict_j_small, subslabs_dict_j_large)
+    subslabs_cache[key] = subslabs_dict_j_both
+    return subslabs_dict_j_both
+# Cache used by the get_subslabs() function
+cython.declare(subslabs_cache=dict)
+subslabs_cache = {}
 
 # Function for interpolating a certain quantity from a particle
 # component onto a supplied domain grid.
@@ -624,6 +1355,7 @@ def interpolate_components(
     order='int',
     ᔑdt=dict,
     shift='double',
+    factor='double',
     do_ghost_communication='bint',
     # Locals
     a='double',
@@ -653,21 +1385,32 @@ def interpolate_components(
     returns='void',
 )
 def interpolate_particles(component, gridsize, grid, quantity, order, ᔑdt,
-    shift=0, do_ghost_communication=True):
-    """The given quantity of the component will be added to current
-    content of the local grid with global grid size given by gridsize.
-    For info about the quantity argument, see the
-    interpolate_components() function.
+    shift=0, factor=1, do_ghost_communication=True):
+    """The given quantity of the particle component will be added to
+    current content of the local grid with global grid size given by
+    gridsize. For info about the quantity argument, see the
+    interpolate_upstream() function.
     Time dependent factors in the quantity are evaluated at the current
     time as defined by the universals struct. If ᔑdt is passed as a
     dict containing time step integrals, these factors will be
     integrated over the time step.
+    By supplying shift != 0, the particle positions will be shifted
+    by -shift (grid units) before interpolated to the grid, or
+    equivalently the whole grid is shifted +shift prior to the
+    interpolation. This is typically used for interlacing two grids
+    relatively shifted by 0.5.
+    Setting the factor != 1 scales the interpolated quantity.
     The supplied grid should contain ghost layers, as the interpolation
     will populate these. To communicate and add the resulting values in
     the ghost cells to their physical cells, set do_ghost_communication
     to True. Note that even with do_ghost_communication set to True, the
     ghost cells will not end up with copies of the boundary values.
     """
+    if not (1 <= order <= 4):
+        abort(
+            f'interpolate_particles() called with order = {order} '
+            f'∉ {{1 (NGP), 2 (CIC), 3 (TSC), 4 (PCS)}}'
+        )
     # Always use the current time
     a = universals.a
     w_eff = component.w_eff(a=a)
@@ -699,7 +1442,7 @@ def interpolate_particles(component, gridsize, grid, quantity, order, ᔑdt,
             f'interpolate_particles() called with '
             f'quantity = "{quantity}" ∉ {{"ρ", "a²ρ", "ϱ", "Jx", "Jy", "Jz"}}'
         )
-    contribution_factor = (gridsize/boxsize)**3
+    contribution_factor = factor*(gridsize/boxsize)**3
     contribution *= contribution_factor
     # Offsets and scalings needed for the interpolation
     cellsize = boxsize/gridsize
@@ -734,16 +1477,10 @@ def interpolate_particles(component, gridsize, grid, quantity, order, ᔑdt,
                 index_i = set_weights_TSC(x, weights_x)
                 index_j = set_weights_TSC(y, weights_y)
                 index_k = set_weights_TSC(z, weights_z)
-            elif order == 4:  # PCS interpolation
+            else:  # order == 4  # PCS interpolation
                 index_i = set_weights_PCS(x, weights_x)
                 index_j = set_weights_PCS(y, weights_y)
                 index_k = set_weights_PCS(z, weights_z)
-            else:
-                abort(
-                    f'interpolate_particles() called with order = {order} '
-                    f'∉ {{1 (NGP), 2 (CIC), 3 (TSC), 4 (PCS)}}'
-                )
-                index_i = index_j = index_k = 0  # To satisfy the compiler
         # Assign weighted contributions to grid points
         for         i in range(order):
             for     j in range(order):
@@ -758,55 +1495,93 @@ def interpolate_particles(component, gridsize, grid, quantity, order, ᔑdt,
     if do_ghost_communication:
         communicate_ghosts(grid, '+=')
 
-# Function for interpolating a certain quantity from a fluid component
-# onto a supplied domain grid.
+# Function for adding together a certain quantity
+# from several fluid components.
 @cython.header(
+    # Arguments
+    components=list,
+    grid='double[:, :, ::1]',
+    quantity=str,
+    ᔑdt=dict,
+    factor='double',
+    # Locals
+    component='Component',
+)
+def combine_fluids(components, grid, quantity, ᔑdt, factor=1):
+    """The given quantity of the components (all of which are assumed to
+    be fluid components) will be added together into the grid, with the
+    current contents of the grid overwritten.
+    """
+    if not components:
+        return grid
+    add_fluid_to_grid(components[0], grid, quantity, ᔑdt, factor, operation='=')
+    for component in components[1:]:
+        add_fluid_to_grid(component, grid, quantity, ᔑdt, factor, operation='+=')
+    return grid
+
+# Function for adding a certain quantity from a fluid
+# component onto a supplied domain grid.
+@cython.pheader(
     # Arguments
     component='Component',
     grid='double[:, :, ::1]',
     quantity=str,
     ᔑdt=dict,
+    factor='double',
+    operation=str,
     # Locals
     a='double',
-    contribution_factor='double',
     dim='int',
     fluidscalar='FluidScalar',
+    grid_fluid='double[:, :, ::1]',
+    grid_fluid_ptr='double*',
+    grid_ptr='double*',
+    gridshape=tuple,
+    gridshape_fluid=tuple,
+    index='Py_ssize_t',
     w_eff='double',
-    returns='void',
+    returns='double[:, :, ::1]',
 )
-def interpolate_fluid(component, grid, quantity, ᔑdt):
-    """The component has to be a fluid component, and the passed grid is
-    interpreted as having the same physical extent as that of the fluid
-    (domain) grids. The grid passed should be a full local domain grid,
-    including ghost points.
-    The given quantity of the component will be added to current
-    content of the local grid. For info about the quantity argument,
-    see the interpolate_components() function.
+def add_fluid_to_grid(component, grid, quantity, ᔑdt, factor=1, operation='+='):
+    """The given quantity of the fluid component will be added to
+    current content of the local grid with global grid size given by
+    gridsize. For info about the quantity argument, see the
+    interpolate_upstream() function.
     Time dependent factors in the quantity are evaluated at the current
     time as defined by the universals struct. If ᔑdt is passed as a
     dict containing time step integrals, these factors will be
     integrated over the time step.
-    Though ghost cells are required to exist, these are not actually
-    touched by this function, and will not be properly set either.
+    Setting the factor != 1 scales the interpolated quantity.
+    The supplied grid should contain ghost layers. If these are properly
+    populated when this function is called, they will remain so after
+    this function has finished.
     """
+    # The component must have identical grid size to the passed grid
+    gridshape = asarray(grid).shape
+    gridshape_fluid = get_gridshape_local(component.gridsize)
+    if gridshape != gridshape_fluid:
+        abort(
+            f'add_fluid_to_grid() got component with local grid shape {gridshape_fluid} '
+            f'(global grid size {component.gridsize}) and non-matching grid '
+            f'of local shape {gridshape}.'
+        )
     # Always use the current time
     a = universals.a
     w_eff = component.w_eff(a=a)
-    # Determine the contribution factor of each fluid cell
-    # based on the quantity.
-    contribution_factor = 1
+    # Get the fluid grid and determine the contribution factor of each
+    # fluid cell, based on the quantity.
     if quantity == 'ρ':
-        if ᔑdt:
-            contribution_factor = ᔑdt['a**(-3*(1+w_eff))', component.name]/ᔑdt['1']
-        else:
-            contribution_factor = a**(-3*(1 + w_eff))
         fluidscalar = component.ϱ
+        if ᔑdt:
+            factor *= ᔑdt['a**(-3*(1+w_eff))', component.name]/ᔑdt['1']
+        else:
+            factor *= a**(-3*(1 + w_eff))
     elif quantity == 'a²ρ':
-        if ᔑdt:
-            contribution_factor = ᔑdt['a**(-3*w_eff-1)', component.name]/ᔑdt['1']
-        else:
-            contribution_factor = a**(-3*w_eff - 1)
         fluidscalar = component.ϱ
+        if ᔑdt:
+            factor *= ᔑdt['a**(-3*w_eff-1)', component.name]/ᔑdt['1']
+        else:
+            factor *= a**(-3*w_eff - 1)
     elif quantity == 'ϱ':
         fluidscalar = component.ϱ
     elif quantity in {'Jx', 'Jy', 'Jz'}:
@@ -814,206 +1589,28 @@ def interpolate_fluid(component, grid, quantity, ᔑdt):
         fluidscalar = component.J[dim]
     else:
         abort(
-            f'interpolate_fluid() called with '
+            f'add_fluid_to_grid() called with '
             f'quantity = "{quantity}" ∉ {{"ρ", "a²ρ", "ϱ", "Jx", "Jy", "Jz"}}'
         )
-    # Add values of the FluidScalar grid (multiplied by the
-    # contribution_factor) to the current values of the grid,
-    # through interpolation.
-    interpolate_grid_to_grid(fluidscalar.grid_mv, grid, factor=contribution_factor)
-
-# Function for interpolating one grid onto another
-@cython.pheader(
-    # Arguments
-    grid='double[:, :, ::1]',
-    buffer_or_buffer_name=object,  # double[:, :, ::1] or int or str
-    gridsize_buffer='Py_ssize_t',
-    factor='double',
-    # Locals
-    buffer='double[:, :, ::1]',
-    buffer_ptr='double*',
-    buffer_supplied='bint',
-    factor_x='double',
-    factor_y='double',
-    factor_z='double',
-    grid_ptr='double*',
-    gridshape_buffer_local=tuple,
-    gridsize_grid='Py_ssize_t',
-    i='Py_ssize_t',
-    i_box='Py_ssize_t',
-    index_and_size='Py_ssize_t*',
-    index_i='Py_ssize_t',
-    index_j='Py_ssize_t',
-    index_k='Py_ssize_t',
-    j='Py_ssize_t',
-    j_box='Py_ssize_t',
-    k='Py_ssize_t',
-    k_box='Py_ssize_t',
-    scaling='double',
-    size_i='Py_ssize_t',
-    size_j='Py_ssize_t',
-    size_k='Py_ssize_t',
-    value='double',
-    weights_x='double*',
-    weights_y='double*',
-    weights_z='double*',
-    returns='double[:, :, ::1]',
-)
-def interpolate_grid_to_grid(grid, buffer_or_buffer_name=0, gridsize_buffer=-1, factor=1):
-    """The grid will be interpolated onto the buffer, using the
-    "pixel mixing" scheme (or "voxel mixing" as we are in 3D). Note that
-    the physical quantity on the grid should be some kind of density
-    (e.g. ρ, ϱ, J), as opposed to say mass. Otherwise, the rescaling of
-    the grid will not conserve the corresponding integrated quantity.
-    Both the grid and the buffer should contain ghost cells, though
-    ghost cells will not be touched or populated by this function. The
-    buffer may be explicitly supplied as a grid, or alternatively as a
-    buffer name/number. In the latter case, the global grid size of the
-    buffer should be passed as well. If a buffer is supplied, the
-    interpolated values will be added to existing values in the buffer.
-    If not, the retrieved buffer will be nullified before the
-    interpolated values are added. The interpolated values will be
-    multiplied by factor before they are added. Note that if a buffer is
-    not passed and the grid sizes of the grid and the buffer are
-    identical, the supplied grid will be mutated according to factor
-    and returned.
-    """
-    # If the gridsize of the grid and the buffer are identical, no
-    # interpolation is needed and we may return the grid itself, but
-    # multiplied by the factor. If a buffer is explicitly passed
-    # however, we copy the values of the grid onto the buffer and return
-    # the buffer.
-    buffer_supplied = (not isinstance(buffer_or_buffer_name, (int, str)))
-    if buffer_supplied:
-        buffer = buffer_or_buffer_name
-        gridsize_buffer = (buffer.shape[0] - ℤ[2*nghosts])*domain_subdivisions[0]
-    gridsize_grid = (grid.shape[0] - ℤ[2*nghosts])*domain_subdivisions[0]
-    if gridsize_grid == gridsize_buffer:
-        grid_ptr = cython.address(grid[:, :, :])
-        if buffer_supplied:
-            buffer_ptr = cython.address(buffer[:, :, :])
-            for i in range(grid.shape[0]*grid.shape[1]*grid.shape[2]):
+    grid_fluid = fluidscalar.grid_mv
+    # Copy the values of the fluid grid onto the buffer grid
+    grid_fluid_ptr = cython.address(grid_fluid[:, :, :])
+    grid_ptr = cython.address(grid[:, :, :])
+    for index in range(grid.shape[0]*grid.shape[1]*grid.shape[2]):
+        with unswitch:
+            if operation == '=':
                 with unswitch:
-                    if factor != 1:
-                        buffer_ptr[i] += factor*grid_ptr[i]
+                    if factor == 1:
+                        grid_ptr[index] = grid_fluid_ptr[index]
                     else:
-                        buffer_ptr[i] += grid_ptr[i]
-            return buffer
-        else:
-            if factor != 1:
-                for i in range(grid.shape[0]*grid.shape[1]*grid.shape[2]):
-                    grid_ptr[i] *= factor
-            return grid
-    # If no buffer is supplied, fetch the buffer with the name
-    # given by buffer_or_buffer_name and a global grid size given by
-    # gridsize_buffer.
-    if not buffer_supplied:
-        gridshape_buffer_local = get_gridshape_local(gridsize_buffer)
-        buffer = get_buffer(gridshape_buffer_local, buffer_or_buffer_name, nullify=True)
-    # The scaling factor between the old and new grid size. Note that
-    # this is the same in all dimensions.
-    scaling = float(gridsize_buffer)/gridsize_grid
-    # Allocate arrays for storing cell weights. Up to int(scaling)
-    # cells in the new grid (the buffer) may reside completely within a
-    # given single cell of the original grid. In addition, it may happen
-    # that a fraction of a new cell is partly covered by the same old
-    # cell, for both directions. For each dimension then, an old cell
-    # may be distributed among at most 2 + int(scaling) new cells.
-    weights_x = malloc(ℤ[2 + int(scaling + machine_ϵ)]*sizeof('double'))
-    weights_y = malloc(ℤ[2 + int(scaling + machine_ϵ)]*sizeof('double'))
-    weights_z = malloc(ℤ[2 + int(scaling + machine_ϵ)]*sizeof('double'))
-    # For each cell in the original grid, we need to know the number of
-    # elements of the weights arrays in use (i.e. how many new cells the
-    # old cell covers), as well as the index of the first covered new
-    # grid cell. Allocate common arrays for both of these.
-    index_and_size = malloc(2*sizeof('Py_ssize_t'))
-    # Loop over the bulk (i.e. not ghosts) or the original grid
-    # and distribute the value of each cell amongst the overlapping
-    # cells in the buffer.
-    for i in range(ℤ[grid.shape[0] - ℤ[2*nghosts]]):
-        set_weights_pixelmixing(i, scaling, weights_x, index_and_size)
-        index_i = index_and_size[0]
-        size_i  = index_and_size[1]
-        for j in range(ℤ[grid.shape[1] - ℤ[2*nghosts]]):
-            set_weights_pixelmixing(j, scaling, weights_y, index_and_size)
-            index_j = index_and_size[0]
-            size_j  = index_and_size[1]
-            for k in range(ℤ[grid.shape[2] - ℤ[2*nghosts]]):
-                set_weights_pixelmixing(k, scaling, weights_z, index_and_size)
-                index_k = index_and_size[0]
-                size_k  = index_and_size[1]
-                value = grid[ℤ[nghosts + i], ℤ[nghosts + j], ℤ[nghosts + k]]
+                        grid_ptr[index] = grid_fluid_ptr[index]*factor
+            else:  # operation == '+=''
                 with unswitch:
-                    if factor != 1:
-                        value *= factor
-                # Loop over box in new grid corresponding to old cell
-                for i_box in range(size_i):
-                    factor_x = weights_x[i_box]
-                    for j_box in range(size_j):
-                        factor_y = weights_y[j_box]
-                        for k_box in range(size_k):
-                            factor_z = weights_z[k_box]
-                            buffer[
-                                ℤ[ℤ[nghosts + index_i] + i_box],
-                                ℤ[ℤ[nghosts + index_j] + j_box],
-                                ℤ[ℤ[nghosts + index_k] + k_box],
-                            ] += ℝ[ℝ[value*factor_x]*factor_y]*factor_z
-    # Cleanup and return result
-    free(weights_x)
-    free(weights_y)
-    free(weights_z)
-    free(index_and_size)
-    return buffer
-
-# Function for computing weights and indices for
-# "pixel mixing" interpolation.
-@cython.header(
-    # Arguments
-    i='Py_ssize_t',
-    scaling='double',
-    weights='double*',
-    index_and_size='Py_ssize_t*',
-    # Locals
-    i_bgn='Py_ssize_t',
-    i_end='Py_ssize_t',
-    i_new='Py_ssize_t',
-    i_new_float='double',
-    size='Py_ssize_t',
-    x='double',
-    returns='void',
-)
-def set_weights_pixelmixing(i, scaling, weights, index_and_size):
-    # Compute range of indices into the new array corresponding to
-    # index i of the old array.
-    x = (i + machine_ϵ)*scaling
-    i_bgn = int(x)
-    i_end = int(x + scaling)
-    # Set cell weights
-    size = 0
-    for i_new in range(i_bgn, i_end + 1):
-        i_new_float = float(i_new)
-        if i_new_float >= ℝ[(i + 1)*scaling]:
-            # This new cell is completely outside of the old cell,
-            # and any further new cells will be outside as well.
-            break
-        if i_new_float >= ℝ[i*scaling]:
-            if ℝ[i_new_float + 1] <= ℝ[(i + 1)*scaling]:
-                # This new cell is completely inside the old cell.
-                weights[size] = 1
-            else:
-                # This new cell sticks out of the old cell at the end
-                weights[size] = ℝ[(i + 1)*scaling] - i_new_float
-        elif ℝ[i_new_float + 1] <= ℝ[(i + 1)*scaling]:
-            # This new cell sticks out of the old cell at the beginning
-            weights[size] = 1 - (ℝ[i*scaling] - i_new_float)
-        else:
-            # This new cell contains the entire old cell
-            weights[size] = scaling
-        size += 1
-    # Store first index into the new grid and number of new cells
-    # affected by this old ell.
-    index_and_size[0] = i_bgn
-    index_and_size[1] = size
+                    if factor == 1:
+                        grid_ptr[index] += grid_fluid_ptr[index]
+                    else:
+                        grid_ptr[index] += grid_fluid_ptr[index]*factor
+    return grid
 
 # Function for converting particles of a particle component to fluid
 # grids, effectively changing the representation of the component.
@@ -1306,8 +1903,8 @@ decomposition_info = {}
 # Function for transfering data from slabs to domain grids
 @cython.pheader(
     # Arguments
-    slab_or_slabs=object,  # double[:, :, ::1] or dict
-    grid_or_grids_or_buffer_name=object,  # double[:, :, ::1], dict, int or str
+    slab='double[:, :, ::1]',
+    grid_or_buffer_name=object,  # double[:, :, ::1], int or str
     do_ghost_communication='bint',
     # Locals
     N_domain2slabs_communications='Py_ssize_t',
@@ -1317,45 +1914,21 @@ decomposition_info = {}
     domain2slabs_recvsend_ranks='int[::1]',
     grid='double[:, :, ::1]',
     grid_noghosts='double[:, :, :]',
-    grid_or_buffer_name=object,  # double[:, :, ::1], int or str
-    grids=dict,
     gridsize='Py_ssize_t',
     key=str,
     request=object,  # mpi4py.MPI.Request
     shape=tuple,
-    slab='double[:, :, ::1]',
     slab_sendrecv_j_end='int[::1]',
     slab_sendrecv_j_start='int[::1]',
     slab_sendrecv_k_end='int[::1]',
     slab_sendrecv_k_start='int[::1]',
-    slabs=dict,
     slabs2domain_sendrecv_ranks='int[::1]',
     ℓ='Py_ssize_t',
-    returns=object,  # double[:, :, ::1] or dict
+    returns='double[:, :, ::1]',
 )
-def domain_decompose(slab_or_slabs, grid_or_grids_or_buffer_name=0, do_ghost_communication=True):
-    """If the first argument is a dict (of slabs), it is assumed that
-    the second argument is a dict of grids, in which case these grids
-    will be mutated in-place (and the dict of grids is returned back).
-    If the first argument is a slab, the second arument may be a grid
-    or a buffer name.
-    """
-    if isinstance(slab_or_slabs, dict):
-        slabs = slab_or_slabs
-        grids = grid_or_grids_or_buffer_name
-        if set(slabs.keys()) != set(grids.keys()):
-            abort(
-                f'The slabs and grids dicts passed to domain_decompose() do not '
-                f'share the same keys: {tuple(slabs.keys())}, {tuple(grids.keys())}.'
-            )
-        for key, slab in slabs.items():
-            grid = grids[key]
-            domain_decompose(slab, grid, do_ghost_communication)
-        return grids
-    slab = slab_or_slabs
+def domain_decompose(slab, grid_or_buffer_name=0, do_ghost_communication=True):
     if slab is None:
         return None
-    grid_or_buffer_name = grid_or_grids_or_buffer_name
     if slab.shape[0] > slab.shape[1]:
         masterwarn(
             'domain_decompose() was called with a slab that appears to be transposed, '
@@ -1364,7 +1937,7 @@ def domain_decompose(slab_or_slabs, grid_or_grids_or_buffer_name=0, do_ghost_com
     # Determine the correct shape of the domain grid corresponding to
     # the passed slab.
     gridsize = slab.shape[1]
-    shape = tuple([gridsize//domain_subdivisions[dim] + 2*nghosts for dim in range(3)])
+    shape = get_gridshape_local(gridsize)
     # If no domain grid is passed, fetch a buffer of the right shape
     if isinstance(grid_or_buffer_name, (int, str)):
         buffer_name = grid_or_buffer_name
@@ -1434,7 +2007,7 @@ def domain_decompose(slab_or_slabs, grid_or_grids_or_buffer_name=0, do_ghost_com
 # Function for transfering data from domain grids to slabs
 @cython.pheader(
     # Arguments
-    grid_or_grids=object,  # double[:, :, ::1] or dict
+    grid='double[:, :, ::1]',
     slab_or_buffer_name=object,  # double[:, :, ::1], int or str
     prepare_fft='bint',
     # Locals
@@ -1443,7 +2016,6 @@ def domain_decompose(slab_or_slabs, grid_or_grids_or_buffer_name=0, do_ghost_com
     domain_sendrecv_i_end='int[::1]',
     domain_sendrecv_i_start='int[::1]',
     domain2slabs_recvsend_ranks='int[::1]',
-    grid='double[:, :, ::1]',
     grid_noghosts='double[:, :, :]',
     grids=dict,
     gridsize='Py_ssize_t',
@@ -1455,22 +2027,16 @@ def domain_decompose(slab_or_slabs, grid_or_grids_or_buffer_name=0, do_ghost_com
     slab_sendrecv_j_start='int[::1]',
     slab_sendrecv_k_end='int[::1]',
     slab_sendrecv_k_start='int[::1]',
-    slabs=dict,
     slabs2domain_sendrecv_ranks='int[::1]',
     ℓ='Py_ssize_t',
-    returns=object,  # double[:, :, ::1] or dict
+    returns='double[:, :, ::1]',
 )
-def slab_decompose(grid_or_grids, slab_or_buffer_name='slab_particles', prepare_fft=False):
+def slab_decompose(grid, slab_or_buffer_name='slab_global', prepare_fft=False):
     """This function communicates a global domain decomposed grid into
     a global slab decomposed grid. If an existing slab grid should be
     used it can be passed as the second argument.
     Alternatively, if a slab grid should be fetched from elsewhere,
     its name should be specified as the second argument.
-
-    If the first argument is not a single grid but a dict of grids,
-    a corresponding dict of slabs will be returned. Here the slab buffer
-    names will be constructed from the keys of the passed dict,
-    rendering the second argument superfluous.
 
     If FFT's are to be carried out on a slab fetched by name,
     you must specify prepare_fft=True, in which case the slab will be
@@ -1478,23 +2044,7 @@ def slab_decompose(grid_or_grids, slab_or_buffer_name='slab_particles', prepare_
 
     Note that ghost points will not be read by this function,
     and so the passed domain grid need not have these set properly.
-
-    By default, the slab called 'slab_particles' is used. Often we only
-    hold a single slab in memory at a time, and so this one chunk of
-    memory is reused for lots of different purposes. We need multiple
-    simultaneous slabs for doing FFT's of pairs of grids containing
-    interpolated particle and fluid data (gravity, power spectra).
-    Here, the slabs 'slab_particles' and 'slab_fluid' are used,
-    which is why one of these is used as the default.
     """
-    if isinstance(grid_or_grids, dict):
-        grids = grid_or_grids
-        slabs = {
-            representation: slab_decompose(grid, f'slab_{representation}', prepare_fft)
-            for representation, grid in grids.items()
-        }
-        return slabs
-    grid = grid_or_grids
     if grid is None:
         return None
     # Determine the correct shape of the slab grid corresponding to
@@ -1592,334 +2142,387 @@ def slab_decompose(grid_or_grids, slab_or_buffer_name='slab_particles', prepare_
 
 # Iterator implementing looping over Fourier space slabs.
 # The yielded values are the linear index into the slab, the physical
-# ki, kj, kk (in grid units) and the deconvolution factor.
-# Nyquist planes are excluded from the iteration. If sparse is True,
-# only unique points in the z DC plane will be visited. If the
-# deconvolution factor is to be used, specify the deconvolution
-# (interpolation) order as deconv_order. If both a 'particles' and a
-# 'particles_shifted' slab is present, these will be interlaced together
-# (in-place into the 'particles' slab) if do_interlacing is True.
-@cython.iterator(
-    depends=[
-        # Functions used by slab_fourier_loop()
-        'get_deconvolution_factor',
-    ]
-)
-def slab_fourier_loop(
-    slabs, sparse=False, deconv_order=0, do_interlacing=False,
+# ki, kj, kk (in grid units), the combined factor due to deconvolution
+# and interlacingfactor, as well as the angle by which to rotate a
+# shifted slab for interlacing.
+# The iteration is determined from the passed gridsize. By default the
+# same grid size is used in the computations of deconvolution and
+# interlacing, though this may be specified separately
+# through gridsize_corrections.
+# Nyquist planes are excluded from the iteration.
+# If sparse is True, only unique points in the z DC plane will
+# be visited.
+# If skip_origin is True, the ki = kj = kk = 0 point will be excluded
+# from the iteration.
+# If the returned factor is to be used for deconvolution, specify the
+# deconvolution (interpolation) order as deconv_order. Similarly, if the
+# factor and θ is to be used for interlacing, specify the interlacing
+# stage as interlace_flag (1 for the non-shifted grid and 2 for the
+# shifted grid). Both deconv_order and interlace_flag may be
+# specified simultaneously.
+@cython.iterator
+def fourier_loop(
+    gridsize, gridsize_corrections=-1,
+    i_bgn=0, i_end=None,
+    j_bgn=0, j_end=None,
+    *,
+    sparse=False, skip_origin=False,
+    deconv_order=0, interlace_flag=False,
 ):
     # Cython declarations for variables used for the iteration,
-    # not including positional arguments and variables to yield,
-    # but including keyword arguments.
+    # including all arguments and variables to yield.
     # Do not write these using the decorator syntax above this function.
     cython.declare(
-        # Keyword arguments
+        # Arguments
+        gridsize='Py_ssize_t',
+        gridsize_corrections='Py_ssize_t',
+        i_bgn='Py_ssize_t',
+        i_end=object,
+        j_bgn='Py_ssize_t',
+        j_end=object,
         sparse='bint',
+        skip_origin='bint',
         deconv_order='int',
-        do_interlacing='bint',
+        interlace_flag='int',
         # Locals
-        _gridsize='Py_ssize_t',
+        _deconv_i='double',
+        _deconv_ij='double',
+        _deconv_j='double',
+        _deconv_k='double',
+        _i='Py_ssize_t',
+        _i_chunk='int',
+        _i_chunk_bgn='Py_ssize_t',
+        _i_chunk_end='Py_ssize_t',
+        _i_end='Py_ssize_t',
+        _index_ij='Py_ssize_t',
+        _index_j='Py_ssize_t',
+        _j='Py_ssize_t',
+        _j_chunk='int',
+        _j_chunk_bgn='Py_ssize_t',
+        _j_chunk_end='Py_ssize_t',
+        _j_end='Py_ssize_t',
+        _j_global='Py_ssize_t',
+        _j_global_bgn='Py_ssize_t',
+        _j_global_chunk_bgn='Py_ssize_t',
+        _j_global_chunk_end='Py_ssize_t',
+        _j_global_end='Py_ssize_t',
+        _kk_bgn='Py_ssize_t',
         _nyquist='Py_ssize_t',
-        _slab='double[:, :, ::1]',
-        _slab_particles='double[:, :, ::1]',
-        _slab_particles_ptr='double*',
-        _slab_particles_shifted='double[:, :, ::1]',
-        _slab_particles_shifted_ptr='double*',
-        deconv_ij='double',
-        deconv_j='double',
-        i='Py_ssize_t',
-        im='double',
-        j='Py_ssize_t',
-        j_global='Py_ssize_t',
-        ki_plus_kj='Py_ssize_t',
-        re='double',
-        slab_size_i='Py_ssize_t',
-        slab_size_j='Py_ssize_t',
-        slab_size_k='Py_ssize_t',
+        _offset_j='Py_ssize_t',
+        _slab_size_i='Py_ssize_t',
+        _slab_size_j='Py_ssize_t',
+        _slab_size_k='Py_ssize_t',
+        # Yielded
+        index='Py_ssize_t',
+        ki='Py_ssize_t',
+        kj='Py_ssize_t',
+        kk='Py_ssize_t',
         θ='double',
     )
-    # Default values, mostly to satisfy the compiler
-    deconv = deconv_j = deconv_ij = 1
-    ki_plus_kj = 0
-    # The index into a slab
-    index = 0
-    # The DC element (origin) is always skipped in the below iteration.
-    # This element is always located at the beginning of the slab
-    # belonging to the master process.
-    if master:
-        index += 2
-    # As we increment the index (by 2) prior to using it,
-    # we decrement it now.
-    index -= 2
-    # Prepare for the interlacing
-    if do_interlacing:
-        _slab_particles         = slabs.get('particles')
-        _slab_particles_shifted = slabs.get('particles_shifted')
-        if _slab_particles is None or _slab_particles_shifted is None:
-            do_interlacing = False
-        else:
-            _slab_particles_ptr         = cython.address(_slab_particles        [:, :, :])
-            _slab_particles_shifted_ptr = cython.address(_slab_particles_shifted[:, :, :])
-    # Get slab shape (must be equal between slabs of different keys).
-    # Note that in Fourier space, the x (i) and y (j) dimensions
-    # are transposed.
-    for _slab in slabs.values():
-        slab_size_j, slab_size_i, slab_size_k = asarray(_slab).shape
-        break
-    _gridsize = slab_size_i
-    _nyquist = _gridsize//2
+    # Set up slab shape
+    _nyquist = gridsize//2
+    _slab_size_j = gridsize//nprocs
+    _slab_size_i = gridsize
+    _slab_size_k = gridsize + 2
+    if gridsize_corrections == -1:
+        gridsize_corrections = gridsize
+    # Set default end indices if not given. After this,
+    # _j_end and _i_end should be used instead of j_end and i_end.
+    if j_end is None:
+        # Default to entire local length along this dimension
+        _j_end = _slab_size_j
+    else:
+        _j_end = j_end
+    if i_end is None:
+        # Default to entire length along this dimension
+        _i_end = _slab_size_i
+    else:
+        _i_end = i_end
+    # The slabs are distributed along the j-dimension,
+    # introducing a global offset individual to each process.
+    _offset_j = _slab_size_j*rank
+    _j_global_bgn = _offset_j +  j_bgn
+    _j_global_end = _offset_j + _j_end
     # Begin iterating over slab. As the first and second dimensions
     # are transposed due to the FFT, the j-dimension is first.
-    for j in range(slab_size_j):
-        # The j-component of the wave vector (grid units).
-        # Since the slabs are distributed along the j-dimension,
-        # an offset must be used.
-        j_global = ℤ[slab_size_j*rank] + j
-        kj = j_global - _gridsize*(j_global >= _nyquist)
-        # The j-component of the deconvolution
-        with unswitch(1):
-            if deconv_order:
-                deconv_j = get_deconvolution_factor(kj*ℝ[π/_gridsize])
-        # Loop through the complete i-dimension
-        for i in range(_gridsize):
-            # The i-component of the wave vector (grid units)
-            ki = i - _gridsize*(i >= _nyquist)
-            # The product of the i- and the j-component
-            # of the deconvolution.
-            with unswitch(2):
-                if deconv_order:
-                    deconv_ij = deconv_j*get_deconvolution_factor(ki*ℝ[π/_gridsize])
-            # The sum of wave vector elements, used for interlacing
-            with unswitch(2):
-                if do_interlacing:
-                    ki_plus_kj = ki + kj
-            # Only the non-negative part of the k-dimension exists.
-            # Loop through this half one complex number at a time,
-            # looping directly over kk instead of k == 2*kk.
-            # To avoid |k|² = 0 we start at kk = 1 if kj == 0 == ki.
-            for kk in range(𝔹[kj == 0] and ki == 0, _nyquist + 1):
-                # Jump to the next complex number
-                index += 2
-                # Skip Nyquist points
-                if 𝔹[𝔹[ki == ℤ[-_nyquist]] or 𝔹[kj == ℤ[-_nyquist]]] or kk == _nyquist:
-                    continue
-                # The z DC plane consists of complex conjugate pairs of
-                # points. When looping sparsely we only want to hit one
-                # point from each pair. To do this, we choose to skip
-                # points with positive ki and also points with positive
-                # kj and ki == 0.
-                with unswitch(3):
-                    if sparse:
-                        if 𝔹[ki > 0 or (𝔹[ki == 0] and 𝔹[kj > 0])] and kk == 0:
-                            continue
-                # Interlace the two relatively shifted particle slabs
-                with unswitch(3):
-                    if do_interlacing:
-                        # Rotate the phase of the complex number of the
-                        # shifted particles slab at this [j, i, k] by θ,
-                        # which according to harmonic averaging is
-                        #   θ = (kx + ky + kz)*(gridsize/boxsize)/2
-                        #     = π/gridsize*(ki + kj + kk)
-                        re = _slab_particles_shifted_ptr[index    ]
-                        im = _slab_particles_shifted_ptr[index + 1]
-                        θ = ℝ[π/_gridsize]*(ki_plus_kj + kk)
-                        re, im = re*ℝ[cos(θ)] - im*ℝ[sin(θ)], re*ℝ[sin(θ)] + im*ℝ[cos(θ)]
-                        # The interlaced result overwrites the current
-                        # values in the particles slab.
-                        _slab_particles_ptr[index    ] = 0.5*(_slab_particles_ptr[index    ] + re)
-                        _slab_particles_ptr[index + 1] = 0.5*(_slab_particles_ptr[index + 1] + im)
-                # The full deconvolution factor
-                with unswitch(3):
-                    if deconv_order:
-                        # The total (NGP) deconvolution factor
-                        deconv = deconv_ij*get_deconvolution_factor(kk*ℝ[π/_gridsize])
+    # We loop through the j-dimension in two chuns, skipping the
+    # Nyquist point (kj = -_nyquist ⇒ _j_global = _nyquist) in between.
+    for _j_chunk in range(2):
+        if _j_chunk == 0:
+            _j_chunk_bgn = j_bgn
+            _j_global_chunk_end = pairmin(_j_global_end, _nyquist)
+            _j_chunk_end = _j_global_chunk_end - _offset_j
+        else:  # _j_chunk == 1
+            _j_global_chunk_bgn = pairmax(_j_global_bgn, ℤ[_nyquist + 1])
+            _j_chunk_bgn = _j_global_chunk_bgn - _offset_j
+            _j_chunk_end = _j_end
+        # We similarly loop through the i-dimension in two chuns,
+        # skipping the Nyquist point (ki = -_nyquist ⇒ _i = _nyquist)
+        # in between.
+        for _i_chunk in range(2):
+            if _i_chunk == 0:
+                _i_chunk_bgn = i_bgn
+                _i_chunk_end = pairmin(_i_end, _nyquist)
+            else:  # _i_chunk == 1
+                _i_chunk_bgn = pairmax(i_bgn, ℤ[_nyquist + 1])
+                _i_chunk_end = _i_end
+            # Loop over the j chunk
+            _index_j = ℤ[_j_chunk_bgn*_slab_size_i - ℤ[_slab_size_i + 1]]
+            for _j in range(_j_chunk_bgn, _j_chunk_end):
+                _index_j += _slab_size_i
+                # The j-component of the wave vector (grid units)
+                _j_global = _offset_j + _j
+                kj = _j_global - ℤ[gridsize*_j_chunk]
+                # The j-component of the 1D NGP deconvolution factor.
+                # This is given by
+                #   deconv_1D_NGP = 1/sinc(ky*Δx/2)
+                #                 = 1/sinc(kj*π/gridsize)
+                # with
+                #   sinc(x) ≡ sin(x)/x
+                # and
+                #   sinc(0) = 1.
+                # Here ky = 2*π/boxsize*kj is the y component of the
+                # physical wave vector and Δx = boxsize/gridsize is the
+                # grid spacing. The 3D deconvolution factor is then
+                # given as a product over the three 1D deconvolution
+                # factors, and the final higher-order deconvolution
+                # factor is obtained through exponentiation with the
+                # power given by the deconvolution order (**1 → NGP,
+                # **2 → CIC, **3 → TSC, **4 → PCS).
+                _deconv_j = kj*ℝ[π/gridsize_corrections] + machine_ϵ
+                _deconv_j /= sin(_deconv_j)
+                # Loop over the i chunk
+                _index_ij = (_i_chunk_bgn + _index_j)*_slab_size_k
+                for _i in range(_i_chunk_bgn, _i_chunk_end):
+                    _index_ij += _slab_size_k
+                    # The i-component of the wave vector (grid units)
+                    ki = _i - ℤ[gridsize*_i_chunk]
+                    # The product of the i- and the j-components
+                    # of the 1D NGP deconvolution factor.
+                    _deconv_i = ki*ℝ[π/gridsize_corrections] + machine_ϵ
+                    _deconv_i /= sin(_deconv_i)
+                    _deconv_ij = _deconv_i*_deconv_j
+                    # The origin is the first element encountered on the
+                    # master process. If the partial index _index_ij has
+                    # a value of 0, then this is the first i iteration,
+                    # meaning that the origin (with kk = 0) is included
+                    # in the upcoming kk iteration. If the origin should
+                    # be skipped, we do so by exclucing kk = 0 from this
+                    # next iteration.
+                    _kk_bgn = 0
+                    with unswitch(4):
+                        if skip_origin:
+                            with unswitch(4):
+                                if master:
+                                    _kk_bgn = (_index_ij == 0)
+                    # The z DC plane consists of complex conjugate pairs
+                    # of points. When looping sparsely we only want to
+                    # hit one point from each pair. To do this, we
+                    # choose to skip points with positive ki and also
+                    # points with positive kj and ki == 0. Note that we
+                    # could switch the roles of ki and kj here, but this
+                    # produces a work load imbalance as skipping all
+                    # positive kj points means that half of the
+                    # processes do not participate.
+                    with unswitch(4):
+                        if sparse:
+                            # Remember to not disregard a possible
+                            # value of _kk_bgn = 1 from the above
+                            # skip of the origin.
+                            _kk_bgn |= ki > 0 or (𝔹[kj > 0] and ki == 0)
+                    # Only the non-negative part of the k-dimension
+                    # exists. Loop through this half, one complex number
+                    # at a time, looping directly over kk instead of
+                    # k == 2*kk. Here the Nyquist point kk = _nyquist is
+                    # the last element along this dimension, and so we
+                    # skip it by simply not including it in the range.
+                    for kk in range(_kk_bgn, _nyquist):
+                        # Index into (real part of) complex Fourier mode
+                        index = _index_ij + 2*kk
+                        # Combined factor for deconvolution
+                        # and interlacing.
+                        factor = 1
                         # The full deconvolution factor
-                        deconv **= deconv_order
-                # Yield the needed variables
-                yield index, ki, kj, kk, deconv
+                        with unswitch(5):
+                            if deconv_order:
+                                # The 3D NGP deconvolution factor
+                                _deconv_k = kk*ℝ[π/gridsize_corrections] + machine_ϵ
+                                _deconv_k /= sin(_deconv_k)
+                                factor = _deconv_ij*_deconv_k
+                                # The full deconvolution factor
+                                factor **= deconv_order
+                        # Include factor from interlacing
+                        # and compute interlacing angle.
+                        θ = 0
+                        with unswitch(5):
+                            if 𝔹[interlace_flag > 0]:
+                                factor *= 0.5
+                                # The angle θ by which to rotate the
+                                # complex phase of the shifted grid at
+                                # this k⃗, before ("harmonically")
+                                # averaging together with the
+                                # non-shifted grid.
+                                # This angle is given by
+                                #   θ = (kx + ky + kz)*Δx/2
+                                #     = (ki + kj + kk)*π/gridsize
+                                θ = ℤ[ℤ[ki + kj] + kk]*ℝ[π/gridsize_corrections]
+                        # Yield the needed variables
+                        yield index, ki, kj, kk, factor, θ
 
-# Function for deconvolving and/or interlacing particle grids
-@cython.header(
+# Function performing in-place deconvolution and/or interlacing of
+# Fourier slabs.
+@cython.pheader(
     # Arguments
-    grids=dict,
-    order='int',
-    interlacing='bint',
-    do_ghost_communication='bint',
+    slab='double[:, :, ::1]',
+    deconv_order='int',
+    interlace_flag='int',
     # Locals
-    any_particles='bint',
-    any_particles_shifted='bint',
-    deconv='double',
-    fft_factor='double',
-    grid='double[:, :, ::1]',
-    grids_extra=dict,
+    cosθ='double',
+    factor='double',
     gridsize='Py_ssize_t',
+    im='double',
     index='Py_ssize_t',
     ki='Py_ssize_t',
     kj='Py_ssize_t',
     kk='Py_ssize_t',
-    representation=str,
-    slab='double[:, :, ::1]',
-    slab_particles='double[:, :, ::1]',
-    slab_particles_ptr='double*',
-    slabs=dict,
-    returns=dict,
+    re='double',
+    sinθ='double',
+    slab_ptr='double*',
+    slab_size_i='Py_ssize_t',
+    slab_size_j='Py_ssize_t',
+    slab_size_k='Py_ssize_t',
+    θ='double',
+    returns='double[:, :, ::1]',
 )
-def deconvolve_interlace(grids, order=0, interlacing=True, do_ghost_communication=True):
-    """The passed grids dict should be of the form returned by
-    interpolate_components(). If a fluid grid is present, this will be
-    ignored. The particle grid will be deconvolved if order > 0.
-    Interlacing is performed if interlacing is True and both a standard
-    and a shifted particle grid is present. Note that this updates the
-    values of the standard particle grid in-place, and that the shifted
-    grid will be popped from the grids dict. Also, if deconvolution is
-    to be applied but interlacing is not and a shifted particle grid is
-    present, this shifted grid will not be touched at all.
-    Ghosts will be populated by setting do_ghost_communication to True.
-    Note that this will not take place if neither deconvolution nor
-    interlacing is to be carried out.
+def deconvolve_and_interlace(slab, deconv_order=0, interlace_flag=0):
+    """Deconvolution will be performed according to deconv_order.
+    To do an interlacing you need to call this function twice; once with
+    the non-shifted grid and interlace_flag = 1, and once with the
+    shifted grid and interlace_flag = 2. With interlace_flag = 1, the
+    values in the slabs are simply multiplied by 0.5. With
+    interlace_flag = 2, the phases of the (complex) values are
+    additionally rotated as defined by harmonic averaging.
     """
-    # Bail out if nothing to do
-    any_particles         = ('particles'         in grids)
-    any_particles_shifted = ('particles_shifted' in grids)
-    if not any_particles:
-        if any_particles_shifted:
-            abort(
-                'deconvolve_interlace() got a "particles_shifted" grid '
-                'but no matching "particles" grid'
-            )
-        return grids
-    if order == 0 and (not interlacing or not any_particles_shifted):
-        return grids
-    # Stow away unneeded grids
-    grids_extra = {}
-    if 'fluid' in grids:
-        grids_extra['fluid'] = grids['fluid']
-        grids['fluid'] = None
-    if not interlacing and 'particles_shifted' in grids:
-        grids_extra['particles_shifted'] = grids['particles_shifted']
-        grids['particles_shifted'] = None
-    # Slab decompose the particle grids
-    slabs = slab_decompose(grids, prepare_fft=True)
-    # Do a forward in-place Fourier transform of the slabs
-    fft(slabs, 'forward')
-    # Get the grid size from the slab
-    for slab in slabs.values():
-        slab_size_i = slab.shape[1]
-        break
-    gridsize = slab_size_i
-    # Multiplicative factor needed after a
-    # forward and a backward Fourier transformation.
-    fft_factor = float(gridsize)**(-3)
+    # Bail out if neither deconvolution nor interlacing
+    # is to be performed.
+    if deconv_order == 0 and interlace_flag == 0:
+        return slab
+    # Extract slab shape and pointer
+    slab_size_j, slab_size_i, slab_size_k = asarray(slab).shape
+    slab_ptr = cython.address(slab[:, :, :])
+    # If no deconvolution and only the first (scaling only) stage of
+    # interlacing is to be performed, we can do this directly, without
+    # use of the Fourier loop.
+    if deconv_order == 0 and interlace_flag == 1:
+        for index in range(slab_size_j*slab_size_i*slab_size_k):
+            slab_ptr[index] *= 0.5
+        return slab
     # Perform the deconvolution and interlacing
-    slab_particles = slabs['particles']
-    slab_particles_ptr = cython.address(slab_particles[:, :, :])
-    for index, ki, kj, kk, deconv in slab_fourier_loop(
-        slabs,
-        deconv_order=order,
-        do_interlacing=interlacing,
+    gridsize = slab_size_i
+    for index, ki, kj, kk, factor, θ in fourier_loop(
+        gridsize, deconv_order=deconv_order, interlace_flag=interlace_flag,
     ):
-        # Compute the total power at this index resulting
-        # from both particles and fluid components,
-        # with the particles slab values deconvolved.
-        slab_particles_ptr[index    ] *= ℝ[fft_factor*deconv]  # real part
-        slab_particles_ptr[index + 1] *= ℝ[fft_factor*deconv]  # imag part
-    # The fft_factor should be applied to the DC element as well
-    if master:
-        slab_particles_ptr[0] *= fft_factor  # real part
-        slab_particles_ptr[1] *= fft_factor  # imag part
-    # Fourier transform the slabs back to coordinate space
-    fft(slabs, 'backward')
-    # Domain-decompose the slabs
-    domain_decompose(slabs, grids, do_ghost_communication)
-    # Put the unneeded grids back in and remove the
-    # shifted particle grid if interlacing has been performed.
-    for representation, grid in grids_extra.items():
-        grids[representation] = grid
-    if interlacing:
-        grids.pop('particles_shifted', None)
-    return grids
-
-# Function returning the Fourier-space deconvulution factor needed for
-# NGP interpolation in one dimension. The full deconvulution factor is
-# achieved through exponentiation (**2 -> CIC, **3 -> TSC, **4 -> PCS)
-# and multiplication with one-dimensional factors for other dimensions.
-# The value to pass should be kᵢ*π/gridsize, with kᵢ the i'th component
-# of the wave vector in grid units.
-@cython.header(value='double', returns='double')
-def get_deconvolution_factor(value):
-    # The NGP deconvolution factor is given by
-    #   1/sinc(value)
-    # with
-    #   sinc(value) ≡ sin(value)/value
-    # and
-    #   sinc(0) = 1.
-    # Exploit the short-circuit behavior of 'or' to avoid division by
-    # zero. Cast to double to ensure that we never get a boolean back
-    # in pure Python mode.
-    return cast((value == 0) or value/sin(value), 'double')
+        # Extract real and imag part of slab_from
+        re = slab_ptr[index    ]
+        im = slab_ptr[index + 1]
+        # Rotate the complex phase due to interlacing
+        with unswitch:
+            if 𝔹[interlace_flag == 2]:
+                cosθ = cos(θ)
+                sinθ = sin(θ)
+                re, im = (
+                    re*cosθ - im*sinθ,
+                    re*sinθ + im*cosθ,
+                )
+        # Apply factor from deconvolution and interlacing
+        re *= factor
+        im *= factor
+        # Store updated values back in slabs
+        slab_ptr[index    ] = re
+        slab_ptr[index + 1] = im
+    return slab
 
 # Function for nullifying sets of modes of Fourier space slabs
 @cython.header(
     # Arguments
-    slab_or_slabs=object,  # double[:, :, ::1] or dict
-    nullifications=object,  # str or list of str's
+    slab='double[:, :, ::1]',
+    nullifications=object,  # bint, str or list of str's
     # Locals
     gridsize='Py_ssize_t',
+    index='Py_ssize_t',
     i='Py_ssize_t',
     j='Py_ssize_t',
+    j_bgn='Py_ssize_t',
+    j_end='Py_ssize_t',
     j_global='Py_ssize_t',
     k='Py_ssize_t',
+    k_min='Py_ssize_t',
     ki='Py_ssize_t',
+    ki_bgn='Py_ssize_t',
+    ki_end='Py_ssize_t',
     kj='Py_ssize_t',
+    kj_bgn='Py_ssize_t',
+    kj_end='Py_ssize_t',
     kk='Py_ssize_t',
+    kk_bgn='Py_ssize_t',
+    kk_end='Py_ssize_t',
+    match=object,  # re.Match
     nullification=str,
     nyquist='Py_ssize_t',
-    slab='double[:, :, ::1]',
-    slab_jik='double*',
-    slab_size_j='Py_ssize_t',
+    slab_ptr='double*',
     slab_size_i='Py_ssize_t',
+    slab_size_j='Py_ssize_t',
     slab_size_k='Py_ssize_t',
-    slabs=dict,
     returns='void',
 )
-def nullify_modes(slab_or_slabs, nullifications):
-    """The nullifications argument can be a str of comma-separated
-    words, or alternatively a list of str's, each being a single word.
-    The words specify which types of modes to nullify:
-    - "DC": Nullify the origin ki = kj = kk = 0. Other points which may
-      be considered as "DC" along only one or two dimensions
-      (e.g. ki = kj = 0, kk = 7) will not be nullified.
+def nullify_modes(slab, nullifications):
+    """The nullifications argument can be a boolean, a str of
+    comma-separated words, or alternatively a list of str's, each being
+    a single word. The words specify which types of modes to nullify:
+    - False: Do not perform any nullification.
+    - True, "all": Nullify the entire slab.
+    - "origin": Nullify the origin ki = kj = kk = 0.
     - "Nyquist": Nullify the three Nyquist planes:
         ki = -nyquist, -nyquist ≤ kj < nyquist, 0 ≤ kk ≤ nyquist.
         kj = -nyquist, -nyquist ≤ ki < nyquist, 0 ≤ kk ≤ nyquist.
         kk = +nyquist, -nyquist ≤ ki < nyquist, -nyquist ≤ kj < nyquist.
+    - "beyond cube of |k| < num" with num some positive int literal:
+        Nullifies everything except points (ki, kj, kk) with at least
+        one |kl| < num, leaving an un-nullified cube
+        centered at the origin.
     """
-    if isinstance(slab_or_slabs, dict):
-        slabs = slab_or_slabs
-        for slab in slabs.values():
-            nullify_modes(slab, nullifications)
+    if slab is None:
         return
-    else:
-        slab = slab_or_slabs
+    slab_ptr = cython.address(slab[:, :, :])
     # Parse nullifications
     if isinstance(nullifications, str):
         nullifications = nullifications.split(',')
-    nullifications = [nullification.strip().lower() for nullification in nullifications]
+    else:
+        nullifications = any2list(nullifications)
+    nullifications = [
+        str(nullification_obj).strip().lower()
+        for nullification_obj in nullifications
+    ]
     # Get slab dimensions
     slab_size_j, slab_size_i, slab_size_k = asarray(slab).shape
     gridsize = slab_size_i
     nyquist = gridsize//2
     # Perform nullifications
     for nullification in nullifications:
-        if nullification == 'dc':
-            # Nullify the DC point ki == kj == kk == 0. This is always
-            # located as the first element on the master process.
+        if nullification == 'false':
+            # Do not perform any nullification
+            pass
+        elif nullification in {'true', 'all'}:
+            # Nullify entire slab
+            slab[...] = 0
+        elif nullification == 'origin':
+            # Nullify the origin point ki == kj == kk == 0. This is
+            # always located as the first element on the master process.
             if master:
-                slab_jik = cython.address(slab[0, 0, 0:])
-                slab_jik[0] = 0  # real part
-                slab_jik[1] = 0  # imag part
+                slab_ptr[0] = 0  # real part
+                slab_ptr[1] = 0  # real part
         elif nullification == 'nyquist':
-            # Nullify the three Nyquist planes ki == -nyquist,
+            # Nullify the three Nyquist planes ki = -nyquist,
             # kj = -nyquist and kk = +nyquist. These planes overlap
             # pairwise at the edges and so a little effort can be spared
             # by not nullifying these edges twice. We take this into
@@ -1931,25 +2534,77 @@ def nullify_modes(slab_or_slabs, nullifications):
             i = ki + gridsize*(ki < 0)
             for j in range(slab_size_j):
                 for k in range(0, gridsize, 2):  # exclude k = gridsize (kk = nyquist)
-                    slab_jik = cython.address(slab[j, i, k:])
-                    slab_jik[0] = 0  # real part
-                    slab_jik[1] = 0  # imag part
+                    index = ℤ[(j*slab_size_i + i)*slab_size_k] + k
+                    slab_ptr[index    ] = 0  # real part
+                    slab_ptr[index + 1] = 0  # imag part
             kj = -nyquist
             j_global = kj + gridsize*(kj < 0)
             j = j_global - ℤ[slab_size_j*rank]
             if 0 <= j < slab_size_j:
                 for i in range(gridsize):
                     for k in range(0, gridsize, 2):  # exclude k = gridsize (kk = nyquist)
-                        slab_jik = cython.address(slab[j, i, k:])
-                        slab_jik[0] = 0  # real part
-                        slab_jik[1] = 0  # imag part
+                        index = ℤ[(ℤ[j*slab_size_i] + i)*slab_size_k] + k
+                        slab_ptr[index    ] = 0  # real part
+                        slab_ptr[index + 1] = 0  # imag part
             kk = +nyquist
             k = 2*kk
             for j in range(slab_size_j):
                 for i in range(gridsize):
-                    slab_jik = cython.address(slab[j, i, k:])
-                    slab_jik[0] = 0  # real part
-                    slab_jik[1] = 0  # imag part
+                    index = (ℤ[j*slab_size_i] + i)*slab_size_k + k
+                    slab_ptr[index    ] = 0  # real part
+                    slab_ptr[index + 1] = 0  # imag part
+        elif nullification.startswith('beyond cube'):
+            # Nullify everything except for a central cube with
+            # half-width k_min determined from the nullification str.
+            # As only half of the full 3D Fourier space is represented
+            # in memory, the region to be nullified can be partitioned
+            # into 2⨉2 + 1 = 5 regions;
+            #   ki <= -k_min, k_min <= ki,
+            #   kj <= -k_min, k_min <= kj,
+            #   k_min <= kk.
+            # Below these 2⨉2 + 1 nullifications are performed
+            # such that overlapping parts of the 5 regions are not
+            # nullified more than once.
+            match = re.search(r'^beyond cube of \|k\| < (\d+)$', nullification)
+            if not match:
+                abort(f'nullify_modes(): wrongly formatted nullification "{nullification}"')
+            k_min = int(match.group(1))
+            for ki_bgn, ki_end in zip((-nyquist, k_min), (-k_min + 1, nyquist)):
+                for j in range(slab_size_j):
+                    for ki in range(ki_bgn, ki_end):
+                        i = ki + gridsize*(ki < 0)
+                        for k in range(0, slab_size_k, 2):
+                            index = ℤ[(ℤ[j*slab_size_i] + i)*slab_size_k] + k
+                            slab_ptr[index    ] = 0  # real part
+                            slab_ptr[index + 1] = 0  # imag part
+            ki_bgn, ki_end = -k_min + 1, k_min
+            for kj_bgn, kj_end in zip((-nyquist, k_min), (-k_min + 1, nyquist)):
+                j_bgn = kj_bgn + ℤ[gridsize*(kj_bgn < 0) - ℤ[slab_size_j*rank]]
+                j_end = kj_end + ℤ[gridsize*(kj_bgn < 0) - ℤ[slab_size_j*rank]]
+                j_bgn = pairmax(j_bgn, 0)
+                j_end = pairmin(j_end, slab_size_j)
+                for j in range(j_bgn, j_end):
+                    for ki in range(ki_bgn, ki_end):
+                        i = ki + gridsize*(ki < 0)
+                        for k in range(0, slab_size_k, 2):
+                            index = ℤ[(ℤ[j*slab_size_i] + i)*slab_size_k] + k
+                            slab_ptr[index    ] = 0  # real part
+                            slab_ptr[index + 1] = 0  # imag part
+            ki_bgn, ki_end = -k_min + 1, k_min
+            kk_bgn, kk_end = k_min, nyquist + 1
+            for kj_bgn, kj_end in zip((-k_min + 1, 0), (0, k_min)):
+                j_bgn = kj_bgn + ℤ[gridsize*(kj_bgn < 0) - ℤ[slab_size_j*rank]]
+                j_end = kj_end + ℤ[gridsize*(kj_bgn < 0) - ℤ[slab_size_j*rank]]
+                j_bgn = pairmax(j_bgn, 0)
+                j_end = pairmin(j_end, slab_size_j)
+                for j in range(j_bgn, j_end):
+                    for ki in range(ki_bgn, ki_end):
+                        i = ki + gridsize*(ki < 0)
+                        for k in range(ℤ[2*kk_bgn], ℤ[2*kk_end], 2):
+                            index = ℤ[(ℤ[j*slab_size_i] + i)*slab_size_k] + k
+                            index = ℤ[(ℤ[j*slab_size_i] + i)*slab_size_k] + k
+                            slab_ptr[index    ] = 0  # real part
+                            slab_ptr[index + 1] = 0  # imag part
         else:
             abort(f'nullify_modes(): nullification "{nullification}" not understood')
 
@@ -1959,7 +2614,7 @@ def nullify_modes(slab_or_slabs, nullifications):
     # Arguments
     gridsize='Py_ssize_t',
     buffer_name=object,  # int or str
-    nullify='bint',
+    nullify=object,  # bint, str or list of str's
     # Locals
     acquire='bint',
     as_expected='bint',
@@ -1978,22 +2633,12 @@ def nullify_modes(slab_or_slabs, nullifications):
     wisdom_filename=str,
     returns='double[:, :, ::1]',
 )
-def get_fftw_slab(gridsize, buffer_name='slab_particles', nullify=False):
-    """By default, the slab called 'slab_particles' is used. Often we
-    only hold a single slab in memory at a time, and so this one chunk
-    of memory is reused for lots of different purposes. The one thing
-    that we need multiple simultaneous slabs for is for doing FFT's of
-    pairs of grids containing interpolated particle and fluid data
-    (gravity, power spectra). Here, the slabs 'slab_particles' and
-    'slab_fluid' are used, which is why one of these is used
-    as the default.
-    """
+def get_fftw_slab(gridsize, buffer_name='slab_global', nullify=False):
     global fftw_plans_size, fftw_plans_forward, fftw_plans_backward
     # If this slab has already been constructed, fetch it
     slab = slabs.get((gridsize, buffer_name))
     if slab is not None:
-        if nullify:
-            slab[...] = 0
+        nullify_modes(slab, nullify)
         return slab
     # Checks on the passed gridsize
     if gridsize%nprocs:
@@ -2087,8 +2732,7 @@ def get_fftw_slab(gridsize, buffer_name='slab_particles', nullify=False):
         fftw_plans_mapping[slab_address] = fftw_plans_index
     # Store and return this slab
     slabs[gridsize, buffer_name] = slab
-    if nullify:
-        slab[...] = 0
+    nullify_modes(slab, nullify)
     return slab
 # Cache storing slabs. The keys have the format (gridsize, buffer_name).
 cython.declare(slabs=dict)
@@ -2204,22 +2848,22 @@ wisdom_owner = ''
 # Function performing Fourier transformations of slab decomposed grids
 @cython.header(
     # Arguments
-    slab_or_slabs=object,  # double[:, :, ::1] or dict
-    direction=str,
-    # Locals
     slab='double[:, :, ::1]',
-    slabs=dict,
+    direction=str,
+    apply_forward_normalization='bint',
+    # Locals
     fftw_plans_index='Py_ssize_t',
     slab_address='Py_ssize_t',
     returns='void',
 )
-def fft(slab_or_slabs, direction):
+def fft(slab, direction, apply_forward_normalization=False):
     """Fourier transform the given slab decomposed grid.
     For a forwards transformation from real to Fourier space, supply
-    direction='forward'. Note that this is an unnormalized transform,
+    direction='forward'. By default this is an unnormalized transform,
     as defined by FFTW. To do the normalization, divide all elements of
     the slab by gridsize**3, where gridsize is the linear grid size
-    of the cubic grid.
+    of the cubic grid. This will be done if you further set
+    apply_forward_normalization to True.
     For a backwards transformation from Fourier to real space, supply
     direction='backward'. Here, no further normalization is needed,
     as defined by FFTW.
@@ -2228,15 +2872,9 @@ def fft(slab_or_slabs, direction):
     To emulate the effects of FFTW perfectly, a lot of extra steps
     are needed.
     """
-    if isinstance(slab_or_slabs, dict):
-        slabs = slab_or_slabs
-        for slab in slabs.values():
-            fft(slab, direction)
-        return
-    slab = slab_or_slabs
     if slab is None:
         return
-    if not direction in ('forward', 'backward'):
+    if direction not in ('forward', 'backward'):
         abort(
             f'fft() was called with the direction "{direction}", '
             f'which is neither "forward" nor "backward".'
@@ -2271,7 +2909,7 @@ def fft(slab_or_slabs, direction):
             # As in FFTW, distribute the slabs along the y-dimension
             # (which is the first dimension now, due to transposing).
             slab[...] = grid_global_pure_python[slab_start_j:(slab_start_j + slab_size_j), :, :]
-        elif direction == 'backward':
+        else:  # direction == 'backward':
             # FFTW represents the complex array by doubles only.
             # Go back to using complex entries.
             tmp = zeros((gridsize, gridsize, gridsize_padding//2), dtype='complex128')
@@ -2301,10 +2939,33 @@ def fft(slab_or_slabs, direction):
         slab_address = cast(cython.address(slab[:, :, :]), 'Py_ssize_t')
         fftw_plans_index = fftw_plans_mapping[slab_address]
         # Look up the plan and let FFTW do the Fourier transformation
-        if direction == 'forward':
+        if 𝔹[direction == 'forward']:
             fftw_execute(fftw_plans_forward[fftw_plans_index])
-        elif direction == 'backward':
+        else:  # direction == 'backward':
             fftw_execute(fftw_plans_backward[fftw_plans_index])
+    # Apply normalization after forward transform, if specified
+    if 𝔹[direction == 'forward'] and apply_forward_normalization:
+        fft_normalize(slab)
+
+# Function for normalizing Fourier slabs,
+# needed after a forward FFT.
+@cython.header(
+    # Arguments
+    slab='double[:, :, ::1]',
+    # Locals
+    factor='double',
+    gridsize='Py_ssize_t',
+    index='Py_ssize_t',
+    slab_ptr='double*',
+    returns='double[:, :, ::1]',
+)
+def fft_normalize(slab):
+    gridsize = slab.shape[1]
+    factor = float(gridsize)**(-3)
+    slab_ptr = cython.address(slab[:, :, :])
+    for index in range(slab.shape[0]*slab.shape[1]*slab.shape[2]):
+        slab_ptr[index] *= factor
+    return slab
 
 # Function for deallocating a slab and its plans, allocated by FFTW
 @cython.header(# Arguments
@@ -2971,13 +3632,9 @@ def diff_domaingrid(
     'forward' or 'backward'.
     To achieve proper units, the physical grid spacing may be specified
     as Δx. If not given, grid units (Δx == 1) are used. The
-    buffer_or_buffer_name argument can be a buffer to store the results,
-    or alternatively the name of a buffer (retrieved via
-    communication.get_buffer()) as an int or str. If a buffer is
-    supplied, the result of the differentiations will be added to this
-    buffer. If a buffer should be fetched automatically, this will be
-    nullify before the differentiation. Note that the buffer has to be
-    contiguous.
+    buffer_or_buffer_name argument can be a (contiguous) buffer to store
+    the results, or alternatively the name of a buffer to use. In either
+    case, existing values will be overwritten.
     Note that a grid cannot be differentiated in-place by passing the
     grid as both the first and fifth argument, as the differentiation
     of each grid point requires information from the original
@@ -2986,6 +3643,10 @@ def diff_domaingrid(
     # Sanity checks on input
     if dim not in (0, 1, 2):
         abort(f'diff_domaingrid() called with dim = {dim} ∉ {{0, 1, 2}}')
+    if order not in (1, 2, 4, 6, 8):
+        abort(
+            f'diff_domaingrid() called with order = {order} ∉ {{1, 2, 4, 6, 8}}'
+        )
     if direction not in ('forward', 'backward'):
         abort(
             f'diff_domaingrid() called with direction = {direction} '
@@ -2994,10 +3655,10 @@ def diff_domaingrid(
     # If no buffer is supplied, fetch the buffer with the name
     # given by buffer_or_buffer_name.
     if isinstance(buffer_or_buffer_name, (int, str)):
-        ᐁgrid_dim = get_buffer(asarray(grid).shape, buffer_or_buffer_name, nullify=True)
+        ᐁgrid_dim = get_buffer(asarray(grid).shape, buffer_or_buffer_name, nullify=False)
     else:
         ᐁgrid_dim = buffer_or_buffer_name
-        if not asarray(ᐁgrid_dim).shape == asarray(grid).shape:
+        if asarray(ᐁgrid_dim).shape != asarray(grid).shape:
             abort(
                 f'diff_domaingrid() called with grid of shape {asarray(grid).shape}'
                 f'and buffer of different shape {asarray(ᐁgrid_dim).shape}'
@@ -3086,7 +3747,7 @@ def diff_domaingrid(
                                 - grid[indices_i_m[3], indices_j_m[3], indices_k_m[3]]
                             )
                         )
-                    elif order == 8:
+                    else:  # order == 8
                         value = ℝ[1/(280*Δx)]*(
                             224*(
                                 + grid[indices_i_p[1], indices_j_p[1], indices_k_p[1]]
@@ -3105,15 +3766,8 @@ def diff_domaingrid(
                                 - grid[indices_i_m[4], indices_j_m[4], indices_k_m[4]]
                             )
                         )
-                    else:
-                        abort(
-                            f'diff_domaingrid() called with '
-                            f'order = {order} ∉ {{1, 2, 4, 6, 8}}'
-                        )
-                        value = 0  # To satisfy the compiler
-                # Update the buffer with the result
-                # of the differentiation.
-                ᐁgrid_dim[i, j, k] += value
+                # Write result of differentiation to buffer
+                ᐁgrid_dim[i, j, k] = value
     # Populate the ghost points with copies of their
     # corresponding actual points.
     if do_ghost_communication:

@@ -1077,8 +1077,10 @@ order = (
     'nprocs_p3m',
     'pure_python_p3m',
     'concept_vs_gadget_p3m',
-    # Test multi(particle)component simulations
+    # Test multi-component simulations (particles only)
     'multicomponent',
+    # Test upstream/downstream grid scalings and multi-grid simulations
+    'multigrid',
     # Tests of the fluid implementation
     'fluid_drift_rigid_nohubble',
     'fluid_drift_rigid',

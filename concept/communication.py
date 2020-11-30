@@ -1171,7 +1171,7 @@ def smart_mpi(
     # If the input blocks contain different types (and one of them
     # contain doubles), convert them both to doubles.
     # This is not done in-place, meaning that the passed recv_block will
-    # not be changed! The returned block should be used in stead.
+    # not be changed! The returned block should be used instead.
     if sending and recving:
         if   (    arr_send.dtype == np.dtype(C2np['double'])
               and arr_recv.dtype != np.dtype(C2np['double'])):
@@ -1337,22 +1337,22 @@ def copy_to_contiguous(arr, buf):
     if arr.flags.c_contiguous:
         size = arr.size
         viewcontig = arr.reshape(size)
-        buf[:size] = viewcontig[:]
+        buf[:size] = viewcontig
         return
     ndim = arr.ndim
     bufptr = cython.address(buf[:])
     if ndim == 1:
         view1D = arr
         bufview1D = cast(bufptr, 'double[:view1D.shape[0]]')
-        bufview1D[:] = view1D[:]
+        bufview1D[:] = view1D
     elif ndim == 2:
         view2D = arr
         bufview2D = cast(bufptr, 'double[:view2D.shape[0], :view2D.shape[1]]')
-        bufview2D[...] = view2D[...]
+        bufview2D[...] = view2D
     elif ndim == 3:
         view3D = arr
         bufview3D = cast(bufptr, 'double[:view3D.shape[0], :view3D.shape[1], :view3D.shape[2]]')
-        bufview3D[...] = view3D[...]
+        bufview3D[...] = view3D
     elif ndim == 0:
         pass
     else:
@@ -1408,7 +1408,7 @@ def copy_to_noncontiguous(buf, arr, operation='='):
         size = view1D.shape[0]
         if operation == '=':
             bufview1D = cast(bufptr, 'double[:size]')
-            view1D[:] = bufview1D[:]
+            view1D[:] = bufview1D
         else:  # operation == '+='
             for index in range(size):
                 view1D[index] += bufptr[index]
@@ -1417,7 +1417,7 @@ def copy_to_noncontiguous(buf, arr, operation='='):
         size_i, size_j = view2D.shape[0], view2D.shape[1]
         if operation == '=':
             bufview2D = cast(bufptr, 'double[:size_i, :size_j]')
-            view2D[...] = bufview2D[...]
+            view2D[...] = bufview2D
         else:  # operation == '+='
             index_i = -size_j
             for i in range(size_i):
@@ -1430,7 +1430,7 @@ def copy_to_noncontiguous(buf, arr, operation='='):
         size_i, size_j, size_k = view3D.shape[0], view3D.shape[1], view3D.shape[2]
         if operation == '=':
             bufview3D = cast(bufptr, 'double[:size_i, :size_j, :size_k]')
-            view3D[...] = bufview3D[...]
+            view3D[...] = bufview3D
         else:  # operation == '+='
             index_i = -size_j
             for i in range(size_i):

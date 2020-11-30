@@ -24,9 +24,7 @@ select_approximations    = {'matter': {'P=wρ': True}}
 
 # Graphics
 render2D_options = {
-    'terminal resolution': 64,
-    'colormap'           : 'inferno',
-    'enhance'            : False,
+    'enhance': False,
 }
 
 # Debugging options

@@ -29,13 +29,10 @@ cimport('from communication import communicate_ghosts, get_buffer')
 cimport('from graphics import get_output_declarations, plot_powerspec')
 cimport('from linear import get_linear_powerspec')
 cimport(
-    'from mesh import                    '
-    '    diff_domaingrid,                '
-    '    fft,                            '
-    '    get_fftw_slab,                  '
-    '    interpolate_upstream,           '
-    '    slab_decompose,                 '
-    '    slab_fourier_loop,              '
+    'from mesh import          '
+    '    diff_domaingrid,      '
+    '    fourier_loop,         '
+    '    interpolate_upstream, '
 )
 
 
@@ -130,7 +127,7 @@ powerspec_declarations_cache = {}
 # Create the PowerspecDeclaration type
 fields = (
     'components', 'do_data', 'do_linear', 'do_plot', 'gridsize',
-    'interpolation', 'deconvolution', 'interlacing', 'binsize', 'significant_figures',
+    'interpolation', 'deconvolve', 'interlace', 'binsize', 'significant_figures',
     'k_bin_indices', 'k_bin_centers', 'n_modes', 'n_modes_max', 'power', 'power_linear',
 )
 PowerspecDeclaration = collections.namedtuple(
@@ -146,7 +143,7 @@ PowerspecDeclaration = collections.namedtuple(
     # Locals
     binsize_min='double',
     cache_key=tuple,
-    deconv='double',
+    factor='double',
     index='Py_ssize_t',
     k2='Py_ssize_t',
     k2_max='Py_ssize_t',
@@ -168,8 +165,7 @@ PowerspecDeclaration = collections.namedtuple(
     n_modes_max='Py_ssize_t',
     nyquist='Py_ssize_t',
     powerspec_bins=tuple,
-    slab='double[:, :, ::1]',
-    slabs=dict,
+    θ='double',
     returns=tuple,
 )
 def get_powerspec_bins(gridsize, binsize):
@@ -217,27 +213,23 @@ def get_powerspec_bins(gridsize, binsize):
     # Construct array mapping k2 (grid units) to bin index
     k_bin_indices = empty(k2_max + 1, dtype=C2np['Py_ssize_t'])
     k_bin_indices[0] = 0
-    i = 1
+    index = 1
     for k2 in range(1, k_bin_indices.shape[0]):
         k_magnitude = ℝ[2*π/boxsize]*sqrt(k2)
         # Find index of closest bin center
-        for i in range(i, ℤ[k_bin_centers.shape[0]]):
-            k_bin_center = k_bin_centers[i]
+        for index in range(index, ℤ[k_bin_centers.shape[0]]):
+            k_bin_center = k_bin_centers[index]
             if k_bin_center > k_magnitude:
-                # k2 belongs to either bin (i - 1) or bin i
-                if k_magnitude - k_bin_centers[ℤ[i - 1]] < k_bin_center - k_magnitude:
-                    k_bin_indices[k2] = ℤ[i - 1]
+                # k2 belongs to either bin (index - 1) or bin index
+                if k_magnitude - k_bin_centers[ℤ[index - 1]] < k_bin_center - k_magnitude:
+                    k_bin_indices[k2] = ℤ[index - 1]
                 else:
-                    k_bin_indices[k2] = i
+                    k_bin_indices[k2] = index
                 break
-    # Array counting the multiplicity (number of modes) of each
-    # k² in the 3D grid.
+    # Loop as if over 3D Fourier slabs, tallying up the multiplicity
+    # (number of modes) for each k².
     n_modes_fine = zeros(k_bin_indices.shape[0], dtype=C2np['Py_ssize_t'])
-    # Get distributed slab for the given grid size
-    slab = get_fftw_slab(gridsize)
-    # Loop over the slabs, tallying up the number of modes for each k²
-    slabs = {'particles': slab}
-    for index, ki, kj, kk, deconv in slab_fourier_loop(slabs, sparse=True):
+    for index, ki, kj, kk, factor, θ in fourier_loop(gridsize, sparse=True, skip_origin=True):
         k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
         n_modes_fine[k2] += 1
     # Sum n_modes_fine into the master process
@@ -307,23 +299,21 @@ powerspec_bins_cache = {}
     declaration=object,  # PowerspecDeclaration
     # Locals
     a='double',
-    any_fluid='bint',
-    any_particles='bint',
     component='Component',
     components=list,
     components_str=str,
-    deconv='double',
-    deconvolution='bint',
-    grids=dict,
+    deconvolve='bint',
+    factor='double',
     gridsize='Py_ssize_t',
     gridsizes_upstream=list,
+    im='double',
     index='Py_ssize_t',
-    interlacing='bint',
+    interlace='bint',
     interpolation='int',
-    k_bin_index='Py_ssize_t',
+    k2='Py_ssize_t',
     k_bin_indices='Py_ssize_t[::1]',
     k_bin_indices_ptr='Py_ssize_t*',
-    k2='Py_ssize_t',
+    k_bin_index='Py_ssize_t',
     ki='Py_ssize_t',
     kj='Py_ssize_t',
     kk='Py_ssize_t',
@@ -333,12 +323,10 @@ powerspec_bins_cache = {}
     power='double[::1]',
     power_ijk='double',
     power_ptr='double*',
+    re='double',
     slab='double[:, :, ::1]',
-    slab_fluid='double[:, :, ::1]',
-    slab_fluid_ptr='double*',
-    slab_particles='double[:, :, ::1]',
-    slab_particles_ptr='double*',
-    slabs=dict,
+    slab_ptr='double*',
+    θ='double',
     returns='void',
 )
 def compute_powerspec(declaration):
@@ -346,8 +334,8 @@ def compute_powerspec(declaration):
     components    = declaration.components
     gridsize      = declaration.gridsize
     interpolation = declaration.interpolation
-    deconvolution = declaration.deconvolution
-    interlacing   = declaration.interlacing
+    deconvolve    = declaration.deconvolve
+    interlace     = declaration.interlace
     k_bin_indices = declaration.k_bin_indices
     k_bin_indices_ptr = cython.address(k_bin_indices[:])
     n_modes = declaration.n_modes
@@ -362,57 +350,29 @@ def compute_powerspec(declaration):
     else:
         components_str = ', '.join([component.name for component in components])
         masterprint(f'Computing power spectrum of {{{components_str}}} ...')
-    # Interpolate the physical density of all components onto global
-    # grids by first interpolating onto individual upstream grids and
-    # then pixel mix these onto the global grids. Separate global grids
-    # will be used for particle and fluid components.
+    # Interpolate the physical density of all components onto a global
+    # grid by first interpolating onto individual upstream grids,
+    # transforming to Fourier space and then adding them together.
     gridsizes_upstream = [
         component.powerspec_upstream_gridsize
         for component in components
     ]
-    grids = interpolate_upstream(
-        components, gridsizes_upstream, gridsize, 'ρ',
-        interpolation, interlacing,
-        do_ghost_communication=False,
+    slab = interpolate_upstream(
+        components, gridsizes_upstream, gridsize, 'ρ', interpolation,
+        deconvolve=deconvolve, interlace=interlace, output_space='Fourier',
     )
-    # Slab decompose the grids
-    slabs = slab_decompose(grids, prepare_fft=True)
-    # Do a forward in-place Fourier transform of the slabs
-    fft(slabs, 'forward')
-    # Store the slabs as separate variables
-    slab_particles = slabs.get('particles')
-    any_particles = (slab_particles is not None)
-    if any_particles:
-        slab_particles_ptr = cython.address(slab_particles[:, :, :])
-    slab_fluid = slabs.get('fluid')
-    any_fluid = (slab_fluid is not None)
-    if any_fluid:
-        slab_fluid_ptr = cython.address(slab_fluid[:, :, :])
     # Nullify the reused power array
     power[:] = 0
     # Loop over the slabs,
     # tallying up the power in the different k² bins.
-    deconv_order = interpolation*deconvolution*any_particles
-    do_interlacing = (any_particles and interlacing)
-    for index, ki, kj, kk, deconv in slab_fourier_loop(
-        slabs, sparse=True, deconv_order=deconv_order, do_interlacing=do_interlacing,
-    ):
-        # Compute the total power at this index resulting
-        # from both particles and fluid components,
-        # with the particles slab values deconvolved.
-        with unswitch(3):
-            if 𝔹[any_particles and any_fluid]:
-                re = deconv*slab_particles_ptr[index    ] + slab_fluid_ptr[index    ]
-                im = deconv*slab_particles_ptr[index + 1] + slab_fluid_ptr[index + 1]
-            elif any_particles:
-                re = deconv*slab_particles_ptr[index    ]
-                im = deconv*slab_particles_ptr[index + 1]
-            else:  # any_fluid
-                re = slab_fluid_ptr[index    ]
-                im = slab_fluid_ptr[index + 1]
+    slab_ptr = cython.address(slab[:, :, :])
+    for index, ki, kj, kk, factor, θ in fourier_loop(gridsize, sparse=True, skip_origin=True):
+        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
+        # Compute the power at this k²
+        re = slab_ptr[index    ]
+        im = slab_ptr[index + 1]
         power_ijk = re**2 + im**2
         # Add power at this k² to the corresponding bin
-        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
         k_bin_index = k_bin_indices_ptr[k2]
         power_ptr[k_bin_index] += power_ijk
     # Sum power into the master process
@@ -427,19 +387,12 @@ def compute_powerspec(declaration):
     # We need to transform power from being the sum to being the
     # mean, by dividing by n_modes.
     # To completely remove the current normalization of the power, we
-    # need to divide by the squared sum of values on the grids/slabs.
-    # As we interpolated physical densities ρ to the grids, the sum of
+    # need to divide by the squared mean of values on the grids/slabs.
+    # As we interpolated physical densities ρ to the grids, the mean of
     # all values will be
-    # sum(ρᵢⱼₖ) = sum(ρᵢⱼₖ*V_cell)/V_cell = sum(massᵢⱼₖ)/V_cell,
-    # with V_cell = (a*boxsize/gridsize)**3 the phyiscal cell volume and
-    # massᵢⱼₖ the mass interpolated onto grid point [i, j, k]. For both
-    # particle and fluid components, the total mass may be written as
-    # sum(massᵢⱼₖ) = (a*boxsize)**3*ρ_bar
-    #              = boxsize**3*a**(-3*w_eff)*ϱ_bar.
-    # Thus, the sum of values in the interpolated grid is
-    # sum(ρᵢⱼₖ) = gridsize**3*a**(-3(1 + w_eff))*ϱ_bar,
+    #   mean(ρᵢⱼₖ) = ρ_bar = a**(-3(1 + w_eff))*ϱ_bar,
     # summed over all components.
-    # As said, we need to divide the power by the square of sum(ρᵢⱼₖ).
+    # As said, we need to divide the power by the square of mean(ρᵢⱼₖ).
     # To now add in a proper normalization, we need to multiply by
     # boxsize**3, resulting in a properly normalized power spectrum in
     # units of unit_length**3.
@@ -447,8 +400,8 @@ def compute_powerspec(declaration):
     normalization = 0
     for component in components:
         normalization += a**(-3*(1 + component.w_eff(a=a)))*component.ϱ_bar
-    normalization *= (gridsize*ℝ[1/sqrt(boxsize)])**3
     normalization **= -2
+    normalization *= ℝ[boxsize**3]
     for k_bin_index in range(power.shape[0]):
         power_ptr[k_bin_index] *= normalization/n_modes_ptr[k_bin_index]
     # Done with the main power spectrum computation
@@ -880,7 +833,7 @@ def compute_powerspec_σ(declaration, linear=False):
     σ2 += 0.5*k_bin_centers[0]*σ2_integrand[0]
     # Finally, remember the constant factor 1/(2π²) from the integral,
     # as well as the 3² missing from W².
-    σ2 *= ℝ[3**2/(2*π**2)]
+    σ2 *= 3**2/(2*π**2)
     # Return the rms density variation σ
     return sqrt(σ2)
 # Array used by the compute_powerspec_σ() function

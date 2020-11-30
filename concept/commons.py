@@ -1976,11 +1976,7 @@ cython.declare(
     class_extra_perturbations=set,
     # Numerical parameter
     boxsize='double',
-    potential_gridsizes=dict,
-    force_interpolations=dict,
-    force_interlacings=dict,
-    force_differentiations=dict,
-    force_from_global_potentials=dict,
+    potential_options=dict,
     ewald_gridsize='Py_ssize_t',
     shortrange_params=dict,
     powerspec_options=dict,
@@ -2167,6 +2163,22 @@ user_params['class_extra_perturbations'] = class_extra_perturbations
 # Numerical parameters
 boxsize = float(user_params.get('boxsize', 512*units.Mpc))
 user_params['boxsize'] = boxsize
+if isinstance(user_params.get('potential_options', {}), (int, float)):
+    potential_options = {
+        'gridsize': int(round(user_params['potential_options'])),
+    }
+else:
+    potential_options = dict(user_params.get('potential_options', {}))
+valid_potential_options = {
+    'gridsize',
+    'interpolation',
+    'deconvolve',
+    'interlace',
+    'differentiation',
+}
+for key in potential_options:
+    if key not in valid_potential_options:
+        abort(f'Option "{key}" in potential_options not understood')
 potential_forces_implemented = {
     'gravity': ['pm', 'p3m'],  # Default force
     'lapse': ['pm'],
@@ -2181,11 +2193,11 @@ def canonicalize_input_str(method):
     for n in range(10):
         method = method.replace(unicode_superscript(str(n)), str(n))
     return method
-if isinstance(user_params.get('potential_gridsizes', {}), dict):
-    potential_gridsizes = replace_ellipsis(user_params.get('potential_gridsizes', {}))
+if isinstance(potential_options.get('gridsize', {}), dict):
+    potential_gridsizes = replace_ellipsis(potential_options.get('gridsize', {}))
     potential_gridsizes.setdefault('global', -1)
 else:
-    val = user_params['potential_gridsizes']
+    val = potential_options['gridsize']
     potential_gridsizes = {'global': val, 'all': val}
 for key in potential_gridsizes.copy():
     if key in potential_forces_implemented.keys():
@@ -2236,8 +2248,8 @@ for key, val in potential_gridsizes.items():
                     val2[key3] = int(round(val3.pop()))
                     continue
                 abort(
-                    f'Only a single grid size may be specified for a global potential, '
-                    f'but potential_gridsizes["{key}"]["{key2}"]["{key3}"] = {val2[key3]}.'
+                    f'Only a single grid size may be specified for a global potential, but '
+                    f'potential_options["gridsize"]["{key}"]["{key2}"]["{key3}"] = {val2[key3]}'
                 )
     else:
         for key2, val2 in val.items():
@@ -2247,16 +2259,16 @@ for key, val in potential_gridsizes.items():
                     val3 *= 2
                 if len(val3) == 2:
                     val2[key3] = PotentialGridsizesComponent(
-                        int(round(val3[0])),
-                        int(round(val3[1])),
+                        val3[0] if isinstance(val3[0], str) else int(round(val3[0])),
+                        val3[1] if isinstance(val3[1], str) else int(round(val3[1])),
                     )
                     continue
                 abort(
-                    f'potential_gridsizes["{key}"]["{key2}"]["{key3}"] = {val2[key3]} '
+                    f'potential_options["gridsize"]["{key}"]["{key2}"]["{key3}"] = {val2[key3]} '
                     f'but should to be a tuple of two integers, corresponding to the upstream '
-                    f'and downstream grid size.'
+                    f'and downstream grid size'
                 )
-user_params['potential_gridsizes'] = potential_gridsizes
+potential_options['gridsize'] = potential_gridsizes
 interpolation_orders = {'NGP': 1, 'CIC': 2, 'TSC': 3, 'PCS': 4}
 force_interpolations = {
     'gravity': {
@@ -2267,7 +2279,7 @@ force_interpolations = {
         'pm': 'CIC',
     },
 }
-for key, val in replace_ellipsis(dict(user_params.get('force_interpolations', {}))).items():
+for key, val in replace_ellipsis(dict(potential_options.get('interpolation', {}))).items():
     key = key.lower()
     if isinstance(val, dict):
         force_interpolations[key].update({
@@ -2278,7 +2290,7 @@ for key, val in replace_ellipsis(dict(user_params.get('force_interpolations', {}
     elif isinstance(val, str):
         force_interpolations[key] = {'pm': val.lower(), 'p3m': val.lower()}
     else:
-        abort('Could not interpret the force_interpolations parameter')
+        abort('Could not interpret the potential_options["interpolation"] parameter')
 for key, val in force_interpolations.copy().items():
     subd = {}
     for subd_key, subd_val in val.items():
@@ -2288,7 +2300,50 @@ for key, val in force_interpolations.copy().items():
         subd_val = int(interpolation_orders.get(str(subd_val).upper(), subd_val))
         subd[subd_key] = subd_val
     force_interpolations[key] = subd
-user_params['force_interpolations'] = force_interpolations
+potential_options['interpolation'] = force_interpolations
+PotentialDeconvolutions = collections.namedtuple(
+    'PotentialDeconvolutions',
+    ('upstream', 'downstream'),
+)
+force_deconvolutions = {
+    'gravity': {
+        'pm' : PotentialDeconvolutions(True, True),
+        'p3m': PotentialDeconvolutions(True, True),
+    },
+    'lapse': {
+        'pm' : PotentialDeconvolutions(True, True),
+    },
+}
+for key, val in replace_ellipsis(dict(potential_options.get('deconvolve', {}))).items():
+    key = key.lower()
+    if isinstance(val, dict):
+        force_deconvolutions[key].update({
+            subd_key.lower(): subd_val for subd_key, subd_val in replace_ellipsis(val).items()
+        })
+    else:
+        force_deconvolutions[key] = {'pm': val, 'p3m': val}
+    for key2, val2 in force_deconvolutions[key].copy().items():
+        val2 = any2list(val2)
+        if len(val2) == 1:
+            val2 *= 2
+        if len(val2) == 2:
+            val2 = PotentialDeconvolutions(bool(val2[0]), bool(val2[1]))
+        else:
+            abort(
+                f'potential_options["deconvolve"]["{key}"]["{key2}"] = {val2} '
+                f'but should to be a tuple of two booleans, corresponding to the upstream '
+                f'and downstream deconvolution'
+            )
+        force_deconvolutions[key][key2] = val2
+for key, val in force_deconvolutions.copy().items():
+    subd = {}
+    for subd_key, subd_val in val.items():
+        subd_key = re.sub(r'[ _\-^()]', '', subd_key.lower())
+        for n in range(10):
+            subd_key = subd_key.replace(unicode_superscript(str(n)), str(n))
+        subd[subd_key] = subd_val
+    force_deconvolutions[key] = subd
+potential_options['deconvolve'] = force_deconvolutions
 force_interlacings = {
     'gravity': {
         'pm' : False,
@@ -2298,7 +2353,7 @@ force_interlacings = {
         'pm' : False,
     },
 }
-for key, val in replace_ellipsis(dict(user_params.get('force_interlacings', {}))).items():
+for key, val in replace_ellipsis(dict(potential_options.get('interlace', {}))).items():
     key = key.lower()
     if isinstance(val, dict):
         force_interlacings[key].update({
@@ -2315,7 +2370,7 @@ for key, val in force_interlacings.copy().items():
         subd_val = bool(subd_val)
         subd[subd_key] = subd_val
     force_interlacings[key] = subd
-user_params['force_interlacings'] = force_interlacings
+potential_options['interlace'] = force_interlacings
 force_differentiations = {
     'gravity': {
         'pm' : 2,
@@ -2325,7 +2380,7 @@ force_differentiations = {
         'pm': 2,
     },
 }
-for key, val in replace_ellipsis(dict(user_params.get('force_differentiations', {}))).items():
+for key, val in replace_ellipsis(dict(potential_options.get('differentiation', {}))).items():
     key = key.lower()
     if isinstance(val, dict):
         force_differentiations[key].update({
@@ -2336,7 +2391,7 @@ for key, val in replace_ellipsis(dict(user_params.get('force_differentiations', 
     elif isinstance(val, (int, float)):
         force_differentiations[key] = {'pm': int(round(val)), 'p3m': int(round(val))}
     else:
-        abort('Could not interpret the force_differentiations parameter')
+        abort('Could not interpret the potential_options["differentiation"] parameter')
 for key, val in force_differentiations.copy().items():
     subd = {}
     for subd_key, subd_val in val.items():
@@ -2346,40 +2401,8 @@ for key, val in force_differentiations.copy().items():
         subd_val = int(subd_val)
         subd[subd_key] = subd_val
     force_differentiations[key] = subd
-user_params['force_differentiations'] = force_differentiations
-force_from_global_potentials = {
-    'gravity': {
-        'pm' : True,
-        'p3m': True,
-    },
-    'lapse': {
-        'pm': True,
-    },
-}
-for key, val in replace_ellipsis(dict(
-    user_params.get('force_from_global_potentials', {})
-)).items():
-    key = key.lower()
-    if isinstance(val, dict):
-        force_from_global_potentials[key].update({
-            subd_key.lower(): subd_val for subd_key, subd_val in replace_ellipsis(val).items()
-        })
-    elif isinstance(val, (tuple, list)):
-        force_from_global_potentials[key][val[0].lower()] = val[1]
-    elif isinstance(val, (bool, int, float)):
-        force_from_global_potentials[key] = {'pm': bool(val), 'p3m': bool(val)}
-    else:
-        abort('Could not interpret the force_from_global_potentials parameter')
-for key, val in force_from_global_potentials.copy().items():
-    subd = {}
-    for subd_key, subd_val in val.items():
-        subd_key = re.sub(r'[ _\-^()]', '', subd_key.lower())
-        for n in range(10):
-            subd_key = subd_key.replace(unicode_superscript(str(n)), str(n))
-        subd_val = bool(subd_val)
-        subd[subd_key] = subd_val
-    force_from_global_potentials[key] = subd
-user_params['force_from_global_potentials'] = force_from_global_potentials
+potential_options['differentiation'] = force_differentiations
+user_params['potential_options'] = potential_options
 ewald_gridsize = to_int(user_params.get('ewald_gridsize', 64))
 user_params['ewald_gridsize'] = ewald_gridsize
 shortrange_params = dict(user_params.get('shortrange_params', {}))
@@ -2434,14 +2457,14 @@ for force, d in shortrange_params.items():
             continue
         val = val.replace('boxsize', str(boxsize))
         if 'gridsize' in val:
-            gridsize = potential_gridsizes['global'][force]['p3m']
+            gridsize = potential_options['gridsize']['global'][force]['p3m']
             if gridsize == -1:
                 if user_specification_involves_gridsize[force]:
                     abort(
                         f'Could not detect grid size needed for '
                         f'shortrange_params["{force}"]["{key}"]. '
                         f'You should specify it by setting the '
-                        f'potential_gridsizes["global"]["{force}"]["p3m"] parameter.'
+                        f'potential_options["gridsize"]["global"]["{force}"]["p3m"] parameter.'
                     )
             val = val.replace('gridsize', str(gridsize))
         if 'scale' in val:
@@ -2504,10 +2527,10 @@ powerspec_options_defaults = {
     'interpolation': {
         'default': 'PCS',
     },
-    'deconvolution': {
+    'deconvolve': {
         'default': True,
     },
-    'interlacing': {
+    'interlace': {
         'default': True,
     },
     'binsize': {
@@ -2612,7 +2635,7 @@ for key, val in replace_ellipsis(dict(user_params.get('select_forces', {}))).ite
         subd[canonicalize_input_str(subd_key)] = canonicalize_input_str(method)
     select_forces[key] = subd
 if not select_forces:
-    for key_force, dict_method in potential_gridsizes['global'].items():
+    for key_force, dict_method in potential_options['gridsize']['global'].items():
         methods = {
             key_method for key_method, gridsize in dict_method.items() if gridsize != -1
         }
@@ -2628,7 +2651,7 @@ if not select_forces:
             select_forces['fluid'    ].setdefault(key_force, 'pm')
         else:
             abort(
-                f'Force methods "{methods}" from potential_gridsizes["global"]["{key_force}""] '
+                f'Force methods "{methods}" from potential_options["gridsize"]["global"]["{key_force}""] '
                 f'not understood'
             )
 select_forces.setdefault('metric', {'gravity': 'pm'})
@@ -2907,15 +2930,15 @@ render2D_options_defaults = {
         'default': -1,
     },
     'terminal resolution': {
-        'default': terminal_width,
+        'default': -1,
     },
     'interpolation': {
         'default': 'PCS',
     },
-    'deconvolution': {
+    'deconvolve': {
         'default': False,
     },
-    'interlacing': {
+    'interlace': {
         'default': False,
     },
     'axis': {
@@ -3137,20 +3160,20 @@ if not enable_class_background:
 nghosts = 0
 for options in (powerspec_options, render2D_options):
     interpolation_order_option = np.max(list(options['interpolation'].values()))
-    interlacing_option = any(list(options['interlacing'].values()))
+    interlace_option = any(list(options['interlace'].values()))
     nghosts_option = interpolation_order_option//2
-    if interlacing_option and interpolation_order_option%2 != 0:
+    if interlace_option and interpolation_order_option%2 != 0:
         nghosts_option += 1
     nghosts = np.max([nghosts, nghosts_option])
-for force, d in force_interpolations.items():
+for force, d in potential_options['interpolation'].items():
     for method, force_interpolation in d.items():
         nghosts = np.max([
             nghosts,
             force_interpolation//2 + (
-                force_interlacings[force][method] and force_interpolation%2 != 0
+                potential_options['interlace'][force][method] and force_interpolation%2 != 0
             )
         ])
-for force, d in force_differentiations.items():
+for force, d in potential_options['differentiation'].items():
     nghosts = np.max([nghosts, (np.max(tuple(d.values())) + 1)//2])
 if nghosts < 1:
     nghosts = 1
@@ -3167,7 +3190,7 @@ if any([key in class_params for key in
     # the relation ρ_dcdm(a) = Ωdcdm/a**3 will hold at early times.
     # The only critical use of this is in the computation of the
     # dynamical time scale. Late time steps may thus be smaller than
-    # necessary, but that is okay.
+    # necessary, but that is OK.
     cosmo = Class()
     class_params_dcdm = class_params.copy()
     class_params_dcdm['Gamma_dcdm'] = 0
@@ -3810,7 +3833,7 @@ def significant_figures(numbers, nfigs, fmt='', incl_zeros=True, scientific=Fals
                     break
             n_missing_zeros = nfigs - len(digits)
             if n_missing_zeros > 0:
-                if not '.' in coefficient:
+                if '.' not in coefficient:
                     coefficient += '.'
                 coefficient += '0'*n_missing_zeros
         # Combine
@@ -4351,12 +4374,12 @@ for d in output_times.values():
         if key not in keys:
             abort(f'Unrecognized output type "{key}"')
 # Warn about odd force differentiation
-for force, d in force_differentiations.items():
+for force, d in potential_options['differentiation'].items():
     for method, order in d.items():
         if order % 2:
             masterwarn(
-                f'As force_differentiations["{force}"]["{method}"] = {order} is odd, '
-                f'this will lead to asymmetric differentiation.'
+                f'As potential_options["differentiation"]["{force}"]["{method}"] = {order} '
+                f'is odd, this will lead to asymmetric differentiation'
             )
 # Check format on 'subtiling' values in shortrange_params.
 # Among other things, the refinement period used for automatic subtiling

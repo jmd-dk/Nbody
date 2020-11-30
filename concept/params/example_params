@@ -92,47 +92,50 @@ class_extra_perturbations = {}    # Extra CLASS perturbations to dump
 
 # Numerical parameters
 boxsize = 512*Mpc  # Linear size of the simulation box
-potential_gridsizes = {
-    'global': {
-        'gravity': {
-            'p3m': 2*_size,
-            'pm' :   _size,
+potential_options = {  # Specifications for potential computations
+    'gridsize': {  # Linear potential grid size
+        'global': {  # Common, global grid size
+            'gravity': {
+                'p3m': 2*_size,
+                'pm' :   _size,
+            },
+        },
+        # Component specific upstream and downstream grid sizes
+        'matter': {
+            'gravity': {
+                'p3m': (2*_size, 2*_size),
+            },
+        },
+        'neutrinos': {
+            'gravity': {
+                'pm': _size,
+            },
         },
     },
-    'matter': {
+    'interpolation': {  # Particle interpolation order
         'gravity': {
-            'p3m': (2*_size, 2*_size),
+            'pm' : 'CIC',
+            'p3m': 'CIC',
         },
     },
-    'neutrinos': {
+    'deconvolve': {  # Perform upstream and/or downstream deconvolution of particles?
         'gravity': {
-            'pm': _size,
+            'pm' : (True, True),
+            'p3m': (True, True),
         },
     },
-}
-force_interpolations = {  # Particle interpolation orders to use for each long-range force and method
-    'gravity': {
-        'pm' : 'CIC',
-        'p3m': 'CIC',
+    'interlace': {  # Use interlaced grids for particles?
+        'gravity': {
+            'pm' : False,
+            'p3m': False,
+        },
     },
-}
-force_interlacings = {  # Use interlaced particle potential grids, for each long-range force and method?
-    'gravity': {
-        'pm' : False,
-        'p3m': False,
+    'differentiation': {  # Finite central difference order
+        'gravity': {
+            'pm' : 2,
+            'p3m': 4,
+        },
     },
-}
-force_differentiations = {  # Order (number of grid points) to use for potential grid differentiation, for each long-range force and method
-    'gravity': {
-        'pm' : 2,
-        'p3m': 4,
-   },
-}
-force_from_global_potentials = {  # Obtain force from the global potential (alternatively from the downstream potentials)?
-    'gravity': {
-        'pm' : True,
-        'p3m': True,
-   },
 }
 ewald_gridsize = 64  # Linear grid size of the grid of Ewald corrections
 shortrange_params = {  # Short-range force parameters for each short-range force
@@ -154,10 +157,10 @@ powerspec_options = {  # Specifications of power spectra for individual and sets
     'interpolation': {  # Particle interpolation order
         'default': 'PCS',
     },
-    'deconvolution': {  # Perform deconvolution for particles?
+    'deconvolve': {  # Perform deconvolution of particles?
         'default': True,
     },
-    'interlacing': {  # Use interlaced grids for particles?
+    'interlace': {  # Use interlaced grids for particles?
         'default': True,
     },
     'binsize': {  # Linear width of each power spectrum bin
@@ -330,16 +333,16 @@ render2D_options = {  # Specifications of 2D renders for individual and sets of 
         'default': -1,
     },
     'terminal resolution': {  # Resolution (in characters) of terminal images
-        'default': terminal_width,
+        'default': -1,
     },
     'interpolation': {  # Particle interpolation order
         'default': 'PCS',
     },
-    'deconvolution': {  # Perform deconvolution for particles?
-        'default': False,
+    'deconvolve': {  # Perform deconvolution for particles?
+        'default': True,
     },
-    'interlacing': {  # Use interlaced grids for particles?
-        'default': False,
+    'interlace': {  # Use interlaced grids for particles?
+        'default': True,
     },
     'axis': {  # Projection axis
         'default': 'z',

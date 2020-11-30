@@ -36,24 +36,26 @@ cimport(
 cimport('from ewald import get_ewald_grid')
 cimport(
     'from mesh import                         '
+    '    copy_modes,                          '
+    '    deconvolve_and_interlace,            '
     '    diff_domaingrid,                     '
     '    domain_decompose,                    '
     '    fft,                                 '
+    '    fourier_loop,                        '
     '    get_fftw_slab,                       '
-    '    get_gridshape_local,                 '
-    '    interpolate_components,              '
     '    interpolate_domaingrid_to_particles, '
-    '    interpolate_grid_to_grid,            '
     '    interpolate_upstream,                '
     '    nullify_modes,                       '
     '    slab_decompose,                      '
-    '    slab_fourier_loop,                   '
 )
 cimport(
     'from species import                        '
     '    accept_or_reject_subtiling_refinement, '
     '    tentatively_refine_subtiling,          '
 )
+
+# Pure Python imports
+from mesh import group_components
 
 # Function pointer types used in this module
 pxd("""
@@ -553,20 +555,20 @@ def domain_domain(
                     )
                     tile_indices_supplier_paired   = tile_pairings_cache  [tile_pairings_index]
                     tile_indices_supplier_paired_N = tile_pairings_N_cache[tile_pairings_index]
-                # Perform the interaction
-                interaction(
-                    𝕊[interaction_name if 𝔹[pairing_level == 'tile'] else 'trivial'],
-                    receiver,
-                    supplier_extrl,
-                    ᔑdt_rungs,
-                    rank_recv,
-                    only_supply,
-                    pairing_level,
-                    tile_indices_receiver,
-                    tile_indices_supplier_paired,
-                    tile_indices_supplier_paired_N,
-                    interaction_extra_args,
-                )
+            # Perform the interaction
+            interaction(
+                𝕊[interaction_name if 𝔹[pairing_level == 'tile'] else 'trivial'],
+                receiver,
+                supplier_extrl,
+                ᔑdt_rungs,
+                rank_recv,
+                only_supply,
+                pairing_level,
+                tile_indices_receiver,
+                tile_indices_supplier_paired,
+                tile_indices_supplier_paired_N,
+                interaction_extra_args,
+            )
         # Send the populated buffers (e.g. Δmom for gravity) back to the
         # process from which the external supplier_extrl came. Note that
         # we should not do this in the case of a local interaction
@@ -1583,7 +1585,7 @@ def particle_particle(
             subtiling_s.relocate(tile_location_s)
             subtiling_s.sort(tiling_s, tile_index_s)
             subtiles_rungs_N_s = subtiling_s.tiles_rungs_N
-            # Extract the values from periodic_offset_ptr as an optimization
+            # Extract the values from periodic_offset_ptr
             periodic_offset_x = periodic_offset_ptr[0]
             periodic_offset_y = periodic_offset_ptr[1]
             periodic_offset_z = periodic_offset_ptr[2]
@@ -1882,362 +1884,302 @@ def get_softened_r3inv(r2, ϵ):
     force=str,
     method=str,
     potential=str,
+    deconvolve_downstream='bint',
+    deconvolve_upstream='bint',
     interpolation_order='int',
     interlace='bint',
-    differentiate_global='bint',
     differentiation_order='int',
     ᔑdt=dict,
     ᔑdt_key=object,  # str or tuple
     # Locals
+    all_receiver_downstream_gridsizes_equal_global='bint',
+    all_supplier_upstream_gridsizes_equal_global='bint',
     Jᵢ='FluidScalar',
     Jᵢ_ptr='double*',
-    any_fluid_receivers='bint',
-    any_fluid_suppliers='bint',
-    any_particles_receivers='bint',
-    any_particles_suppliers='bint',
-    buffer_names=dict,
-    deconv='double',
+    deconv_order_global='int',
     dim='int',
     factor='double',
-    fft_factor='double',
-    grid_global='double[:, :, ::1]',
-    gridshape_local=tuple,
+    grid_downstream='double[:, :, ::1]',
     gridsize_downstream='Py_ssize_t',
-    grids_global=dict,
+    gridsize_downstream_description=str,
+    group=dict,
+    groups=dict,
     index='Py_ssize_t',
     k2='Py_ssize_t',
     ki='Py_ssize_t',
     kj='Py_ssize_t',
     kk='Py_ssize_t',
-    potential_factor='double',
+    nullification=str,
+    only_particle_receivers='bint',
+    only_particle_suppliers='bint',
     receiver='Component',
-    receiver_collections=dict,
-    receiver_group=list,
-    receiver_groups=object,  # collections.defaultdict(list)
+    receivers_gridsizes_downstream=list,
     representation=str,
-    slab_fluid='double[:, :, ::1]',
-    slab_fluid_ptr='double*',
-    slab_particles='double[:, :, ::1]',
-    slab_particles_ptr='double*',
-    slabs=dict,
-    submsg=str,
+    slab_downstream='double[:, :, ::1]',
+    slab_downstream_representation='double[:, :, ::1]',
+    slab_global='double[:, :, ::1]',
+    slab_global_ptr='double*',
+    substitute_ᔑdt_key='bint',
     supplier='Component',
+    suppliers_description=str,
     suppliers_gridsizes_upstream=list,
-    suppliers_name=str,
     Δx='double',
     ϱ_ptr='double*',
+    θ='double',
     𝒫_ptr='double*',
     ᐁᵢgrid_downstream='double[:, :, ::1]',
-    ᐁᵢgrid_global='double[:, :, ::1]',
-    ᐁᵢgrid_receiver='double[:, :, ::1]',
-    ᐁᵢgrid_receiver_ptr='double*',
+    ᐁᵢgrid_downstream_ptr='double*',
     returns='void',
 )
 def particle_mesh(
-    receivers, suppliers, gridsize_global, quantity, force, method, potential,
-    interpolation_order, interlace, differentiate_global, differentiation_order,
+    receivers, suppliers, gridsize_global, quantity, force, method, potential, interpolation_order,
+    deconvolve_upstream, deconvolve_downstream, interlace, differentiation_order,
     ᔑdt, ᔑdt_key,
 ):
     """
     This function will update the momenta of all receiver components due
     to an interaction with the supplier components. The steps taken are
     outlined below.
-    - Interpolate the specified quantity of all supplier components onto
-      local (component specific) grids. For particle components, this is
-      done through particle (e.g. CIC) interpolation, while pixel mixing
-      is used for fluids.
-    - Pixel mix the local grids onto a common, global grid of grid
-      size gridsize_global.
-    - Convert the global grid to a potential:
-      - Transform the grid to Fourier space.
-      - Multiply the grid values by the specified potential function.
-      - While in Fourier space, perform deconvolutions needed due to
-        particle interpolations. This results in two versions of the
-        global potential grid; one applicable to particle components and
-        one applicable to fluid components, both of which contain the
-        total potential from all suppliers.
-      - Transform back to real space.
-    - For each dimension, differentiate the global potentials to get the
-      (particle and fluid) force.
-    - Pixel mix the global force grid back to the local grids.
-    - Interpolate the local grids onto the components, applying the
-      force. The force application uses the prescription
-      Δmom = -component.mass*∂ⁱφ*ᔑdt[ᔑdt_key].
+    - Interpolate the specified quantity of all supplier components
+      onto upstream (component specific) grids.
+    - Transform to upstream Fourier slabs.
+    - Perform deconvolution and interlacing of upstream Fourier slabs of
+      particle suppliers, if specified.
+    - Add upstream Fourier slabs together, producing global Fourier
+      slabs.
+    - Convert the values of the global Fourier slabs to potential
+      values, with the formula to use given by the 'potential' argument.
+    - Obtain downstream potential Fourier slabs for each receiver.
+      For particle receivers, another deconvolution is now performed due
+      to the upcoming interpolation.
+    - Transform to real space downstream potentials.
+    - For each dimension, differentiate the downstream potentials to get
+      the real space downstream force.
+    - Interpolate the downstream force grid onto the components,
+      applying the force. The force application uses the prescription
+        Δmom = -component.mass*∂ⁱφ*ᔑdt[ᔑdt_key].
     """
-    suppliers_name = '{{{}}}'.format(', '.join([supplier.name for supplier in suppliers]))
-    if len(suppliers) == 1:
-        suppliers_name = suppliers_name.strip('{}')
-    masterprint(
-        f'Constructing potential of grid size {gridsize_global} due to {suppliers_name} ...'
-    )
-    # Flags specifying the existence of components
-    any_particles_receivers = any([receiver.representation == 'particles' for receiver in receivers])
-    any_fluid_receivers     = any([receiver.representation == 'fluid'     for receiver in receivers])
-    any_particles_suppliers = any([supplier.representation == 'particles' for supplier in suppliers])
-    any_fluid_suppliers     = any([supplier.representation == 'fluid'     for supplier in suppliers])
-    if not any_particles_suppliers:
-        interlace = False
-    # Interpolate suppliers onto global grids by first interpolating
-    # them onto individual upstream grids and then pixel mix these onto
-    # global grids of size gridsize_global. Separate global grids will
-    # be used for particle and fluid components.
+    if potential not in {'gravity', 'gravity long-range'}:
+        abort(
+            f'particle_mesh() got potential "{potential}" ∉ {{"gravity", "gravity long-range"}}'
+        )
     suppliers_gridsizes_upstream = [
         supplier.potential_gridsizes[force][method].upstream
         for supplier in suppliers
     ]
-    grids_global = interpolate_upstream(
-        suppliers, suppliers_gridsizes_upstream, gridsize_global, quantity,
-        interpolation_order, interlace, ᔑdt,
-        do_ghost_communication=False,
+    receivers_gridsizes_downstream = [
+        receiver.potential_gridsizes[force][method].downstream
+        for receiver in receivers
+    ]
+    suppliers_description = ', '.join([
+        supplier.name + (
+            f' ({supplier_gridsize_upstream})'
+            if 𝔹[np.any(asarray(suppliers_gridsizes_upstream) != gridsize_global)] else ''
+        )
+        for supplier, supplier_gridsize_upstream in zip(suppliers, suppliers_gridsizes_upstream)
+    ])
+    if len(suppliers) > 1:
+        suppliers_description = f'{{{suppliers_description}}}'
+    masterprint(
+        f'Constructing potential of grid size {gridsize_global} due to {suppliers_description} ...'
     )
-    # Slab decompose the global grids
-    slabs = slab_decompose(grids_global, prepare_fft=True)
-    # Do a forward in-place Fourier transform of the slabs
-    fft(slabs, 'forward')
-    # Currently the 'particles' and 'fluid' grids/slabs hold data from
-    # the particles and fluid suppliers, respectively. In the end these
-    # will be transformed such that they both hold the total potential
-    # from all suppliers, their difference being the amount of
-    # deconvolution applied. The 'particles' grid then supplies the
-    # force to particle receivers while the 'fluid' grid supplies the
-    # force to fluid receivers. In the case where we have a
-    # particles/fluid receiver but no supplier of the same
-    # representation, no corresponding grid/slab currently exist.
-    # Allocate them.
-    gridshape_local = ()
-    if any_particles_receivers and not any_particles_suppliers:
-        if not gridshape_local:
-            gridshape_local = get_gridshape_local(gridsize_global)
-        grids_global['particles'] = get_buffer(gridshape_local, 'global_grid_particles')
-        slabs['particles'] = get_fftw_slab(gridsize_global, 'slab_particles')
-    if any_fluid_receivers and not any_fluid_suppliers:
-        if not gridshape_local:
-            gridshape_local = get_gridshape_local(gridsize_global)
-        grids_global['fluid'] = get_buffer(gridshape_local, 'global_grid_fluid')
-        slabs['fluid'] = get_fftw_slab(gridsize_global, 'slab_fluid')
-    # Store the slabs as separate variables
-    slab_particles = slabs.get('particles')
-    if slab_particles is not None:
-        slab_particles_ptr = cython.address(slab_particles[:, :, :])
-    slab_fluid = slabs.get('fluid')
-    if slab_fluid is not None:
-        slab_fluid_ptr = cython.address(slab_fluid[:, :, :])
-    # Multiplicative factor needed after a
-    # forward and a backward Fourier transformation.
-    fft_factor = float(gridsize_global)**(-3)
-    # Loop over the complex numbers in the slabs
-    deconv_order = interpolation_order*(any_particles_suppliers or any_particles_receivers)
-    for index, ki, kj, kk, deconv in slab_fourier_loop(
-        slabs,
-        deconv_order=deconv_order,
-        do_interlacing=interlace,
+    # If we only have particle suppliers (receivers) and all
+    # upstream (downstream) grid sizes equal the global grid size,
+    # we perform the upstream (downstream) deconvolution right within
+    # this function while constructing the global potential,
+    # rather than through calls to interpolate_upstream()
+    # or deconvolve_and_interlace().
+    only_particle_suppliers = all([
+        supplier.representation == 'particles'
+        for supplier in suppliers
+    ])
+    only_particle_receivers = all([
+        receiver.representation == 'particles'
+        for receiver in receivers
+    ])
+    all_supplier_upstream_gridsizes_equal_global = np.all(
+        asarray(suppliers_gridsizes_upstream) == gridsize_global
+    )
+    all_receiver_downstream_gridsizes_equal_global = np.all(
+        asarray(receivers_gridsizes_downstream) == gridsize_global
+    )
+    deconv_order_global = 0
+    if deconvolve_upstream:
+        if only_particle_suppliers and all_supplier_upstream_gridsizes_equal_global:
+            # Promote upstream deconvolution to global deconvolution
+            deconvolve_upstream = False
+            deconv_order_global += 1
+    if deconvolve_downstream:
+        if only_particle_receivers and all_receiver_downstream_gridsizes_equal_global:
+            # Promote downstream deconvolution to global deconvolution
+            deconvolve_downstream = False
+            deconv_order_global += 1
+    deconv_order_global *= interpolation_order
+    # When ᔑdt_key is a (2-)tuple, the last element needs to be
+    # substituted with the name of a given component. The variable below
+    # acts as a flag for this substitution.
+    substitute_ᔑdt_key = isinstance(ᔑdt_key, tuple)
+    # Interpolate suppliers onto global Fourier slabs by first
+    # interpolating them onto individual upstream grids, transforming to
+    # Fourier space and then adding them together.
+    slab_global = interpolate_upstream(
+        suppliers, suppliers_gridsizes_upstream, gridsize_global, quantity, interpolation_order,
+        ᔑdt, deconvolve_upstream, interlace, output_space='Fourier',
+    )
+    slab_global_ptr = cython.address(slab_global[:, :, :])
+    # Convert slab_global values to potential
+    # and possibly perform upstream and/or downstream deconvolutions.
+    for index, ki, kj, kk, factor, θ in fourier_loop(gridsize_global,
+        skip_origin=True, deconv_order=deconv_order_global,
     ):
         k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
         # The potential factor, for converting the slab values
-        # to the desired potential. Note that we further attach
-        # the FFT normalisation factor to this.
-        with unswitch(3):
+        # to the desired potential.
+        with unswitch(5):
             # The physical squared length of the wave
             # vector is given by |k|² = (2π/boxsize)**2*k2.
             if 𝔹[potential == 'gravity']:
                 # The Poisson equation, the factor of which is
                 #   -4πG/|k|².
-                potential_factor = ℝ[fft_factor*ℝ[-boxsize**2*G_Newton/π]]/k2
-            elif 𝔹[potential == 'gravity long-range']:
+                factor *= ℝ[-boxsize**2*G_Newton/π]/k2
+            else:  # potential == 'gravity long-range'
                 # The Poisson equation with a Gaussian
                 # cutoff, resulting in the factor
                 #   -4πG/|k|² * exp(-rₛ²*|k|²).
-                potential_factor = (
-                    ℝ[fft_factor*ℝ[-boxsize**2*G_Newton/π]]/k2
+                factor *= (
+                    ℝ[-boxsize**2*G_Newton/π]/k2
                     *exp(k2*ℝ[-(2*π/boxsize*shortrange_params['gravity']['scale'])**2])
                 )
-            else:
-                abort(f'potential "{potential}" not implemented in particle_mesh()')
-                potential_factor = 1  # To satisfy the compiler
-        # Combine the fluid and particles slab values into the
-        # total potential. The result is {re, im} and
-        # corresponds to the fluid potential, from which the
-        # particles potential is obtained through a single
-        # deconvolution.
-        with unswitch(3):
-            if 𝔹[any_particles_suppliers and any_fluid_suppliers]:
-                re = potential_factor*(
-                    deconv*slab_particles_ptr[index    ] + slab_fluid_ptr[index    ]
-                )
-                im = potential_factor*(
-                    deconv*slab_particles_ptr[index + 1] + slab_fluid_ptr[index + 1]
-                )
-            elif any_particles_suppliers:
-                factor = potential_factor*deconv
-                re = factor*slab_particles_ptr[index    ]
-                im = factor*slab_particles_ptr[index + 1]
-            else:  # any_fluid_suppliers
-                re = potential_factor*slab_fluid_ptr[index    ]
-                im = potential_factor*slab_fluid_ptr[index + 1]
-        # Insert the final potential values into the slabs.
-        # The unswitched block below is somewhat repetitive,
-        # but it leads to fewer source lines after unswitching compared
-        # to having individual unswitching for any_particles_receivers
-        # and any_fluid_receivers.
-        with unswitch(3):
-            if 𝔹[any_particles_receivers and any_fluid_receivers]:
-                slab_particles_ptr[index    ] = deconv*re
-                slab_particles_ptr[index + 1] = deconv*im
-                slab_fluid_ptr    [index    ] =        re
-                slab_fluid_ptr    [index + 1] =        im
-            elif any_particles_receivers:
-                slab_particles_ptr[index    ] = deconv*re
-                slab_particles_ptr[index + 1] = deconv*im
-            else:  # any_fluid_receivers
-                slab_fluid_ptr    [index    ] =        re
-                slab_fluid_ptr    [index + 1] =        im
-    # The shifted particles slabs and global grid are never needed
-    # from this point on, and so we remove these. We further remove the
-    # slabs and global grids for which we have no receivers of the same
-    # representation.
-    grids_global.pop('particles_shifted', None)
-    slabs       .pop('particles_shifted', None)
-    if not any_particles_receivers:
-        grids_global.pop('particles', None)
-        slabs       .pop('particles', None)
-    if not any_fluid_receivers:
-        grids_global.pop('fluid', None)
-        slabs       .pop('fluid', None)
-    if not slabs or not grids_global:
-        abort(
-            'Something went wrong in the particle_mesh() function, '
-            'as it appears that neither particles nor fluids should receive the force '
-            'due to the potential.'
-        )
-    # Ensure nullified Nyquist planes and origin
-    nullify_modes(slabs, 'nyquist, dc')
-    # Fourier transform the slabs back to coordinate space
-    fft(slabs, 'backward')
-    # Domain-decompose the slabs
-    domain_decompose(slabs, grids_global, do_ghost_communication=differentiate_global)
+        # Apply factor from deconvolution and potential
+        slab_global_ptr[index    ] *= factor  # real part
+        slab_global_ptr[index + 1] *= factor  # imag part
+    # Ensure nullified origin
+    nullify_modes(slab_global, 'origin')
     masterprint('done')
-    # Get and apply the force from the global potential grids
-    buffer_names = {
-        'differentiate'    : 0,
-        'interpolate'      : 1,
-        'interpolate_fluid': 2,
-    }
-    if differentiate_global:
-        # We should first differentiate the global potential grids to
-        # obtain global force grids, then pixel mix these to downstream
-        # force grids and apply them.
-        # Group receivers according to their representation and
-        # downstream grid size.
-        receiver_collections = {
-            representation: collections.defaultdict(list)
-            for representation in grids_global.keys()
-        }
-        for receiver in receivers:
-            gridsize_downstream = (
-                receiver.potential_gridsizes[force][method].downstream
+    # Group receivers according to their downstream grid size.
+    # The order does not matter, except that we want the group with the
+    # downstream grid size equal to the global grid size to be the last,
+    # if indeed such a group exist.
+    groups = group_components(receivers, receivers_gridsizes_downstream, [..., gridsize_global])
+    # For each group, obtain downstream potential, compute downstream
+    # forces and apply these to the receivers within the group.
+    for gridsize_downstream, group in groups.items():
+        gridsize_downstream_description = (
+            f'({gridsize_downstream}) '
+            if not all_receiver_downstream_gridsizes_equal_global else ''
+        )
+        # Physical grid spacing of downstream potential grid
+        Δx = boxsize/gridsize_downstream
+        # Obtain downstream slab potential from global slab potential
+        if gridsize_downstream == gridsize_global:
+            # The downstream and global grid sizes are the same, so we
+            # use the global slab as the downstream slab. The global
+            # slab is then mutated by the code below (e.g. by the
+            # in-place FFT), but as we are guaranteed that this is the
+            # last downstream grid/group, this is OK.
+            slab_downstream = slab_global
+        else:
+            # Fetch a slab to be used for the downstream potential.
+            # As this is constructed through down- or up-scaling of the
+            # global potential, we need to nullify all elements not set
+            # by the down-/up-scaling. We could of course just always
+            # perform a complete nullification.
+            if gridsize_downstream < gridsize_global:
+                # Downscaling. All elements of slab_downstream will be
+                # set except the Nyquist planes, which then have to be
+                # nullified.
+                nullification = 'nyquist'
+            else:
+                # Upscaling. Only elements within a cube centered at
+                # the origin and of size gridsize_global will be set.
+                # We then need to nullify all elements beyond this cube.
+                nullification = f'beyond cube of |k| < {gridsize_global//2}'
+            slab_downstream = get_fftw_slab(gridsize_downstream, 'slab_updownstream', nullification)
+            # Obtain downstream slab potential through up-/down-scaling
+            copy_modes(slab_global, slab_downstream, operation='=')
+        # Handle each (possible) representation of the receivers in turn
+        for representation in ('fluid', 'particles'):
+            if representation not in group:
+                continue
+            # The slab_downstream is used for both particle and fluid
+            # receivers, but as the backward FFT to come is carried out
+            # in-place, we need to copy the data in the case where we
+            # have both fluid and particle receivers.
+            slab_downstream_representation = slab_downstream
+            if not 𝔹[representation == 'particles'] and 'particles' in group:
+                slab_downstream_representation = get_fftw_slab(
+                    gridsize_downstream, 'slab_updownstream_representation',
+                )
+                slab_downstream_representation[...] = slab_downstream
+            # Perform downstream deconvolution
+            if 𝔹[representation == 'particles'] and deconvolve_downstream:
+                deconvolve_and_interlace(
+                    slab_downstream_representation,
+                    deconv_order=interpolation_order,
+                )
+            # Transform to real space and perform domain decomposition
+            fft(slab_downstream_representation, 'backward')
+            grid_downstream = domain_decompose(
+                slab_downstream_representation,
+                'grid_updownstream',
+                do_ghost_communication=True,
             )
-            receiver_group = (
-                receiver_collections[receiver.representation][gridsize_downstream]
-            )
-            receiver_group.append(receiver)
-        # Physical grid spacing of global potential grids
-        Δx = boxsize/gridsize_global
-        # Differentiate the global potential to get the global force
-        # field, pixel mix to downstream forces and apply them, for each
-        # representation, direction and receiver.
-        submsg = (r'({representation}, {xyz})' if len(grids_global) == 2 else r'({xyz})')
-        for representation, grid_global in grids_global.items():
-            receiver_groups = receiver_collections[representation]
+            # For each dimension, differentiate the grid to obtain the
+            # force and apply this force.
             for dim in range(3):
                 masterprint(
-                    f'Obtaining and applying the {submsg} force ...'
-                    .format(representation=representation, xyz='xyz'[dim])
+                    f'Obtaining and applying the '
+                    f'{"xyz"[dim]}-force {gridsize_downstream_description}...'
                 )
-                # Differentiate the global potential grid
-                # along the dim'th dimension.
-                ᐁᵢgrid_global = diff_domaingrid(
-                    grid_global, dim, differentiation_order,
-                    Δx, ℤ[buffer_names['differentiate']],
-                    do_ghost_communication=False,
+                # Differentiate the downstream potential in real space
+                # using finite difference. We need to properly populate
+                # the ghost points in the differentiated grid, as ghost
+                # points are needed for particle interpolation. For
+                # fluids, having proper ghost points in the
+                # differentiated grid means that the momentum grid will
+                # automatically get ghost points populated correctly as
+                # well.
+                ᐁᵢgrid_downstream = diff_domaingrid(
+                    grid_downstream, dim, differentiation_order,
+                    Δx, 'force_downstream',
+                    do_ghost_communication=True,
                 )
-                for gridsize_downstream, receiver_group in receiver_groups.items():
-                    # Pixel mix global force downstream
-                    # to get local force.
-                    ᐁᵢgrid_downstream = interpolate_grid_to_grid(
-                        ᐁᵢgrid_global,
-                        ℤ[buffer_names['interpolate']],
-                        gridsize_downstream,
-                    )
-                    # For particle interpolation we need the
-                    # ghost points to be properly set.
-                    with unswitch(2):
-                        if 𝔹[representation == 'particles']:
-                            communicate_ghosts(ᐁᵢgrid_downstream, '=')
-                    # Apply force
-                    for receiver in receiver_group:
-                        masterprint(f'Applying force to {receiver.name} ...')
-                        with unswitch(3):
-                            if 𝔹[isinstance(ᔑdt_key, tuple)]:
-                                ᔑdt_key = (ᔑdt_key[0], receiver.name)
-                        with unswitch(3):
-                            if 𝔹[representation == 'particles']:
-                                # Update the dim'th momentum component
-                                # of all particles through interpolation
-                                # in ᐁᵢgrid_downstream. To convert from
-                                # force to momentum change we should
-                                # multiply by -mass*Δt (minus as the
-                                # force is the negative gradient of the
-                                # potential), where Δt = ᔑdt['1']. Here
-                                # this integral over the time step is
-                                # generalised and supplied
-                                # by the caller.
-                                interpolate_domaingrid_to_particles(
-                                    ᐁᵢgrid_downstream, receiver, 'mom', dim, interpolation_order,
-                                    receiver.mass*ℝ[-ᔑdt[ᔑdt_key]],
-                                )
-                            else:  # representation == 'fluid'
-                                # Make sure that the force grid has
-                                # identical grid size as the receiver.
-                                # After this we may simply add the force
-                                # grid directly to the receiver grids,
-                                # without further interpolation.
-                                ᐁᵢgrid_receiver = interpolate_grid_to_grid(
-                                    ᐁᵢgrid_downstream,
-                                    ℤ[buffer_names['interpolate_fluid']],
-                                    receiver.gridsize,
-                                )
-                                ᐁᵢgrid_receiver_ptr = cython.address(ᐁᵢgrid_receiver[:, :, :])
-                                # The source term has the form
-                                # ΔJ ∝ -(ϱ + c⁻²𝒫)*ᐁφ.
-                                # The proportionality factor above is
-                                # something liḱe Δt = ᔑdt['1']. Here
-                                # this integral over the time step is
-                                # generalised and supplied by the
-                                # caller.
-                                Jᵢ = receiver.J[dim]
-                                Jᵢ_ptr = Jᵢ.grid
-                                ϱ_ptr = receiver.ϱ.grid
-                                𝒫_ptr = receiver.𝒫.grid
-                                for index in range(receiver.size):
-                                    Jᵢ_ptr[index] += ℝ[-ᔑdt[ᔑdt_key]]*(
-                                        ϱ_ptr[index] + ℝ[light_speed**(-2)]*𝒫_ptr[index]
-                                    )*ᐁᵢgrid_receiver_ptr[index]
-                                # Though the above loop includes ghost
-                                # points, these are not properly set in
-                                # ᐁᵢgrid_receiver. Correctly set the
-                                # ghost points in the momentum grid.
-                                communicate_ghosts(Jᵢ.grid_mv, '=')
-                        masterprint('done')
+                ᐁᵢgrid_downstream_ptr = cython.address(ᐁᵢgrid_downstream[:, :, :])
+                # Apply force
+                for receiver in group[representation]:
+                    masterprint(f'Applying force to {receiver.name} ...')
+                    if substitute_ᔑdt_key:
+                        ᔑdt_key = (ᔑdt_key[0], receiver.name)
+                    if 𝔹[representation == 'particles']:
+                        # Update the dim'th momentum component of all
+                        # particles through interpolation in
+                        # ᐁᵢgrid_downstream. To convert from force to
+                        # momentum change we should multiply by -mass*Δt
+                        # (minus as the force is the negative gradient
+                        # of the potential), where Δt = ᔑdt['1']. Here
+                        # this integral over the time step is
+                        # generalised and supplied by the caller.
+                        interpolate_domaingrid_to_particles(
+                            ᐁᵢgrid_downstream, receiver, 'mom', dim, interpolation_order,
+                            receiver.mass*ℝ[-ᔑdt[ᔑdt_key]],
+                        )
+                    else:  # representation == 'fluid'
+                        # The source term has the form
+                        #   ΔJ ∝ -(ϱ + c⁻²𝒫)*ᐁφ.
+                        # The proportionality factor above is something
+                        # liḱe Δt = ᔑdt['1']. Here this integral over
+                        # the time step is generalised and supplied by
+                        # the caller.
+                        Jᵢ = receiver.J[dim]
+                        Jᵢ_ptr = Jᵢ.grid
+                        ϱ_ptr = receiver.ϱ.grid
+                        𝒫_ptr = receiver.𝒫.grid
+                        for index in range(receiver.size):
+                            Jᵢ_ptr[index] += ℝ[-ᔑdt[ᔑdt_key]]*(
+                                ϱ_ptr[index] + ℝ[light_speed**(-2)]*𝒫_ptr[index]
+                            )*ᐁᵢgrid_downstream_ptr[index]
+                    masterprint('done')
                 masterprint('done')
-    else:
-        # We should first pixel mix the global potentials to downstream
-        # potentials, then differentiate these to get downstream force
-        # grids and then apply them.
-        abort(
-            f'It is currently only possible to obtain the force directly from the '
-            f'global potential. You should set '
-            f'force_from_global_potentials["{force}"]["{method}"] = True.'
-        )
 
 # Function implementing progress messages used for the short-range
 # kicks intertwined with drift operations.
@@ -2610,7 +2552,7 @@ pairwise_quantities = {}
     receivers=list,
     suppliers=list,
     # Locals
-    differentiate_global='bint',
+    deconvolve=object,  # PotentialDeconvolutions
     differentiation_order='int',
     gridsize='Py_ssize_t',
     gridsizes=set,
@@ -2629,7 +2571,7 @@ def get_potential_specs(force, method, receivers, suppliers):
     if potential_specs is not None:
         return potential_specs
     # Look up the global potential grid size
-    gridsize = 𝕆[potential_gridsizes['global']][force][method]
+    gridsize = 𝕆[potential_options['gridsize']['global']][force][method]
     if gridsize == -1:
         # No global grid size specified. If all supplier upstream
         # and receiver downstream grid sizes are equal, use this for
@@ -2650,16 +2592,15 @@ def get_potential_specs(force, method, receivers, suppliers):
                 f'are in use, the global grid size could not be set automatically.'
             )
         gridsize = gridsizes.pop()
-    # Fetch interpolation, interlacing
+    # Fetch interpolation, deconvolution, interlacing
     # and differentiation specifications.
-    interpolation_order   = force_interpolations        [force][method]
-    interlace             = force_interlacings          [force][method]
-    differentiate_global  = force_from_global_potentials[force][method]
-    differentiation_order = force_differentiations      [force][method]
+    interpolation_order   = 𝕆[potential_options['interpolation'  ]][force][method]
+    deconvolve            = 𝕆[potential_options['deconvolve'     ]][force][method]
+    interlace             = 𝕆[potential_options['interlace'      ]][force][method]
+    differentiation_order = 𝕆[potential_options['differentiation']][force][method]
     # Cache and return
     potential_specs = PotentialForceInfo(
-        gridsize, interpolation_order, interlace,
-        differentiate_global, differentiation_order,
+        gridsize, interpolation_order, deconvolve, interlace, differentiation_order,
     )
     potential_specs_cache[key] = potential_specs
     return potential_specs
@@ -2669,8 +2610,7 @@ potential_specs_cache = {}
 PotentialForceInfo = collections.namedtuple(
     'PotentialForceInfo',
     (
-        'gridsize', 'interpolation_order', 'interlace',
-        'differentiate_global', 'differentiation_order',
+        'gridsize', 'interpolation_order', 'deconvolve', 'interlace', 'differentiation_order',
     ),
 )
 
@@ -2738,8 +2678,9 @@ def gravity(method, receivers, suppliers, ᔑdt, interaction_type, printout):
         potential = 'gravity'
         particle_mesh(
             receivers, suppliers, potential_specs.gridsize, quantity, force, method, potential,
-            potential_specs.interpolation_order, potential_specs.interlace,
-            potential_specs.differentiate_global, potential_specs.differentiation_order,
+            potential_specs.interpolation_order,
+            potential_specs.deconvolve.upstream, potential_specs.deconvolve.downstream,
+            potential_specs.interlace, potential_specs.differentiation_order,
             ᔑdt, ᔑdt_key,
         )
         if printout:
@@ -2762,8 +2703,9 @@ def gravity(method, receivers, suppliers, ᔑdt, interaction_type, printout):
             potential = 'gravity long-range'
             particle_mesh(
                 receivers, suppliers, potential_specs.gridsize, quantity, force, method, potential,
-                potential_specs.interpolation_order, potential_specs.interlace,
-                potential_specs.differentiate_global, potential_specs.differentiation_order,
+                potential_specs.interpolation_order,
+                potential_specs.deconvolve.upstream, potential_specs.deconvolve.downstream,
+                potential_specs.interlace, potential_specs.differentiation_order,
                 ᔑdt, ᔑdt_key,
             )
         # The short-range PP part
@@ -2872,8 +2814,9 @@ def lapse(method, receivers, suppliers, ᔑdt, interaction_type, printout):
         # Execute the lapse interaction
         particle_mesh(
             receivers, suppliers, potential_specs.gridsize, quantity, force, method, potential,
-            potential_specs.interpolation_order, potential_specs.interlace,
-            potential_specs.differentiate_global, potential_specs.differentiation_order,
+            potential_specs.interpolation_order,
+            potential_specs.deconvolve.upstream, potential_specs.deconvolve.downstream,
+            potential_specs.interlace, potential_specs.differentiation_order,
             ᔑdt, ᔑdt_key,
         )
         if printout:

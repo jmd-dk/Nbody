@@ -1,0 +1,65 @@
+# Directory of this parameter file (non-parameter variable)
+_this_dir = dirname(paths['params'])
+
+# Input/output
+output_dirs = {
+    'snapshot' : f'{_this_dir}/output',
+    'powerspec': ...,
+    'render2D' : ...,
+}
+powerspec_select = {
+    'all'             : {'data': True, 'linear': False, 'plot': True},
+    'all combinations': ...,
+}
+render2D_select = {
+    'all': {'data': True, 'image': True, 'terminal image': True},
+}
+
+# Numerical parameters
+boxsize = 128*Mpc
+potential_options = {
+    'interpolation': {
+        'gravity': {
+            'pm' : 'CIC',
+            'p3m': 'CIC',
+        },
+    },
+}
+powerspec_options = {
+    'upstream gridsize': {
+        'particles': '2*cbrt(N)',
+        'fluid'     : 'gridsize',
+    },
+    'interpolation': 'PCS',
+    'deconvolve'   : True,
+    'interlace'    : True,
+}
+k_modes_per_decade = 8
+
+# Cosmology
+a_begin = 0.1
+
+# Physics
+select_boltzmann_order = {
+    'all': 1,
+}
+select_boltzmann_closure = {
+    'matter'   : 'truncate',
+    'neutrinos': 'class',
+}
+select_approximations = {
+    'matter': {
+        'P = wρ': True,
+    },
+}
+
+# Simulation options
+primordial_amplitude_fixed = True
+
+# Graphics
+render2D_options = {
+    'axis'   : 'z',
+    'extent' : boxsize,
+    'enhance': False,
+}
+

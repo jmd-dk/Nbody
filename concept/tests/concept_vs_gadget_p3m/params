@@ -10,19 +10,21 @@ output_times       = {'snapshot': (0.1, 0.5, 1)}
 
 # Numerical parameters
 boxsize = 8*Mpc/h
-potential_gridsizes = {
-    'gravity': {
-        'p3m': 32,
+potential_options = {
+    'gridsize': {
+        'gravity': {
+            'p3m': 32,
+        },
     },
-}
-force_interpolations = {
-    'gravity': {
-        'p3m': 'CIC',
+    'interpolation': {
+        'gravity': {
+            'p3m': 'CIC',
+        },
     },
-}
-force_differentiations = {
-    'gravity': {
-        'p3m': 4,
+    'differentiation': {
+        'gravity': {
+            'p3m': 4,
+        },
     },
 }
 shortrange_params = {

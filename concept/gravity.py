@@ -309,9 +309,11 @@ def gravity_pairwise_shortrange(
     ):
         # Translate coordinates so that they
         # correspond to the nearest image.
-        x_ji += periodic_offset_x
-        y_ji += periodic_offset_y
-        z_ji += periodic_offset_z
+        with unswitch(6):
+            if periodic_offset_x or periodic_offset_y or periodic_offset_z:
+                x_ji += periodic_offset_x
+                y_ji += periodic_offset_y
+                z_ji += periodic_offset_z
         # If the particle pair is separated by a distance larger
         # than the range of the short-range force,
         # ignore this interaction completely.
@@ -415,7 +417,7 @@ def get_shortrange_table(softening):
         x = sqrt(r2)*ℝ[1/shortrange_scale]
         r3_inv_softened = get_softened_r3inv(r2, softening)
         table[i] = -r3_inv_softened*(
-            ℝ[1/sqrt(π)]*x*exp(-ℝ[0.5*x]**2) + erfc(ℝ[0.5*x])
+            1/sqrt(π)*x*exp(-ℝ[0.5*x]**2) + erfc(ℝ[0.5*x])
         )
     # The last element in table is not populated above.
     # This element is guaranteed to never be accessed as it would

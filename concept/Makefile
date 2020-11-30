@@ -186,8 +186,6 @@ unwanted_warnings =            \
     strict-overflow            \
     uninitialized              \
     unknown-warning-option     \
-    unused-but-set-variable    \
-    unused-result              \
 
 python_cflags = $(filter-out             \
     $(addprefix -W,$(unwanted_warnings)) \

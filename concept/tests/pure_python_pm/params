@@ -10,9 +10,11 @@ output_times       = {'snapshot': (0.1, 0.5, 1)}
 
 # Numerical parameters
 boxsize = 8*Mpc
-potential_gridsizes = {
-    'gravity': {
-        'pm': 8,
+potential_options = {
+    'gridsize': {
+        'gravity': {
+            'pm': 8,
+        },
     },
 }
 

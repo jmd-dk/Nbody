@@ -13,7 +13,6 @@ w  = user_params['_w']
 A  = user_params['_A']
 σ  = user_params['_σ']
 gridsize = 4*16  # Should be a multiple of 4
-N = gridsize**3
 component = Component('test fluid', 'matter', gridsize=gridsize, boltzmann_order=2)
 ρ = empty([gridsize]*3)
 for i in range(gridsize):

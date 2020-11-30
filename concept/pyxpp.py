@@ -135,7 +135,7 @@ def cimport_cython(lines, no_optimization):
     for i, line in enumerate(lines):
         if (line.strip()
             and not line.lstrip().startswith('#')
-            and not '__future__' in line
+            and '__future__' not in line
             ):
             lines = lines[:i] + ['cimport cython\n'] + lines[i:]
             break
@@ -696,6 +696,8 @@ def float_literals(lines, no_optimization):
         'π'        : commons.π,
         'machine_ϵ': commons.machine_ϵ,
     }
+    if no_optimization:
+        return lines
     for name, value in literals.copy().items():
         for fun in commons.asciify, commons.unicode:
             literals[fun(name)] = f'({value})'
@@ -750,7 +752,7 @@ def inline_iterators(lines, no_optimization):
     def process_inline_iterator_lines(func_name, iterator_lines):
         if func_name in cached_iterators:
             t = cached_iterators[func_name]
-            return t[0].copy(), t[1].copy()
+            return t[0].copy(), t[1]
         # Remove the function definition lines(s)
         def_encountered = False
         parens = 0
@@ -770,28 +772,17 @@ def inline_iterators(lines, no_optimization):
                 break
         definition = ''.join(iterator_lines[:i+1])
         iterator_lines = iterator_lines[i+1:]
-        # Extract default arguments
-        default_arguments = {}
-        for default_argument in re.findall(
-            r'.+?=.+?,', definition.replace('(', ')').replace(')', ',')
-        ):
-            default_argument = default_argument.replace(' ', '').strip(',')
-            while ',' in default_argument:
-                default_argument = default_argument[default_argument.index(','):].strip(',')
-            if default_argument.startswith('depends='):
-                # Skip the special 'depends' argument
-                continue
-            arg, val = default_argument.split('=')
-            default_arguments[arg] = val
-        # Remove yield line, which has to be only on the last line.
-        # We could generalise this to work for any number of yields,
-        # if we needed to. Just removing it however may screw up the
-        # indentation. Instead, we replace it with a pass statement.
-        yield_statement = iterator_lines[-1]
-        yield_indentation = ' '*(len(yield_statement) - len(yield_statement.lstrip()))
-        iterator_lines[-1] = (
-            f'{yield_indentation}pass  # Before inlining iterator: {yield_statement.strip()}\n'
-        )
+        # Extract function signature.
+        # Note that this does not work whenever a global variable is
+        # referenced as part of the definition of a default value.
+        for line in definition.split('\n'):
+            if line.startswith('def '):
+                break
+        def_str = re.sub(r'^def +.+?\(', 'def func(', line).strip()
+        def_str = f'{def_str}\n    pass'
+        sig_namespace = {}
+        exec(def_str, sig_namespace)
+        sig = inspect.signature(sig_namespace['func'])
         # Find indentation level
         for iterator_line in iterator_lines:
             iterator_line_stripped = iterator_line.strip()
@@ -804,8 +795,9 @@ def inline_iterators(lines, no_optimization):
                 continue
             iterator_lines[i] = iterator_line[indentation:]
         # Store the unindented source lines of the iterator
-        cached_iterators[func_name] = (iterator_lines, default_arguments)
-        return iterator_lines.copy(), default_arguments.copy()
+        # together with its function signature.
+        cached_iterators[func_name] = (iterator_lines, sig)
+        return iterator_lines.copy(), sig
     cached_iterators = {}
     # Replace usages of inline iterators with the content of the
     # iterator functions themselves.
@@ -828,6 +820,7 @@ def inline_iterators(lines, no_optimization):
         if not match:
             new_lines.append(line)
             continue
+        assignments_in_for = match.group(1).strip()
         func_name = match.group(2)
         stop = False
         for no in r'.,()[]{}':
@@ -840,7 +833,7 @@ def inline_iterators(lines, no_optimization):
         if func_name.startswith('"') or func_name.startswith("'"):
             new_lines.append(line)
             continue
-        if not func_name in module.__dict__:
+        if func_name not in module.__dict__:
             new_lines.append(line)
             continue
         try:
@@ -857,37 +850,158 @@ def inline_iterators(lines, no_optimization):
         else:
             new_lines.append(line)
             continue
-        iterator_lines, default_arguments = process_inline_iterator_lines(
+        iterator_lines, sig = process_inline_iterator_lines(
             func_name, iterator_lines,
         )
-        # Replace default arguments with supplied values
-        default_arguments_supplied = {}
-        for default_argument in re.findall(
-            r'.+?=.+?,', line.replace('(', ')').replace(')', ',')
-        ):
-            default_argument = default_argument.replace(' ', '').strip(',')
-            while ',' in default_argument:
-                default_argument = default_argument[default_argument.index(','):].strip(',')
-            if default_argument.startswith('depends='):
-                # Skip the special 'depends' argument
+        # Replace yield statement with assignment
+        iterator_lines[-1] = re.sub(' yield ', f' {assignments_in_for} = ', iterator_lines[-1], 1)
+        # Seperate multi-assignment into many assignments
+        names, values = iterator_lines[-1].split('=')
+        names  = names .split(',')
+        values = values.split(',')
+        if len(names) == len(values):
+            yield_indentation = ' '*(len(iterator_lines[-1]) - len(iterator_lines[-1].lstrip()))
+            iterator_lines[-1] = f'{yield_indentation}pass  # yield statement was here\n'
+            for name, value in zip(names, values):
+                name  = name .strip()
+                value = value.strip()
+                if name != value:
+                    iterator_lines.append(f'{yield_indentation}{name} = {value}\n')
+        # Extract call
+        parens = 0
+        encountered = set()
+        for i, c in enumerate(line[::-1]):
+            encountered.add(c)
+            parens += (c == '(') - (c == ')')
+            if ':' in encountered and '(' in encountered and parens == 0:
+                break
+        else:
+            # Something went wrong
+            print(f'Failed to detect generator function call to {func_name}()', file=sys.stderr)
+            sys.exit(1)
+        call = line[-(i+1):].strip(' (,):\n')
+        # Perform binding of function signature from the call
+        args = []
+        for arg in call.split(','):
+            if '=' in arg:
+                lhs, rhs = arg.split('=')
+                lhs = lhs.strip()
+                rhs = rhs.strip()
+                if rhs[0] in r'"\'':
+                    rhs = rhs.strip(r'"\'')
+                    rhs = f'"(str){rhs}"'
+                else:
+                    rhs = f'"{rhs}"'
+                arg = '='.join([lhs, rhs])
+            else:
+                arg = arg.strip()
+                if arg[0] in r'"\'':
+                    arg = arg.strip(r'"\'')
+                    arg = f'"(str){arg}"'
+                else:
+                    arg = f'"{arg}"'
+            args.append(arg)
+        args = ', '.join(args)
+        ba = eval(f'sig.bind({args})')
+        arguments_call = {}
+        for key, val in ba.arguments.items():
+            if isinstance(val, str) and val.startswith('(str)'):
+                val = f'"{val[5:]}"'
+            arguments_call[key] = val
+        ba.apply_defaults()
+        arguments = {}
+        for key, val in ba.arguments.items():
+            if key in arguments_call:
+                arguments[key] = arguments_call[key]
                 continue
-            arg, val = default_argument.split('=')
-            default_arguments_supplied[arg] = val
-        default_arguments.update(default_arguments_supplied)
+            if isinstance(val, str):
+                val = f'"{val}"'
+            arguments[key] = val
+        # Remove loop unswitches within the iterator lines
+        # which depend on the keyword-only arguments.
+        if not no_optimization:
+            # Get values of keyword-only arguments
+            kw_onlys = {}
+            for key, param in sig.parameters.items():
+                if param.kind != param.KEYWORD_ONLY:
+                    continue
+                val = arguments[key]
+                if isinstance(val, str) and val[0] not in r'"\'':
+                    try:
+                        val = eval(val)
+                    except:
+                        pass
+                kw_onlys[key] = val
+            for blackboardbold in blackboardbolds:
+                blackboardbold_normalized = unicodedata.normalize('NFKC', blackboardbold)
+                kw_onlys[blackboardbold_normalized] = getattr(commons, blackboardbold_normalized)
+            pattern = r'^ *with +unswitch *(\(.*\))? *:'
+            unswitch_indentation = -1
+            iterator_lines_new = []
+            for iterator_line in iterator_lines:
+                iterator_line_stripped = iterator_line.strip()
+                if not iterator_line_stripped or iterator_line_stripped.startswith('#'):
+                    iterator_lines_new.append(iterator_line)
+                    continue
+                if unswitch_indentation == -1:
+                    if re.search(pattern, iterator_line):
+                        # At unswitch
+                        unswitch_indentation = len(iterator_line) - len(iterator_line.lstrip())
+                    iterator_lines_new.append(iterator_line)
+                    continue
+                indentation = len(iterator_line) - len(iterator_line.lstrip())
+                if indentation <= unswitch_indentation:
+                    if re.search(pattern, iterator_line):
+                        # At another unswitch
+                        unswitch_indentation = len(iterator_line) - len(iterator_line.lstrip())
+                    else:
+                        # Outside unswitch
+                        unswitch_indentation = -1
+                    iterator_lines_new.append(iterator_line)
+                    continue
+                if indentation == unswitch_indentation + 4:
+                    if iterator_line_stripped.startswith('else'):
+                        # At else
+                        iterator_lines_new.append(iterator_line)
+                        continue
+                    match = re.search(r'^(if|elif) (.+) *:', iterator_line_stripped)
+                    if not match:
+                        print(
+                            f'Improper indentation beneath unswitch in {func_name}()',
+                            file=sys.stderr,
+                        )
+                        sys.exit(1)
+                    # At if/elif
+                    if_elif = match.group(1)
+                    condition = match.group(2).strip()
+                    try:
+                        result = eval(condition, kw_onlys)
+                    except:
+                        # Could not determine value of condition
+                        iterator_lines_new.append(iterator_line)
+                        continue
+                    # Compile time constant value of condition
+                    result = bool(result)
+                    iterator_lines_new.append(' '*indentation + f'{if_elif} {result}:\n')
+                elif indentation > unswitch_indentation:
+                    # Inside unswitch
+                    iterator_lines_new.append(iterator_line)
+                    continue
+            iterator_lines = iterator_lines_new
         # Apply correct indentation
         for_indentation = len(line) - len(line.lstrip())
         iterator_lines = [
             ' '*for_indentation + iterator_line for iterator_line in iterator_lines
         ]
-        default_arguments = [
-            ' '*for_indentation + f'{arg} = {val}' for arg, val in default_arguments.items()
+        arguments_lines = [
+            ' '*for_indentation + f'{arg} = {val}' for arg, val in arguments.items()
         ]
         # Replace iterator call with inlined iterator code lines
         new_lines += [
             '\n',
             ' '*for_indentation + f'# Beginning of inlined iterator "{func_name}"\n',
         ]
-        new_lines += [default_argument + '\n' for default_argument in default_arguments]
+        new_lines += [default_argument + '\n' for default_argument in arguments_lines]
         new_lines += iterator_lines
         # Indent the rest of the function according
         # to the inlined iterator.
@@ -959,14 +1073,139 @@ def inline_iterators(lines, no_optimization):
 
 
 
+def remove_trvial_branching(lines, no_optimization):
+    if no_optimization:
+        return lines
+    def unindent(line, unincent_length):
+        line_lstripped = line.lstrip()
+        indentation = len(line) - len(line_lstripped)
+        indentation -= unincent_length
+        line = ' '*indentation + line_lstripped
+        return line
+    def remove_branches(lines):
+        changed = False
+        new_lines = []
+        skip = 0
+        for i, line in enumerate(lines):
+            if skip:
+                skip -= 1
+                continue
+            line_stripped = line.strip()
+            if not line_stripped or line_stripped.startswith('#'):
+                new_lines.append(line)
+                continue
+            match = re.search(r'^(if|elif) +(.+) *:', line_stripped)
+            if not match:
+                new_lines.append(line)
+                continue
+            condition = match.group(2)
+            try:
+                result = eval(condition, {})
+            except:
+                new_lines.append(line)
+                continue
+            # Trivial if/elif found
+            result = bool(result)
+            changed = True
+            if_elif = match.group(1)
+            indentation = len(line) - len(line.lstrip())
+            if result:
+                # A truthy if/elif was found
+                indentation_comment = indentation
+                if if_elif == 'if':
+                    unindent_length = 4
+                else:
+                    unindent_length = 0
+                if if_elif == 'if':
+                    # Remove above unswitch if present
+                    for j, line_prev in enumerate(reversed(new_lines)):
+                        line_prev_stripped = line_prev.strip()
+                        if not line_prev_stripped or line_prev_stripped.startswith('#'):
+                            continue
+                        if re.search(r'^ *with +unswitch', line_prev):
+                            # Found unswitch to be removed
+                            unindent_length += 4
+                            indentation_comment -= 4
+                            new_lines[len(new_lines) - j - 1] = (
+                                ' '*indentation_comment
+                                + '# Trivial unswitch removed due removal of below if\n'
+                            )
+                        else:
+                            break
+                else:
+                    # Replace with else
+                    new_lines.append(' '*indentation + 'else:\n')
+                # Removing all further elif/else
+                in_elif_else = False
+                for line_body in lines[i+1:]:
+                    line_body_lstripped = line_body.lstrip()
+                    indentation_body = len(line_body) - len(line_body_lstripped)
+                    if indentation_body > indentation:
+                        if not in_elif_else:
+                            new_lines.append(unindent(line_body, unindent_length))
+                        skip += 1
+                    elif indentation_body == indentation:
+                        if (
+                               re.search(r'^else *:'      , line_body_lstripped)
+                            or re.search(r'^elif +(.+) *:', line_body_lstripped)
+                        ):
+                            # Skip elif/else
+                            in_elif_else = True
+                            skip += 1
+                        else:
+                            # Outside if body
+                            break
+                    else:
+                        # Outside if body
+                        break
+            else:
+                # A falsy if/elif was found. Remove it, but insert a
+                # trivial truthy if in the case of an otherwise complete
+                # removal of the entire if/elif/else.
+                for line_body in lines[i+1:]:
+                    line_body_lstripped = line_body.lstrip()
+                    indentation_body = len(line_body) - len(line_body_lstripped)
+                    if indentation_body > indentation:
+                        skip += 1
+                    elif indentation_body == indentation:
+                        at_elif = re.search(r'^elif +(.+) *:', line_body_lstripped)
+                        if at_elif:
+                            # At elif
+                            if if_elif == 'if':
+                                # Convert to if
+                                new_lines.append(' '*indentation + line_body_lstripped[2:])
+                                skip += 1
+                            break
+                        at_else = re.search(r'^else *:'      , line_body_lstripped)
+                        if at_else:
+                            # At else
+                            if if_elif == 'if':
+                                # Convert to trivial if
+                                new_lines.append(' '*indentation + 'if True:\n')
+                                skip += 1
+                            break
+                        # Outside if body
+                        if if_elif == 'if':
+                            # Insert trivial truthy if
+                            new_lines.append(' '*indentation + 'if True:\n')
+                            new_lines.append(' '*(indentation + 4) + 'pass\n')
+                        break
+                    else:
+                        # Outside if body
+                        if if_elif == 'if':
+                            # Insert trivial truthy if
+                            new_lines.append(' '*indentation + 'if True:\n')
+                            new_lines.append(' '*(indentation + 4) + 'pass\n')
+                        break
+        return new_lines, changed
+    changed = True
+    while changed:
+        lines, changed = remove_branches(lines)
+    return lines
+
+
+
 def constant_expressions(lines, no_optimization, first_call=True):
-    sets = {
-        '𝔹': 'bint',
-        '𝕆': 'object',
-        'ℝ': 'double',
-        '𝕊': 'str',
-        'ℤ': 'Py_ssize_t',
-    }
     non_c_native = {'𝕆', '𝕊'}
     non_callable = {'𝕆', }
     # Handle nested constant expressions.
@@ -982,7 +1221,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
             new_lines = []
             for i, line in enumerate(lines):
                 line = line.rstrip('\n')
-                search = re.search(r'[{}]\[.+\]'.format(''.join(sets.keys())), line)
+                search = re.search(r'[{}]\[.+\]'.format(''.join(blackboardbolds.keys())), line)
                 if not search or line.replace(' ', '').startswith('#'):
                     new_lines.append(line + '\n')
                     continue
@@ -996,7 +1235,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                         break
                 expression = re.sub(' +', ' ', R_statement[2:-1].strip())
                 edited_line = []
-                for blackboard_bold_symbol_i in sets:
+                for blackboard_bold_symbol_i in blackboardbolds:
                     if blackboard_bold_symbol_i in expression:
                         # Nested blackboard bold expression found
                         lvl_indices = []
@@ -1006,7 +1245,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                         for c in line:
                             write_lvl = False
                             if c == '[':
-                                if c_before in sets:
+                                if c_before in blackboardbolds:
                                     lvl += 1
                                     bracket_types.append('constant expression')
                                     write_lvl = True
@@ -1043,7 +1282,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                 else:
                     # At least the first constant expression on this line
                     # is not nested. Place a nesting number of 0.
-                    line = re.sub('(' + '|'.join(sets) + r')\[', r'\g<1>0[', line, 1)
+                    line = re.sub('(' + '|'.join(blackboardbolds) + r')\[', r'\g<1>0[', line, 1)
                 new_lines.append(line + '\n')
             lines = new_lines
     # Remove the nest lvl on constant expressions at lvl 0
@@ -1061,10 +1300,10 @@ def constant_expressions(lines, no_optimization, first_call=True):
     new_lines = []
     for i, line in enumerate(lines):
         line = line.rstrip('\n')
-        search = re.search(r'[{}]([0-9]+)\[.+\]'.format(''.join(sets.keys())), line)
+        search = re.search(r'[{}]([0-9]+)\[.+\]'.format(''.join(blackboardbolds.keys())), line)
         if search and not line.replace(' ', '').startswith('#'):
             line, _ = re.subn(
-                r'[{}][0-9]+\['.format(''.join(sets.keys())),
+                r'[{}][0-9]+\['.format(''.join(blackboardbolds.keys())),
                 replace,
                 line,
             )
@@ -1360,7 +1599,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
             new_lines.append(line)
         lines = new_lines
     # Now do the actual work
-    for blackboard_bold_symbol, ctype in sets.items():
+    for blackboard_bold_symbol, ctype in blackboardbolds.items():
         # Find constant expressions using the ℝ[expression] syntax
         expressions = []
         expressions_cython = []
@@ -1668,7 +1907,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
             if i == linenr_unrecognized:
                 for e, expression_cython in enumerate(expressions_cython):
                     if declaration_linenrs[e] == -1:
-                        if not expression_cython in declarations_placed[fname]:
+                        if expression_cython not in declarations_placed[fname]:
                             if blackboard_bold_symbol in non_c_native:
                                 new_lines.append(
                                     f'cython.declare({expression_cython}={ctype})\n'
@@ -1701,7 +1940,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                         indentation += ' '*4
                     if declaration_placements[e] == 'above':
                         new_lines.pop()
-                    if not expressions_cython[e] in declarations_placed[fname]:
+                    if expressions_cython[e] not in declarations_placed[fname]:
                         if blackboard_bold_symbol in non_c_native:
                             new_lines.append(
                                 f'{indentation}cython.declare({expressions_cython[e]}={ctype})\n'
@@ -1741,6 +1980,14 @@ def constant_expressions(lines, no_optimization, first_call=True):
     if not all_lvls or all_lvls == {0}:
         return new_lines
     return constant_expressions(new_lines, no_optimization, first_call=False)
+blackboardbolds = {
+    '𝔹': 'bint',
+    '𝕆': 'object',
+    'ℝ': 'double',
+    '𝕊': 'str',
+    'ℤ': 'Py_ssize_t',
+}
+
 
 
 def loop_unswitching(lines, no_optimization):
@@ -2155,12 +2402,13 @@ def loop_unswitching(lines, no_optimization):
         while True:
             # Repeatedly apply the remove_* functions until all
             # occurrences of unnecessary if statements are gone.
-            lines_len_ori = -1
-            while len(lines) != lines_len_ori:
-                lines_len_ori = len(lines)
-                lines = remove_double_if    (lines)
-                lines = remove_impossible_if(lines)
-                lines = remove_falsy_if     (lines)
+            if not no_optimization:
+                lines_len_ori = -1
+                while len(lines) != lines_len_ori:
+                    lines_len_ori = len(lines)
+                    lines = remove_double_if    (lines)
+                    lines = remove_impossible_if(lines)
+                    lines = remove_falsy_if     (lines)
             nounswitching = False
             nounswitching_counter = 0
             skip = 0
@@ -2388,13 +2636,14 @@ def loop_unswitching(lines, no_optimization):
     # The lines have now been unswitched.
     # Repeatedly apply the remove_* functions until all
     # occurrences of unnecessary if statements are gone.
-    lines_len_ori = -1
-    while len(lines) != lines_len_ori:
-        lines_len_ori = len(lines)
-        lines = remove_double_if    (lines)
-        lines = remove_impossible_if(lines)
-        lines = remove_falsy_if     (lines)
-        lines = remove_empty_loop   (lines)
+    if not no_optimization:
+        lines_len_ori = -1
+        while len(lines) != lines_len_ori:
+            lines_len_ori = len(lines)
+            lines = remove_double_if    (lines)
+            lines = remove_impossible_if(lines)
+            lines = remove_falsy_if     (lines)
+            lines = remove_empty_loop   (lines)
     # Remove the cython.nounswitching decorator
     new_lines = []
     for line in lines:
@@ -2414,11 +2663,41 @@ def unicode2ASCII(lines, no_optimization):
 def remove_duplicate_declarations(lines, no_optimization):
     new_lines = []
     in_function = False
+    in_locals = False
     declarations_outer = {}
-    for line in lines:
+    declarations_locals = {}
+    for j, line in enumerate(lines):
+        # Get function variable declarations within cython.locals()
+        if line.startswith('@cython.locals('):
+            in_locals = True
+            locals_begin = j
+            declarations_locals = {}
+        if in_locals:
+            valid = False
+            try:
+                ast.parse(''.join(lines[locals_begin:j+1])[1:])
+                valid = True
+            except:
+                pass
+            if valid:
+                locals_str = ''.join([
+                    l.strip() for l in lines[locals_begin:j+1] if not l.lstrip().startswith('#')
+                ])
+                locals_str = locals_str[locals_str.index('(')+1:].strip(',')
+                locals_str = re.sub(r', *]', ']', locals_str)
+                locals_str = re.sub(r': *,', ':;', locals_str)
+                for s in locals_str.split(','):
+                    if '=' not in s:
+                        continue
+                    varname, vartype = s.replace(':;', ':,').split('=')
+                    varname = varname.strip()
+                    vartype = vartype.strip()
+                    declarations_locals[varname] = vartype
+                in_locals = False
         if line.startswith('def '):
             in_function = True
-            declarations_inner = {}
+            declarations_inner = declarations_locals
+            declarations_locals = {}
             first_linenr_of_function = len(new_lines) + 1
         elif line and line[0] not in ' #\n':
             in_function = False
@@ -2456,6 +2735,30 @@ def remove_duplicate_declarations(lines, no_optimization):
                     declarations[varname] = vartype
         else:
             new_lines.append(line)
+    return new_lines
+
+
+
+def remove_self_assignments(lines, no_optimization):
+    """This function removes lines like
+        a = a
+    Such statements ought to be harmless (and, if the type is known at
+    compile time, the C compiler will optimize it away).
+    However, when a is a memory view, Cython produces code with
+    improper reference counting, which is the real reason for the
+    existence of this function.
+    This Cython bug is documented here: https://github.com/cython/cython/issues/3827
+    """
+    new_lines = []
+    for line in lines:
+        match = re.search(r'^(.+)=(.+)$', line)
+        if match:
+            lhs = match.group(1).strip()
+            rhs = match.group(2).strip()
+            if lhs == rhs and lhs.isidentifier():
+                # Self-assignment found. Skip it.
+                continue
+        new_lines.append(line)
     return new_lines
 
 
@@ -3348,13 +3651,15 @@ if __name__ == '__main__':
             lines = cython_structs               (lines, no_optimization)
             lines = cimport_commons              (lines, no_optimization)
             lines = cimport_function             (lines, no_optimization)
-            lines = float_literals               (lines, no_optimization)
             lines = inline_iterators             (lines, no_optimization)
+            lines = remove_trvial_branching      (lines, no_optimization)
+            lines = float_literals               (lines, no_optimization)
             lines = constant_expressions         (lines, no_optimization)
             lines = unicode2ASCII                (lines, no_optimization)
             lines = loop_unswitching             (lines, no_optimization)
-            lines = remove_duplicate_declarations(lines, no_optimization)
             lines = cython_decorators            (lines, no_optimization)
+            lines = remove_duplicate_declarations(lines, no_optimization)
+            lines = remove_self_assignments      (lines, no_optimization)
             lines = __init__2__cinit__           (lines, no_optimization)
             lines = fix_addresses                (lines, no_optimization)
             lines = malloc_realloc               (lines, no_optimization)
@@ -3373,4 +3678,3 @@ if __name__ == '__main__':
         # Make the types file, containing the definitions of all custom
         # types implemented in the .pyx files.
         make_types(filename, no_optimization)  # filename == filename_types
-

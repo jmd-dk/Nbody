@@ -36,10 +36,12 @@ render2D_select = {
 
 # Numerical parameters
 boxsize = 5000*Mpc
-potential_gridsizes = {
-    'gravity': {
-        'p3m': 2*_size,
-        'pm' :   _size,
+potential_options = {
+    'gridsize': {
+        'gravity': {
+            'p3m': 2*_size,
+            'pm' :   _size,
+        },
     },
 }
 shortrange_params = {

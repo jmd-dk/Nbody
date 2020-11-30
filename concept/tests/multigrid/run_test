@@ -1,0 +1,247 @@
+#!/usr/bin/env bash
+
+# This script tests the upstream/global/downstream grid implementations of
+# CO𝘕CEPT through power spectra, 2D renders and full simulations,
+# involving multiple grids of different sizes.
+
+# Absolute path and name of the directory of this file
+this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+this_test="$(basename "${this_dir}")"
+
+# Set up error trapping
+ctrl_c(){
+    trap : 0
+    exit 2
+}
+abort(){
+    exit_code=$?
+    colorprint "An error occurred during ${this_test} test!" "red"
+    exit ${exit_code}
+}
+trap 'ctrl_c' SIGINT
+trap 'abort' EXIT
+set -e
+
+# Cleanup from last test run
+"${this_dir}/clean"
+
+
+
+############################################
+# Upstream/global (power spectrum) subtest #
+############################################
+# This subtests computes three power spectra from a snapshot using the
+# same upstream grid size, but using a global grid size smaller than,
+# equal to and greater than the upstream grid size. This should give
+# exactly the same power for all modes below the Nyquist frequency
+# for the smallest global grid size.
+subtest_dir="${this_dir}/upstream_global"
+size=80
+powerspec_global_list=($((size/4*3)) ${size} $((size/4*5)))
+# Generate standard particle initial conditions
+"${concept}"                                                         \
+    -n 4                                                             \
+    -p "${this_dir}/params"                                          \
+    -c "initial_conditions = {'species': 'matter', 'N': ${size}**3}" \
+    -c "output_times = {'snapshot': a_begin}"                        \
+    --local
+# Compute power spectra using the different global grid sizes
+mkdir -p "${subtest_dir}"
+for powerspec_global in ${powerspec_global_list[@]}; do
+    "${concept}"                                                        \
+        -u powerspec "${this_dir}/output"                               \
+        -n 4                                                            \
+        -p "${this_dir}/params"                                         \
+        -c "powerspec_options['global gridsize'] = ${powerspec_global}" \
+        --local
+    mv "${this_dir}/output/powerspec"*.png "${subtest_dir}/powerspec_${powerspec_global}.png"
+   mv "${this_dir}/output/powerspec"*     "${subtest_dir}/powerspec_${powerspec_global}"
+done
+mv "${this_dir}/output/"* "${subtest_dir}/snapshot.hdf5"
+
+
+
+###################################
+# Phase shift (2D render) subtest #
+###################################
+# This subtest produces three 2D renders from a snapshot containing
+# a fluid with a density following a 1D sine wave. The 2D renders uses
+# a global gridsize which is smaller than, equal to and greater than the
+# fluid gridsize. The sine wave should persist in all three 2D renders,
+# with no phase shift observed.
+subtest_dir="${this_dir}/phaseshift"
+size=24
+render2D_global_list=($((size/3)) ${size} $((size*3)))
+# Generate the sine wave fluid snapshot
+rm -rf "${this_dir}/output"
+"${concept}"                        \
+    -n 1                            \
+    -p "${this_dir}/params"         \
+    -m "${this_dir}/generate_IC.py" \
+    --pure-python                   \
+    --local
+mkdir -p "${subtest_dir}"
+mv "${this_dir}/output/"* "${subtest_dir}/sine.hdf5"
+# Compute 2D renders using the different global grid sizes
+for render2D_global in ${render2D_global_list[@]}; do
+    "${concept}"                                                      \
+        -n 4                                                          \
+        -p "${this_dir}/params"                                       \
+        -c "initial_conditions = '${subtest_dir}/sine.hdf5'"          \
+        -c "output_times = {'render2D': a_begin}"                     \
+        -c "render2D_options['global gridsize'] = ${render2D_global}" \
+        --local
+    mv "${this_dir}/output/render2D"*.png "${subtest_dir}/render2D_${render2D_global}.png"
+    mv "${this_dir}/output/render2D"*.hdf5 "${subtest_dir}/render2D_${render2D_global}.hdf5"
+done
+
+
+
+###################################################
+# Upstream/global/downstream (simulation) subtest #
+###################################################
+# This subtest carries out a matter-only simulation twice, using the
+# same and equal upstream and downstream potential grid sizes, but using
+# a global potential grid size either equal to or larger than the
+# upstream/downstram potential grid size. The two simulations should
+# evolve exactly the same.
+subtest_dir="${this_dir}/upstream_global_downstream"
+size=32
+potential_upstream_p3m=$((2*size))
+potential_downstream_p3m=$((2*size))
+potential_global_p3m_list=($((2*size)) $((3*size)))
+# Run simulation using different global potential grid size
+rm -rf "${this_dir}/output"
+mkdir -p "${subtest_dir}"
+for potential_global_p3m in ${potential_global_p3m_list[@]}; do
+    "${concept}"                                                                         \
+        -n 4                                                                             \
+        -p "${this_dir}/params"                                                          \
+        -c "initial_conditions = [                                                       \
+                {                                                                        \
+                    'species': 'matter',                                                 \
+                    'N'      : ${size}**3,                                               \
+                },                                                                       \
+            ]"                                                                           \
+        -c "output_times = {'powerspec': 5*a_begin}"                                     \
+        -c "potential_options['gridsize'] = {                                            \
+                'global': {                                                              \
+                    'gravity': {                                                         \
+                        'p3m': ${potential_global_p3m},                                  \
+                    },                                                                   \
+                },                                                                       \
+                'matter': {                                                              \
+                    'gravity': {                                                         \
+                        'p3m': (${potential_upstream_p3m}, ${potential_downstream_p3m}), \
+                    },                                                                   \
+                },                                                                       \
+            }"                                                                           \
+        -c "shortrange_params = {                                                        \
+                'gravity': {                                                             \
+                    'scale': '1.25*boxsize/${potential_global_p3m_list[0]}',             \
+                },                                                                       \
+            }"                                                                           \
+        --local
+    mv "${this_dir}/output/powerspec"*.png "${subtest_dir}/powerspec_${potential_global_p3m}.png"
+    mv "${this_dir}/output/powerspec"*     "${subtest_dir}/powerspec_${potential_global_p3m}"
+done
+
+
+
+############################################
+# Number of processes (simulation) subtest #
+############################################
+# This subtest carries out a matter plus neutrino simulation with
+# non-equal upstream/global/downstream grid sizes. This same simulation
+# is performed using several number of processes, which of course should
+# not affect the result.
+subtest_dir="${this_dir}/nprocs"
+nprocs_list=(1 2 4 7)
+size=28
+potential_upstream_p3m=$((2*size))
+potential_upstream_pm=$((3*size))
+potential_global_p3m=$((3*size))
+potential_global_pm=$((2*size))
+potential_downstream_p3m=$((1*size))
+potential_downstream_pm=$((4*size))
+output_upstream=$((2*size))
+output_global_matter=$((3*size))
+output_global_neutrinos=$((4*size))
+output_global_combination=$((5*size))
+# Run simulation using different number of processes
+rm -rf "${this_dir}/output"
+for n in ${nprocs_list[@]}; do
+    "${concept}"                                                                            \
+        -n ${n}                                                                             \
+        -p "${this_dir}/params"                                                             \
+        -c "initial_conditions = [                                                          \
+                {                                                                           \
+                    'species': 'matter',                                                    \
+                    'N'      : ${size}**3,                                                  \
+                },                                                                          \
+                {                                                                           \
+                    'species'          : 'neutrinos',                                       \
+                    'gridsize'         : ${size},                                           \
+                    'boltzmann order'  : 1,                                                 \
+                    'boltzmann closure': 'class',                                           \
+                },                                                                          \
+            ]"                                                                              \
+        -c "output_times = {'powerspec': 1.5*a_begin}"                                      \
+        -c "potential_options['gridsize'] = {                                               \
+                'global': {                                                                 \
+                    'gravity': {                                                            \
+                        'p3m': ${potential_global_p3m},                                     \
+                        'pm' : ${potential_global_pm},                                      \
+                    },                                                                      \
+                },                                                                          \
+                'matter': {                                                                 \
+                    'gravity': {                                                            \
+                        'p3m': (${potential_upstream_p3m}, ${potential_downstream_p3m}),    \
+                        'pm' : (${potential_upstream_pm} , ${potential_downstream_pm} ),    \
+                    },                                                                      \
+                },                                                                          \
+            }"                                                                              \
+        -c "shortrange_params = {                                                           \
+                'gravity': {                                                                \
+                    'scale': '1.25*boxsize/gridsize',                                       \
+                    'range': '3.2*scale',                                                   \
+                },                                                                          \
+            }"                                                                              \
+        -c "powerspec_options['upstream gridsize'] = {'matter': ${output_upstream}}"        \
+        -c "powerspec_options['global gridsize'] = {                                        \
+                'matter'               : ${output_global_matter},                           \
+                'neutrinos'            : ${output_global_neutrinos},                        \
+                ('matter', 'neutrinos'): ${output_global_combination},                      \
+            }"                                                                              \
+        -c "class_params = {                                                                \
+                'N_ur'                    : 0,                                              \
+                'N_ncdm'                  : 1,                                              \
+                'deg_ncdm'                : 3,                                              \
+                'm_ncdm'                  : 0.3/3,                                          \
+                'l_max_ncdm'              : 50,                                             \
+                'Number of momentum bins' : 25,                                             \
+                'Quadrature strategy'     : 2,                                              \
+                'ncdm_fluid_approximation': 3,                                              \
+                'evolver'                 : 0,                                              \
+           }"                                                                               \
+        -c "render2D_options['upstream gridsize'] = powerspec_options['upstream gridsize']" \
+        -c "render2D_options['global gridsize'  ] = powerspec_options['global gridsize'  ]" \
+        --local
+    mkdir -p "${subtest_dir}/${n}"
+    mv "${this_dir}/output/powerspec"* "${subtest_dir}/${n}/"
+done
+rm -rf "${this_dir}/output"
+
+
+
+# Analyze the outputs
+"${concept}"                    \
+    -n 1                        \
+    -p "${this_dir}/params"     \
+    -m "${this_dir}/analyze.py" \
+    --pure-python               \
+    --local
+
+# Test ran successfully. Deactivate traps.
+trap : 0
+

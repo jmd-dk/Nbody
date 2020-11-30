@@ -12,7 +12,6 @@ from snapshot import save
 gridsize = 64
 Vcell = (boxsize/gridsize)**3
 speed = boxsize/(10*units.Gyr)
-N = gridsize**3
 component = Component('test fluid', 'matter', gridsize=gridsize)
 ϱ = empty([gridsize]*3)
 for i in range(gridsize):

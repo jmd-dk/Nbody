@@ -34,9 +34,10 @@ cimport(
 )
 cimport(
     'from mesh import              '
-    '    deconvolve_interlace,     '
-    '    interpolate_grid_to_grid, '
+    '    domain_decompose,         '
+    '    fft,                      '
     '    interpolate_upstream,     '
+    '    resize_grid,              '
 )
 
 # Pure Python imports
@@ -424,6 +425,7 @@ def render2D(components, filename):
     key=str,
     selected=dict,
     specifications=dict,
+    terminal_resolution='Py_ssize_t',
 )
 def get_output_declarations(output_type, components, selections, options, Declaration):
     # Look up declarations in cache
@@ -470,6 +472,21 @@ def get_output_declarations(output_type, components, selections, options, Declar
             for key, option in options.items()
             if key not in {'upstream gridsize', 'global gridsize'}
         }
+        # If the terminal resolution is present but not set,
+        # assign it a value based on the grid size and terminal width.
+        if specifications.get('terminal_resolution') == -1:
+            # Set the terminal resolution equal to the gridsize,
+            # though no larger than the terminal width.
+            terminal_resolution = pairmin(gridsize, cast(terminal_width, 'Py_ssize_t'))
+            # As the terminal render is obtained through FFT's,
+            # the terminal resolution must be divisible by
+            # the number of processes and be even.
+            terminal_resolution = terminal_resolution//nprocs*nprocs
+            if terminal_resolution == 0:
+                terminal_resolution = nprocs
+            if terminal_resolution%2:
+                terminal_resolution *= 2
+            specifications['terminal_resolution'] = terminal_resolution
         # Instantiate declaration
         declaration = Declaration(
             components=component_combination,
@@ -562,7 +579,7 @@ projection_chunks['data'] = projection_chunks['image']
 # Create the Render2DDeclaration type
 fields = (
     'components', 'do_data', 'do_image', 'do_terminal_image', 'gridsize',
-    'terminal_resolution', 'interpolation', 'deconvolution', 'interlacing',
+    'terminal_resolution', 'interpolation', 'deconvolve', 'interlace',
     'axis', 'extent', 'colormap', 'enhance',
     'projections',
 )
@@ -577,29 +594,23 @@ Render2DDeclaration = collections.namedtuple(
     declaration=object,  # Render2DDeclaration
     # Locals
     axis=str,
-    buffer_number='Py_ssize_t',
     component='Component',
     components=list,
-    deconvolution='bint',
+    deconvolve='bint',
     extent=tuple,
     grid='double[:, :, ::1]',
-    grid_fluid='double[:, :, ::1]',
-    grid_fluid_ptr='double*',
-    grid_particles='double[:, :, ::1]',
-    grid_particles_ptr='double*',
     grid_terminal='double[:, :, ::1]',
-    grids=dict,
     gridsize='Py_ssize_t',
     gridsizes_upstream=list,
     i='Py_ssize_t',
-    index='Py_ssize_t',
-    interlacing='bint',
+    interlace='bint',
     interpolation='int',
     j='Py_ssize_t',
     key=str,
     projection='double[:, ::1]',
     projections=dict,
     row='Py_ssize_t',
+    slab='double[:, :, ::1]',
     termsize='Py_ssize_t',
     returns='void',
 )
@@ -609,41 +620,36 @@ def compute_render2D(declaration):
     gridsize      = declaration.gridsize
     termsize      = declaration.terminal_resolution
     interpolation = declaration.interpolation
-    deconvolution = declaration.deconvolution
-    interlacing   = declaration.interlacing
+    deconvolve    = declaration.deconvolve
+    interlace     = declaration.interlace
     axis          = declaration.axis
     extent        = declaration.extent
     projections   = declaration.projections
-    # Interpolate the components onto grids.
-    # A separate grid will be used for particles and fluids.
+    # Interpolate the components onto global Fourier slabs by first
+    # interpolating onto individual upstream grids, Fourier transforming
+    # these and adding them together.
     # We choose to interpolate the physical density ρ.
     gridsizes_upstream = [
         component.render2D_upstream_gridsize
         for component in components
     ]
-    grids = interpolate_upstream(
-        components, gridsizes_upstream, gridsize, 'ρ',
-        interpolation, interlacing,
-        do_ghost_communication=False,
+    slab = interpolate_upstream(
+        components, gridsizes_upstream, gridsize, 'ρ', interpolation,
+        deconvolve=deconvolve, interlace=interlace, output_space='Fourier',
     )
-    # Perform deconvolution and/or interlacing, if specified
-    deconvolve_interlace(
-        grids, interpolation*deconvolution, interlacing,
-        do_ghost_communication=False,
-    )
-    # Add particle and fluid contributions together
-    grid_particles = grids.get('particles')
-    grid_fluid     = grids.get('fluid')
-    if grid_particles is not None and grid_fluid is not None:
-        grid_particles_ptr = cython.address(grid_particles[:, :, :])
-        grid_fluid_ptr     = cython.address(grid_fluid    [:, :, :])
-        grid = grid_particles
-        for index in range(grid.shape[0]*grid.shape[1]*grid.shape[2]):
-            grid_particles_ptr[index] += grid_fluid_ptr[index]
-    elif grid_particles is not None:
-        grid = grid_particles
-    else:  # grid_fluid is not None
-        grid = grid_fluid
+    # If a terminal image is to be produced, construct a copy of the
+    # slab, resized appropriately. Obtain the result in real space.
+    if 'terminal_image' in projections:
+        grid_terminal = resize_grid(
+            slab, termsize,
+            input_space='Fourier', output_space='real',
+            output_grid_or_buffer_name='grid_terminal',
+            output_slab_or_buffer_name='slab_terminal',
+            inplace=False, do_ghost_communication=False,
+        )
+    # Transform the slab to real space
+    fft(slab, 'backward')
+    grid = domain_decompose(slab, 'grid_global', do_ghost_communication=False)
     # Get projected 2D grid for main 2D render data/image
     for key, projection in projections.items():
         if key in {'data', 'image'}:
@@ -652,10 +658,6 @@ def compute_render2D(declaration):
     # Get projected 2D grid for terminal render
     projection = projections.get('terminal_image')
     if projection is not None:
-        # First interpolate main grid onto new grid of proper size
-        buffer_number = 0
-        grid_terminal = interpolate_grid_to_grid(grid, buffer_number, termsize)
-        # Now do the projection
         project_render2D(grid_terminal, projection, axis, extent)
         # Since each monospaced character cell in the terminal is
         # rectangular with about double the height compared to the

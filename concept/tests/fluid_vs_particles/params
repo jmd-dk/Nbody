@@ -28,9 +28,11 @@ powerspec_select = {
 
 # Numerical parameters
 boxsize = 128*Mpc
-potential_gridsizes = {
-    'gravity': {
-        'pm': _size,
+potential_options = {
+    'gridsize': {
+        'gravity': {
+            'pm': _size,
+        },
     },
 }
 

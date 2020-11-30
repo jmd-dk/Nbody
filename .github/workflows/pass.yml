@@ -117,6 +117,11 @@ jobs:
         steps:
           - name: Pass
             run: exit 0
+    test_multigrid:
+        runs-on: [self-hosted, linux, light]
+        steps:
+          - name: Pass
+            run: exit 0
     test_fluid_drift_rigid_nohubble:
         runs-on: [self-hosted, linux, light]
         steps:

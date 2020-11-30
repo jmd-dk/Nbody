@@ -39,11 +39,11 @@ cimport(
     'from mesh import                         '
     '    domain_decompose,                    '
     '    fft,                                 '
+    '    fourier_loop,                        '
     '    get_fftw_slab,                       '
     '    interpolate_domaingrid_to_particles, '
     '    nullify_modes,                       '
     '    slab_decompose,                      '
-    '    slab_fourier_loop,                   '
 )
 
 
@@ -206,6 +206,8 @@ def random_general(distribution, size, a=0, b=0):
                 data[i] = prng_general.gaussian(a)
             elif distribution == 'rayleigh':
                 data[i] = prng_general.rayleigh(a)
+            else:
+                abort(f'random_general() got unknown distribution = "{distribution}"')
     if size == 1:
         return data[0]
     else:
@@ -2947,13 +2949,14 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     N_str=str,
     compound_variable='bint',
     cosmoresults_δ=object,  # CosmoResults
-    deconv='double',
+    deconv_order='int',
     dim='int',
     dim2='int',
     domain_start_i='Py_ssize_t',
     domain_start_j='Py_ssize_t',
     domain_start_k='Py_ssize_t',
     f_growth='double',
+    factor='double',
     fluid_index='Py_ssize_t',
     fluidscalar='FluidScalar',
     fluidvar=object,  # Tensor
@@ -2994,7 +2997,6 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     reuse_slab_structure='bint',
     slab='double[:, :, ::1]',
     slab_ptr='double*',
-    slabs=dict,
     sqrt_power='double',
     sqrt_power_common='double[::1]',
     slab_structure='double[:, :, ::1]',
@@ -3013,8 +3015,9 @@ k_safety_factor = 2*10**float(-k_str_n_decimals)
     Δmomⁱ='double*',
     Δmomʲ='double*',
     δ_min='double',
-    ψⁱ='double[:, :, ::1]',
+    θ='double',
     ςⁱⱼ_ptr='double*',
+    ψⁱ='double[:, :, ::1]',
     ϱ_bar='double',
     ϱ_ptr='double*',
     𝒫_ptr='double*',
@@ -3285,7 +3288,7 @@ def realize(
                     # Fourier normalization
                     *ℝ[boxsize**(-1.5)]
                 )
-            elif options['structure'] == 'nonlinear':
+            else:  # options['structure'] == 'nonlinear':
                 # Realize using ℱₓ⁻¹[T(k)/T_δϱ(k) K(k⃗) ℱₓ[δϱ(x⃗)]],
                 # with K(k⃗) capturing any tensor structure.
                 # The k⃗-independent part needed here is T(k)/T_δϱ(k),
@@ -3385,7 +3388,6 @@ def realize(
     # particles sit on top of the grid points.
     slab_ptr      = cython.address(slab          [:, :, :])
     structure_ptr = cython.address(slab_structure[:, :, :])
-    slabs = {'particles': slab}
     deconv_order = interpolation_order*𝔹[particle_shift or interpolation_order > 2]
     # Loop over all fluid scalars of the fluid variable
     fluidvar = component.fluidvars[fluid_index]
@@ -3409,8 +3411,8 @@ def realize(
         if tensor_rank > 1:
             index1 = multi_index[1]
         # Loop over the slab
-        for index, ki, kj, kk, deconv in slab_fourier_loop(
-            slabs, deconv_order=deconv_order,
+        for index, ki, kj, kk, factor, θ in fourier_loop(
+            gridsize, skip_origin=True, deconv_order=deconv_order,
         ):
             k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
             # The square root of the power at this |k⃗|, disregarding all
@@ -3418,12 +3420,10 @@ def realize(
             # non-linear structure).
             sqrt_power = sqrt_power_common[k2]
             # Apply deconvolution
-            with unswitch(3):
-                if deconv_order:
-                    sqrt_power *= deconv
+            sqrt_power *= factor
             # Populate slab according to the component
             # representation and tensor_rank.
-            with unswitch(3):
+            with unswitch(5):
                 if 𝔹[component.representation == 'particles']:
                     # We are realizing either the displacement field ψⁱ
                     # (for the positions) or the velocity field uⁱ (for
@@ -3454,32 +3454,30 @@ def realize(
                     ]*k_index0/k2
                     slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*(-structure_ptr[index + 1])
                     slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*(+structure_ptr[index    ])
-                else:  # component.representation == 'fluid'
-                    with unswitch(3):
-                        if tensor_rank == 0:
-                            # Realize δ or δ𝒫
-                            slab_ptr[index    ] = sqrt_power*structure_ptr[index    ]
-                            slab_ptr[index + 1] = sqrt_power*structure_ptr[index + 1]
-                        elif tensor_rank == 1:
-                            # Realize uⁱ.
-                            # For vectors we have a k factor of
-                            # K(k⃗) = -ikⁱ/k².
-                            k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
-                            k_factor = -(ℝ[boxsize/(2*π)]*k_index0)/k2
-                            slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*(-structure_ptr[index + 1])
-                            slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*(+structure_ptr[index    ])
-                        else:  # tensor_rank == 2
-                            # Realize ςⁱⱼ.
-                            # For rank 2 tensors we
-                            # have a k factor of
-                            # K(k⃗) = 3/2(δⁱⱼ/3 - kⁱkⱼ/k²).
-                            k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
-                            k_index1 = ℤ[ℤ[ℤ[𝔹[index1 == 1]*kj] or 𝔹[index1 == 0]*ki] or 𝔹[index1 == 2]*kk]
-                            k_factor = ℝ[0.5*(index0 == index1)] - (1.5*k_index0*k_index1)/k2
-                            slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*structure_ptr[index    ]
-                            slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*structure_ptr[index + 1]
+                elif tensor_rank == 0:  # and component.representation == 'fluid'
+                    # Realize δ or δ𝒫
+                    slab_ptr[index    ] = sqrt_power*structure_ptr[index    ]
+                    slab_ptr[index + 1] = sqrt_power*structure_ptr[index + 1]
+                elif tensor_rank == 1:  # and component.representation == 'fluid'
+                    # Realize uⁱ.
+                    # For vectors we have a k factor of
+                    # K(k⃗) = -ikⁱ/k².
+                    k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
+                    k_factor = -(ℝ[boxsize/(2*π)]*k_index0)/k2
+                    slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*(-structure_ptr[index + 1])
+                    slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*(+structure_ptr[index    ])
+                else:  # tensor_rank == 2 and component.representation == 'fluid'
+                    # Realize ςⁱⱼ.
+                    # For rank 2 tensors we
+                    # have a k factor of
+                    # K(k⃗) = 3/2(δⁱⱼ/3 - kⁱkⱼ/k²).
+                    k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
+                    k_index1 = ℤ[ℤ[ℤ[𝔹[index1 == 1]*kj] or 𝔹[index1 == 0]*ki] or 𝔹[index1 == 2]*kk]
+                    k_factor = ℝ[0.5*(index0 == index1)] - (1.5*k_index0*k_index1)/k2
+                    slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*structure_ptr[index    ]
+                    slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*structure_ptr[index + 1]
         # Ensure nullified Nyquist planes and origin
-        nullify_modes(slab, 'nyquist, dc')
+        nullify_modes(slab, 'nyquist, origin')
         # Fourier transform the slabs to coordinate space.
         # Now the slabs store the realized grid.
         fft(slab, 'backward')
@@ -3654,12 +3652,14 @@ slab_structure_infos = {}
     slab='double[:, :, ::1]',
     # Locals
     dcplane='double[:, :, ::1]',
-    dcplane_ji='double*',
-    dcplane_ji_conj='double*',
+    dcplane_ptr='double*',
     face='int',
     gridsize='Py_ssize_t',
     i='Py_ssize_t',
     i_conj='Py_ssize_t',
+    index='Py_ssize_t',
+    index_dcplane='Py_ssize_t',
+    index_dcplane_conj='Py_ssize_t',
     iterate='Py_ssize_t',
     j='Py_ssize_t',
     j_global='Py_ssize_t',
@@ -3683,7 +3683,7 @@ slab_structure_infos = {}
     prng='PseudoRandomNumberGenerator',
     r='double',
     shell='Py_ssize_t',
-    slab_jik='double*',
+    slab_ptr='double*',
     slab_size_i='Py_ssize_t',
     slab_size_j='Py_ssize_t',
     slab_size_k='Py_ssize_t',
@@ -3767,6 +3767,9 @@ def generate_primordial_noise(slab):
     # Instantiate pseudo-random number generator
     # using the same seed on all processes.
     prng = PseudoRandomNumberGenerator(random_seed)
+    # Extract pointers to the 3D slab and the (complex) 2D plane
+    slab_ptr = cython.address(slab[:, :, :])
+    dcplane_ptr = cython.address(dcplane[:, :, :])
     # Loop through all shells
     nyquist = gridsize//2
     for shell in range(1, nyquist):
@@ -3816,7 +3819,7 @@ def generate_primordial_noise(slab):
                         with unswitch:
                             if primordial_amplitude_fixed:
                                 r = 1
-                        θ = prng.uniform(0, ℝ[2*π])
+                        θ = prng.uniform(0, 2*π)
                         with unswitch:
                             if primordial_phase_shift:
                                 θ += primordial_phase_shift
@@ -3826,20 +3829,19 @@ def generate_primordial_noise(slab):
                         with unswitch(2):
                             if 0 <= j < slab_size_j:
                                 k = 2*kk
-                                slab_jik = cython.address(slab[j, i, k:])
-                                slab_jik[0] = noise_re
-                                slab_jik[1] = noise_im
+                                index = ℤ[(ℤ[j*slab_size_i] + i)*slab_size_k] + k
+                                slab_ptr[index    ] = noise_re
+                                slab_ptr[index + 1] = noise_im
                         # Populate the z DC plane
                         if kk == 0:
-                            dcplane_ji = cython.address(dcplane[j_global, i, :])
-                            dcplane_ji[0] = noise_re
-                            dcplane_ji[1] = noise_im
+                            index_dcplane = ℤ[(ℤ[j_global*gridsize] + i)*2]  # k = 0
+                            dcplane_ptr[index_dcplane    ] = noise_re
+                            dcplane_ptr[index_dcplane + 1] = noise_im
     # Enforce the complex conjugacy symmetry on the z DC plane of the
     # slabs. We do this by looping over half of the DC plane,
     # specifically -nyquist < ki ≤ 0, -nyquist < kj < nyquist, with
     # points ki = 0, 0 ≤ kj skipped. The inverted points at (-ki, -kj)
     # from the DC plane are conjugated and copied onto the slab.
-    k = 0
     ki_start          = -nyquist + 1
     kj_start, kj_stop = -nyquist + 1, nyquist
     for kj in range(kj_start, kj_stop):
@@ -3854,10 +3856,10 @@ def generate_primordial_noise(slab):
             i      =  ki + gridsize*( ki < 0)
             i_conj = -ki + gridsize*(-ki < 0)
             # Enforce conjugate symmetry for the slab
-            slab_jik        = cython.address(slab   [j            , i     , k:])
-            dcplane_ji_conj = cython.address(dcplane[j_global_conj, i_conj,  :])
-            slab_jik[0] = +dcplane_ji_conj[0]
-            slab_jik[1] = -dcplane_ji_conj[1]
+            index = (ℤ[j*slab_size_i] + i)*slab_size_k  # k = 0
+            index_dcplane_conj = (ℤ[j_global_conj*gridsize] + i_conj)*2  # k = 0
+            slab_ptr[index    ] = +dcplane_ptr[index_dcplane_conj    ]
+            slab_ptr[index + 1] = -dcplane_ptr[index_dcplane_conj + 1]
     masterprint('done')
 
 # Function returning the linear power spectrum of a given component

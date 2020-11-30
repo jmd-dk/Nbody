@@ -12,7 +12,7 @@ boxsize = 512*Mpc
 powerspec_options = {
     'gridsize'     : 256,
     'interpolation': 'PCS',
-    'interlacing'  : True,
+    'interlace'    : True,
 }
 R_tophat = 8*Mpc  # Not Mpc/h as Hubble expansion is disabled
 

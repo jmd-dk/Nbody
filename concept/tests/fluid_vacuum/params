@@ -19,9 +19,11 @@ render2D_select = {'all': {'terminal image': True}}
 
 # Numerical parameters
 boxsize = 64*Mpc
-potential_gridsizes = {
-    'gravity': {
-        'pm': _size,
+potential_options = {
+    'gridsize': {
+        'gravity': {
+            'pm': _size,
+        },
     },
 }
 
@@ -36,11 +38,9 @@ select_approximations    = {'matter': {'P = wρ': True}}
 
 # Graphics
 render2D_options = {
-    'gridsize'           : _size,
-    'terminal resolution': _size,
-    'axis'               : 'z',
-    'colormap'           : 'inferno',
-    'enhance'            : False,
+    'gridsize': _size,
+    'axis'    : 'z',
+    'enhance' : False,
 }
 
 # Debugging options

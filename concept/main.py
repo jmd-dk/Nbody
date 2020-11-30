@@ -309,7 +309,7 @@ def timeloop():
                 # the long-range kicks, so that various time averages
                 # will be over the kick step.
                 universals.t += 0.5*Δt
-                if universals.t + Δt_reltol*Δt + ℝ[2*machine_ϵ] > sync_time:
+                if universals.t + Δt_reltol*Δt + 2*machine_ϵ > sync_time:
                     universals.t = sync_time
                 universals.a = scale_factor(universals.t)
                 # Apply full kick to fluids, full long-range kick to
@@ -318,7 +318,7 @@ def timeloop():
                 # Set universal time and scale factor to match end of
                 # this base time step (the location of drifts).
                 universals.t += 0.5*Δt
-                if universals.t + Δt_reltol*Δt + ℝ[2*machine_ϵ] > sync_time:
+                if universals.t + Δt_reltol*Δt + 2*machine_ϵ > sync_time:
                     universals.t = sync_time
                 universals.a = scale_factor(universals.t)
                 # Check whether we are at sync time
@@ -1028,7 +1028,7 @@ def kick_long(components, Δt, sync_time, step_type):
     # or whole ('full') time step.
     t_start = universals.t
     t_end = t_start + (Δt/2 if step_type == 'init' else Δt)
-    if t_end + Δt_reltol*Δt + ℝ[2*machine_ϵ] > sync_time:
+    if t_end + Δt_reltol*Δt + 2*machine_ϵ > sync_time:
         t_end = sync_time
     if t_start == t_end:
         return
@@ -1199,7 +1199,7 @@ def drift_fluids(components, Δt, sync_time):
     # Get time step integrals over entire time step
     t_start = universals.t
     t_end = t_start + Δt
-    if t_end + Δt_reltol*Δt + ℝ[2*machine_ϵ] > sync_time:
+    if t_end + Δt_reltol*Δt + 2*machine_ϵ > sync_time:
         t_end = sync_time
     if t_start == t_end:
         return
@@ -1307,7 +1307,7 @@ def driftkick_short(components, Δt, sync_time):
         # Get time step integrals over entire time step
         t_start = universals.t
         t_end = t_start + Δt
-        if t_end + Δt_reltol*Δt + ℝ[2*machine_ϵ] > sync_time:
+        if t_end + Δt_reltol*Δt + 2*machine_ϵ > sync_time:
             t_end = sync_time
         if t_start == t_end:
             return
@@ -1376,10 +1376,10 @@ def driftkick_short(components, Δt, sync_time):
         # for which we need the time step integrals.
         index_end = 2*driftkick_index + 2
         t_start = universals.t + Δt*(float(index_start)/ℤ[2**N_rungs])
-        if t_start + ℝ[Δt_reltol*Δt + ℝ[2*machine_ϵ]] > sync_time:
+        if t_start + ℝ[Δt_reltol*Δt + 2*machine_ϵ] > sync_time:
             t_start = sync_time
         t_end = universals.t + Δt*(float(index_end)/ℤ[2**N_rungs])
-        if t_end + ℝ[Δt_reltol*Δt + ℝ[2*machine_ϵ]] > sync_time:
+        if t_end + ℝ[Δt_reltol*Δt + 2*machine_ϵ] > sync_time:
             t_end = sync_time
         # If the time step size is zero, meaning that we are already
         # at a sync time regarding the drifts, we skip the drift but
@@ -1418,10 +1418,10 @@ def driftkick_short(components, Δt, sync_time):
             )
             index_end = index_start + ℤ[2**(N_rungs - rung_index)]
             t_start = universals.t + Δt*(float(index_start)/ℤ[2**N_rungs])
-            if t_start + ℝ[Δt_reltol*Δt + ℝ[2*machine_ϵ]] > sync_time:
+            if t_start + ℝ[Δt_reltol*Δt + 2*machine_ϵ] > sync_time:
                 t_start = sync_time
             t_end = universals.t + Δt*(float(index_end)/ℤ[2**N_rungs])
-            if t_end + ℝ[Δt_reltol*Δt + ℝ[2*machine_ϵ]] > sync_time:
+            if t_end + ℝ[Δt_reltol*Δt + 2*machine_ϵ] > sync_time:
                 t_end = sync_time
             ᔑdt_rung = get_time_step_integrals(t_start, t_end, particle_components)
             for integrand, integral in ᔑdt_rung.items():
@@ -1437,7 +1437,7 @@ def driftkick_short(components, Δt, sync_time):
             ):
                 index_end = index_start + ℤ[2**(N_rungs - 1 - rung_index)]
                 t_end = universals.t + Δt*(float(index_end)/ℤ[2**N_rungs])
-                if t_end + ℝ[Δt_reltol*Δt + ℝ[2*machine_ϵ]] > sync_time:
+                if t_end + ℝ[Δt_reltol*Δt + 2*machine_ϵ] > sync_time:
                     t_end = sync_time
                 ᔑdt_rung = get_time_step_integrals(t_start, t_end, particle_components)
                 for integrand, integral in ᔑdt_rung.items():
@@ -1450,7 +1450,7 @@ def driftkick_short(components, Δt, sync_time):
             if rung_index < ℤ[N_rungs - 1]:
                 index_end = index_start + 3*2**(ℤ[N_rungs - 2] - rung_index)
                 t_end = universals.t + Δt*(float(index_end)/ℤ[2**N_rungs])
-                if t_end + ℝ[Δt_reltol*Δt + ℝ[2*machine_ϵ]] > sync_time:
+                if t_end + ℝ[Δt_reltol*Δt + 2*machine_ϵ] > sync_time:
                     t_end = sync_time
                 ᔑdt_rung = get_time_step_integrals(t_start, t_end, particle_components)
                 for integrand, integral in ᔑdt_rung.items():
@@ -2053,7 +2053,7 @@ def prepare_for_output(components=None):
             for output_kind, output_time in output_times[time_param].items():
                 # Do not create directory if this kind of output
                 # should never be dumped to the disk.
-                if not output_time or not output_kind in output_dirs:
+                if not output_time or output_kind not in output_dirs:
                     continue
                 # Create directory
                 output_dir = output_dirs[output_kind]
@@ -2078,7 +2078,7 @@ def prepare_for_output(components=None):
         for output_kind, output_time in output_times_full[time_param].items():
             # This kind of output does not matter if
             # it should never be dumped to the disk.
-            if not output_time or not output_kind in output_dirs:
+            if not output_time or output_kind not in output_dirs:
                 continue
             # Compute number of digits
             times = sorted(set((at_begin, ) + output_time))

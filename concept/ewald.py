@@ -101,16 +101,16 @@ def summation(x, y, z):
                 force_z += dist_z*scalarpart
     # The long range (Fourier space) sum
     for sumindex_x in range(h_lower, h_upper):
-        kx = ℝ[2*π]*sumindex_x
+        kx = 2*π*sumindex_x
         for sumindex_y in range(h_lower, h_upper):
-            ky = ℝ[2*π]*sumindex_y
+            ky = 2*π*sumindex_y
             for sumindex_z in range(h_lower, h_upper):
                 h2 = ℤ[ℤ[sumindex_x**2] + sumindex_y**2] + sumindex_z**2
                 if h2 > maxh2 or h2 == 0:
                     continue
-                kz = ℝ[2*π]*sumindex_z
+                kz = 2*π*sumindex_z
                 k2 = ℝ[ℝ[kx**2] + ky**2] + kz**2
-                scalarpart = ℝ[-4*π]/k2*exp(-k2*ℝ[rs**2])*sin(kx*x + ky*y + kz*z)
+                scalarpart = -4*π/k2*exp(-k2*ℝ[rs**2])*sin(kx*x + ky*y + kz*z)
                 force_x += kx*scalarpart
                 force_y += ky*scalarpart
                 force_z += kz*scalarpart

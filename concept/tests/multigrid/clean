@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# This script does cleanup after a test
+this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+(cd "${this_dir}" && rm -rf    \
+    nprocs                     \
+    output                     \
+    phaseshift                 \
+    upstream_global            \
+    upstream_global_downstream \
+)
