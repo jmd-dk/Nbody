@@ -63,10 +63,10 @@ def load_results(subtest):
                                     for k in range(N_lin):
                                         z = (0.5 + k)*distance
                                         lattice_sites.append((x, y, z))
-                            lattice_sites = asarray(lattice_sites)  
-                        posx = empty(N_lin**3, dtype=C2np['double'])
-                        posy = empty(N_lin**3, dtype=C2np['double'])
-                        posz = empty(N_lin**3, dtype=C2np['double'])
+                            lattice_sites = asarray(lattice_sites)
+                        posx = empty(N_lin**3, dtype=float)
+                        posy = empty(N_lin**3, dtype=float)
+                        posz = empty(N_lin**3, dtype=float)
                         indices_all = []
                     for component in snapshot.components:
                         if component.N == 0:
@@ -80,7 +80,7 @@ def load_results(subtest):
                             indices = []
                             for x, y, z in zip(component.posx, component.posy, component.posz):
                                 orders = np.argsort(
-                                    np.sum((asarray((x, y, z)) - lattice_sites)**2, 1)
+                                    sum((asarray((x, y, z)) - lattice_sites)**2, 1)
                                 )
                                 for order in orders:
                                     if order not in indices_all:
@@ -171,9 +171,9 @@ for ncomponents in ncomponents_values[subtest]:
                     posx_0, posy_0, posz_0 = posx, posy, posz
                     continue
                 if not (
-                        isclose(max(np.abs(posx - posx_0)), 0, rel_tol=0, abs_tol=abs_tol)
-                    and isclose(max(np.abs(posy - posy_0)), 0, rel_tol=0, abs_tol=abs_tol)
-                    and isclose(max(np.abs(posz - posz_0)), 0, rel_tol=0, abs_tol=abs_tol)
+                        isclose(max(abs(posx - posx_0)), 0, rel_tol=0, abs_tol=abs_tol)
+                    and isclose(max(abs(posy - posy_0)), 0, rel_tol=0, abs_tol=abs_tol)
+                    and isclose(max(abs(posz - posz_0)), 0, rel_tol=0, abs_tol=abs_tol)
                 ):
                     abort(
                         f'Non-trivial particle evolution resulted from homogeneous and static '

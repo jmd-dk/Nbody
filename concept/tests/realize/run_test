@@ -5,7 +5,7 @@
 # components are tested.
 
 # Number of processes to use
-nprocs_list="1 2 4 8"
+nprocs_list=(1 2 4 8)
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"

@@ -27,7 +27,7 @@ for fname in sorted(glob(this_dir + '/output/powerspec_a=*')):
 # at a_begin.
 rel_tol = 0.1
 index = np.where(
-    np.abs(spectra[a_begin]['P_sim']/spectra[a_begin]['P_lin'] - 1) > rel_tol
+    abs(spectra[a_begin]['P_sim']/spectra[a_begin]['P_lin'] - 1) > rel_tol
 )[0][0]
 index = pairmax(2, np.argmin((0.5*k[index] - k)**2))
 k = k[:index]
@@ -37,8 +37,8 @@ for spectrum in spectra.values():
 
 # Plot the relative error between the simulation and linear power spectrum
 # at the beginning and end.
-rel_err_begin = np.abs(spectra[a_begin]['P_sim']/spectra[a_begin]['P_lin'] - 1)
-rel_err_end   = np.abs(spectra[1      ]['P_sim']/spectra[1      ]['P_lin'] - 1)
+rel_err_begin = abs(spectra[a_begin]['P_sim']/spectra[a_begin]['P_lin'] - 1)
+rel_err_end   = abs(spectra[1      ]['P_sim']/spectra[1      ]['P_lin'] - 1)
 plt.semilogx(k, 100*rel_err_begin, label=f'$a = {a_begin}$')
 plt.semilogx(k, 100*rel_err_end,   label=f'$a = 1$')
 plt.xlabel(rf'$k\, [\mathrm{{{unit_length}}}^{{-1}}]$')

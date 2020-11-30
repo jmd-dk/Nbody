@@ -97,7 +97,7 @@ for ϱ_fluid, ϱ_particles, t in zip(ϱ['fluid simulations'], ϱ['particles simu
     abs_tol = rel_tol*np.std(ϱ_particles)
     slope_left  = ϱ_particles - np.roll(ϱ_particles, -1)
     slope_right = np.roll(ϱ_particles, +1) - ϱ_particles
-    discontinuities = np.abs(slope_right - slope_left)
+    discontinuities = abs(slope_right - slope_left)
     discontinuities = [max(d) for d in zip(*[np.roll(discontinuities, r) for r in range(-3, 4)])]
     if not all(isclose(ϱ_fluid_i, ϱ_particles_i,
                        rel_tol=0,

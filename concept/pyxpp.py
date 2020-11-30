@@ -306,8 +306,8 @@ def remove_functions(lines, no_optimization):
 
 def walrus(lines, no_optimization):
     """Remove this function once Python 3.8 assignment expressions get
-    implemented in Cython.
-    https://github.com/cython/cython/pull/3691
+    implemented in Cython. See
+      https://github.com/cython/cython/pull/3691
     """
     new_lines = []
     for line in lines:
@@ -2747,7 +2747,8 @@ def remove_self_assignments(lines, no_optimization):
     However, when a is a memory view, Cython produces code with
     improper reference counting, which is the real reason for the
     existence of this function.
-    This Cython bug is documented here: https://github.com/cython/cython/issues/3827
+    This Cython bug is documented here:
+      https://github.com/cython/cython/issues/3827
     """
     new_lines = []
     for line in lines:

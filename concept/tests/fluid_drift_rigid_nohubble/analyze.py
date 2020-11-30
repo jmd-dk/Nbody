@@ -38,9 +38,9 @@ x = [boxsize*i/gridsize for i in range(gridsize)]
 ϱ_snapshot = []
 phases = [-t/(10*units.Gyr)*2*π for t in times]
 for ax_i, fluid, t, phase in zip(ax, fluids, times, phases):
-    ϱ_i = asarray([2 + np.sin(2*π*i/gridsize + phase) for i in range(gridsize)])  # Unitless
-    ϱ_i /= sum(ϱ_i)                                                               # Normalize
-    ϱ_i *= ρ_mbar*gridsize                                                        # Apply units
+    ϱ_i = asarray([2 + sin(2*π*i/gridsize + phase) for i in range(gridsize)])  # Unitless
+    ϱ_i /= sum(ϱ_i)                                                            # Normalize
+    ϱ_i *= ρ_mbar*gridsize                                                     # Apply units
     ϱ.append(ϱ_i)
     ϱ_snapshot.append(fluid.ϱ.grid_noghosts[:gridsize, 0, 0])
     ax_i.plot(x, ϱ[-1], '-', label='Analytical solution')

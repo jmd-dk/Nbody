@@ -64,19 +64,19 @@ plt.legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()
 plt.savefig(fig_file)
 
-# There should be no variance on the x positions.
+# There should be no variance on the x positions
 reltol = 1e-9
-if np.max(x0_std_gadget) > reltol or np.max(x1_std_gadget) > reltol:
+if max(x0_std_gadget) > reltol or max(x1_std_gadget) > reltol:
     abort('Unequal x-positions for the 2*4 particles in the GADGET snapshots.\n'
           'It is no good to compare the CO𝘕CEPT results to these.')
-if np.max(x0_std) > reltol or np.max(x1_std) > reltol:
+if max(x0_std) > reltol or max(x1_std) > reltol:
     abort('Unequal x-positions for the 2*4 particles in the snapshots.\n'
           'The symmetric initial conditions has produced nonsymmetrical results!')
 
 # Printout error message for unsuccessful test
 reltol = 1e-2
-if (   max(np.abs(np.array(x0)/np.array(x0_gadget) - 1)) > reltol
-    or max(np.abs(np.array(x1)/np.array(x1_gadget) - 1)) > reltol):
+if (   max(abs(asarray(x0)/asarray(x0_gadget) - 1)) > reltol
+    or max(abs(asarray(x1)/asarray(x1_gadget) - 1)) > reltol):
     abort('The results from CO𝘕CEPT disagree with those from GADGET.\n'
           'See "{}" for a visualization.'.format(fig_file))
 

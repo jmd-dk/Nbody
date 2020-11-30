@@ -16,7 +16,7 @@ output_bases = {
 }
 _T = 1*Gyr  # Collision time for spherical collapse
 output_times = {
-    'snapshot': np.sqrt(np.linspace(t_begin**2, (t_begin + _T)**2, 5)),
+    'snapshot': sqrt(linspace(t_begin**2, (t_begin + _T)**2, 5)),
     'render2D': ...,
 }
 _key = tuple([f'component{n}' for n in range(_ncomponents)])

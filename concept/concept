@@ -1489,16 +1489,16 @@ colorprint                                                                      
     \"Running \${esc_concept} job \${jobid}\${pure_python_msg} remotely on \$(hostname -f)\" \\
     \"yellow\"                                                                               \\
     > \"\${logs_dir}/\${jobid}\"
-echo \"Entry point:    \\\\\"\${main_rel}\\\\\"\" >> \"\${logs_dir}/\${jobid}\"
+echo \"Entry point:     \\\\\"\${main_rel}\\\\\"\" >> \"\${logs_dir}/\${jobid}\"
 if [ \"\${params_rel}\" == \"None\" ]; then
-    echo \"Parameter file: \${params_rel}\" >> \"\${logs_dir}/\${jobid}\"
+    echo \"Parameter file:  \${params_rel}\" >> \"\${logs_dir}/\${jobid}\"
 else
-    echo \"Parameter file: \\\\\"\${params_rel}\\\\\"\${params_cp_info}\" \
+    echo \"Parameter file:  \\\\\"\${params_rel}\\\\\"\${params_cp_info}\" \
           >> \"\${logs_dir}/\${jobid}\"
 fi
-echo \"Log file:       \\\\\"\${logs_dir_rel}/\${jobid}\\\\\"\" >> \"\${logs_dir}/\${jobid}\"
+echo \"Log file:        \\\\\"\${logs_dir_rel}/\${jobid}\\\\\"\" >> \"\${logs_dir}/\${jobid}\"
 if [ -n \"\${memory_display}\" ]; then
-    echo \"Memory:         \${memory_display}\" >> \"\${logs_dir}/\${jobid}\"
+    echo \"Memory:          \${memory_display}\" >> \"\${logs_dir}/\${jobid}\"
 fi
 
 # Prepare Python options
@@ -1637,14 +1637,14 @@ print(f'{jobid:.0f}')
     echo
     pure_python_msg=""
     [ "${pure_python}" == "True" ] && pure_python_msg=" in pure Python mode"
-    colorprint "Running ${esc_concept}${pure_python_msg}" "yellow" | tee    "${logs_dir}/${jobid}"
-    echo "Entry point:    \"${main_rel}\""                         | tee -a "${logs_dir}/${jobid}"
+    colorprint "Running ${esc_concept}${pure_python_msg}" "yellow"  | tee    "${logs_dir}/${jobid}"
+    echo "Entry point:     \"${main_rel}\""                         | tee -a "${logs_dir}/${jobid}"
     if [ "${params_rel}" == "None" ]; then
-        echo "Parameter file: ${params_rel}"                       | tee -a "${logs_dir}/${jobid}"
+        echo "Parameter file:  ${params_rel}"                       | tee -a "${logs_dir}/${jobid}"
     else
-        echo "Parameter file: \"${params_rel}\"${params_cp_info}"  | tee -a "${logs_dir}/${jobid}"
+        echo "Parameter file:  \"${params_rel}\"${params_cp_info}"  | tee -a "${logs_dir}/${jobid}"
     fi
-    echo "Log file:       \"${logs_dir_rel}/${jobid}\""            | tee -a "${logs_dir}/${jobid}"
+    echo "Log file:        \"${logs_dir_rel}/${jobid}\""            | tee -a "${logs_dir}/${jobid}"
     # Prepare Python options
     if [ "${main_as_command}" == "yes" ]; then
         # Run main as Python command

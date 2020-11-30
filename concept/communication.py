@@ -633,8 +633,10 @@ def cutout_domains(n, basecall=True):
     if basecall:
         N_primes = len(prime_factors)
         if N_primes < 4:
-            return np.array(sorted(prime_factors + [1]*(3 - N_primes), reverse=True),
-                            dtype=C2np['int'])
+            return asarray(
+                sorted(prime_factors + [1]*(3 - N_primes), reverse=True),
+                dtype=C2np['int'],
+            )
         else:
             len_prime_factors = len(prime_factors)
             while len_prime_factors > 3:
@@ -642,8 +644,11 @@ def cutout_domains(n, basecall=True):
                 prime_factors[len_prime_factors - 2] *= prime_factors[len_prime_factors - 1]
                 prime_factors.pop()
                 len_prime_factors -= 1
-            return np.array(sorted(prime_factors, reverse=True), dtype=C2np['int'])
-    return np.array(prime_factors, dtype=C2np['int'])
+            return asarray(
+                sorted(prime_factors, reverse=True),
+                dtype=C2np['int'],
+            )
+    return asarray(prime_factors, dtype=C2np['int'])
 
 # This function takes coordinates as arguments and returns the rank of
 # the process that governs the domain in which the coordinates reside.

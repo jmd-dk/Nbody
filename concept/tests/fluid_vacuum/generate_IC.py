@@ -33,9 +33,9 @@ N = Nx*Ny*Nz
 mass = ρ_mbar*boxsize**3/N
 mass_unitless_tot = ᔑdxϱ(0, boxsize)
 mass_unitless = mass_unitless_tot/Nx
-posx = zeros(N)
-posy = zeros(N)
-posz = zeros(N)
+posx = zeros(N, dtype=float)
+posy = zeros(N, dtype=float)
+posz = zeros(N, dtype=float)
 momx = -ones(N)*mass*boxsize/(60*units.Gyr)
 momy =  ones(N)*mass*boxsize/(60*units.Gyr)*random_uniform(-1, 1)
 momz =  ones(N)*mass*boxsize/(60*units.Gyr)*random_uniform(-1, 1)

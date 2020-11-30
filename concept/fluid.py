@@ -549,8 +549,6 @@ def kurganov_tadmor_flux(q_interface, f_interface, v_interface):
     )
     # Return the total flux through the cell
     return flux
-    # LOOK AT https://pdfs.semanticscholar.org/bb8d/6924c298d748e69eacf6db85c94ba6ff416c.pdf
-    # for a better numerical flux!
 
 # Function which should be called at the end of each Runge-Kutta step
 @cython.header(

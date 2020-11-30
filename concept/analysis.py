@@ -1369,12 +1369,13 @@ def measure(component, quantity, communicate=True):
                 # Maximum discontinuity (difference between forward and
                 # backward difference) normalized accoring to
                 # the largest slope.
-                Δdiff_max_normalized_list.append(np.array([Δdiff_max[dim]/diff_max[dim]
-                                                           if Δdiff_max[dim] > 0 else 0
-                                                           for dim in range(3)
-                                                           ], dtype=C2np['double'],
-                                                          )
-                                                 )
+                Δdiff_max_normalized_list.append(asarray(
+                    [
+                        Δdiff_max[dim]/diff_max[dim] if Δdiff_max[dim] > 0 else 0
+                        for dim in range(3)
+                    ],
+                    dtype=C2np['double'],
+                ))
         return names, Δdiff_max_list, Δdiff_max_normalized_list
     elif master:
         abort(

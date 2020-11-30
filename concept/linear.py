@@ -331,7 +331,7 @@ class CosmoResults:
                 tuple(sorted({str(key).replace(' ', ''): str(val).replace(' ', '').lower()
                     for key, val in self.params.items()}.items()))
                 + (class__VERSION_, class__ARGUMENT_LENGTH_MAX_, class_a_min)
-            ).encode()).hexdigest()[:sha_length]
+            ).encode('utf-8')).hexdigest()[:sha_length]
             self.filename = f'{paths["reusables_dir"]}/class/{self.id}.hdf5'
         # Message that gets printed if and when CLASS is called
         self.class_call_reason = class_call_reason
@@ -933,7 +933,7 @@ class CosmoResults:
         and so γ also gets units of [length²time⁻²]. Note that H_T is
         some times defined to have units of [length²]. The H_T_prime
         from CLASS follows the unitless convention of
-        https://arxiv.org/pdf/1708.07769.pdf
+          https://arxiv.org/abs/1708.07769
         We choose to compute k²γ, not γ by itself.
         Using ʹ = d/dτ = a*d/dt = a²H(a)*d/da, we have
         k²γ(a) = -a*H(a)(a*∂ₐH_Tʹ(a) + H_Tʹ(a)) + k²(ϕ(a) - ψ(a))
@@ -1016,7 +1016,7 @@ class CosmoResults:
         and so γ_lapse gets units of [length²time⁻²]. Note that H_T is
         some times defined to have units of [length²]. The H_T_prime
         from CLASS follows the unitless convention of
-        https://arxiv.org/pdf/1708.07769.pdf
+          https://arxiv.org/abs/1708.07769
         Using ʹ = d/dτ = a*d/dt = a²H(a)*d/da, we have
         k²γ_lapse(a) = -a/3*(a*H(a)*∂ₐH_Tʹ(a) + (H(a) - Ḣ(a)/H(a))*H_Tʹ(a))
         with ˙ = ∂ₜ. The δρ(a) perturbation is now given by
@@ -1581,7 +1581,6 @@ class TransferFunction:
         k_max_candidate='double',
         key=str,
         largest_trusted_k='Py_ssize_t',
-        largest_trusted_k_begin_index='Py_ssize_t',
         missing_perturbations_warning=str,
         n_outliers='Py_ssize_t',
         other_rank='int',
@@ -1600,7 +1599,6 @@ class TransferFunction:
         perturbations_available=dict,
         perturbations_detrended='double[::1]',
         perturbations_detrended_largest_trusted_k=object,  # np.ndarray of dtype object
-        perturbations_largest_trusted_k=object,  # np.ndarray
         rank_largest_trusted_k='int',
         size='Py_ssize_t',
         spline='Spline',
@@ -1743,7 +1741,7 @@ class TransferFunction:
                     else:
                         perturbation_values_arr += weights*class_units*perturbation
             if isinstance(perturbation_values_arr, int):
-                perturbation_values = np.array((), dtype=C2np['double'])
+                perturbation_values = asarray((), dtype=C2np['double'])
             else:
                 perturbation_values = perturbation_values_arr
             # Warn or abort on missing perturbations.
@@ -3414,7 +3412,7 @@ def realize(
         for index, ki, kj, kk, factor, θ in fourier_loop(
             gridsize, skip_origin=True, deconv_order=deconv_order,
         ):
-            k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
+            k2 = ℤ[ℤ[ℤ[kj**2] + ki**2] + kk**2]
             # The square root of the power at this |k⃗|, disregarding all
             # k⃗-dependent contributions (from the k factor and the
             # non-linear structure).

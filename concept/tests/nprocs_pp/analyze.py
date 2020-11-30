@@ -32,8 +32,8 @@ masterprint('Analyzing {} data ...'.format(this_test))
 # find the corresponding ID's in the snapshots and order these
 # particles accordingly.
 N = components[1][0].N
-D2 = zeros(N)
-ID = zeros(N, dtype='int')
+D2 = zeros(N, dtype=float)
+ID = zeros(N, dtype=int)
 for i in range(N_snapshots):
     x = components[1][i].posx
     y = components[1][i].posy
@@ -75,25 +75,30 @@ for i in range(N_snapshots):
     y = {n: components[n][i].posy for n in nprocs_list}
     z = {n: components[n][i].posz for n in nprocs_list}
     for n in nprocs_list[1:]:
-        dist[n].append(sqrt(np.array([min([  (x[1][j] - x[n][j] + xsgn*boxsize)**2
-                                           + (y[1][j] - y[n][j] + ysgn*boxsize)**2
-                                           + (z[1][j] - z[n][j] + zsgn*boxsize)**2
-                                           for xsgn in (-1, 0, +1)
-                                           for ysgn in (-1, 0, +1)
-                                           for zsgn in (-1, 0, +1)])
-                                      for j in range(N)])))
+        dist[n].append(sqrt(asarray([
+            min([
+                + (x[1][j] - x[n][j] + xsgn*boxsize)**2
+                + (y[1][j] - y[n][j] + ysgn*boxsize)**2
+                + (z[1][j] - z[n][j] + zsgn*boxsize)**2
+                for xsgn in (-1, 0, +1)
+                for ysgn in (-1, 0, +1)
+                for zsgn in (-1, 0, +1)
+            ])
+            for j in range(N)
+        ])))
 
 # Plot
 fig_file = this_dir + '/result.png'
 fig, ax = plt.subplots(len(nprocs_list) - 1, sharex=True, sharey=True)
 for n, d, ax_i in zip(dist.keys(), dist.values(), ax):
     for i in range(N_snapshots):
-        ax_i.semilogy(machine_ϵ + np.array(d[i])/boxsize,
-                      '.',
-                      alpha=0.7,
-                      label='$a={}$'.format(a[i]),
-                      zorder=-i,
-                      )
+        ax_i.semilogy(
+            machine_ϵ + asarray(d[i])/boxsize,
+            '.',
+            alpha=0.7,
+            label=f'$a={a[i]}$',
+            zorder=-i,
+        )
     ax_i.set_ylabel(
         rf'$|\mathbf{{x}}_{{{n}}} - \mathbf{{x}}_1|'
         rf'/\mathrm{{boxsize}}$'
@@ -108,7 +113,7 @@ plt.savefig(fig_file)
 
 # Printout error message for unsuccessful test
 tol = 1e-3
-if any(np.mean(np.array(d)/boxsize) > tol for d in dist.values()):
+if any(np.mean(asarray(d)/boxsize) > tol for d in dist.values()):
     abort('Runs with different numbers of processes yield different results!\n'
           'See "{}" for a visualization.'.format(fig_file))
 

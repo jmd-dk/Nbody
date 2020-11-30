@@ -40,19 +40,19 @@ set -e
 # Domain subtest #
 ##################
 subtest="domain"
-ncomponents_values="1 2 3 4 7"
-nprocs_values="1 2 3 5 7"
+ncomponents_values=(1 2 3 4 7)
+nprocs_values=(1 2 3 5 7)
 
 # Generate ICs
-for ncomponents in ${ncomponents_values}; do
+for ncomponents in ${ncomponents_values[@]}; do
     "${concept}" -n 1 -p "${this_dir}/params" -c "_subtest = '${subtest}'" \
         -c "_ncomponents = ${ncomponents}" -m "${this_dir}/generate_IC.py" \
         --pure-python --local
 done
 
 # Run the CO𝘕CEPT code on the generated ICs
-for ncomponents in ${ncomponents_values}; do
-    for nprocs in ${nprocs_values}; do
+for ncomponents in ${ncomponents_values[@]}; do
+    for nprocs in ${nprocs_values[@]}; do
         "${concept}" -n ${nprocs} -p "${this_dir}/params" -c "_subtest = '${subtest}'" \
             -c "_ncomponents = ${ncomponents}" --local
     done
@@ -64,21 +64,21 @@ done
 # Tile subtest #
 ################
 subtest="tile"
-ncomponents_values="1 2 5"
-nprocs_values="1 2 4"
-subtiling_values="1 2 3"
+ncomponents_values=(1 2 5)
+nprocs_values=(1 2 4)
+subtiling_values=(1 2 3)
 
 # Generate ICs
-for ncomponents in ${ncomponents_values}; do
+for ncomponents in ${ncomponents_values[@]}; do
     "${concept}" -n 1 -p "${this_dir}/params" -c "_subtest = '${subtest}'" \
         -c "_ncomponents = ${ncomponents}" -c "_subtiling = 1"             \
         -m "${this_dir}/generate_IC.py" --pure-python --local
 done
 
 # Run the CO𝘕CEPT code on the generated ICs
-for ncomponents in ${ncomponents_values}; do
-    for nprocs in ${nprocs_values}; do
-        for subtiling in ${subtiling_values}; do
+for ncomponents in ${ncomponents_values[@]}; do
+    for nprocs in ${nprocs_values[@]}; do
+        for subtiling in ${subtiling_values[@]}; do
             "${concept}" -n ${nprocs} -p "${this_dir}/params"                   \
                 -c "_subtest = '${subtest}'" -c "_ncomponents = ${ncomponents}" \
                 -c "_subtiling = ${subtiling}" --local

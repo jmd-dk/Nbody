@@ -85,11 +85,11 @@ k_max = 0.06*units.Mpc**(-1)
 err_allowed_fac = 2
 mask = np.logical_and(k_min <= kν, kν <= k_max)
 for a in scalefactors:
-    error = np.abs(Pν[sim, 'lin', a][mask]/Pν[sim, 'sim', a][mask] - 1)
+    error = abs(Pν[sim, 'lin', a][mask]/Pν[sim, 'sim', a][mask] - 1)
     if a == a_begin:
         error_init = error
         continue
-    if np.any(error > err_allowed_fac*error_init):
+    if any(error > err_allowed_fac*error_init):
         abort(
             f'The linear and non-linear neutrino power spectra does not match '
             f'at large scales at a = {a}.\n'

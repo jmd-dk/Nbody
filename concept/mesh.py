@@ -2085,8 +2085,8 @@ def slab_decompose(grid, slab_or_buffer_name='slab_global', prepare_fft=False):
     # the slab consists purely of zeros. Any junk in the additional
     # elements ruin this.
     # Due to a bug in cython, we need the below operation to be done by
-    # NumPy, not directly on the memory view.
-    # See https://github.com/cython/cython/issues/2941.
+    # NumPy, not directly on the memory view. See
+    #   https://github.com/cython/cython/issues/2941
     slab_arr = asarray(slab)
     slab_arr[:, :, gridsize:] = 0
     # Compute needed communication variables
@@ -2662,19 +2662,19 @@ def get_fftw_slab(gridsize, buffer_name='slab_global', nullify=False):
         nullify_modes(slab, nullify)
         return slab
     # Checks on the passed gridsize
-    if gridsize%nprocs:
+    if gridsize%nprocs != 0:
         abort(
             f'A grid size of {gridsize} was passed to the get_fftw_slab() function. '
             f'This grid size is not evenly divisible by {nprocs} processes.'
         )
-    if gridsize%2:
+    if gridsize%2 != 0:
         masterwarn(
             f'An odd grid size ({gridsize}) was passed to the get_fftw_slab() function. '
             f'Some operations may not function correctly.'
     )
     shape = (
         (gridsize//nprocs), # Distributed dimension
-        (gridsize),
+        gridsize,
         # Explicit int cast necessary for some reason
         int(2*(gridsize//2 + 1)), # Padded dimension
     )
@@ -2856,7 +2856,7 @@ def get_wisdom_filename(gridsize):
         fftw_wisdom_rigor,
         fftw_version,
         wisdom_owner,
-    )).encode()).hexdigest()[:sha_length]
+    )).encode('utf-8')).hexdigest()[:sha_length]
     # The full path to the wisdom file
     wisdom_filename = paths['reusables_dir'] + f'/fftw/{wisdom_hash}.wisdom'
     # Broadcast and return result
@@ -2909,7 +2909,10 @@ def fft(slab, direction, apply_forward_normalization=False):
         slab_start_j = slab_size_j*rank
         gridsize = slab.shape[1]
         gridsize_padding = slab.shape[2]
-        grid_global_pure_python = empty((gridsize, gridsize, gridsize_padding))
+        grid_global_pure_python = empty(
+            (gridsize, gridsize, gridsize_padding),
+            dtype=C2np['double'],
+        )
         Allgatherv(slab, grid_global_pure_python)
         if direction == 'forward':
             # Delete the padding on last dimension
@@ -2920,9 +2923,9 @@ def fft(slab, direction, apply_forward_normalization=False):
             # FFTW transposes the first two dimensions
             grid_global_pure_python = grid_global_pure_python.transpose([1, 0, 2])
             # FFTW represents the complex array by doubles only
-            tmp = empty((gridsize, gridsize, gridsize_padding))
+            tmp = empty((gridsize, gridsize, gridsize_padding), dtype=C2np['double'])
             for i in range(gridsize_padding):
-                if i % 2:
+                if i%2:
                     tmp[:, :, i] = grid_global_pure_python.imag[:, :, i//2]
                 else:
                     tmp[:, :, i] = grid_global_pure_python.real[:, :, i//2]
@@ -2948,10 +2951,10 @@ def fft(slab, direction, apply_forward_normalization=False):
             # Remove the autoscaling provided by NumPy
             grid_global_pure_python *= gridsize**3
             # Add padding on last dimension, as in FFTW
-            padding = empty((gridsize,
-                             gridsize,
-                             gridsize_padding - gridsize,
-                             ))
+            padding = empty(
+                (gridsize, gridsize, gridsize_padding - gridsize),
+                dtype=C2np['double'],
+            )
             grid_global_pure_python = np.concatenate((grid_global_pure_python, padding), axis=2)
             # As in FFTW, distribute the slabs along the x-dimension
             slab[...] = grid_global_pure_python[slab_start_i:(slab_start_i + slab_size_i), :, :]

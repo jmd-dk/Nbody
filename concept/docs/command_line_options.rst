@@ -325,30 +325,31 @@ job scheduler. If you desire further fine tuning of system resources, you may
 supply further such directives using this command-line option.
 
 What job directives are available depend on the job scheduler, as well as the
-local configuration of the cluster and queue. As an example, imagine that the
-cluster/queue makes available both Intel and AMD nodes, and that it is set up
-so that we may request either type using Slurm's ``constraint`` directive. To
-select AMD then;
+local configuration of the cluster and queue. As an example, consider
 
 .. code-block:: bash
 
-   ./concept -j="--constraint=AMD"
+   ./concept -j="--exclusive"
+
+which tells Slurm to give the job exclusive access to the allocated nodes, so
+that the nodes will not be shared with other running jobs which could otherwise
+make use of still available resources.
 
 The effect of this is simply to place the line
 
-   #SBATCH \\-\\-constraint=AMD
+   #SBATCH \-\-exclusive
 
 in the header of the job script, assuming Slurm, or
 
-   #PBS \\-\\-constraint=AMD
+   #PBS \-\-exclusive
 
-in the case of TORQUE/PBS (the specific example of ``--constraint``
+in the case of TORQUE/PBS (the specific example of ``--exclusive``
 does not mean anything to TORQUE/PBS, though).
 
 .. caution::
-   Since the value ``--constraint=AMD`` starts with '``-``', using
-   ``-j --constraint=AMD`` or ``-j "--constraint=AMD"`` is not legal as the
-   parser registres ``--constraint=AMD`` as a whole new (and non-existent)
+   Since the value ``--exclusive`` starts with '``-``', using
+   ``-j --exclusive`` or ``-j "--exclusive"`` is not legal as the
+   parser registres ``--exclusive`` as a whole new (and non-existent)
    option.
 
 The ``-j`` option may be specified multiple times.

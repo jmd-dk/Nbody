@@ -22,15 +22,15 @@ mass_fluid_tot = mass_particles_tot = 0.5*mass_tot
 mass_fluid = mass_fluid_tot/N_fluidelements  # Mass of each fluid element
 mass_particles = mass_particles_tot/N        # Mass of each particle
 component = Component('test fluid', 'matter', gridsize=gridsize)
-ϱ = empty([gridsize]*3)
+ϱ = empty([gridsize]*3, dtype=float)
 for i in range(gridsize):
-    ϱ[i, :, :] = 2 + np.sin(2*π*i/gridsize)  # Unitless
+    ϱ[i, :, :] = 2 + sin(2*π*i/gridsize)  # Unitless
 ϱ /= sum(ϱ)                                  # Normalize
 ϱ *= mass_fluid_tot/Vcell                    # Apply units
-component.populate(ϱ,                             'ϱ'   )
-component.populate(ϱ*speed,                       'J', 0)
-component.populate(zeros([gridsize]*3),           'J', 1)
-component.populate(ϱ*speed*random_uniform(-1, 1), 'J', 2)
+component.populate(ϱ,                                'ϱ'   )
+component.populate(ϱ*speed,                          'J', 0)
+component.populate(zeros([gridsize]*3, dtype=float), 'J', 1)
+component.populate(ϱ*speed*random_uniform(-1, 1),    'J', 2)
 components.append(component)
 
 # Create the particles.
@@ -42,12 +42,12 @@ components.append(component)
 component = Component('control particles', 'matter', N=N, mass=mass_particles)
 offset = 0.5*boxsize
 A = 0.4*boxsize
-component.populate(linspace(0, boxsize, N, endpoint=False),        'posx')
-component.populate(offset + A*np.sin([2*π*i/N for i in range(N)]), 'posy')
-component.populate(random_uniform(0, boxsize, size=N),             'posz')
-component.populate(ones(N)*speed*mass_particles,                   'momx')
-component.populate(zeros(N),                                       'momy')
-component.populate(zeros(N),                                       'momz')
+component.populate(linspace(0, boxsize, N, endpoint=False),     'posx')
+component.populate(offset + A*sin([2*π*i/N for i in range(N)]), 'posy')
+component.populate(random_uniform(0, boxsize, size=N),          'posz')
+component.populate(ones(N)*speed*mass_particles,                'momx')
+component.populate(zeros(N, dtype=float),                       'momy')
+component.populate(zeros(N, dtype=float),                       'momz')
 components.append(component)
 
 # Save snapshot

@@ -30,10 +30,10 @@ N_cubes = N_cubes_lin**3
 N_in_cubes_homo = N*V/boxsize**3
 
 # Count how many particles lie within each of the L*L*L cubes
-counts = np.zeros([N_cubes_lin + 1]*3, dtype=C2np['int'])
-posx_grid = asarray(posx//L, dtype=C2np['int'])
-posy_grid = asarray(posy//L, dtype=C2np['int'])
-posz_grid = asarray(posz//L, dtype=C2np['int'])
+counts = zeros([N_cubes_lin + 1]*3, dtype=int)
+posx_grid = asarray(posx//L, dtype=int)
+posy_grid = asarray(posy//L, dtype=int)
+posz_grid = asarray(posz//L, dtype=int)
 for i in range(N):
     counts[posx_grid[i], posy_grid[i], posz_grid[i]] += 1
 # The upper "cubes" are not cubic and should be discarded
@@ -49,8 +49,8 @@ counts_contrast = counts.flatten()/N_in_cubes_homo - 1
 plt.figure()
 plt.hist(counts_contrast, 100)
 s = (r'{:g}% within $1\sigma$'
-     .format(np.round(100*sum(abs(counts_contrast) < σ)/counts_contrast.size)))
-plt.text(np.sum(plt.xlim())/2, np.sum(plt.ylim())/2, s, ha='center',
+     .format(round(100*sum(abs(counts_contrast) < σ)/counts_contrast.size)))
+plt.text(sum(plt.xlim())/2, sum(plt.ylim())/2, s, ha='center',
          bbox={'facecolor': 'white', 'alpha': 0.85, 'edgecolor': 'none'})
 plt.xlabel('Count contrast')
 plt.ylabel('# of occurrences')
@@ -98,12 +98,12 @@ powerspec_filename_double_boxsize = '{}_double_boxsize'.format(powerspec_filenam
  power_double_boxsize,
  ) = np.loadtxt(powerspec_filename_double_boxsize, unpack=True)
 tol = 1e-4
-if not all(np.abs((k_single_boxsize/2 - k_double_boxsize)/k_double_boxsize) < tol):
+if not all(abs((k_single_boxsize/2 - k_double_boxsize)/k_double_boxsize) < tol):
     abort('Bad scaling of k against the boxsize. '
           'The compared power spectra are plotted in "{}.png" and "{}.png"'
           .format(powerspec_filename_single_boxsize, powerspec_filename_double_boxsize)
           )
-if not all(np.abs((power_single_boxsize*2**3 - power_double_boxsize)/power_double_boxsize) < tol):
+if not all(abs((power_single_boxsize*2**3 - power_double_boxsize)/power_double_boxsize) < tol):
     abort('Bad scaling of power against the boxsize. '
           'The compared power spectra are plotted in "{}.png" and "{}.png"'
           .format(powerspec_filename_single_boxsize, powerspec_filename_double_boxsize)

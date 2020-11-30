@@ -341,40 +341,19 @@ class FluidScalar:
             grid[i] *= a
 
     # Method for nullifying the data grid
-    @cython.pheader(# Locals
-                    i='Py_ssize_t',
-                    grid='double*',
-                    )
+    @cython.pheader()
     def nullify_grid(self):
-        # Extract data pointer
-        grid = self.grid
-        # Nullify data buffer
-        for i in range(self.size):
-            grid[i] = 0
+        self.grid_mv[...] = 0
 
     # Method for nullifying the starred grid
-    @cython.pheader(# Locals
-                    i='Py_ssize_t',
-                    gridˣ='double*',
-                    )
+    @cython.pheader()
     def nullify_gridˣ(self):
-        # Extract starred buffer pointer
-        gridˣ = self.gridˣ
-        # Nullify starred buffer
-        for i in range(self.size):
-            gridˣ[i] = 0
+        self.gridˣ_mv[...] = 0
 
     # Method for nullifying the Δ buffer
-    @cython.pheader(# Locals
-                    i='Py_ssize_t',
-                    Δ='double*',
-                    )
+    @cython.pheader()
     def nullify_Δ(self):
-        # Extract Δ buffer pointer
-        Δ = self.Δ
-        # Nullify Δ buffer
-        for i in range(self.size):
-            Δ[i] = 0
+        self.Δ_mv[...] = 0
 
     # Method for copying the content of grid into gridˣ
     @cython.pheader(
@@ -3669,7 +3648,7 @@ class Component:
                 i_tabulated = asarray(i_tabulated)[order]
                 w_tabulated = asarray(w_tabulated)[order]
                 # Pack the two rows together
-                self.w_tabulated = empty((2, w_tabulated.shape[0]))
+                self.w_tabulated = empty((2, w_tabulated.shape[0]), dtype=C2np['double'])
                 self.w_tabulated[0, :] = i_tabulated
                 self.w_tabulated[1, :] = w_tabulated
             # Broadcast the tabulated w
@@ -4155,7 +4134,7 @@ def update_species_present(components):
     species_previously_present = universals_dict['species_present'].decode()
     if species_previously_present:
         species_present |= set(species_previously_present.split('+'))
-    species_present_bytes = '+'.join(species_present).encode()
+    species_present_bytes = '+'.join(species_present).encode('utf-8')
     universals_dict['species_present'] = species_present_bytes
     # Species present (CLASS convention)
     class_species_present = {component.class_species for component in components}
@@ -4164,7 +4143,7 @@ def update_species_present(components):
         class_species_present |= set(class_species_previously_present.split('+'))
     class_species_present_bytes = (
         # A component.class_species may be a combination of several CLASS species
-        '+'.join(set('+'.join(class_species_present).split('+'))).encode()
+        '+'.join(set('+'.join(class_species_present).split('+'))).encode('utf-8')
     )
     universals_dict['class_species_present'] = class_species_present_bytes
 
@@ -4380,7 +4359,7 @@ def init_subtiling(component, subtiling_name, initial_rung_size=-1):
             for         i in range(shape_diff[0] + 1):
                 for     j in range(shape_diff[1] + 1):
                     for k in range(shape_diff[2] + 1):
-                        shape = shape_base + np.array((i, j, k))
+                        shape = shape_base + asarray((i, j, k))
                         subtiling_global_shape = tiling_global_shape*shape
                         particles_per_subtile = (
                             float(component.N)/np.prod(subtiling_global_shape)

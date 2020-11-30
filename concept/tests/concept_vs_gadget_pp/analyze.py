@@ -31,8 +31,8 @@ masterprint('Analyzing {} data ...'.format(this_test))
 # Using the particle order of CO𝘕CEPT as the standard, find the corresponding
 # ID's in the GADGET snapshots and order these particles accoringly.
 N = components[0].N
-D2 = zeros(N)
-ID = zeros(N, dtype='int')
+D2 = zeros(N, dtype=float)
+ID = zeros(N, dtype=int)
 for i in range(N_snapshots):
     x = components[i].posx
     y = components[i].posy
@@ -75,20 +75,25 @@ for i in range(N_snapshots):
     x_gadget = components_gadget[i].posx
     y_gadget = components_gadget[i].posy
     z_gadget = components_gadget[i].posz
-    dist.append(sqrt(np.array([min([  (x[j] - x_gadget[j] + xsgn*boxsize)**2
-                                    + (y[j] - y_gadget[j] + ysgn*boxsize)**2
-                                    + (z[j] - z_gadget[j] + zsgn*boxsize)**2
-                                    for xsgn in (-1, 0, +1)
-                                    for ysgn in (-1, 0, +1)
-                                    for zsgn in (-1, 0, +1)])
-                               for j in range(N)])))
+    dist.append(sqrt(asarray([
+        min([
+            + (x[j] - x_gadget[j] + xsgn*boxsize)**2
+            + (y[j] - y_gadget[j] + ysgn*boxsize)**2
+            + (z[j] - z_gadget[j] + zsgn*boxsize)**2
+            for xsgn in (-1, 0, +1)
+            for ysgn in (-1, 0, +1)
+            for zsgn in (-1, 0, +1)
+        ])
+        for j in range(N)
+    ])))
     # Plot
-    plt.semilogy(machine_ϵ + dist[i]/boxsize,
-                 '.',
-                 alpha=0.7,
-                 label='$a={}$'.format(a[i]),
-                 zorder=-i,
-                 )
+    plt.semilogy(
+        machine_ϵ + dist[i]/boxsize,
+        '.',
+        alpha=0.7,
+        label=f'$a={a[i]}$',
+        zorder=-i,
+    )
 
 # Finalize plot
 fig_file = this_dir + '/result.png'

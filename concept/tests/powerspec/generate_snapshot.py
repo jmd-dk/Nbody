@@ -11,12 +11,12 @@ N_lin = 128
 N = N_lin**3
 mass = ρ_mbar*boxsize**3/N
 component = Component('test particles', 'matter', N=N, mass=mass)
-posx = empty(N)
-posy = empty(N)
-posz = empty(N)
-momx = zeros(N)
-momy = zeros(N)
-momz = zeros(N)
+posx = empty(N, dtype=float)
+posy = empty(N, dtype=float)
+posz = empty(N, dtype=float)
+momx = zeros(N, dtype=float)
+momy = zeros(N, dtype=float)
+momz = zeros(N, dtype=float)
 count = 0
 boxsize_over_N_lin = boxsize/N_lin
 tophat = is_selected(component, powerspec_options['tophat'])

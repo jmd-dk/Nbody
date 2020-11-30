@@ -324,7 +324,7 @@ inform_on_new_state(){
                 "NF"   ) echo "Job ${jobid} terminated due to failure of one or more nodes";;
                 "PD"   ) echo "Job ${jobid} is queued in ${queue}";;
                 "PR"   ) echo "Job ${jobid} terminated due to preemption";;
-                "R"    ) echo "Job ${jobid} is running in queue ${queue}";;
+                "R"    ) echo "Job ${jobid} is running in ${queue}";;
                 "SE"   ) echo "Job ${jobid} was requeued in a special state";;
                 "ST"   ) echo "Job ${jobid} has stopped with the SIGSTOP signal";;
                 "S"    ) echo "Job ${jobid} has been suspended";;
@@ -339,7 +339,7 @@ inform_on_new_state(){
                 "E"    ) echo "Job ${jobid} is exiting after having run";;
                 "H"    ) echo "Job ${jobid} is held";;
                 "Q"    ) echo "Job ${jobid} is queued in ${queue}";;
-                "R"    ) echo "Job ${jobid} is running in queue ${queue}";;
+                "R"    ) echo "Job ${jobid} is running in ${queue}";;
                 "T"    ) echo "Job ${jobid} is being moved to a new location";;
                 "W"    ) echo "Job ${jobid} is waiting for its executing time to be reached";;
                 "S"    ) echo "Job ${jobid} is suspend";;
@@ -381,18 +381,23 @@ sleep 1
 # Wait until job is running
 if [ "${state}" != "${state_running}" ]; then
     check_suddenly_finished
-    sleep ${sleep_barely}
-    check_suddenly_finished
+    for check in 0 1 2; do
+        if [ "${state}" == "${state_running}" ]; then
+            break
+        fi
+        sleep ${sleep_barely}
+        check_suddenly_finished
+    done
     if [ "${state}" != "${state_running}" ]; then
-        # Wait a small time before calling the info command again
+        # Wait a small time before requerying the job state
         sleep ${sleep_little}
         check_suddenly_finished
-        while [ "${state}" != "${state_running}" ] ; do
-            # Wait a long time before calling the info command again
-            sleep ${sleep_much}
-            check_suddenly_finished
-        done
     fi
+    while [ "${state}" != "${state_running}" ] ; do
+        # Wait a long time before requerying the job state
+        sleep ${sleep_much}
+        check_suddenly_finished
+    done
 fi
 state_last="${state_running}"
 
@@ -426,12 +431,12 @@ update_job_info
 inform_on_new_state
 slept=0
 if [ "${state}" != "None" ]; then
-    # Wait a small time before calling the info command again
+    # Wait a small time before requerying the job state
     sleep ${sleep_little}
     update_job_info
     inform_on_new_state
     while [ "${state}" != "None" ]; do
-        # Wait a long time before calling the info command again
+        # Wait a long time before requerying the job state
         if [ ${slept} -gt ${sleep_much} ]; then
             sleep ${sleep_much}
             ((slept += ${sleep_much}))

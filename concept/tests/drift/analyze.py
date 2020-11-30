@@ -46,18 +46,18 @@ plt.legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()
 plt.savefig(fig_file)
 
-# There should be no variance on the x positions.
+# There should be no variance on the x positions
 tol = 1e+2*N_snapshots*machine_ϵ
-if np.sum(x_std_gadget) > tol:
+if sum(x_std_gadget) > tol:
     abort('Unequal x-positions for the 4 particles in the GADGET snapshots.\n'
           'It is no good to compare the CO𝘕CEPT results to these.')
-if np.sum(x_std) > tol:
+if sum(x_std) > tol:
     abort('Unequal x-positions for the 4 particles in the snapshots.\n'
           'The symmetric initial conditions have produced asymmetrical results!')
 
 # Print out error message for unsuccessful test
 tol = 1e-3
-if max(np.abs(asarray(x)/asarray(x_gadget) - 1)) > tol:
+if max(abs(asarray(x)/asarray(x_gadget) - 1)) > tol:
     abort('The results from CO𝘕CEPT disagree with those from GADGET.\n'
           'See "{}" for a visualization.'.format(fig_file))
 

@@ -4,7 +4,7 @@
 # and pure Python mode and compares the results. The PM algorithm is used.
 
 # Number of processes to use
-nprocs_list="1 2 4"
+nprocs_list=(1 2 4)
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"

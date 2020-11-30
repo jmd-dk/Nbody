@@ -159,6 +159,7 @@ python_config = $(shell readlink -f $$(which $(python)))-config
 # Options passed when cythonizing .pyx files
 python_version_major = $(shell $(python) -B -c "import sys; print(sys.version_info.major)")
 cythonflags = -$(python_version_major) -D -a
+
 # Includes
 fftw_incl   = -I$(fftw_dir)/include
 gsl_incl    = -I$(gsl_dir)/include
@@ -179,14 +180,6 @@ compiler = $(shell                                           \
         echo "gcc";                                          \
     fi                                                       \
 )
-unwanted_warnings =            \
-    implicit-fallthrough       \
-    misleading-indentation     \
-    missing-field-initializers \
-    strict-overflow            \
-    uninitialized              \
-    unknown-warning-option     \
-
 python_cflags = $(filter-out             \
     $(addprefix -W,$(unwanted_warnings)) \
     -g -g0 -g1 -g2 -g3                   \
@@ -195,23 +188,28 @@ python_cflags = $(filter-out             \
     ,                                    \
     $(shell $(python_config) --cflags)   \
 )
-other_cflags =                              \
-    -std=c99                                \
-    -pthread                                \
-    -fPIC                                   \
-    -Wall                                   \
-    -Wextra                                 \
-    $(addprefix -Wno-,$(unwanted_warnings)) \
+unwanted_warnings_general += \
+    uninitialized            \
+    unknown-warning-option   \
 
-# Options specific to the compiler implementation
 ifeq ($(compiler),icc)
-    # Filter out warnings
-    other_cflags += -wd111    # Unreachable statement
-    other_cflags += -wd10006  # Ignoring unknown option
-    other_cflags += -wd10148  # Option not supported
-    other_cflags += -wd11074  # Inlining inhibited
-    other_cflags += -wd11076  # How to get full report
+    unwanted_warnings_icc +=   111  # Unreachable statement
+    unwanted_warnings_icc += 10006  # Ignoring unknown option
+    unwanted_warnings_icc += 10148  # Option not supported
+    unwanted_warnings_icc += 11074  # Inlining inhibited
+    unwanted_warnings_icc += 11076  # How to get full report
 endif
+warnings =                                          \
+    -Wall                                           \
+    -Wextra                                         \
+    $(addprefix -Wno-,$(unwanted_warnings_general)) \
+    $(addprefix -wd,$(unwanted_warnings_icc))       \
+
+other_cflags = \
+    -std=c99   \
+    -pthread   \
+    -fPIC      \
+
 # Optimization options
 ifneq ($(no_optimizations),True)
     # General optimizations
@@ -248,6 +246,7 @@ CFLAGS += $(call unique, $(call sensible_paths, \
     $(python_cflags)                            \
     $(other_cflags)                             \
     $(optimizations)                            \
+    $(warnings)                                 \
     $(includes)                                 \
 ))
 
@@ -284,11 +283,12 @@ LDLIBS += $(call unique, $(call sensible_paths, \
 python_ldflags = $(shell $(python_config) --ldflags)
 other_ldflags  = -shared
 comma = ,
-LDFLAGS += $(call unique, $(call sensible_paths,      \
-    $(python_ldflags)                                 \
-    $(other_ldflags)                                  \
-    $(optimizations)                                  \
-    $(addprefix -Wl$(comma),$(optimizations_linker))  \
+LDFLAGS += $(call unique, $(call sensible_paths,     \
+    $(python_ldflags)                                \
+    $(other_ldflags)                                 \
+    $(optimizations)                                 \
+    $(addprefix -Wl$(comma),$(optimizations_linker)) \
+    $(warnings)                                      \
 ))
 
 

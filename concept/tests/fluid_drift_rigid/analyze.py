@@ -128,7 +128,7 @@ for fluid, a_i in zip(fluid_components, a):
 # Compare ϱ to the fluid from the snapshots
 tol_fac = 0.02
 for ϱ_i, y_interp_i, a_i in zip(ϱ, y_interp, a):
-    if not isclose(np.mean(np.abs(ϱ_i - y_interp_i)), 0,
+    if not isclose(mean(abs(ϱ_i - y_interp_i)), 0,
                    rel_tol=0,
                    abs_tol=(tol_fac*np.std(ϱ_i) + machine_ϵ)):
         abort('Fluid drift differs from particle drift at a = {:.3g}.\n'

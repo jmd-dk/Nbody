@@ -33,8 +33,8 @@ masterprint('Analyzing {} data ...'.format(this_test))
 # Using the particle order of the cython snapshot as the standard, find the corresponding
 # ID's in the python snapshots and order these particles accoringly.
 N = components['cython'][1][0].N
-D2 = zeros(N)
-ID = zeros(N, dtype='int')
+D2 = zeros(N, dtype=float)
+ID = zeros(N, dtype=int)
 for i in range(N_snapshots):
     for n in nprocs_list:
         x_cython = components['cython'][n][i].posx
@@ -76,28 +76,30 @@ for i in range(N_snapshots):
     y = {(cp, n): components[cp][n][i].posy for cp in ('cython', 'python') for n in nprocs_list}
     z = {(cp, n): components[cp][n][i].posz for cp in ('cython', 'python') for n in nprocs_list}
     for n in nprocs_list:
-        dist[n].append(sqrt(np.array([min([  (x['cython', n][j] - x['python', n][j]
-                                              + xsgn*boxsize)**2
-                                           + (y['cython', n][j] - y['python', n][j]
-                                              + ysgn*boxsize)**2
-                                           + (z['cython', n][j] - z['python', n][j]
-                                              + zsgn*boxsize)**2
-                                           for xsgn in (-1, 0, +1)
-                                           for ysgn in (-1, 0, +1)
-                                           for zsgn in (-1, 0, +1)])
-                                      for j in range(N)])))
+        dist[n].append(sqrt(asarray([
+            min([
+                + (x['cython', n][j] - x['python', n][j] + xsgn*boxsize)**2
+                + (y['cython', n][j] - y['python', n][j] + ysgn*boxsize)**2
+                + (z['cython', n][j] - z['python', n][j] + zsgn*boxsize)**2
+                for xsgn in (-1, 0, +1)
+                for ysgn in (-1, 0, +1)
+                for zsgn in (-1, 0, +1)
+            ])
+            for j in range(N)
+        ])))
 
 # Plot
 fig_file = this_dir + '/result.png'
 fig, ax = plt.subplots(len(nprocs_list), sharex=True, sharey=True)
 for n, d, ax_i in zip(dist.keys(), dist.values(), ax):
     for i in range(N_snapshots):
-        ax_i.semilogy(machine_ϵ + np.array(d[i])/boxsize,
-                      '.',
-                      alpha=0.7,
-                      label='$a={}$'.format(a[i]),
-                      zorder=-i,
-                      )
+        ax_i.semilogy(
+            machine_ϵ + asarray(d[i])/boxsize,
+            '.',
+            alpha=0.7,
+            label=f'$a={a[i]}$',
+            zorder=-i,
+        )
     ax_i.set_ylabel(
         rf'$|\mathbf{{x}}_{{\mathrm{{pp}}{n}}} - \mathbf{{x}}_{{\mathrm{{c}}{n}}}|'
         rf'/\mathrm{{boxsize}}$'
@@ -112,7 +114,7 @@ plt.savefig(fig_file)
 
 # Printout error message for unsuccessful test
 tol = 1e-10
-if any(np.mean(np.array(d)/boxsize) > tol for d in dist.values()):
+if any(np.mean(asarray(d)/boxsize) > tol for d in dist.values()):
     abort(
         f'Some or all pure Python runs with nprocs = {nprocs_list} yielded results '
         f'different from their compiled counterparts!\n'

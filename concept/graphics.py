@@ -170,7 +170,6 @@ def plot_powerspec(powerspec_declaration, filename):
     largest_trusted_k_magnitude='double',
     crossover='int',
     # Locals
-    a_values_raw=object,  # np.ndarray
     exponent='double',
     exponent_str=str,
     factor='double',
@@ -184,7 +183,6 @@ def plot_powerspec(powerspec_declaration, filename):
     loga_values_spline='double[::1]',
     n='Py_ssize_t',
     perturbations_detrended_spline='double[::1]',
-    perturbations_raw=object,  # np.ndarray
     skip='Py_ssize_t',
     spline='Spline',
     val=str,
@@ -1298,7 +1296,6 @@ def set_terminal_colormap(colormap):
     cleanup='bint',
     tmp_dirname=str,
     # Locals
-    N='Py_ssize_t',
     N_local='Py_ssize_t',
     a_str=str,
     artists_text=dict,
@@ -1342,7 +1339,6 @@ def set_terminal_colormap(colormap):
     α='double',
     α_factor='double',
     α_homogeneous='double',
-    α_min='double',
     ϱ_noghosts='double[:, :, :]',
     ϱbar_component='double',
 )
@@ -1364,9 +1360,11 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
         # Make cyclic default colors as when doing multiple plots in
         # one figure. Make sure that none of the colors are identical
         # to the background color.
-        default_colors = itertools.cycle([to_rgb(prop['color'])
-                                          for prop in matplotlib.rcParams['axes.prop_cycle']
-                                          if not all(to_rgb(prop['color']) == render3D_bgcolor)])
+        default_colors = itertools.cycle([
+            to_rgb(prop['color'])
+            for prop in matplotlib.rcParams['axes.prop_cycle']
+            if not all(to_rgb(prop['color']) == render3D_bgcolor)
+        ])
         for component in components:
             if not is_selected(component, render3D_select):
                 continue
@@ -1389,39 +1387,19 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                 # Assign the next color from the default cyclic colors.
                 color = next(default_colors)
                 α_homogeneous = 0.2
-            # Alpha values below this small value appear completely
-            # invisible, for whatever reason.
-            α_min = 0.0059
             # The artist for the component
             if component.representation == 'particles':
-                # The particle size on the figure.
-                # The size is chosen such that the particles stand side
-                # by side in a homogeneous universe (more or less).
-                N = component.N
-                scatter_size = 1550*np.prod(fig.get_size_inches())/N**(2./3.)
-                # Determine the α value which ensures that a homogeneous
-                # column through the entire box will result in a
-                # combined α value of α_homogeneous. Alpha blending
-                # is non-linear, but via the code given in
-                # https://stackoverflow.com/questions/28946400
-                # /is-it-possible-for-matplotlibs-alpha-transparency
-                # -values-to-sum-to-1
-                # I have found that 4/∛N is a good approximation to
-                # the α value needed to make the combined α equal to 1.
-                α = α_homogeneous*4/cbrt(N)
-                # Alpha values lower than α_min are not allowed.
-                # Shrink the scatter size to make up for the larger α.
-                if α < α_min:
-                    scatter_size *= α/α_min
-                    α = α_min
+                # The particle size on the figure
+                scatter_size, α = alpha_blend(component.N, α_homogeneous, fig)
                 # Apply size and alpha
-                artist_component = ax.scatter(0, 0, 0,
-                                              alpha=α,
-                                              c=np.expand_dims(color, 0),
-                                              s=scatter_size,
-                                              depthshade=False,
-                                              lw=0,
-                                              )
+                artist_component = ax.scatter(
+                    0, 0, 0,
+                    alpha=α,
+                    c=np.expand_dims(color, 0),
+                    s=scatter_size,
+                    depthshade=False,
+                    lw=0,
+                )
             elif component.representation == 'fluid':
                 # To 3D render fluid elements, their explicit positions
                 # are needed. In the following, these are computed and
@@ -1460,33 +1438,16 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                     for dim in range(3):
                         rgbα[i, dim] = color[dim]
                     rgbα[i, 3] = 1
-                # The particle (fluid element) size on the figure.
-                # The size is chosen such that the particles stand side
-                # by side in a homogeneous universe (more or less).
-                N = gridsize**3
-                scatter_size = 1550*np.prod(fig.get_size_inches())/N**(2./3.)
-                # Determine the α multiplication factor which ensures
-                # that a homogeneous column through the entire box will
-                # result in an α value of α_homogeneous. Alpha blending
-                # is non-linear, but via the code given in
-                # https://stackoverflow.com/questions/28946400
-                # /is-it-possible-for-matplotlibs-alpha-transparency
-                # -values-to-sum-to-1
-                # I have found that 4/∛N is a good approximation to
-                # the α value needed to make the combined α equal to 1.
-                α_factor = α_homogeneous*4/cbrt(N)
-                # An α_factor below α_min are not allowed.
-                # Shrink the scatter size to make up for the larger α.
-                if α_factor < α_min:
-                    scatter_size *= α_factor/α_min
-                    α_factor = α_min
+                # The particle (fluid element) size on the figure
+                scatter_size, α_factor = alpha_blend(gridsize**3, α_homogeneous, fig)
                 # Plot the fluid elements as a 3D scatter plot
-                artist_component = ax.scatter(posx_mv, posy_mv, posz_mv,
-                                              c=rgbα,
-                                              s=scatter_size,
-                                              depthshade=False,
-                                              lw=0,
-                                              )
+                artist_component = ax.scatter(
+                    posx_mv, posy_mv, posz_mv,
+                    c=rgbα,
+                    s=scatter_size,
+                    depthshade=False,
+                    lw=0,
+                )
                 # The set_facecolors method on the artist can be used
                 # to update the α values on the plot. This function is
                 # called internally by matplotlib with wrong arguments,
@@ -1502,21 +1463,23 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
             label_spacing = 0.07
             label_props = [(label_spacing,     label_spacing, 'left'),
                            (1 - label_spacing, label_spacing, 'right')]
-            artists_text['t'] = ax.text2D(label_props[0][0],
-                                          label_props[0][1],
-                                          '',
-                                          fontsize=16,
-                                          horizontalalignment=label_props[0][2],
-                                          transform=ax.transAxes,
-                                          )
+            artists_text['t'] = ax.text2D(
+                label_props[0][0],
+                label_props[0][1],
+                '',
+                fontsize=16,
+                horizontalalignment=label_props[0][2],
+                transform=ax.transAxes,
+            )
             if enable_Hubble:
-                artists_text['a'] = ax.text2D(label_props[1][0],
-                                              label_props[1][1],
-                                              '',
-                                              fontsize=16,
-                                              horizontalalignment=label_props[1][2],
-                                              transform=ax.transAxes,
-                                              )
+                artists_text['a'] = ax.text2D(
+                    label_props[1][0],
+                    label_props[1][1],
+                    '',
+                    fontsize=16,
+                    horizontalalignment=label_props[1][2],
+                    transform=ax.transAxes,
+                )
             # Configure axis options
             ax.dist = 9  # Zoom level
             ax.set_proj_type('ortho')
@@ -1530,13 +1493,14 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
             plt.tight_layout(pad=-1)  # Extra tight layout, to prevent white frame
             # Store the figure, axes and the component
             # and text artists in the render3D_dict.
-            render3D_dict[component.name] = {'fig': fig,
-                                             'ax': ax,
-                                             'artist_component': artist_component,
-                                             'artists_text': artists_text,
-                'α_factor': (α_factor if component.representation == 'fluid' else None),
-                'rgbα'    : (rgbα     if component.representation == 'fluid' else None),
-                                           }
+            render3D_dict[component.name] = {
+                'fig'             : fig,
+                'ax'              : ax,
+                'artist_component': artist_component,
+                'artists_text'    : artists_text,
+                'α_factor'        : (α_factor if component.representation == 'fluid' else None),
+                'rgbα'            : (rgbα     if component.representation == 'fluid' else None),
+            }
         masterprint('done')
         # Return if no component is to be 3D rendered
         if not render3D_dict:
@@ -1573,9 +1537,11 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
         if component.representation == 'particles':
             # Update particle positions on the figure
             N_local = component.N_local
-            artist_component._offsets3d = (component.posx_mv[:N_local],
-                                           component.posy_mv[:N_local],
-                                           component.posz_mv[:N_local])
+            artist_component._offsets3d = (
+                component.posx_mv[:N_local],
+                component.posy_mv[:N_local],
+                component.posz_mv[:N_local],
+            )
         elif component.representation == 'fluid':
             rgbα     = component_dict['rgbα']
             α_factor = component_dict['α_factor']
@@ -1619,14 +1585,13 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                     artist_text.set_color('black')
         # Save the 3D render
         if nprocs == 1:
-            filename_component_alpha_part = ('{}/{}_alpha.png'
-                                              .format(render3D_dir,
-                                                      component.name.replace(' ', '-')))
+            filename_component_alpha_part = (
+                '{}/{}_alpha.png'.format(render3D_dir, component.name.replace(' ', '-'))
+            )
         else:
-            filename_component_alpha_part = ('{}/{}_alpha_{}.png'
-                                             .format(render3D_dir,
-                                                     component.name.replace(' ', '-'),
-                                                     rank))
+            filename_component_alpha_part = (
+                '{}/{}_alpha_{}.png'.format(render3D_dir, component.name.replace(' ', '-'), rank)
+            )
         if nprocs == 1 == len(render3D_dict):
             # As this is the only 3D render which should be done, it can
             # be saved directly in its final, non-transparent state.
@@ -1650,13 +1615,14 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
             name = names[j].replace(' ', '-')
             if nprocs == 1:
                 # Simply load the already fully constructed image
-                filename_component_alpha = '{}/{}_alpha.png'.format(render3D_dir, name)
+                filename_component_alpha = f'{render3D_dir}/{name}_alpha.png'
                 render3D_image = plt.imread(filename_component_alpha)
             else:
                 # Create list of filenames for the partial 3D renders
-                filenames_component_alpha_part = ['{}/{}_alpha_{}.png'
-                                                  .format(render3D_dir, name, part)
-                                                  for part in range(nprocs)]
+                filenames_component_alpha_part = [
+                    f'{render3D_dir}/{name}_alpha_{part}.png'
+                    for part in range(nprocs)
+                ]
                 # Read in the partial 3D renders and blend
                 # them together into the render3D_image variable.
                 blend(filenames_component_alpha_part)
@@ -1664,7 +1630,7 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                 # with transparency. Theese are then later combined into
                 # a 3D render containing all components.
                 if len(names) > 1:
-                    filename_component_alpha = '{}/{}_alpha.png'.format(render3D_dir, name)
+                    filename_component_alpha = f'{render3D_dir}/{name}_alpha.png'
                     plt.imsave(filename_component_alpha, asarray(render3D_image))
             # Add opaque background to render3D_image
             add_background()
@@ -1679,10 +1645,11 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
         # Finally, combine the full 3D renders of individual components
         # into a total 3D render containing all components.
         if master and len(names) > 1:
-            masterprint('Combining component 3D renders and saving to "{}" ...'.format(filename))
-            filenames_component_alpha = ['{}/{}_alpha.png'.format(render3D_dir,
-                                                                  name.replace(' ', '-'))
-                                         for name in names]
+            masterprint(f'Combining component 3D renders and saving to "{filename}" ...')
+            filenames_component_alpha = [
+                '{}/{}_alpha.png'.format(render3D_dir, name.replace(' ', '-'))
+                for name in names
+            ]
             blend(filenames_component_alpha)
             # Add opaque background to render3D_image and save it
             add_background()
@@ -1692,9 +1659,10 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
     if master and cleanup and not (nprocs == 1 == len(render3D_dict)):
         shutil.rmtree(render3D_dir)
 # Declare global variables used in the render3D() function
-cython.declare(render3D_dict=object,  # OrderedDict
-               render3D_image='float[:, :, ::1]',
-               )
+cython.declare(
+    render3D_dict=object,  # OrderedDict
+    render3D_image='float[:, :, ::1]',
+)
 # (Ordered) dictionary containing the figure, axes, component
 # artist and text artist for each component.
 render3D_dict = collections.OrderedDict()
@@ -1748,6 +1716,45 @@ def blend(filenames):
             for rgbα in range(4):
                 if render3D_image[i, j, rgbα] > 1:
                     render3D_image[i, j, rgbα] = 1
+
+# Function which determines the scatter size and α value of points in
+# a 3D figure, given the number of dots N and the collective α for a
+# homogeneous column of such points throughout the box.
+@cython.header(
+    # Arguments
+    N='Py_ssize_t',
+    α_homogeneous='double',
+    fig=object,  # matplotlib.figure.Figure
+    # Locals
+    scatter_size='double',
+    α='double',
+    α_min='double',
+    returns=tuple,
+)
+def alpha_blend(N, α_homogeneous, fig=None):
+    if fig is None:
+        fig = plt.gcf()
+    # The particle (fluid element) size on the figure.
+    # The size is chosen such that the particles stand side
+    # by side in a homogeneous universe (more or less).
+    scatter_size = 1550*np.prod(fig.get_size_inches())/N**(2./3.)
+    # Determine the α value which ensures that a homogeneous column
+    # through the entire box will result in a combined α value
+    # of α_homogeneous. Alpha blending is non-linear,
+    # but via the code given in
+    #   https://stackoverflow.com/questions/28946400
+    # I have found that 4/∛N is a good approximation to
+    # the α value needed to make the combined α equal to 1.
+    α = α_homogeneous*4/cbrt(N)
+    # Alpha values below this small value appear completely invisible,
+    # for whatever reason.
+    α_min = 0.0059
+    # Alpha values lower than α_min are not allowed.
+    # Shrink the scatter size to make up for the larger α.
+    if α < α_min:
+        scatter_size *= α/α_min
+        α = α_min
+    return scatter_size, α
 
 # Function for adding background color to render3D_image
 @cython.header(# Locals

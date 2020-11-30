@@ -44,13 +44,12 @@ __version__ = 'master'
 ############################################
 # Miscellaneous
 import ast, collections, contextlib, ctypes, cython, functools, hashlib
-import importlib, inspect, itertools, keyword, operator, os, re, shutil, sys
-import textwrap, traceback, types, unicodedata, warnings
+import importlib, inspect, itertools, keyword, logging, operator, os, re
+import shutil, sys, textwrap, traceback, types, unicodedata, warnings
 from copy import deepcopy
-# Math
+# Numerics
 # (note that numpy.array is purposely not imported directly into the
 # global namespace, as this does not play well with Cython).
-import math
 import numpy as np
 from numpy import arange, asarray, empty, linspace, logspace, ones, zeros
 import scipy
@@ -350,11 +349,9 @@ def fix_minor_tick_labels(fig=None):
     # correctly due to it being inclosed in \mathdefault{}, leading to
     # a MathTextWarning and the \times being replaced
     # with a dummy symbol. The problem is fully described here:
-    # https://stackoverflow.com/questions/47253462
-    # /matplotlib-2-mathtext-glyph-errors-in-tick-labels
+    #   https://stackoverflow.com/questions/47253462
     # This function serves as a workaround. To avoid the warning,
     # you must call this function before calling tight_layout().
-    import logging
     if fig is None:
         fig = plt.gcf()
     # Force the figure to be drawn, ignoring the warning about \times
@@ -368,14 +365,19 @@ def fix_minor_tick_labels(fig=None):
         warnings.simplefilter('ignore', category=matplotlib.mathtext.MathTextWarning)
         fig.canvas.draw()
     logger.setLevel(original_level)
+    # Remove \mathdefault from all minor tick labels
     for ax in fig.axes:
-        # Remove \mathdefault from all minor tick labels
-        labels = [label.get_text().replace(r'\mathdefault', '')
-            for label in ax.get_xminorticklabels()]
-        ax.set_xticklabels(labels, minor=True)
-        labels = [label.get_text().replace(r'\mathdefault', '')
-            for label in ax.get_yminorticklabels()]
-        ax.set_yticklabels(labels, minor=True)
+        for xy in 'xy':
+            labels = [
+                label.get_text().replace(r'\mathdefault', '')
+                for label in getattr(ax, f'get_{xy}minorticklabels')()
+            ]
+            # In at least matplotlib 3.3, setting the tick labels can
+            # throw an erroneous UserWarning:
+            #   FixedFormatter should only be used together with FixedLocator
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore', category=UserWarning)
+                getattr(ax, f'set_{xy}ticklabels')(labels, minor=True)
 # Overwrite plt.tight_layout and plt.savefig so that these call the
 # fix_minor_tick_labels function before executing their usual code.
 def fix_minor_tick_labels_decorator(f):
@@ -1418,9 +1420,11 @@ unit_relations['J'      ] = (
     unit_relations['kg']*unit_relations['m']**2*unit_relations['s']**(-2)
 )
 unit_relations['eV'     ] = 1.602176634e-19*unit_relations['J'      ]  # Particle data group, 2019
+unit_relations['meV'    ] = 1e-3           *unit_relations['eV'     ]
 unit_relations['keV'    ] = 1e+3           *unit_relations['eV'     ]
 unit_relations['MeV'    ] = 1e+6           *unit_relations['eV'     ]
 unit_relations['GeV'    ] = 1e+9           *unit_relations['eV'     ]
+unit_relations['TeV'    ] = 1e+12          *unit_relations['eV'     ]
 # Add additional units/constants
 unit_relations['light_speed'] = unit_relations['c'] = unit_relations['ly']/unit_relations['yr']
 unit_relations['h_bar'] = unit_relations['hbar'] = unit_relations[unicode('ħ')] = unit_relations[asciify('ħ')] = (
@@ -1939,10 +1943,10 @@ def to_rgb(value):
     if isinstance(value, int) or isinstance(value, float):
         value = str(value)
     try:
-        rgb = np.array(matplotlib.colors.ColorConverter().to_rgb(value), dtype=C2np['double'])
+        rgb = asarray(matplotlib.colors.ColorConverter().to_rgb(value), dtype=C2np['double'])
     except:
         # Could not convert value to color
-        return np.array([-1, -1, -1])
+        return asarray([-1, -1, -1])
     return rgb
 def to_rgbα(value, default_α=1):
     if isinstance(value, str):
@@ -1957,7 +1961,7 @@ def to_rgbα(value, default_α=1):
     elif len(value) == 4:
         return to_rgb(value[:3]), value[3]
     # Could not convert value to color and α
-    return np.array([-1, -1, -1]), default_α
+    return asarray([-1, -1, -1]), default_α
 cython.declare(
     # Input/output
     initial_conditions=object,  # str or container of str's
@@ -3324,9 +3328,6 @@ for key, val in vars(np).items():
 # builtin hybrid min and max functions.
 units_dict['min'] = produce_np_and_builtin_function('min')
 units_dict['max'] = produce_np_and_builtin_function('max')
-# Add everything from the math module
-for key, val in vars(math).items():
-    units_dict.setdefault(key, val)
 # Add special functions
 units_dict.setdefault('cbrt', lambda x: x**(1/3))
 
@@ -3494,7 +3495,9 @@ def call_class(extra_params=None, sleep_time=0.1, mode='single node', class_call
         k_output_values_nodes = [
             list(map(str, k_output_values_node_arr))
             for k_output_values_node_arr in
-            asarray(list(reversed(k_output_values_nodes)))[np.argsort(np.argsort(nprocs_nodes))]
+            asarray(list(reversed(k_output_values_nodes)), dtype=object)[
+                np.argsort(np.argsort(nprocs_nodes))
+           ]
         ]
         # Sort the k modes within each node
         for k_output_values_node in k_output_values_nodes:

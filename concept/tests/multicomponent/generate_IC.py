@@ -56,9 +56,9 @@ for n in range(ncomponents):
     component.populate(asarray(posx[n]), 'posx')
     component.populate(asarray(posy[n]), 'posy')
     component.populate(asarray(posz[n]), 'posz')
-    component.populate(zeros(N), 'momx')
-    component.populate(zeros(N), 'momy')
-    component.populate(zeros(N), 'momz')
+    component.populate(zeros(N, dtype=float), 'momx')
+    component.populate(zeros(N, dtype=float), 'momy')
+    component.populate(zeros(N, dtype=float), 'momz')
     components.append(component)
 
 # Save snapshot

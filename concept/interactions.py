@@ -647,13 +647,13 @@ def domain_domain_communication(pairing_level, only_supply):
         ranks_recv = []
         offsets_list = []
         # - This domain itself
-        offsets = np.array([0, 0, 0], dtype=C2np['int'])
+        offsets = asarray([0, 0, 0], dtype=C2np['int'])
         offsets_list.append(offsets.copy())
         ranks_send.append(rank_neighbouring_domain(*(+offsets)))
         ranks_recv.append(rank_neighbouring_domain(*(-offsets)))
         # - Domains at the 6 faces
         #   (when only_supply is False, send right, forward, upward)
-        direction = np.array([+1, 0, 0], dtype=C2np['int'])
+        direction = asarray([+1, 0, 0], dtype=C2np['int'])
         for i in range(3):
             offsets = np.roll(direction, i)
             offsets_list.append(offsets.copy())
@@ -669,8 +669,8 @@ def domain_domain_communication(pairing_level, only_supply):
         #     {forward, upward }, {backward , upward  },
         #     {right  , upward }, {rightward, downward},
         # )
-        direction = np.array([+1, +1,  0], dtype=C2np['int'])
-        flip      = np.array([-1, +1, +1], dtype=C2np['int'])
+        direction = asarray([+1, +1,  0], dtype=C2np['int'])
+        flip      = asarray([-1, +1, +1], dtype=C2np['int'])
         for i in range(3):
             offsets = np.roll(direction, i)
             offsets_list.append(offsets.copy())
@@ -695,7 +695,7 @@ def domain_domain_communication(pairing_level, only_supply):
         #    {left , forward , upward  },
         #    {right, backward, upward  },
         # )
-        offsets = np.array([+1, +1, +1], dtype=C2np['int'])
+        offsets = asarray([+1, +1, +1], dtype=C2np['int'])
         offsets_list.append(offsets.copy())
         ranks_send.append(rank_neighbouring_domain(*(+offsets)))
         ranks_recv.append(rank_neighbouring_domain(*(-offsets)))
@@ -703,7 +703,7 @@ def domain_domain_communication(pairing_level, only_supply):
             offsets_list.append(-offsets)
             ranks_send.append(rank_neighbouring_domain(*(-offsets)))
             ranks_recv.append(rank_neighbouring_domain(*(+offsets)))
-        direction = np.array([+1, +1, -1], dtype=C2np['int'])
+        direction = asarray([+1, +1, -1], dtype=C2np['int'])
         for i in range(3):
             offsets = np.roll(direction, i)
             offsets_list.append(offsets.copy())
@@ -714,10 +714,10 @@ def domain_domain_communication(pairing_level, only_supply):
                 ranks_send.append(rank_neighbouring_domain(*(-offsets)))
                 ranks_recv.append(rank_neighbouring_domain(*(+offsets)))
         domain_domain_communication_dict[pairing_level, only_supply] = (
-            (np.array(ranks_send, dtype=C2np['int']), np.array(ranks_recv, dtype=C2np['int']))
+            (asarray(ranks_send, dtype=C2np['int']), asarray(ranks_recv, dtype=C2np['int']))
         )
         domain_domain_communication_dict[pairing_level, only_supply, 'domain_pair_offsets'] = (
-            np.array(offsets_list, dtype=C2np['Py_ssize_t'])
+            asarray(offsets_list, dtype=C2np['Py_ssize_t'])
         )
     else:
         abort(
@@ -2032,7 +2032,7 @@ def particle_mesh(
     for index, ki, kj, kk, factor, θ in fourier_loop(gridsize_global,
         skip_origin=True, deconv_order=deconv_order_global,
     ):
-        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
+        k2 = ℤ[ℤ[ℤ[kj**2] + ki**2] + kk**2]
         # The potential factor, for converting the slab values
         # to the desired potential.
         with unswitch(5):

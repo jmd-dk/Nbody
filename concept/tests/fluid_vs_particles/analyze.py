@@ -77,7 +77,7 @@ def find_biggest_halo(component):
     ϱ = component.ϱ.grid_noghosts[:-1, :-1, :-1]
     indices = np.unravel_index(np.argmax(ϱ), ϱ.shape)
     δ_halo_boundary = 0.5
-    halo = zeros(ϱ.shape[0]//2)
+    halo = zeros(ϱ.shape[0]//2, dtype=float)
     for r in range(ϱ.shape[0]//2):
         count = 0
         for         i in range(-r, r + 1):
@@ -133,10 +133,11 @@ for (a_i,
     for i in range(N_largest_halos):
         d2 = 0
         for dim in range(3):
-            d2 += np.min([abs(indices_particles[dim] - indices_fluid[i][dim]),
-                          abs(indices_particles[dim] - indices_fluid[i][dim] + gridsize),
-                          abs(indices_particles[dim] - indices_fluid[i][dim] - gridsize),
-                          ])**2
+            d2 += min([
+                abs(indices_particles[dim] - indices_fluid[i][dim]),
+                abs(indices_particles[dim] - indices_fluid[i][dim] + gridsize),
+                abs(indices_particles[dim] - indices_fluid[i][dim] - gridsize),
+            ])**2
         distances.append(sqrt(d2))
     index = np.argmin(distances)
     indices_fluid = indices_fluid[index]

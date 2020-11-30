@@ -4,7 +4,7 @@
 # of processes and compares the result. The PP algorithm is used.
 
 # Number of processes to use
-nprocs_list="1 2 4 8"
+nprocs_list=(1 2 4 8)
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"

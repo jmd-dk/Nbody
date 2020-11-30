@@ -32,12 +32,12 @@ N = Nx*Ny*Nz
 mass = ρ_mbar*boxsize**3/N
 mass_unitless_tot = ᔑdxϱ(0, boxsize)
 mass_unitless = mass_unitless_tot/Nx
-posx = zeros(N)
-posy = zeros(N)
-posz = zeros(N)
-momx = zeros(N)
-momy = zeros(N)
-momz = zeros(N)
+posx = zeros(N, dtype=float)
+posy = zeros(N, dtype=float)
+posz = zeros(N, dtype=float)
+momx = zeros(N, dtype=float)
+momy = zeros(N, dtype=float)
+momz = zeros(N, dtype=float)
 x = 0
 count = 0
 for i in range(Nx):

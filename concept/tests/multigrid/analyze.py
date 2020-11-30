@@ -33,9 +33,9 @@ powerspecs = {gridsize: powerspecs[gridsize] for gridsize in sorted(powerspecs.k
 def check(data_small, data_large, gridsize_small):
     nyquist_small = gridsize_small//2
     k_nyquist_small = 2*π/boxsize*nyquist_small
-    n = np.sum(data_small['k'] < k_nyquist_small) - 1
+    n = sum(data_small['k'] < k_nyquist_small) - 1
     for quantity in ('k', 'modes', 'P'):
-        if np.any(data_large[quantity][:n] != data_small[quantity][:n]):
+        if any(data_large[quantity][:n] != data_small[quantity][:n]):
             abort(
                 f'Found different {quantity} below Nyquist frequency '
                 f'of the power spectra in "{subtest_dir}". '
@@ -85,7 +85,7 @@ for gridsize, render2D in render2Ds.items():
 plot_file = f'{subtest_dir}/plot.png'
 sines = {}
 for (gridsize, render2D), linestyle in zip(render2Ds.items(), ('-', '--', ':')):
-    x = (0.5 + np.arange(gridsize))*boxsize/gridsize
+    x = (0.5 + arange(gridsize))*boxsize/gridsize
     y = render2D[:, 0]
     sines[gridsize] = (x, y)
     plt.plot(x, y, linestyle, label=f'gridsize {gridsize}')
@@ -111,8 +111,8 @@ extrema = {}
 for gridsize, (x, y) in sines.items():
     # Find index of first trough
     safety = 1e-6
-    miny = np.min(y)
-    height = np.max(y) - miny
+    miny = min(y)
+    height = max(y) - miny
     for index in range(gridsize):
         if y[index] <= miny*(1 + safety):
             break
@@ -124,8 +124,8 @@ for troughs1, peaks1 in extrema.values():
     break
 for gridsize, (troughs, peaks) in extrema.items():
     if (
-           not np.all(np.isclose(troughs, troughs1, rel_tol, 0))
-        or not np.all(np.isclose(peaks  , peaks1  , rel_tol, 0))
+           not np.allclose(troughs, troughs1, rel_tol, 0)
+        or not np.allclose(peaks  , peaks1  , rel_tol, 0)
     ):
         abort(
             f'Erroneous phase shift obtained through grid scaling. '

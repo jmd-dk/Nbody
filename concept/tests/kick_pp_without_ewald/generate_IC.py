@@ -12,12 +12,12 @@ from snapshot import save
 N = 8
 mass = ρ_mbar*boxsize**3/N
 component = Component('GADGET halos', 'matter', N=N, mass=mass)
-component.populate(np.array([0.26]*4 + [0.74]*4)*boxsize, 'posx')
-component.populate(np.array([0.25, 0.25, 0.75, 0.75]*2)*boxsize, 'posy')
-component.populate(np.array([0.25, 0.75, 0.75, 0.25]*2)*boxsize, 'posz')
-component.populate(zeros(N), 'momx')
-component.populate(zeros(N), 'momy')
-component.populate(zeros(N), 'momz')
+component.populate(asarray([0.26]*4 + [0.74]*4       )*boxsize, 'posx')
+component.populate(asarray([0.25, 0.25, 0.75, 0.75]*2)*boxsize, 'posy')
+component.populate(asarray([0.25, 0.75, 0.75, 0.25]*2)*boxsize, 'posz')
+component.populate(zeros(N, dtype=float), 'momx')
+component.populate(zeros(N, dtype=float), 'momy')
+component.populate(zeros(N, dtype=float), 'momz')
 
 # Save snapshot
 save(component, initial_conditions)

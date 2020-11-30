@@ -7,13 +7,8 @@ powerspec_select = {'all': {'data': True}}
 
 # Numerical parameters
 _size = 128
-boxsize = 8*Gpc
-powerspec_options = {
-    'gridsize'     : _size,
-    'interpolation': 'PCS',
-    'interlace'    : True,
-    'k_max'        : '1.5*Nyquist',
-}
+boxsize            = 8*Gpc
+powerspec_options  = {'gridsize': _size}
 k_modes_per_decade = 30
 
 # Cosmology
