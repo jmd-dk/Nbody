@@ -19,15 +19,17 @@ momy = zeros(N)
 momz = zeros(N)
 count = 0
 boxsize_over_N_lin = boxsize/N_lin
+tophat = is_selected(component, powerspec_options['tophat'])
+ψ = random_gaussian(tophat, (N, 3))
 for i in range(N_lin):
     x = i*boxsize_over_N_lin
     for j in range(N_lin):
         y = j*boxsize_over_N_lin
         for k in range(N_lin):
             z = k*boxsize_over_N_lin
-            posx[count] = mod(x + random_gaussian(R_tophat), boxsize)
-            posy[count] = mod(y + random_gaussian(R_tophat), boxsize)
-            posz[count] = mod(z + random_gaussian(R_tophat), boxsize)
+            posx[count] = mod(x + ψ[count, 0], boxsize)
+            posy[count] = mod(y + ψ[count, 1], boxsize)
+            posz[count] = mod(z + ψ[count, 2], boxsize)
             count += 1
 component.populate(posx, 'posx')
 component.populate(posy, 'posy')

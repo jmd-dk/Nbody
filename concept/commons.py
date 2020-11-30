@@ -1980,7 +1980,6 @@ cython.declare(
     ewald_gridsize='Py_ssize_t',
     shortrange_params=dict,
     powerspec_options=dict,
-    R_tophat='double',
     k_modes_per_decade=dict,
     # Cosmology
     H0='double',
@@ -2533,8 +2532,17 @@ powerspec_options_defaults = {
     'interlace': {
         'default': True,
     },
+    'k_max': {
+        'default': 'Nyquist',
+    },
     'binsize': {
-        'default': 2*π/boxsize,
+        'default': {
+            '1*k_min': 1*π/boxsize,
+            '5*k_min': 2*π/boxsize,
+        },
+    },
+    'tophat': {
+        'default': '8*Mpc/h',
     },
     'significant figures': {
         'default': 8,
@@ -2564,12 +2572,25 @@ for key, val in d.copy().items():
 d = powerspec_options['interpolation']
 for key, val in d.copy().items():
     d[key] = int(interpolation_orders.get(str(val).upper(), val))
+d = powerspec_options['k_max']
+for key, val in d.copy().items():
+    if isinstance(val, str):
+        d[key] = val.replace('Nyquist', 'nyquist')
+d = powerspec_options['binsize']
+for key, val in d.copy().items():
+    if not isinstance(val, dict):
+        val = {1: val}
+    replace_ellipsis(val)
+    if len(val) == 1:
+        val.update({
+            (f'{key} + 1' if isinstance(key, str) else key + 1): val2
+            for key, val2 in val.items()
+        })
+    d[key] = val
 for key in powerspec_options:
     if key not in powerspec_options_defaults:
         abort(f'powerspec_options["{key}"] not implemented')
 user_params['powerspec_options'] = powerspec_options
-R_tophat = float(user_params.get('R_tophat', -1))  # Default value will be set later
-user_params['R_tophat'] = R_tophat
 if isinstance(user_params.get('k_modes_per_decade', {}), (int, float)):
     k_modes_per_decade = {1: user_params['k_modes_per_decade']}
 else:
@@ -3271,7 +3292,6 @@ if 'ntimes' in special_params:
 # Add physical quantities.
 units_dict.setdefault('G_Newton'              , G_Newton              )
 units_dict.setdefault('H0'                    , H0                    )
-units_dict.setdefault('R_tophat'              , R_tophat              )
 units_dict.setdefault('a_begin'               , a_begin               )
 units_dict.setdefault('boxsize'               , boxsize               )
 units_dict.setdefault('t_begin'               , t_begin               )
@@ -4518,18 +4538,20 @@ for d in shortrange_params.values():
         if key == 'subtiling':
             if isinstance(val, str) and val != 'automatic':
                 abort(f'Failed to interpret subtiling "{val}"')
+# Replace h in power spectrum tophat
+d = powerspec_options['tophat']
+for key, val in d.copy().items():
+    if isinstance(val, str):
+        if enable_Hubble:
+            h = H0/(100*units.km/(units.s*units.Mpc))
+        else:
+            h = 1
+        d[key] = eval_unit(val.replace('h', f'({h})'), units_dict)
 # Abort on negative a_begin
 if a_begin <= 0:
     abort(
         f'Beginning of simulation set to a = {a_begin}, but 0 < a is required'
     )
-# Now that we know the value of H0 we can set R_tophat to the usual
-# 8 Mpc/h (if it has not been set by the user).
-if R_tophat == -1:
-    R_tophat = 8*units.Mpc
-    if enable_Hubble:
-        R_tophat /= H0/(100*units.km/(units.s*units.Mpc))
-    user_params['R_tophat'] = R_tophat
 # Abort on negative t_begin when running a cosmological simulation.
 # Even in a non-cosmological context, negative t_begin might
 # cause trouble, so we print a warning here.

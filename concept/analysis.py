@@ -76,6 +76,7 @@ def powerspec(components, filename):
     declaration=object,  # PowerspecDeclaration
     declarations=list,
     index='Py_ssize_t',
+    k2_max='Py_ssize_t',
     k_bin_centers='double[::1]',
     k_bin_indices='Py_ssize_t[::1]',
     n_modes='Py_ssize_t[::1]',
@@ -101,8 +102,9 @@ def get_powerspec_declarations(components):
     # Add missing declaration fields
     for index, declaration in enumerate(declarations):
         # Get bin information
-        k_bin_indices, k_bin_centers, n_modes, n_modes_max = get_powerspec_bins(
+        k2_max, k_bin_indices, k_bin_centers, n_modes, n_modes_max = get_powerspec_bins(
             declaration.gridsize,
+            declaration.k_max,
             declaration.binsize,
         )
         # Allocate arrays for storing the power
@@ -110,6 +112,7 @@ def get_powerspec_declarations(components):
         power_linear = (asarray(power).copy() if declaration.do_linear else None)
         # Replace old declaration with a new, fully populated one
         declaration = declaration._replace(
+            k2_max=k2_max,
             k_bin_indices=k_bin_indices,
             k_bin_centers=k_bin_centers,
             n_modes=n_modes,
@@ -127,7 +130,8 @@ powerspec_declarations_cache = {}
 # Create the PowerspecDeclaration type
 fields = (
     'components', 'do_data', 'do_linear', 'do_plot', 'gridsize',
-    'interpolation', 'deconvolve', 'interlace', 'binsize', 'significant_figures',
+    'interpolation', 'deconvolve', 'interlace',
+    'k2_max', 'k_max', 'binsize', 'tophat', 'significant_figures',
     'k_bin_indices', 'k_bin_centers', 'n_modes', 'n_modes_max', 'power', 'power_linear',
 )
 PowerspecDeclaration = collections.namedtuple(
@@ -139,10 +143,12 @@ PowerspecDeclaration = collections.namedtuple(
 @cython.header(
     # Arguments
     gridsize='Py_ssize_t',
-    binsize='double',
+    k_max=object,  # double or str
+    binsize=dict,
     # Locals
-    binsize_min='double',
     cache_key=tuple,
+    dist_left='double',
+    dist_right='double',
     factor='double',
     index='Py_ssize_t',
     k2='Py_ssize_t',
@@ -152,9 +158,7 @@ PowerspecDeclaration = collections.namedtuple(
     k_bin_index='Py_ssize_t',
     k_bin_index_prev='Py_ssize_t',
     k_bin_indices='Py_ssize_t[::1]',
-    k_bin_size='double',
     k_magnitude='double',
-    k_max='double',
     k_min='double',
     ki='Py_ssize_t',
     kj='Py_ssize_t',
@@ -168,69 +172,71 @@ PowerspecDeclaration = collections.namedtuple(
     θ='double',
     returns=tuple,
 )
-def get_powerspec_bins(gridsize, binsize):
-    """The returned arrays are:
-    - k_bin_indices: Mapping from k⃗² (grid units) to bin index, i.e.
+def get_powerspec_bins(gridsize, k_max, binsize):
+    """The returned objects are:
+    - k2_max: Maximum value of k² (grid units).
+    - k_bin_indices: Array mapping k² (grid units) to bin index, i.e.
         k_bin_index = k_bin_indices[k2]
       All processes will have a copy of this array.
-    - k_bin_centers: Mapping from bin index to |k⃗|, i.e.
+    - k_bin_centers: Array mapping bin index to |k⃗|, i.e.
         k_bin_center = k_bin_centers[k_bin_index]
       This array lives on the master process only.
-    - n_modes: Mapping from bin index to number of modes, i.e.
+    - n_modes: Array mapping bin index to number of modes, i.e.
         n = n_modes[bin_index]
       This array lives on the master process only.
     """
     # Look up in the cache
-    cache_key = (gridsize, binsize)
+    cache_key = (gridsize, k_max, tuple(binsize.items()))
     powerspec_bins = powerspec_bins_cache.get(cache_key)
     if powerspec_bins:
         return powerspec_bins
-    # Maximum value of k² (grid units)
-    nyquist = gridsize//2
-    k2_max = 3*(nyquist - 1)**2
-    # Maximum and minum k values
+    # Minimum value of k (physical)
     k_min = ℝ[2*π/boxsize]
+    # Maximum value of k (physical) and k² (grid units)
+    nyquist = gridsize//2
+    if isinstance(k_max, str):
+        k_max = k_max.replace('nyquist' , f'({2*π/boxsize*nyquist})')
+        k_max = k_max.replace('gridsize', f'({gridsize})')
+        k_max = eval_unit(k_max, units_dict)
+    if k_max < k_min:
+        masterwarn(
+            f'Power spectrum k_max was set to {k_max} {unit_length}⁻¹ '
+            f'< k_min = 2π/boxsize = {k_min} {unit_length}⁻¹. '
+            f'Setting k_max = k_min.'
+        )
+        k_max = k_min
+    k2_max = int(round((k_max/ℝ[2*π/boxsize])**2))
+    # No need for k2_max to be larger than the largest possible mode
+    k2_max = pairmin(k2_max, 3*nyquist**2)
+    # Correct k_max
     k_max = ℝ[2*π/boxsize]*sqrt(k2_max)
-    # Construct linear k bins, each with a linear size given by the
-    # binsize argument. The k_bin_centers will be changed later
-    # according to the k² values on the 3D grid that falls inside
-    # each bin. The final placing of the bin centers are then really
-    # defined indirectly by k_bin_indices below (which depend on the
-    # initial values given to k_bin_centers).
-    # A bin size below binsize_min is guaranteed to never bin
-    # separate k² together in the same bin, and so binsize_min is the
-    # smallest bin size allowed.
-    binsize_min = 0.5*(1 - 1e-2)*(
-        + ℝ[2*π/boxsize]*sqrt(ℤ[3*((gridsize + 2)//2)**2] + 1)
-        - ℝ[2*π/boxsize]*sqrt(ℤ[3*((gridsize + 2)//2)**2]    )
-    )
-    k_bin_size = pairmax(binsize, binsize_min)
-    k_bin_centers = np.arange(
-        k_min + (0.5 - 1e+1*machine_ϵ)*k_bin_size,
-        k_max + k_bin_size,
-        k_bin_size,
-    )
+    # Get k of bin centers using a running bin size
+    # as specified by binsize.
+    k_bin_centers = construct_k_bin_centers(k_min, k_max, binsize, gridsize, nyquist)
     # Construct array mapping k2 (grid units) to bin index
-    k_bin_indices = empty(k2_max + 1, dtype=C2np['Py_ssize_t'])
+    k_bin_indices = empty(1 + k2_max, dtype=C2np['Py_ssize_t'])
     k_bin_indices[0] = 0
-    index = 1
     for k2 in range(1, k_bin_indices.shape[0]):
         k_magnitude = ℝ[2*π/boxsize]*sqrt(k2)
-        # Find index of closest bin center
-        for index in range(index, ℤ[k_bin_centers.shape[0]]):
-            k_bin_center = k_bin_centers[index]
-            if k_bin_center > k_magnitude:
-                # k2 belongs to either bin (index - 1) or bin index
-                if k_magnitude - k_bin_centers[ℤ[index - 1]] < k_bin_center - k_magnitude:
-                    k_bin_indices[k2] = ℤ[index - 1]
-                else:
-                    k_bin_indices[k2] = index
-                break
+        # Find index of closest (in linear distance) bin center
+        index = np.searchsorted(k_bin_centers, k_magnitude, 'left')
+        if index == ℤ[k_bin_centers.shape[0]]:
+            index -= 1
+        elif index != 0:
+            dist_left  = k_magnitude - k_bin_centers[index - 1]
+            dist_right = k_bin_centers[index] - k_magnitude
+            index -= (dist_left <= dist_right)
+        k_bin_indices[k2] = index
     # Loop as if over 3D Fourier slabs, tallying up the multiplicity
     # (number of modes) for each k².
     n_modes_fine = zeros(k_bin_indices.shape[0], dtype=C2np['Py_ssize_t'])
-    for index, ki, kj, kk, factor, θ in fourier_loop(gridsize, sparse=True, skip_origin=True):
-        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
+    for index, ki, kj, kk, factor, θ in fourier_loop(
+        gridsize,
+        sparse=True,
+        skip_origin=True,
+        k2_max=k2_max,
+    ):
+        k2 = ℤ[ℤ[ℤ[kj**2] + ki**2] + kk**2]
         n_modes_fine[k2] += 1
     # Sum n_modes_fine into the master process
     Reduce(
@@ -246,8 +252,14 @@ def get_powerspec_bins(gridsize, binsize):
         # This is the only data known to the slaves.
         Bcast(k_bin_indices)
         k_bin_centers = n_modes = None
-        powerspec_bins_cache[cache_key] = k_bin_indices, k_bin_centers, n_modes, n_modes_max
-        return k_bin_indices, k_bin_centers, n_modes, n_modes_max
+        powerspec_bins_cache[cache_key] = (
+            k2_max,
+            k_bin_indices,
+            k_bin_centers,
+            n_modes,
+            n_modes_max,
+        )
+        return powerspec_bins_cache[cache_key]
     # Redefine k_bin_centers so that each element is the mean of all the
     # k values that falls within the bin, using the multiplicity
     # (n_modes_fine) as weight. Simultaneously construct n_modes from
@@ -286,11 +298,80 @@ def get_powerspec_bins(gridsize, binsize):
     mask = (asarray(n_modes) > 0)
     n_modes = asarray(n_modes)[mask]
     k_bin_centers = asarray(k_bin_centers)[mask]
-    powerspec_bins_cache[cache_key] = k_bin_indices, k_bin_centers, n_modes, n_modes_max
-    return k_bin_indices, k_bin_centers, n_modes, n_modes_max
+    # Cache and return result
+    powerspec_bins = (
+        k2_max,
+        k_bin_indices,
+        k_bin_centers,
+        n_modes,
+        n_modes_max,
+    )
+    powerspec_bins_cache[cache_key] = powerspec_bins
+    return powerspec_bins
 # Cache used by the get_powerspec_bins() function
 cython.declare(powerspec_bins_cache=dict)
 powerspec_bins_cache = {}
+
+# Helper function to get_powerspec_bins()
+def construct_k_bin_centers(k_min, k_max, binsize, gridsize, nyquist):
+    # A bin size below binsize_min is guaranteed to never bin
+    # separate k² together in the same bin, and so binsize_min is the
+    # smallest bin size allowed.
+    binsize_min = (
+        0.5*(1 - 1e-2)*ℝ[2*π/boxsize]
+        *(sqrt(3*nyquist**2 + 1) - sqrt(3*nyquist**2))
+    )
+    # Evaluate str keys in the binsize dict
+    binsize_float = {}
+    for k, val in binsize.items():
+        if isinstance(k, str):
+            k = k.replace('nyquist' , f'({2*π/boxsize*nyquist})')
+            k = k.replace('gridsize', f'({gridsize})')
+            k = k.replace('k_min'   , f'({k_min})')
+            k = k.replace('k_max'   , f'({k_max})')
+            k = eval_unit(k, units_dict)
+        binsize_float[k] = np.max((val, binsize_min))
+    binsize = binsize_float
+    if len(binsize) == 1:
+        binsize.update({k + 1: val for k, val in binsize.items()})
+    # Create linear spline mapping k to bin size
+    binsize_interp = lambda k, *, f=scipy.interpolate.interp1d(
+        tuple(binsize.keys()),
+        tuple(binsize.values()),
+        'linear',
+        bounds_error=False,
+        fill_value=(
+            binsize[np.min(tuple(binsize.keys()))],
+            binsize[np.max(tuple(binsize.keys()))],
+        ),
+    ): float(f(k))
+    # Construct k_bin_centers using a running bin size
+    k_bin_centers = []
+    k_bin_size = binsize_interp(k_min)
+    k_bin_right = k_min
+    while k_bin_right < k_max:
+        k_bin_left = k_bin_right
+        k_bin_size = binsize_interp(k_bin_left + 0.5*k_bin_size)
+        k_bin_right = k_bin_left + k_bin_size
+        k_bin_center = 0.5*(k_bin_left + k_bin_right)
+        k_bin_centers.append(k_bin_center)
+    if not k_bin_centers:
+        k_bin_centers.append(0.5*(k_min + k_max))
+    k_bin_centers = asarray(k_bin_centers, dtype=C2np['double'])
+    # Stretch and shift the array so that the end points match their
+    # appropriate values exactly. Note that while the rightmost bin only
+    # just includes k_max, half of the leftmost bin is less than k_min,
+    # disfavouring binning of different modes into the very first bin.
+    if len(k_bin_centers) > 1:
+        k_bin_center_leftmost  = k_min
+        k_bin_center_rightmost = k_max - 0.5*binsize_interp(k_max - 0.5*binsize_interp(k_max))
+        k_bin_centers = (
+            k_bin_center_leftmost + (k_bin_centers - k_bin_centers[0])*(
+                (k_bin_center_rightmost - k_bin_center_leftmost)
+                /(k_bin_centers[-1] - k_bin_centers[0])
+            )
+        )
+    return k_bin_centers
 
 # Function which given a power spectrum declaration correctly populated
 # with all fields will compute its power spectrum.
@@ -311,6 +392,7 @@ powerspec_bins_cache = {}
     interlace='bint',
     interpolation='int',
     k2='Py_ssize_t',
+    k2_max='Py_ssize_t',
     k_bin_indices='Py_ssize_t[::1]',
     k_bin_indices_ptr='Py_ssize_t*',
     k_bin_index='Py_ssize_t',
@@ -336,6 +418,7 @@ def compute_powerspec(declaration):
     interpolation = declaration.interpolation
     deconvolve    = declaration.deconvolve
     interlace     = declaration.interlace
+    k2_max        = declaration.k2_max
     k_bin_indices = declaration.k_bin_indices
     k_bin_indices_ptr = cython.address(k_bin_indices[:])
     n_modes = declaration.n_modes
@@ -366,8 +449,13 @@ def compute_powerspec(declaration):
     # Loop over the slabs,
     # tallying up the power in the different k² bins.
     slab_ptr = cython.address(slab[:, :, :])
-    for index, ki, kj, kk, factor, θ in fourier_loop(gridsize, sparse=True, skip_origin=True):
-        k2 = ℤ[ℤ[kj**2] + ki**2] + kk**2
+    for index, ki, kj, kk, factor, θ in fourier_loop(
+        gridsize,
+        sparse=True,
+        skip_origin=True,
+        k2_max=k2_max,
+    ):
+        k2 = ℤ[ℤ[ℤ[kj**2] + ki**2] + kk**2]
         # Compute the power at this k²
         re = slab_ptr[index    ]
         im = slab_ptr[index + 1]
@@ -452,8 +540,6 @@ def compute_powerspec_linear(declaration):
     declaration=object,  # PowerspecDeclaration
     declaration_group=list,
     declaration_groups=dict,
-    delimiter=str,
-    fmt=list,
     header=str,
     header_info=object,  # PowerspecHeaderInfo
     k_bin_centers='double[::1]',
@@ -497,11 +583,11 @@ def save_powerspec(declarations, filename):
         + '.'
     )
     # The output data consists of a "k" column and a "modes" column for
-    # each unique grid size, along with a "power" column for each power
-    # spectrum and possibly another "power" if the linear power spectrum
-    # should be outputted as well. The number of rows in a column
-    # depends on the grid size, but to make it easier to read back in we
-    # make all columns the same length by appending NaNs as required
+    # each group, along with a "power" column for each power spectrum
+    # and possibly another "power" if the linear power spectrum should
+    # be outputted as well. The number of rows in a column depends on
+    # the grid size, but to make it easier to read back in we make all
+    # columns the same length by appending NaNs as required
     # (zeros for the modes).
     # Get a 2D array with the right size for storing all data.
     for declaration_group in header_info.declaration_groups.values():
@@ -602,17 +688,26 @@ def get_powerspec_header(declarations):
         column_components.append(
             f'  {{:<{longest_name_size + 1}}} {i}'.format(f'{component.name}:')
         )
-    # Group power spectrum declarations according to their grid size
-    # (in descending order) and bin size (in ascending order).
+    # Group power spectrum declarations according to their grid size,
+    # k2_max, number of unique modes (all in descending order), as well
+    # as the exact k values at which the power spectrum is computed.
     declaration_groups_unordered = collections.defaultdict(list)
     for key, declarations_iter in itertools.groupby(
         declarations,
-        key=(lambda declaration: (declaration.gridsize, declaration.binsize)),
+        key=(lambda declaration: (
+            declaration.gridsize,
+            declaration.k2_max,
+            len(declaration.k_bin_centers),
+            hashlib.sha1(asarray(declaration.k_bin_centers)).hexdigest(),
+        )),
     ):
         declaration_groups_unordered[key] += list(declarations_iter)
     declaration_groups = {
         key: declaration_groups_unordered[key]
-        for key in sorted(declaration_groups_unordered, key=(lambda t: (-t[0], t[1])))
+        for key in sorted(
+            declaration_groups_unordered,
+            key=(lambda t: (-t[0], -t[1], -t[2], t[3])),
+        )
     }
     # The column headings
     column_headings = {
@@ -620,11 +715,6 @@ def get_powerspec_header(declarations):
         'modes': 'modes',
         'power': unicode(f'power [{unit_length}³]'),
     }
-    # The rms density variation σ will be written above each power
-    # spectrum column. Construct the "σ₈" (or similar) string based on
-    # R_tophat. By convention, the unit is Mpc/h.
-    σ_unit = units.Mpc/(H0/(100*units.km/(units.s*units.Mpc))) if enable_Hubble else units.Mpc
-    σ_str = ''.join([unicode('σ'), unicode_subscript(f'{R_tophat/σ_unit:.3g}'), ' = '])
     # Helper function for obtaining the float format and width
     # given number of significant figures.
     def get_formatting(significant_figures):
@@ -644,7 +734,7 @@ def get_powerspec_header(declarations):
     columns_heading = []
     fmt = []
     fmt_int = '%{}u'
-    for (gridsize, binsize), declaration_group in declaration_groups.items():
+    for (gridsize, *_), declaration_group in declaration_groups.items():
         if col > 0:
             # New group with new grid size begins. Insert additional
             # spacing by modifying the last elements of the
@@ -680,6 +770,16 @@ def get_powerspec_header(declarations):
         )
         fmt.append(fmt_int.format(width))
         for declaration in declaration_group:
+            # Construct the rms density variation "σ₈" (or similar)
+            # string. By convention, the unit is Mpc/h.
+            σ_unit = ℝ[
+                units.Mpc/(H0/(100*units.km/(units.s*units.Mpc))) if enable_Hubble else units.Mpc
+            ]
+            σ_str = ''.join([
+                unicode('σ'),
+                unicode_subscript(f'{declaration.tophat/σ_unit:.3g}'),
+                ' = ',
+            ])
             # New power and possibly linear power
             for power_type in range(1 + declaration.do_linear):
                 col += 1
@@ -739,7 +839,7 @@ def get_powerspec_header(declarations):
             width += len(delimiter) + len(column_heading)
     group_header_underlines.append(unicode('╭' + unicode('─')*(width - 2) + '╮'))
     group_headers = []
-    for (gridsize, binsize), group_header_underline in zip(
+    for (gridsize, *_), group_header_underline in zip(
         declaration_groups, group_header_underlines,
     ):
         group_heading = f'grid size {gridsize}'
@@ -787,11 +887,13 @@ PowerspecHeaderInfo = collections.namedtuple(
     k_magnitude='double',
     kR='double',
     power='double[::1]',
+    tophat='double',
     σ2='double',
     σ2_integrand='double[::1]',
     returns='double',
 )
 def compute_powerspec_σ(declaration, linear=False):
+    tophat        = declaration.tophat
     k_bin_centers = declaration.k_bin_centers
     power         = declaration.power
     # If the σ to be computed is of the linear power spectrum,
@@ -801,8 +903,11 @@ def compute_powerspec_σ(declaration, linear=False):
         power = declaration.power_linear
         power = asarray(power)[~np.isnan(power)]
         k_bin_centers = k_bin_centers[:power.shape[0]]
-    # Ensure that the global σ2_integrand array is large enough
+    # We cannot compute the integral if we have less than two points
     size = k_bin_centers.shape[0]
+    if size < 2:
+        return NaN
+    # Ensure that the global σ2_integrand array is large enough
     if σ2_integrand_arr.shape[0] < size:
         σ2_integrand_arr.resize(size, refcheck=False)
     σ2_integrand = σ2_integrand_arr
@@ -815,7 +920,7 @@ def compute_powerspec_σ(declaration, linear=False):
     # meaing that the variable W is really W/3.
     for k_bin_index in range(size):
         k_magnitude = k_bin_centers[k_bin_index]
-        kR = k_magnitude*R_tophat
+        kR = k_magnitude*tophat
         if kR < 1e-3:
             # Use a Taylor expansion of W/3 around kR = 0
             W = 1./3. - 1./30.*kR**2

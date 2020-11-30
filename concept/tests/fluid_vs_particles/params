@@ -35,6 +35,16 @@ potential_options = {
         },
     },
 }
+powerspec_options = {
+    'upstream gridsize': {
+        'particles': '2*cbrt(N)',
+        'fluid'    : 'gridsize',
+    },
+    'interpolation': 'PCS',
+    'deconvolve'   : True,
+    'interlace'    : True,
+    'k_max'        : 2*π/boxsize*(_size//2),
+}
 
 # Cosmology
 H0      = 70*km/(s*Mpc)

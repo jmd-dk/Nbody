@@ -9,12 +9,15 @@ powerspec_select   = {'all': {'data': True, 'plot': True}}
 
 # Numerical parameters
 boxsize = 512*Mpc
+_gridsize = 256
 powerspec_options = {
-    'gridsize'     : 256,
-    'interpolation': 'PCS',
-    'interlace'    : True,
+    'gridsize'           : _gridsize,
+    'interpolation'      : 'PCS',
+    'interlace'          : True,
+    'k_max'              : '1.5*Nyquist',
+    'tophat'             : 8*Mpc,  # Not Mpc/h as Hubble expansion is disabled
+    'significant figures': 8,
 }
-R_tophat = 8*Mpc  # Not Mpc/h as Hubble expansion is disabled
 
 # Debugging options
 enable_Hubble = False

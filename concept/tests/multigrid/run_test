@@ -45,13 +45,17 @@ powerspec_global_list=($((size/4*3)) ${size} $((size/4*5)))
     -c "initial_conditions = {'species': 'matter', 'N': ${size}**3}" \
     -c "output_times = {'snapshot': a_begin}"                        \
     --local
-# Compute power spectra using the different global grid sizes
+# Compute power spectra using the different global grid sizes.
+# Disable the power spectrum binning in order to ensure that the
+# power is measured at the exact same k values
+# (up until the Nyquist frequencies).
 mkdir -p "${subtest_dir}"
 for powerspec_global in ${powerspec_global_list[@]}; do
     "${concept}"                                                        \
         -u powerspec "${this_dir}/output"                               \
         -n 4                                                            \
         -p "${this_dir}/params"                                         \
+        -c "powerspec_options['binsize'] = 0"                           \
         -c "powerspec_options['global gridsize'] = ${powerspec_global}" \
         --local
     mv "${this_dir}/output/powerspec"*.png "${subtest_dir}/powerspec_${powerspec_global}.png"

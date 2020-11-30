@@ -33,6 +33,7 @@ powerspec_options = {
     'interpolation': 'PCS',
     'deconvolve'   : True,
     'interlace'    : True,
+    'k_max'        : 'Nyquist',
 }
 k_modes_per_decade = 8
 

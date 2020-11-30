@@ -2,10 +2,11 @@
 
 # This script performs a test of the power spectrum functionality.
 # It compares the rms density variation with an estimate obtained by
-# taking the rms of cubes the size of spheres with radius R_tophat.
-# It also checks the scaling behaviour of power spectra (both axes,
-# that is, both k and power) against the boxsize and the gridsize
-# of the grid used to compute the power spectra.
+# taking the rms of cubes the size of spheres with radius
+# powerspec_options['tophat']. It also checks the scaling behaviour
+# of power spectra (both axes, that is, both k and power) against the
+# boxsize and the gridsize of the grid used to compute
+# the power spectra.
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"

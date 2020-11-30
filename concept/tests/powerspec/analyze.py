@@ -16,10 +16,12 @@ posy = component.posy
 posz = component.posz
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint(f'Analyzing {this_test} data ...')
 
-# Volume and linear size of cube with the volume of a sphere with radius R_tophat
-V = 4*π/3*R_tophat**3
+# Volume and linear size of cube with the volume of a sphere
+# with radius powerspec_options['tophat'].
+tophat = is_selected(component, powerspec_options['tophat'])
+V = 4*π/3*tophat**3
 L = cbrt(V)
 # The number of complete L*L*L cubes within the box
 N_cubes_lin = int(boxsize//L)
@@ -65,11 +67,14 @@ with open(powerspec_filename, encoding='utf-8') as powespec_file:
     search = None
     while not search:
         header = powespec_file.readline()
-        search = re.search(''.join(['σ',
-                                    unicode_subscript(f'{R_tophat/units.Mpc:.2g}'),
-                                    r' = ([0-9\.e+-]*)',
-                                    ]
-                                   ), header)
+        search = re.search(
+            ''.join([
+                'σ',
+                unicode_subscript(f'{tophat/units.Mpc:.2g}'),
+                r' = ([0-9\.e+-]*)',
+            ]),
+            header,
+        )
 σ_concept = float(search.group(1))
 
 # Do the σ from CO𝘕CEPT agree with the one computed via the cubic boxes?
@@ -108,38 +113,49 @@ if not all(np.abs((power_single_boxsize*2**3 - power_double_boxsize)/power_doubl
 # Halving the gridsize should result in the same min(k), but max(k) should be halved.
 # Also, halving the gridsize should not affect the power at a given k.
 powerspec_filename_whole_gridsize = powerspec_filename
-powerspec_filename_half_gridsize = '{}_half_gridsize'.format(powerspec_filename)
+powerspec_filename_half_gridsize = f'{powerspec_filename}_half_gridsize'
 k_whole_gridsize, power_whole_gridsize = k_single_boxsize, power_single_boxsize
-(k_half_gridsize,
- modes,
- power_half_gridsize,
- ) = np.loadtxt(powerspec_filename_half_gridsize, unpack=True)
-if not k_whole_gridsize[0] == k_half_gridsize[0]:
-    abort('The smallest k value should not depend on the gridsize. '
-          'The compared power spectra are plotted in "{}.png" and "{}.png"'
-          .format(powerspec_filename_whole_gridsize, powerspec_filename_half_gridsize)
-          )
+k_half_gridsize, modes, power_half_gridsize = np.loadtxt(
+    powerspec_filename_half_gridsize,
+    unpack=True,
+)
+if k_whole_gridsize[0] != k_half_gridsize[0]:
+    abort(
+        f'The smallest k value should not depend on the grid size. '
+        f'The compared power spectra are plotted in '
+        f'"{powerspec_filename_whole_gridsize}.png" and '
+        f'"{powerspec_filename_half_gridsize}.png".'
+    )
+if not isclose(k_whole_gridsize[-1], 2*k_half_gridsize[-1], rel_tol=rel_tol):
+    abort(
+        f'The largest k value should be proportional to the grid size. '
+        f'The compared power spectra are plotted in '
+        f'"{powerspec_filename_whole_gridsize}.png" and '
+        f'"{powerspec_filename_half_gridsize}.png".'
+    )
 # New, interpolated (k, power) of whole_gridsize onto the k's of half_gridsize
 k_whole_gridsize_interp = k_half_gridsize
 power_whole_gridsize_interp = exp(np.interp(
     log(k_half_gridsize), log(k_whole_gridsize), log(power_whole_gridsize)
 ))
-# Compare the powers(k) below k_max/2 = (k2_max/sqrt(3))/2,
-# where the CIC noise should not be significant.
-k_max = k_half_gridsize[-1]/sqrt(3)
-power_half_gridsize_firstpart = power_half_gridsize[k_half_gridsize < 0.5*k_max]
+# Compare the powers(k) below the lowest Nyquist frequency
+k_max = k_half_gridsize[-1]/1.5
+power_half_gridsize_firstpart = power_half_gridsize[k_half_gridsize < k_max]
 power_whole_gridsize_interp_firstpart = power_whole_gridsize_interp[
-    k_whole_gridsize_interp < 0.5*k_max
+    k_whole_gridsize_interp < k_max
 ]
-if not np.all(abs((  power_whole_gridsize_interp_firstpart
-                   - power_half_gridsize_firstpart
-                   )/power_half_gridsize_firstpart
-                  ) < rel_tol
-              ):
-    abort('Bad scaling of power against the gridsize. '
-          'The compared power spectra are plotted in "{}.png" and "{}.png"'
-          .format(powerspec_filename_whole_gridsize, powerspec_filename_half_gridsize)
-          )
+if not all(
+    abs(
+        (power_whole_gridsize_interp_firstpart - power_half_gridsize_firstpart)
+        /power_half_gridsize_firstpart
+    ) < rel_tol
+):
+    abort(
+        f'Bad scaling of power against the gridsize. '
+        f'The compared power spectra are plotted in '
+        f'"{powerspec_filename_whole_gridsize}.png" and '
+        f'"{powerspec_filename_half_gridsize}.png".'
+    )
 
 # Done analyzing
 masterprint('done')

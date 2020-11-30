@@ -16,8 +16,10 @@ powerspec_options = {
     'interpolation': {
         'default': 'PCS',
     },
+    'tophat': {
+        'default': 8*Mpc/h,
+    },
 }
-R_tophat = 8*Mpc/h
 
 # Simulation options
 fftw_wisdom_rigor = 'measure'

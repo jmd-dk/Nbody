@@ -163,14 +163,22 @@ powerspec_options = {  # Specifications of power spectra for individual and sets
     'interlace': {  # Use interlaced grids for particles?
         'default': True,
     },
+    'k_max': {  # Maximum frequency to include
+        'default': 'Nyquist',
+    },
     'binsize': {  # Linear width of each power spectrum bin
-        'default': 2*π/boxsize,
+        'default': {
+            '1*k_min': 1*π/boxsize,
+            '5*k_min': 2*π/boxsize,
+        },
+    },
+    'tophat': {  # Radius of tophat used to compute rms density variation
+        'default': 8*Mpc/h,
     },
     'significant figures': {  # Number of significant figures in output
         'default': 8,
     },
 }
-R_tophat = 8*Mpc/h  # Radius of tophat used to compute the rms density variation from power spectra
 k_modes_per_decade = {  # Number of k modes per decade in CLASS computations
     3e-3/Mpc: 10,
     3e-2/Mpc: 30,

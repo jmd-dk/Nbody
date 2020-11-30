@@ -50,11 +50,10 @@ for kind in ('particles', 'fluid'):
 
 # Compare the particle and fluid power spectra.
 # Because of the smoothing effects (vacuum corrections) on the fluid,
-# and also because of the CIC deconvolutions on the particles,
 # only the large scale power should be comparable between the
 # particle and fluid power spectra.
 n_points = 5
-rel_tol = 2.5e-1
+rel_tol = 2.0e-1
 for (a_i,
      power_particles,
      power_fluid,

@@ -18,7 +18,7 @@ k_values = k
 n_values = list(powerspecs_all['particles'].keys())
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint(f'Analyzing {this_test} data ...')
 
 # Plot powerspectra from realized components
 fig_file = this_dir + '/result.png'
@@ -56,31 +56,31 @@ plt.savefig(fig_file)
 
 # Compare the power spectra of the realizations with
 # the power spectrum from CLASS.
-# For particles, only the large scale power
-# should be comparable to the CLASS power due to the
-# CIC deconvolution.
+# Ignore the power at the largest scales due to low
+# mode count. For particles, further ignore the power at
+# the smallest scales due to low particle resolution.
 k_min = min(k_values)
 k_max = max(k_values)
-masks = {'particles': np.logical_and(k_values > k_min + 0.05*(k_max  - k_min),
-                                     k_values < k_max - 0.8*(k_max  - k_min)),
-         'fluid': np.logical_and(k_values > k_min + 0.05*(k_max  - k_min),
-                                 k_values < k_max - 0.05*(k_max  - k_min)),
-         }
-k_values_trimmed = {'particles': k_values[masks['particles']],
-                    'fluid'    : k_values[masks['fluid'    ]],
-                    }
-power_class_trimmed = {'particles': power_class[masks['particles']],
-                       'fluid'    : power_class[masks['fluid'    ]],
-                       }
-rel_tol = {'particles': 0.04, 'fluid': 0.02}
+masks = {
+    'particles': np.logical_and(
+        k_values > 5*k_min,
+        k_values < 0.6*k_max,
+    ),
+    'fluid': np.logical_and(
+        k_values > 5*k_min,
+        k_values < k_max,
+    ),
+}
+rel_tol = 0.02
 for kind in ('particles', 'fluid'):
     for n in n_values:
         k, power = powerspecs_all[kind][n]
         power_trimmed = power[masks[kind]]
+        power_class_trimmed = power_class[masks[kind]]
         rel_realisation_noise = mean(
-            abs((power_trimmed - power_class_trimmed[kind])/power_class_trimmed[kind])
+            abs((power_trimmed - power_class_trimmed)/power_class_trimmed)
         )
-        if rel_realisation_noise > rel_tol[kind]:
+        if rel_realisation_noise > rel_tol:
             abort(
                 f'Power spectrum of realized matter {kind} with {n} processes '
                 f'disagree with that of CLASS.\n'

@@ -2149,11 +2149,16 @@ def slab_decompose(grid, slab_or_buffer_name='slab_global', prepare_fft=False):
 # same grid size is used in the computations of deconvolution and
 # interlacing, though this may be specified separately
 # through gridsize_corrections.
-# Nyquist planes are excluded from the iteration.
 # If sparse is True, only unique points in the z DC plane will
 # be visited.
 # If skip_origin is True, the ki = kj = kk = 0 point will be excluded
 # from the iteration.
+# By default, all points except those on Nyquist planes are included in
+# the iteration. If you only want points for which
+#   ki**2 + kj**2 + kk**2 < k2_max,
+# specify this k2_max (in grid units). For the largest sphere possible
+# (i.e. excluding "corner modes"), still excluding points on Nyquist
+# planes, set k2_max = (nyquist - 1)**2 = (gridsize//2 - 1)**2.
 # If the returned factor is to be used for deconvolution, specify the
 # deconvolution (interpolation) order as deconv_order. Similarly, if the
 # factor and θ is to be used for interlacing, specify the interlacing
@@ -2166,7 +2171,7 @@ def fourier_loop(
     i_bgn=0, i_end=None,
     j_bgn=0, j_end=None,
     *,
-    sparse=False, skip_origin=False,
+    sparse=False, skip_origin=False, k2_max=-1,
     deconv_order=0, interlace_flag=False,
 ):
     # Cython declarations for variables used for the iteration,
@@ -2182,6 +2187,7 @@ def fourier_loop(
         j_end=object,
         sparse='bint',
         skip_origin='bint',
+        k2_max='Py_ssize_t',
         deconv_order='int',
         interlace_flag='int',
         # Locals
@@ -2273,6 +2279,11 @@ def fourier_loop(
                 # The j-component of the wave vector (grid units)
                 _j_global = _offset_j + _j
                 kj = _j_global - ℤ[gridsize*_j_chunk]
+                # Bail out if beyond maximum frequency
+                with unswitch(3):
+                    if k2_max != -1:
+                        if ℤ[kj**2] > k2_max:
+                            continue
                 # The j-component of the 1D NGP deconvolution factor.
                 # This is given by
                 #   deconv_1D_NGP = 1/sinc(ky*Δx/2)
@@ -2297,6 +2308,11 @@ def fourier_loop(
                     _index_ij += _slab_size_k
                     # The i-component of the wave vector (grid units)
                     ki = _i - ℤ[gridsize*_i_chunk]
+                    # Bail out if beyond maximum frequency
+                    with unswitch(4):
+                        if k2_max != -1:
+                            if ℤ[ℤ[kj**2] + ki**2] > k2_max:
+                                continue
                     # The product of the i- and the j-components
                     # of the 1D NGP deconvolution factor.
                     _deconv_i = ki*ℝ[π/gridsize_corrections] + machine_ϵ
@@ -2337,6 +2353,11 @@ def fourier_loop(
                     # the last element along this dimension, and so we
                     # skip it by simply not including it in the range.
                     for kk in range(_kk_bgn, _nyquist):
+                        # Bail out if beyond maximum frequency
+                        with unswitch(5):
+                            if k2_max != -1:
+                                if ℤ[ℤ[ℤ[kj**2] + ki**2] + kk**2] > k2_max:
+                                    break
                         # Index into (real part of) complex Fourier mode
                         index = _index_ij + 2*kk
                         # Combined factor for deconvolution
