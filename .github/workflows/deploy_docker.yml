@@ -26,7 +26,6 @@ jobs:
                 else
                     echo "Will not be deployed"
                 fi
-
     deploy_docker:
         runs-on: ubuntu-20.04
         needs: check_deploy
@@ -52,6 +51,12 @@ jobs:
                         && (cd "${concept_dir}" && make distclean) \
                         && concept \
                         && (cd "${concept_dir}" && make clean_logs clean_params_cp) \
+                        && mkdir "${concept_dir}/so" \
+                        && mv "${concept_dir}"/*.so "${concept_dir}"/so/ \
+                        && (cd "${concept_dir}" && make clean) \
+                        && mv "${concept_dir}"/so/* "${concept_dir}"/ \
+                        && rm -rf "${concept_dir}"/so \
+                        && (cd "${concept_dir}" && make -t) \
                     '
                 docker commit \
                     --change='CMD ["bash"]' \

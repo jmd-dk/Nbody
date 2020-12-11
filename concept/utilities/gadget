@@ -233,6 +233,12 @@ ${disable_pm}OPT += -DPMGRID=${PMGRID}
 # Time integration options
 OPT += -DSYNCHRONIZATION
 
+# Single/Double Precision
+OPT += -DDOUBLEPRECISION
+
+# Things for special behaviour
+OPT += -DNOTYPEPREFIX_FFTW
+
 
 
 ########################################
@@ -252,15 +258,16 @@ CFLAGS += \$(OPT) \$(other_cflags) \$(optimizations) \$(includes)
 
 # Libraries to link
 fftw_libs = -L${fftw_for_gadget_dir}/lib -Wl,-rpath=${fftw_for_gadget_dir}/lib \\
-    -lsrfftw_mpi -lsfftw_mpi -lsrfftw -lsfftw
+    -lrfftw_mpi -lfftw_mpi -lrfftw -lfftw
 gsl_libs = $(get_make_var gsl_libs)
 mpi_libs = $(get_make_var mpi_libs)
 LDLIBS += \$(fftw_libs) \$(gsl_libs) \$(mpi_libs)
 
 # Linker options
 other_ldflags = $(get_make_var other_ldflags | sed 's/-shared//g')
-linker_optimizations = $(get_make_var linker_optimizations)
-LDFLAGS += \$(other_ldflags) \$(optimizations) \$(linker_optimizations)
+comma = ,
+optimizations_linker = $(get_make_var optimizations_linker)
+LDFLAGS += \$(other_ldflags) \$(optimizations) \$(addprefix -Wl\$(comma),\$(optimizations_linker))
 
 
 

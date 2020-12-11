@@ -11,7 +11,14 @@ ARG mpi=mpich
 ARG mpi_configure_options="+= --with-device=ch3:sock"
 
 # Build
-COPY installer .env* COPYING* Dockerfile* README.md* .gitignore* /source/
+COPY \
+    .env* \
+    .gitignore* \
+    COPYING* \
+    Dockerfile* \
+    README.md* \
+    installer \
+    /source/
 COPY concept* /source/concept/
 COPY .github* /source/.github/
 ARG DEBIAN_FRONTEND=noninteractive
@@ -21,7 +28,7 @@ RUN : \
     && apt-get install -y --no-install-recommends apt-utils \
         2> >(grep -v 'apt-utils is not installed' >&2) \
     # Install CO𝘕CEPT
-    && concept_version=${concept_version} bash /source/installer -y "${top_dir}" \
+    && bash /source/installer -y "${top_dir}" \
     && rm -rf /source \
     # Set up CO𝘕CEPT and Python environment
     && sed -i "1i source \"${top_dir}/concept/concept\"" ~/.bashrc \
@@ -38,9 +45,15 @@ RUN : \
     && echo "[ ! -t 0 ] || PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\\$ '" >> ~/.bashrc \
     && echo "[ ! -t 0 ] || alias ls='ls --color=auto'" >> ~/.bashrc \
     && echo "[ ! -t 0 ] || alias grep='grep --color=auto'" >> ~/.bashrc \
-    # Clean APT cache and remove unnecessary packages
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+    # Remove unnecessary packages and clean APT cache
+    && apt-get autoremove -y \
+    && apt-get purge -y 'g++*' 'libstdc++*dev' 'gfortran*' 'libgfortran*dev' \
+    && apt-get clean -y \
+    && apt-get autoclean -y \
+    && rm -rf /var/lib/{apt/lists,cache,log}/* \
+    && find /var/lib/dpkg/info/* -not -name '*.list' -delete \
+    # Remove other caches
+    && rm -rf /tmp/* ~/.cache/*
 ENV \
     PATH="${PATH}:${top_dir}/concept:${top_dir}/python/bin" \
     TERM="linux"

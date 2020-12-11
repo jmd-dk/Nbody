@@ -90,25 +90,23 @@ compatible with Bash version 3.0 or later.
 
 The programs which will be installed into the specified installation
 directory consist of the following and will be installed in order:
-  - zlib     (needed by libpng, HDF5 and Python)
-  - libpng   (needed by matplotlib)
+  - zlib (needed by HDF5, Python)
   - GSL
-  - Perl     (needed by OpenSSL, OpenBLAS and MPICH/OpenMPI)
+  - Perl (needed by OpenSSL, OpenBLAS, MPICH/OpenMPI)
   - MPICH/OpenMPI
   - HDF5
   - FFTW
-  - FreeType (needed by matplotlib)
+  - FreeType (needed by Matplotlib)
   - ncurses  (needed by _curses, which is needed by blessings)
   - OpenSSL  (needed by pip)
   - libffi   (needed by _ctypes, which is needed by pip)
-  - OpenBLAS (needed by SciPy and also used by NumPy)
-  - Python, with the following packages (together with their own Python
-    package dependencies):
-      - pip, setuptools & wheel (if any of the below)
+  - OpenBLAS (needed by SciPy, used by NumPy)
+  - Python, with the following packages
+    (along with their own Python package dependencies):
+      - pip, setuptools, wheel (if any of the below)
       - Blessings
       - Cython
       - CythonGSL
-      - pytest (needed by NumPy and SciPy if running with tests)
       - NumPy
       - SciPy
       - Matplotlib
@@ -322,7 +320,6 @@ if [ "${install_explicit_only}" == "True" ]; then
         "gsl"               \
         "hdf5"              \
         "libffi"            \
-        "libpng"            \
         "mpi"               \
         "ncurses"           \
         "openssl"           \
@@ -336,7 +333,6 @@ if [ "${install_explicit_only}" == "True" ]; then
         "matplotlib"        \
         "mpi4py"            \
         "numpy"             \
-        "pytest"            \
         "scipy"             \
         "sphinx"            \
         "sphinx_copybutton" \
@@ -356,7 +352,6 @@ set_dir "gadget"          "__top_dir__/gadget"
 set_dir "fftw_for_gadget" "${gadget_dir}/fftw"
 set_dir "gsl"             "__top_dir__/gsl"
 set_dir "hdf5"            "__top_dir__/hdf5"
-set_dir "libpng"          "__top_dir__/libpng"
 set_dir "mpi"             "__top_dir__/${mpi}"
 set_dir "blas"            "__top_dir__/openblas"
 set_dir "perl"            "__top_dir__/perl"
@@ -392,43 +387,41 @@ if [ -n "${concept_version}" ]; then
     concept_version_specified="True"
 fi
 set_version "concept"           "master"
-set_version "blas"              "0.3.10"  "0.3.10"
+set_version "blas"              "0.3.12"  "0.3.12"
 set_version "class"             "2.7.2"
 set_version "fftw"              "3.3.8"   "3.3.8"
 set_version "fftw_for_gadget"   "2.1.5"   "2.1.5"   # Do not change
-set_version "freetype"          "2.10.2"  "2.10.2"
+set_version "freetype"          "2.10.4"  "2.10.4"
 set_version "gadget"            "2.0.7"             # Do not change
 set_version "gsl"               "2.6"     "2.6"
-set_version "hdf5"              "1.10.6"  "1.10.6"
+set_version "hdf5"              "1.12.0"
 set_version "libffi"            "3.3"     "3.3"
-set_version "libpng"            "1.6.37"  "1.6.37"
 if [ "${mpi}" == "mpich" ]; then
     set_version "mpi"           "3.3.2"   "3.3.2"
 elif [ "${mpi}" == "openmpi" ]; then
-    set_version "mpi"           "4.0.4"
+    set_version "mpi"           "4.0.5"
 fi
 set_version "ncurses"           "6.2"     "6.2"
-set_version "openssl"           "1.1.1g"  "1.1.1f"
-set_version "perl"              "5.30.3"
-set_version "python"            "3.8.3"
+set_version "openssl"           "1.1.1i"  "1.1.1h"
+set_version "perl"              "5.32.0"
+set_version "python"            "3.9.1"
 set_version "zlib"              "1.2.11"  "1.2.11"
 # Python packages
 set_version "blessings"         "1.7"
-set_version "cython"            "0.29.20"
+set_version "cython"            "0.29.21"
 set_version "cythongsl"         "0.2.2"
-set_version "h5py"              "2.10.0"
-set_version "matplotlib"        "3.2.2"
+set_version "h5py"              "3.1.0"
+set_version "matplotlib"        "3.3.3"
 set_version "mpi4py"            "3.0.3"
-set_version "numpy"             "1.19.0"
-set_version "pip"               "20.1.1"
-set_version "pytest"            "5.4.3"
-set_version "scipy"             "1.4.1"
-set_version "setuptools"        "47.3.1"
-set_version "sphinx"            "3.1.1"
-set_version "sphinx_copybutton" "0.2.12"
+set_version "numpy"             "1.19.4"
+set_version "pip"               "20.3.1"
+set_version "scipy"             "1.5.4"
+set_version "setuptools"        "51.0.0"
+set_version "sphinx"            "3.3.1"
+set_version "sphinx_copybutton" "0.3.1"
 set_version "sphinx_rtd_theme"  "0.5.0"
-set_version "sphinx_tabs"       "1.1.13"
-set_version "wheel"             "0.34.2"
+set_version "sphinx_tabs"       "1.3.0"
+set_version "wheel"             "0.36.1"
 # Note that the versions may be changed further down due to known
 # compatibility issues between specific versions of the above programs
 # and specific versions of system dependencies.
@@ -560,7 +553,6 @@ gadget_test_success="True"
 gsl_test_success="True"
 hdf5_test_success="True"
 libffi_test_success="True"
-libpng_test_success="True"
 mpi_test_success="True"
 ncurses_test_success="True"
 openssl_test_success="True"
@@ -653,42 +645,39 @@ done
 # Changes to initial environment variables due to command-line arguments
 if [ "${slim}" == "True" ]; then
     export CFLAGS="${CFLAGS} -g0"
-    export LDFLAGS="${LDFLAGS} -Wl,--strip-all"
+    export CXXFLAGS="${CXXFLAGS} -g0"
+    export LDFLAGS="${LDFLAGS} -Wl,-s"
 fi
 
 # Backup of initial environment variables
-env_var_names=(      \
-    BLAS             \
-    CC               \
-    CFLAGS           \
-    CPPFLAGS         \
-    CXX              \
-    CXXFLAGS         \
-    F77              \
-    F90              \
-    F9X              \
-    FC               \
-    FCFLAGS          \
-    FFLAGS           \
-    HDF5_DIR         \
-    HDF5_MPI         \
-    LAPACK           \
-    LD_LIBRARY_PATH  \
-    LD_PRELOAD       \
-    LDFLAGS          \
-    LIBS             \
-    MPICC            \
-    MPILIBS          \
-    PATH             \
-    PERL             \
-    PKG_CONFIG_PATH  \
-    PNG_CFLAGS       \
-    PNG_LIBS         \
-    TMPDIR           \
-    ZLIB_CFLAGS      \
-    ZLIB_LIBS        \
-    ZLIBLIB          \
-    ZLIBINC          \
+env_var_names=(     \
+    BLAS            \
+    CC              \
+    CFLAGS          \
+    CPPFLAGS        \
+    CXX             \
+    CXXFLAGS        \
+    F77             \
+    F90             \
+    F9X             \
+    FC              \
+    FCFLAGS         \
+    FFLAGS          \
+    HDF5_DIR        \
+    HDF5_MPI        \
+    LAPACK          \
+    LD_LIBRARY_PATH \
+    LD_PRELOAD      \
+    LDFLAGS         \
+    LIBS            \
+    MPICC           \
+    MPILIBS         \
+    PATH            \
+    PERL            \
+    PKG_CONFIG_PATH \
+    TEMP            \
+    TMP             \
+    TMPDIR          \
 )
 for env_var_name in "${env_var_names[@]}"; do
     # Save initial state (set/unset) of the environment variable
@@ -870,9 +859,9 @@ if [[ "${mpi_dir}" == "__top_dir__"* ]]; then
     echo "MPI                Dedicated ${mpi_formatted}"
 else
     if [ "${mpi_formatted}" == "unknown" ]; then
-        echo "MPI                   \"${mpi_dir}\""
+        echo "MPI                \"${mpi_dir}\""
     else
-        echo "MPI                   \"${mpi_dir}\" (${mpi_formatted})"
+        echo "MPI                \"${mpi_dir}\" (${mpi_formatted})"
     fi
 fi
 echo "Slim installation  ${slim}"
@@ -1757,16 +1746,6 @@ for ${1/CONCEPT/$esc_concept} does not exist!"
             fi
         fi
     fi
-    if [ "${progname}" == 'libpng' ] && [ "${libpng_preinstalled}" == "True" ]; then
-        if [ ! -f "${progname_dir}/lib/libpng.so" ]; then
-            if [ -f "${progname_dir}/../lib/libpng.so" ]; then
-                libpng_dir="$(dirname ${progname_dir})"
-            else
-                error "Could not locate libpng at \"${libpng_dir}\""
-                exit 1
-            fi
-        fi
-    fi
     if [ "${progname}" == 'mpi' ] && [ "${mpi_preinstalled}" == "True" ]; then
         # As a pre-installed MPI is often used, allow for a rather
         # general directory layout. Find mpi_bindir, mpi_libdir and
@@ -1979,7 +1958,6 @@ fix_path "CLASS"
 fix_path "CONCEPT"
 fix_path "FreeType"
 fix_path "zlib"
-fix_path "libpng"
 fix_path "ncurses"
 fix_path "BLAS"
 fix_path "OpenSSL"
@@ -2024,7 +2002,6 @@ gadget_test_log="${gadget_dir}/test_log"
 gsl_test_log="${gsl_dir}/test_log"
 hdf5_test_log="${hdf5_dir}/test_log"
 libffi_test_log="${libffi_dir}/lib/libffi-${libffi_version}/test_log"
-libpng_test_log="${libpng_dir}/test_log"
 mpi_test_log="${mpi_dir}/test_log"
 ncurses_test_log="${ncurses_dir}/include/ncurses/test_log"
 openssl_test_log="${openssl_dir}/include/openssl/test_log"
@@ -2116,11 +2093,13 @@ fi
 # is installed or not.
 check_pypackage_installed() {
     # Arguments: Python package name
+    local pypackage="${1}"
+    pypackage="${pypackage//-/}"
     current_dir="$(pwd)"
     cd "${top_dir}"
     # Some Python packages may need access to libraries at runtime
     current_LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
-    for lib in "blas" "gsl" "hdf5" "libpng" "ncurses" "python" "zlib"; do
+    for lib in "blas" "gsl" "hdf5" "ncurses" "python" "zlib"; do
         eval "lib_dir=\"\${${lib}_dir}\""
         if [ -z "${lib_dir}" ]; then
             continue
@@ -2131,23 +2110,33 @@ check_pypackage_installed() {
         fi
         export LD_LIBRARY_PATH="${lib_dir}:${LD_LIBRARY_PATH}"
     done
-    "${python}" -B -c "
+    local pypackage_installed="$("${python}" -B -c "
 from time import sleep
 try:
-    if '${1}' == 'cythongsl':
+    if '${pypackage}' == 'cythongsl':
         # CythonGSL has an extra underscore when importing
         import cython_gsl
-    elif '${1}' == 'mpi4py':
+    elif '${pypackage}' == 'pythondateutil':
+        # Python-dateutil is imported as dateutil
+        import dateutil
+    elif '${pypackage}' == 'mpi4py':
         # For MPI4Py we do a more thorough test
         import mpi4py.rc; mpi4py.rc.threads = False  # Do not use threads
         from mpi4py import MPI
+    elif '${pypackage}' == 'pillow':
+        # Pillow is imported as PIL
+        import PIL
     else:
-        import ${1}
+        import ${pypackage}
     sleep(1)
     print('\nTrue')
 except:
     print('\nFalse')
-" 2>/dev/null | tail -n 1
+" 2>/dev/null | tail -n 1)"
+    if [ "${pypackage_installed}" != "True" ]; then
+        pypackage_installed="False"
+    fi
+    echo "${pypackage_installed}"
     cd "${current_dir}"
     export LD_LIBRARY_PATH="${current_LD_LIBRARY_PATH}"
 }
@@ -2160,7 +2149,6 @@ h5py_preinstalled="False"
 matplotlib_preinstalled="False"
 mpi4py_preinstalled="False"
 numpy_preinstalled="False"
-pytest_preinstalled="False"
 scipy_preinstalled="False"
 sphinx_preinstalled="False"
 sphinx_copybutton_preinstalled="False"
@@ -2169,20 +2157,20 @@ sphinx_tabs_preinstalled="False"
 pip_preinstalled="False"
 if [ "${python_preinstalled}" == "True" ]; then
     python=$(ls -1 "${python_dir}/bin/python"* | head -n 1)
-    for pypackage in blessings         \
-                     cython            \
-                     cythongsl         \
-                     h5py              \
-                     matplotlib        \
-                     mpi4py            \
-                     numpy             \
-                     pip               \
-                     pytest            \
-                     scipy             \
-                     sphinx            \
-                     sphinx_copybutton \
-                     sphinx_rtd_theme  \
-                     sphinx_tabs       \
+    for pypackage in      \
+        blessings         \
+        cython            \
+        cythongsl         \
+        h5py              \
+        matplotlib        \
+        mpi4py            \
+        numpy             \
+        pip               \
+        scipy             \
+        sphinx            \
+        sphinx_copybutton \
+        sphinx_rtd_theme  \
+        sphinx_tabs       \
     ; do
         pypackage_preinstalled=$(check_pypackage_installed ${pypackage})
         eval "${pypackage}_preinstalled=\"${pypackage_preinstalled}\""
@@ -2218,7 +2206,7 @@ if [ -z "${fftw_for_gadget_install}" ]; then
         fftw_for_gadget_install="True"
     fi
 fi
-# Python (needed by CO𝘕CEPT and CLASS)
+# Python (needed by CLASS, CO𝘕CEPT)
 if [ -z "${python_install}" ]; then
     python_install="False"
     if [ "${python_preinstalled}" == "False" ] \
@@ -2226,7 +2214,7 @@ if [ -z "${python_install}" ]; then
         python_install="True"
     fi
 fi
-# Python packages (needed by CLASS and CO𝘕CEPT)
+# Python packages (needed by CLASS, CO𝘕CEPT)
 if [ -z "${pip_install}" ]; then
     # Always install pip if Python is to be installed
     pip_install="False"
@@ -2234,19 +2222,19 @@ if [ -z "${pip_install}" ]; then
         pip_install="True"
     fi
 fi
-for pypackage in blessings         \
-                 cython            \
-                 cythongsl         \
-                 h5py              \
-                 matplotlib        \
-                 mpi4py            \
-                 numpy             \
-                 pytest            \
-                 scipy             \
-                 sphinx            \
-                 sphinx_copybutton \
-                 sphinx_rtd_theme  \
-                 sphinx_tabs       \
+for pypackage in \
+    blessings         \
+    cython            \
+    cythongsl         \
+    h5py              \
+    matplotlib        \
+    mpi4py            \
+    numpy             \
+    scipy             \
+    sphinx            \
+    sphinx_copybutton \
+    sphinx_rtd_theme  \
+    sphinx_tabs       \
 ; do
     eval "pypackage_install=\"\${${pypackage}_install}\""
     if [ -z "${pypackage_install}" ]; then
@@ -2257,12 +2245,6 @@ for pypackage in blessings         \
         fi
     fi
 done
-# Do not install pytest unless we are installing with tests
-# and either NumPy or SciPy is to be installed.
-if [ "${do_tests}" == "False" ] \
-    || ([ "${numpy_install}" == "False" ] && [ "${scipy_install}" == "False" ]); then
-    pytest_install="False"
-fi
 # FFTW (needed by CO𝘕CEPT)
 if [ -z "${fftw_install}" ]; then
     fftw_install="False"
@@ -2295,24 +2277,16 @@ if [ -z "${gsl_install}" ]; then
         gsl_install="True"
     fi
 fi
-# libpng (needed by matplotlib)
-if [ -z "${libpng_install}" ]; then
-    libpng_install="False"
-    if [ "${libpng_preinstalled}" == "False" ] && [ "${matplotlib_install}" == "True" ]; then
-        libpng_install="True"
-    fi
-fi
-# zlib (needed by HDF5, libpng and Python)
+# zlib (needed by HDF5, Python)
 if [ -z "${zlib_install}" ]; then
     zlib_install="False"
     if [ "${zlib_preinstalled}" == "False" ] && \
         (   [ "${hdf5_install}"   == "True" ] \
-         || [ "${libpng_install}" == "True" ] \
          || [ "${python_install}" == "True" ]); then
         zlib_install="True"
     fi
 fi
-# FreeType (needed by matplotlib)
+# FreeType (needed by Matplotlib)
 if [ -z "${freetype_install}" ]; then
     freetype_install="False"
     if [ "${freetype_preinstalled}" == "False" ] && [ "${matplotlib_install}" == "True" ]; then
@@ -2327,7 +2301,7 @@ if [ -z "${ncurses_install}" ]; then
         ncurses_install="True"
     fi
 fi
-# BLAS (needed by NumPy and SciPy)
+# BLAS (needed by NumPy, SciPy)
 if [ -z "${blas_install}" ]; then
     blas_install="False"
     if [ "${blas_preinstalled}" == "False" ] \
@@ -2349,7 +2323,7 @@ if [ -z "${libffi_install}" ]; then
         libffi_install="True"
     fi
 fi
-# Perl (needed by OpenSSL, OpenBLAS and MPICH/OpenMPI)
+# Perl (needed by OpenSSL, OpenBLAS, MPICH/OpenMPI)
 if [ -z "${perl_install}" ]; then
     perl_install="False"
     if [ "${perl_preinstalled}" == "False" ]      \
@@ -2374,7 +2348,6 @@ if     [ "${concept_install}"           == "True" ] \
     || [ "${hdf5_install}"              == "True" ] \
     || [ "${mpi_install}"               == "True" ] \
     || [ "${gsl_install}"               == "True" ] \
-    || [ "${libpng_install}"            == "True" ] \
     || [ "${zlib_install}"              == "True" ] \
     || [ "${freetype_install}"          == "True" ] \
     || [ "${ncurses_install}"           == "True" ] \
@@ -2391,7 +2364,6 @@ if     [ "${blessings_install}"         == "True" ] \
     || [ "${matplotlib_install}"        == "True" ] \
     || [ "${mpi4py_install}"            == "True" ] \
     || [ "${numpy_install}"             == "True" ] \
-    || [ "${pytest_install}"            == "True" ] \
     || [ "${scipy_install}"             == "True" ] \
     || [ "${sphinx_install}"            == "True" ] \
     || [ "${sphinx_copybutton_install}" == "True" ] \
@@ -2802,14 +2774,14 @@ if [ "${concept_version_specified}" == "True" ]; then
             rm -rf "${top_dir}/tmp/concept"
             mkdir -p "${top_dir}/tmp/concept/concept-supplied"
             files=(          \
-                "Dockerfile" \
-                "README.md"  \
-                "concept"    \
-                "installer"  \
                 ".env"       \
                 ".github"    \
                 ".gitignore" \
                 ".paths"     \
+                "Dockerfile" \
+                "README.md"  \
+                "concept"    \
+                "installer"  \
             )
             if [ "${slim}" != "True" ]; then
                 files=("${files[@]}" "COPYING")
@@ -3023,41 +2995,8 @@ hdf5-${hdf5_version}/src/hdf5-${hdf5_version}.tar.gz"
         validate_url "HDF5" "False"
         if [ "${validate_url_status}" != "success" ]; then
             echo "Primary HDF5 link broken: ${hdf5_url}"
-            fallback "HDF5"
-            hdf5_version_major="$(echo "${hdf5_version}" | grep -o '[0-9]\.[0-9]*')"
-            hdf5_url="https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-${hdf5_version_major}/\
-hdf5-${hdf5_version}/src/hdf5-${hdf5_version}.tar.gz"
-            echo "Using secondary HDF5 link: ${hdf5_url}"
-            # Check if already installed and/or downloaded
-            check_progress "HDF5"
-            # If not yet downloaded, validate the URL
-            if [ "${hdf5_downloaded}" != "True" ]; then
-                validate_url "HDF5"
-            fi
-        fi
-    fi
-fi
-
-# libpng
-if [ "${libpng_install}" == "True" ]; then
-    # For e.g. libpng_version 1.6.18, libpng_version_majors is 16
-    libpng_url="https://github.com/glennrp/libpng/archive/v${libpng_version}.tar.gz"
-    # Check if already installed and/or downloaded
-    check_progress "libpng"
-    # If not yet downloaded, validate the URL
-    if [ "${libpng_downloaded}" != "True" ]; then
-        validate_url "libpng" "False"
-        if [ "${validate_url_status}" != "success" ]; then
-            echo "Primary libpng link broken: ${libpng_url}"
-            fallback "libpng"
-            libpng_url="https://prdownloads.sourceforge.net/libpng/libpng-${libpng_version}.tar.gz"
-            echo "Using secondary libpng link: ${libpng_url}"
-            # Check if already installed and/or downloaded
-            check_progress "libpng"
-            # If not yet downloaded, validate the URL
-            if [ "${libpng_downloaded}" != "True" ]; then
-                validate_url "libpng"
-            fi
+            error "Error: The installer does not know of a secondary HDF5 link"
+            exit 1
         fi
     fi
 fi
@@ -3234,8 +3173,7 @@ fi
 
 # zlib
 if [ "${zlib_install}" == "True" ]; then
-    zlib_url="https://sourceforge.net/projects/libpng/files/zlib/${zlib_version}/\
-zlib-${zlib_version}.tar.gz"
+    zlib_url="https://github.com/madler/zlib/archive/v${zlib_version}.tar.gz"
     # Check if already installed and/or downloaded
     check_progress "zlib"
     # If not yet downloaded, validate the URL
@@ -3256,6 +3194,28 @@ zlib-${zlib_version}.tar.gz"
     fi
 fi
 
+# Create a python variable, storing the path to the Python interpreter
+set_python() {
+    if [ -z "${python_dir}" ]; then
+        return
+    fi
+    for python_version_major in 3 2; do
+        python_tmp="${python_dir}/bin/python${python_version_major}"
+        if [ -f "${python_tmp}" ]; then
+            python_version_minor=$(                          \
+                "${python_tmp}"                             \
+                -B -c                                       \
+                "import sys; print(sys.version_info.minor)" \
+            )
+            python="${python_tmp}.${python_version_minor}"
+            if [ ! -f "${python}" ]; then
+                python="${python_tmp}"
+            fi
+            break
+        fi
+    done
+}
+set_python
 # Set "pypackage"_installed variables
 blessings_installed="False"
 cython_installed="False"
@@ -3264,41 +3224,27 @@ h5py_installed="False"
 matplotlib_installed="False"
 mpi4py_installed="False"
 numpy_installed="False"
-pytest_installed="False"
 scipy_installed="False"
 sphinx_installed="False"
 sphinx_copybutton_installed="False"
 sphinx_rtd_theme_installed="False"
 sphinx_tabs_installed="False"
 pip_installed="False"
-if [ -n "${python_dir}" ]; then
-    for python_version_major in 3 2; do
-        if [ -f "${python_dir}/bin/python${python_version_major}" ]; then
-            python_version_major_dot_minor=$(                                                     \
-                "${python_dir}/bin/python${python_version_major}"                                 \
-                    -B -c                                                                         \
-                    "from sys import version_info as v; print(str(v.major) + '.' + str(v.minor))" \
-            )
-            python="${python_dir}/bin/python${python_version_major_dot_minor}"
-            break
-        fi
-    done
-fi
 if [ -n "${python}" ] && [ "${python_installed}" == "True" ]; then
-    for pypackage in blessings         \
-                     cython            \
-                     cythongsl         \
-                     h5py              \
-                     matplotlib        \
-                     mpi4py            \
-                     numpy             \
-                     pytest            \
-                     scipy             \
-                     sphinx            \
-                     sphinx_copybutton \
-                     sphinx_rtd_theme  \
-                     sphinx_tabs       \
-                     pip               \
+    for pypackage in      \
+        blessings         \
+        cython            \
+        cythongsl         \
+        h5py              \
+        matplotlib        \
+        mpi4py            \
+        numpy             \
+        scipy             \
+        sphinx            \
+        sphinx_copybutton \
+        sphinx_rtd_theme  \
+        sphinx_tabs       \
+        pip               \
     ; do
         pypackage_installed=$(check_pypackage_installed ${pypackage})
         eval "${pypackage}_installed=\"${pypackage_installed}\""
@@ -3388,7 +3334,6 @@ print_table() {
 # GSL            ...      "/..."
 # HDF5           ...      "/..."
 # libffi         ...      "/..."
-# libpng         ...      "/..."
 # MPICH/OpenMPI  ...      "/..."
 # ncurses        ...      "/..."
 # OpenSSL        ...      "/..."
@@ -3405,7 +3350,6 @@ print_table() {
 # Matplotlib         ...
 # MPI4Py             ...
 # NumPy              ...
-# pytest             ...
 # SciPy              ...
 # Sphinx             ...
 # Sphinx_copybutton  ...
@@ -3421,7 +3365,6 @@ gadget_patch="True"
 gsl_patch="False"
 hdf5_patch="False"
 libffi_patch="False"
-libpng_patch="False"
 if [ "${mpi}" == "mpich" ]; then
     mpi_patch="False"
 elif [ "${mpi}" == "openmpi" ]; then
@@ -3440,7 +3383,6 @@ h5py_patch="False"
 matplotlib_patch="False"
 mpi4py_patch="False"
 numpy_patch="False"
-pytest_patch="False"
 scipy_patch="False"
 sphinx_patch="False"
 sphinx_copybutton_patch="False"
@@ -3543,13 +3485,6 @@ if [ "${install_any_software}" == "True" ]; then
             "libffi$(insert_footnote_installed 'libffi')"        \
             "${libffi_version}$(insert_footnote_patch 'libffi')" \
             "\"${libffi_dir}\"")
-    fi
-    # libpng
-    if [ "${libpng_install}" == "True" ]; then
-        table=("${table[@]}"                                     \
-            "libpng$(insert_footnote_installed 'libpng')"        \
-            "${libpng_version}$(insert_footnote_patch 'libpng')" \
-            "\"${libpng_dir}\"")
     fi
     # MPICH/OpenMPI
     if [ "${mpi_install}" == "True" ]; then
@@ -3667,13 +3602,6 @@ if [ "${install_any_pypackages}" == "True" ]; then
         table=("${table[@]}"                                   \
             "NumPy$(insert_footnote_installed 'numpy')"        \
             "${numpy_version}$(insert_footnote_patch 'numpy')" \
-            "")
-    fi
-    # Pytest
-    if [ "${pytest_install}" == "True" ]; then
-        table=("${table[@]}"                                     \
-            "pytest$(insert_footnote_installed 'pytest')"        \
-            "${pytest_version}$(insert_footnote_patch 'pytest')" \
             "")
     fi
     # SciPy
@@ -4789,9 +4717,6 @@ fi
 if [ "${hdf5_install}" == "True" ] && [ "${hdf5_downloaded}" == "False" ]; then
     download "HDF5"
 fi
-if [ "${libpng_install}" == "True" ] && [ "${libpng_downloaded}" == "False" ]; then
-    download "libpng"
-fi
 if [ "${mpi_install}" == "True" ] && [ "${mpi_downloaded}" == "False" ]; then
     download "MPI"
 fi
@@ -5309,6 +5234,11 @@ Date:         $(date)
 
 # Function for adding optimization to compiler flags
 set_optimizations() {
+    # Arguments: --no-lto to exclude link time optimizations
+    use_lto="True"
+    if [ "$1" == "--no-lto" ]; then
+        use_lto="False"
+    fi
     # Determine the compiler in use.
     # Only icc and gcc are implemented here. The gcc behaviour
     # is chosen if some third compiler is really in use.
@@ -5344,18 +5274,20 @@ set_optimizations() {
         optimizations="${optimizations} -inline-factor=200"
     fi
     # Link time optimizations
-    local current_dir="$(pwd)"
-    lto_test_dir="${top_dir}/tmp/lto_test"
-    rm -rf "${lto_test_dir}" || :
-    mkdir -p "${lto_test_dir}"
-    cd "${lto_test_dir}"
-    echo "int main(void){ return 0; }" > main.c
-    lto_warning=$("${CC}" -flto -c -o main.o main.c 2>&1 | grep flto || :)
-    cd "${current_dir}"
-    rm -rf "${lto_test_dir}" || :
-    if [ -z "${lto_warning}" ]; then
-        optimizations="${optimizations} -flto"
-        optimizations_linker="${optimizations_linker} -flto"
+    if [ "${use_lto}" == "True" ]; then
+        local current_dir="$(pwd)"
+        lto_test_dir="${top_dir}/tmp/lto_test"
+        rm -rf "${lto_test_dir}" || :
+        mkdir -p "${lto_test_dir}"
+        cd "${lto_test_dir}"
+        echo "int main(void){ return 0; }" > main.c
+        lto_warning=$("${CC}" -flto -c -o main.o main.c 2>&1 | grep flto || :)
+        cd "${current_dir}"
+        rm -rf "${lto_test_dir}" || :
+        if [ -z "${lto_warning}" ]; then
+            optimizations="${optimizations} -flto"
+            optimizations_linker="${optimizations_linker} -flto"
+        fi
     fi
     # Remove unwanted flags from CFLAGS and CXXFLAGS
     unwanted_flags=(                      \
@@ -5434,25 +5366,6 @@ zlib_install_func() {
     fi
 }
 install "zlib" compiler "${compiler_possibilities[@]}"
-
-# libpng
-libpng_install_func() {
-    export CPPFLAGS="-I${zlib_dir}/include ${CPPFLAGS}"
-    export LD_LIBRARY_PATH="${zlib_dir}/lib:${LD_LIBRARY_PATH}"
-    export LDFLAGS="-L${zlib_dir}/lib ${LDFLAGS}"
-    export ZLIBLIB="${zlib_dir}/lib"
-    export ZLIBINC="${zlib_dir}/include"
-    ./configure --prefix="${libpng_dir}" 2>&1 || return 1
-    if [ "${do_tests}" == "True" ]; then
-        make ZLIBLIB="${ZLIBLIB}" ZLIBINC="${ZLIBINC}" ${make_jobs} check 2>&1 | tee "test_log"
-        [ ${PIPESTATUS[0]} -eq 0 ] || test_success="False"
-    fi
-    make ZLIBLIB="${ZLIBLIB}" ZLIBINC="${ZLIBINC}" ${make_jobs} install 2>&1 || return 1
-    if [ "${slim}" == "True" ]; then
-        rm -rf "${libpng_dir}/share" || :
-    fi
-}
-install "libpng" compiler "${compiler_possibilities[@]}"
 
 # GSL
 gsl_install_func() {
@@ -5729,6 +5642,7 @@ install "HDF5" compiler "${compiler_possibilities_hdf5[@]}"
 
 # FFTW
 fftw_install_func() {
+    also_single_precision="False"  # Install both double and single precision?
     if [ -z "${enable_shared}" ] && [ -n "${shared}" ]; then
         return 1
     fi
@@ -5745,7 +5659,7 @@ fftw_install_func() {
     export CXXFLAGS="-O3 ${PIC} ${CXXFLAGS}"
     export LDFLAGS="${LDFLAGS} -Wl,-O3 ${shared} ${PIC}"
     if [ "${extra_optimizations}" == "True" ]; then
-        set_optimizations
+        set_optimizations --no-lto
     fi
     if [ "${rm_no_gcc}" == "True" ]; then
         sed -i 's/-no-gcc//g' configure || :
@@ -5759,8 +5673,9 @@ fftw_install_func() {
         fi
         simd_instructions="${simd_instructions} ${simd}"
     done
-    ./configure ${enable_shared} ${enable_mpi} --disable-fortran ${with_pic} \
-        ${simd_instructions} --prefix="${fftw_dir}" 2>&1 || return 1
+    ./configure ${enable_shared} ${enable_mpi} \
+        --disable-fortran ${with_pic} ${simd_instructions} \
+        --prefix="${fftw_dir}" 2>&1 || return 1
     make 2>&1 || return 1  # Parallel builds fail on some systems
     if     [ "${extra_optimizations}" == "True" ] || [ -n "${simd_instructions}" ] \
         || [ "${do_tests}" == "True" ]; then
@@ -5792,15 +5707,19 @@ fftw_install_func() {
     fi
     make install 2>&1 || return 1  # Parallel builds fail on some systems
     # Single-precision
-    make clean || :
-    simd_instructions=""
-    for ((i_simd = 0; i_simd < ${n_simd}; i_simd += 1)); do
-        simd_instructions="${simd_instructions} ${simd_instructions_all[${i_simd}]}"
-    done
-    ./configure ${enable_shared} ${enable_mpi} --enable-float --disable-fortran ${with_pic} \
-        ${simd_instructions} --prefix="${fftw_dir}" 2>&1 || return 1
-    make         2>&1 || return 1  # Parallel builds fail on some systems
-    make install 2>&1 || return 1  # Parallel builds fail on some systems
+    if [ "${also_single_precision}" == "True" ]; then
+        precision_flags="--enable-float"
+        make clean || :
+        simd_instructions=""
+        for ((i_simd = 0; i_simd < ${n_simd}; i_simd += 1)); do
+            simd_instructions="${simd_instructions} ${simd_instructions_all[${i_simd}]}"
+        done
+        ./configure ${enable_shared} ${enable_mpi} ${precision_flags} \
+            --disable-fortran ${with_pic} ${simd_instructions} \
+            --prefix="${fftw_dir}" 2>&1 || return 1
+        make         2>&1 || return 1  # Parallel builds fail on some systems
+        make install 2>&1 || return 1  # Parallel builds fail on some systems
+    fi
     if [ "${slim}" == "True" ]; then
         rm -rf "${fftw_dir}/share" || :
     fi
@@ -5923,8 +5842,12 @@ blas_install_func() {
     if [ -d "${perl_dir}" ]; then
         export PATH="${perl_dir}/bin:${PATH}"
     fi
-    make ${openblas_make_options}     || return 1  # Should not be run in parallel
-    make PREFIX="${blas_dir}" install || return 1  # Should not be run in parallel
+    # Specify MAKE_NB_JOBS instead of explicit -j. By default this is
+    # set to the number of hardware threads. As this takes up
+    # a lot of resources we always set this to a low number,
+    # regardless of ${make_jobs}.
+    make MAKE_NB_JOBS=2 ${openblas_make_options}     || return 1
+    make MAKE_NB_JOBS=2 PREFIX="${blas_dir}" install || return 1
     # Note that OpenBLAS runs its test suite during the build
 }
 NO_AVX_possibilities=(               \
@@ -6123,19 +6046,7 @@ install "Python"                                                    \
     disable_atomic_operations "False" "True" ";"                    \
     pyoptimizations "pgo lto" "pgo" "lto" "" ";"                    \
 # Create a python variable, storing the path to the Python interpreter
-if [ -n "${python_dir}" ]; then
-    for python_version_major in 3 2; do
-        if [ -f "${python_dir}/bin/python${python_version_major}" ]; then
-            python_version_major_dot_minor=$(                                                     \
-                "${python_dir}/bin/python${python_version_major}"                                 \
-                    -B -c                                                                         \
-                    "from sys import version_info as v; print(str(v.major) + '.' + str(v.minor))" \
-            )
-            python="${python_dir}/bin/python${python_version_major_dot_minor}"
-            break
-        fi
-    done
-fi
+set_python
 
 
 
@@ -6150,7 +6061,6 @@ h5py_installed="False"
 matplotlib_installed="False"
 mpi4py_installed="False"
 numpy_installed="False"
-pytest_installed="False"
 scipy_installed="False"
 sphinx_installed="False"
 sphinx_copybutton_installed="False"
@@ -6168,7 +6078,6 @@ if [ -n "${python}" ]; then
         mpi4py            \
         numpy             \
         pip               \
-        pytest            \
         scipy             \
         sphinx            \
         sphinx_copybutton \
@@ -6216,65 +6125,37 @@ pip_download() {
         pip_download_time=${3}
     fi
     # Download the Python package
+    pip_args="download --no-cache-dir --no-binary=:all: --dest=${tmp_pip_dir} \
+${pip_name}${command_end}"
     for n in {1..10}; do
         pip_status="error"
-        # Dependent on the version of pip, different calling conventions
-        # are used to download (and not install) the source code
-        # of a Python package.
-        for pip_args in                    \
-            "download                 \
-                --no-cache-dir        \
-                --no-binary=:all:     \
-                --dest=${tmp_pip_dir} \
-                ${pip_name}${command_end}" \
-            "install              \
-                --no-cache-dir    \
-                --no-binary=:all: \
-                --download        \
-                ${tmp_pip_dir}    \
-                ${pip_name}${command_end}" \
-            "install           \
-                --no-cache-dir \
-                --no-use-wheel \
-                --download     \
-                ${tmp_pip_dir} \
-                ${pip_name}${command_end}" \
-            "install           \
-                --no-use-wheel \
-                --download     \
-                ${tmp_pip_dir} \
-                ${pip_name}${command_end}" \
+        for extra_pip_arg in                                 \
+            "--no-build-isolation --no-deps"                 \
+            "--no-build-isolation"                           \
+            "--no-deps"                                      \
+            ""                                               \
+            "--no-build-isolation --no-deps --no-use-pep517" \
+            "--no-build-isolation --no-use-pep517"           \
+            "--no-deps --no-use-pep517"                      \
+            "--no-use-pep517"                                \
         ; do
-            # Problems after adoption of PEP 517 can cause packages that
-            # fail to build to be cleaned up, even when we just want the
-            # bare source (happens for e.g. pip 20.0.2 and scipy 1.4.1).
-            # On failure we try disregarding PEP 517.
-            for extra_pip_arg in "" "--no-use-pep517"; do
-                all_pip_args="$(echo "${pip_args} ${extra_pip_arg}" \
-                    | sed 's/  */ /g' 2>/dev/null || :)"
-                if [ -z "${all_pip_args}" ]; then
-                    all_pip_args="${pip_args} ${extra_pip_arg}"
-                fi
-                printf "
+            all_pip_args="${pip_args} ${extra_pip_arg}"
+            printf "
 Attempting to download ${1} using pip ${all_pip_args}\n\n"
-                # Download Python package
-                "${python}" -m pip ${all_pip_args} & pip_download_pid=$!
-                # The above command may succeed in retrieving the
-                # package, but then hang indefinately.
-                # Kill the process after ${pip_download_time} seconds.
-                soothe ${pip_download_pid} ${pip_download_time}
-                # If the archive exists in the tmp/pip dir,
-                # the download completed successfully.
-                if ls "${top_dir}/tmp/pip"                            \
-                    | sed 's/-//g; s/_//g'                            \
-                    | grep -i "${pip_name_nodashes}" > /dev/null 2>&1 \
-                ; then
-                    pip_status="success"
-                fi
-                if [ "${pip_status}" == "success" ]; then
-                    break
-                fi
-            done
+            # Download Python package
+            "${python}" -m pip ${all_pip_args} & pip_download_pid=$!
+            # The above command may succeed in retrieving the
+            # package, but then hang indefinately.
+            # Kill the process after ${pip_download_time} seconds.
+            soothe ${pip_download_pid} ${pip_download_time}
+            # If the archive exists in the tmp/pip dir,
+            # the download completed successfully.
+            if ls "${top_dir}/tmp/pip"                            \
+                | sed 's/-//g; s/_//g'                            \
+                | grep -i "${pip_name_nodashes}" > /dev/null 2>&1 \
+            ; then
+                pip_status="success"
+            fi
             if [ "${pip_status}" == "success" ]; then
                 break
             fi
@@ -6327,6 +6208,8 @@ pip_install_pypackage() {
     rm -rf "${tmp_pip_dir}" "${tmp_pip_dir}_tmp" || :
     mkdir -p "${tmp_pip_dir}" "${tmp_pip_dir}_tmp"
     export TMPDIR="${tmp_pip_dir}_tmp"
+    export TEMP="${TMPDIR}"
+    export TMP="${TMPDIR}"
     pypackage="$(echo "${1}" | tr '[:upper:]' '[:lower:]')"
     pypackage_nodashes="${pypackage//-/}"
     pypackage_nodashes="${pypackage_nodashes//_/}"
@@ -6417,10 +6300,15 @@ pip_install_pypackage() {
             # hang, but it will eventually get going. This happens often
             # for particular packages, such as h5py. When this is the
             # case, write a soothing message.
-            for extra_pip_arg in "--no-cache-dir"     \
-                "--no-cache-dir --no-build-isolation" \
-                "--no-build-isolation"                \
-                ""; do
+            for extra_pip_arg in                                      \
+                "--no-cache-dir"                                      \
+                "--no-cache-dir --no-build-isolation"                 \
+                "--no-build-isolation"                                \
+                "--no-cache-dir --no-use-pep517"                      \
+                "--no-cache-dir --no-build-isolation --no-use-pep517" \
+                "--no-build-isolation --no-use-pep517"                \
+                ""                                                    \
+            ; do
                 rm -rf "${tmp_pip_dir}" || :
                 cp -r "${tmp_pip_dir}_cp" "${tmp_pip_dir}"
                 if [ -z "${upgrade_flag}" ]; then
@@ -6433,7 +6321,6 @@ pyuser=${pyuser}, extra_pip_arg=${extra_pip_arg}\n\n"
                     ${pyuser}                         \
                     -v                                \
                     ${extra_pip_arg}                  \
-                    -b "${tmp_pip_dir}/build"         \
                     ${upgrade_flag}                   \
                     --no-index                        \
                     --find-links="${tmp_pip_dir}"     \
@@ -6455,10 +6342,15 @@ pyuser=${pyuser}, extra_pip_arg=${extra_pip_arg}\n\n"
                 continue
             fi
             rm -rf "${tmp_pip_dir}" || :
-            for extra_pip_arg in "--no-cache-dir"     \
-                "--no-cache-dir --no-build-isolation" \
-                "--no-build-isolation"                \
-                ""; do
+            for extra_pip_arg in                                      \
+                "--no-cache-dir"                                      \
+                "--no-cache-dir --no-build-isolation"                 \
+                "--no-build-isolation"                                \
+                "--no-cache-dir --no-use-pep517"                      \
+                "--no-cache-dir --no-build-isolation --no-use-pep517" \
+                "--no-build-isolation --no-use-pep517"                \
+                ""                                                    \
+            ; do
                 printf "
 Attempting to install ${1} using pip with default settings, \
 force_recythonization=${force_recythonization}, pyuser=${pyuser}, \
@@ -6491,33 +6383,65 @@ extra_pip_arg=${extra_pip_arg}\n\n"
     fi
 }
 
-# Upgrade/install setuptools, pip and wheel.
+# Small wrapper around pip_install_pypackage() for easy installation of
+# Python package dependencies where we do not care about the version
+# (the latest available version will be installed).
+pip_install_pypackage_dependencies() {
+    # Arguments: Name of Python package which need the dependencies,
+    # [exit on error]. In addition, the 'dependencies' variable must be
+    # set as an array of names of Python package dependencies.
+    exit_on_error="True"
+    if [ -n "${2}" ]; then
+        exit_on_error="${2}"
+    fi
+    current_step="installation of ${1} dependencies"
+    heading "Installing ${1} dependencies"
+    set_status "Installing ${1} dependencies"
+    for dependency in ${dependencies[@]}; do
+        dependency_installed=$(check_pypackage_installed "${dependency}")
+        if [ "${dependency_installed}" == "False" ]; then
+            if [ "${exit_on_error}" == "False" ]; then
+                pip_install_pypackage "${dependency}" || :
+            else
+                pip_install_pypackage "${dependency}"
+            fi
+        fi
+    done
+}
+
+# Upgrade/install pip, setuptools and wheel.
 # Do not use the pip_download or pip_install_pypackage functions
 # for this, as these packages (and their dependencies) may actually be
 # needed for that to work, resulting in a bootstrapping problem.
 # This problem really arises from the choice of installing Python
-# packages from source. Let 'pip install' upgrade setuptools, pip and
+# packages from source. Let 'pip install' upgrade pip, setuptools and
 # wheel by whatever means it wants, ensuring that the dependencies of
 # these bootstrapping packages are installed/upgraded as well.
-if [ "${pip_install}" == "True" ] && [ "${python_installed}" == "False" ]; then
+if [ "${pip_install}" == "True" ] && [ "${python_install}" == "True" ]; then
     tmp_pip_dir="${top_dir}/tmp/pip"
     export TMPDIR="${tmp_pip_dir}_tmp"
-    for package in "setuptools" "pip" "wheel"; do
+    export TEMP="${TMPDIR}"
+    export TMP="${TMPDIR}"
+    for package in "pip" "setuptools" "wheel"; do
         current_step="upgrade/install of ${package}"
         heading "Upgrading/installing ${package}"
         set_status "Upgrading/installing ${package}"
         eval "package_version=\${${package}_version}"
-        # Dependent on the version of pip,
-        # the --no-cache-dir option may be available or not.
         pip_success="True"
-        for extra_pip_arg in "--no-cache-dir" ""; do
+        for extra_pip_arg in                                      \
+            "--no-cache-dir"                                      \
+            "--no-cache-dir --no-build-isolation"                 \
+            "--no-build-isolation"                                \
+            "--no-cache-dir --no-use-pep517"                      \
+            "--no-cache-dir --no-build-isolation --no-use-pep517" \
+            "--no-build-isolation --no-use-pep517"                \
+            ""                                                    \
+        ; do
             rm -rf "${tmp_pip_dir}" "${tmp_pip_dir}_tmp" || :
             mkdir -p "${tmp_pip_dir}" "${tmp_pip_dir}_tmp"
-            "${python}" -m pip install    \
-                -v                        \
-                ${extra_pip_arg}          \
-                -b "${tmp_pip_dir}/build" \
-                --upgrade                 \
+            "${python}" -m pip install \
+                ${extra_pip_arg}       \
+                --upgrade              \
                 "${package}==${package_version}" 2>&1 || pip_success="False"
             if [ "${pip_success}" == "True" ]; then
                 break
@@ -6608,6 +6532,61 @@ Attempting to install Cython with compiler=${compiler}\n\n"
         error "Failed to install Cython"
         exit 1
     fi
+    # Implement fixes to the installed Cython code
+    set_cython_dir() {
+        cython_dir="$(                                                   \
+            dirname "$(                                                  \
+                "${python}" -B -c                                        \
+                'import inspect, cython; print(inspect.getfile(cython))' \
+                || :                                                     \
+            )"                                                           \
+        )"
+        if [ "$(basename "${cython_dir}")" == "site-packages" ]; then
+            for base in "Cython" "cython"; do
+                for d in "${cython_dir}/${base}"*; do
+                    if [ -f "${d}/${1}" ]; then
+                        cython_dir="${d}"
+                        return
+                    fi
+                done
+            done
+        fi
+    }
+    if [ ${python_version_major} -eq 3 ] && [ ${python_version_minor} -ge 9 ]; then
+        # PyUnicode_GET_SIZE has been deprecated in favor of
+        # PyUnicode_GET_LENGTH since Python 3.3. In Python 3.9 the use
+        # of PyUnicode_GET_SIZE emits a warning.
+        cython_file="Utility/ModuleSetupCode.c"
+        set_cython_dir "${cython_file}"
+        if [ -f "${cython_dir}/${cython_file}" ]; then
+            sed -i                                                  \
+                's/# *define *__Pyx_PyUnicode_IS_TRUE.*/\
+#define __Pyx_PyUnicode_IS_TRUE(u) (0 != PyUnicode_GET_LENGTH(u))/' \
+                "${cython_dir}/${cython_file}"                      \
+                || :
+        fi
+    fi
+    # Certain macro expansions leave __Pyx_UnicodeContainsUCS4() in
+    # StringTools.c without a return statement.
+    cython_file="Utility/StringTools.c"
+    set_cython_dir "${cython_file}"
+    if [ -f "${cython_dir}/${cython_file}" ]; then
+        pattern=' __Pyx_UnicodeContainsUCS4 *\\(.*\\{'
+        linenr_bgn=$(awk "\$0 ~ \"${pattern}\" {print NR}" \
+            "${cython_dir}/${cython_file}" | head -n 1 || :)
+        pattern='^\\}'
+        linenrs_end=$(awk "\$0 ~ \"${pattern}\" {print NR}" \
+            "${cython_dir}/${cython_file}" || :)
+        if [ -n "${linenrs_end}" ]; then
+            new_line='\    return 0;'
+            for linenr_end in ${linenrs_end}; do
+                if [ ${linenr_end} -gt ${linenr_bgn} ]; then
+                    sed -i "${linenr_end}i${new_line}" "${cython_dir}/${cython_file}" || :
+                    break
+                fi
+            done
+        fi
+    fi
     reset_environment
 fi
 
@@ -6625,29 +6604,6 @@ Attempting to install CythonGSL with compiler=${compiler}\n\n"
         if [ "$(check_pypackage_installed cythongsl)" == "False" ]; then
             continue
         fi
-        # At least in 0.2.2, some GSL_* variables are wrongly
-        # (re)declared in gsl_integration.pxd, leading to warnings
-        # about redeclaration when compiling CO𝘕CEPT.
-        # Here we fix this by removing these declarations.
-        # Note that these variables are already (properly)
-        # declared in __init__.pxd.
-        cythongsl_dir="$(                                                               \
-            dirname "$(                                                                 \
-                "${python}" -B -c                                                       \
-                'import inspect; import cython_gsl; print(inspect.getfile(cython_gsl))' \
-                || :                                                                    \
-            )"                                                                          \
-        )"
-        if [ -f "${cythongsl_dir}/gsl_integration.pxd" ]; then
-            for varname in     \
-                "GSL_EMAXITER" \
-                "GSL_EROUND"   \
-                "GSL_ESING"    \
-                "GSL_EDIVERGE" \
-            ; do
-                sed -i "/${varname}/d" "${cythongsl_dir}/gsl_integration.pxd" || :
-            done
-        fi
         install_success="True"
         break
     done
@@ -6655,25 +6611,47 @@ Attempting to install CythonGSL with compiler=${compiler}\n\n"
         error "Failed to install CythonGSL"
         exit 1
     fi
-    reset_environment
-fi
-
-# pytest
-if [ "${pytest_install}" == "True" ] && [ "${pytest_installed}" == "False" ] \
-    && [ "$(check_pypackage_installed pytest)" == "False" ]; then
-    # As pytest is not a critical dependency (it is only used for
-    # testing NumPy and SciPy), we continue past failure to install it.
-    install_success="True"
-    pip_install_pypackage "pytest" "${pytest_version}" || install_success="False"
-    if [ "${install_success}" == "False" ]; then
-        error "Failed to install pytest. The installation will continue regardless."
+    # Implement fixes to the installed CythonGSL code.
+    # At least in 0.2.2, some GSL_* variables are wrongly
+    # (re)declared in gsl_integration.pxd, leading to warnings
+    # about redeclaration when compiling CO𝘕CEPT.
+    # Here we fix this by removing these declarations.
+    # Note that these variables are already (properly)
+    # declared in __init__.pxd.
+    cythongsl_dir="$(                                                        \
+        dirname "$(                                                          \
+            "${python}" -B -c                                                \
+            'import inspect, cython_gsl; print(inspect.getfile(cython_gsl))' \
+            || :                                                             \
+        )"                                                                   \
+    )"
+    if [ -f "${cythongsl_dir}/gsl_integration.pxd" ]; then
+        for varname in     \
+            "GSL_EMAXITER" \
+            "GSL_EROUND"   \
+            "GSL_ESING"    \
+            "GSL_EDIVERGE" \
+        ; do
+            sed -i "/${varname}/d" "${cythongsl_dir}/gsl_integration.pxd" || :
+        done
     fi
+    reset_environment
 fi
 
 # NumPy (manual invocation of setup.py is needed
 # as we need to link to OpenBLAS).
 if [ "${numpy_install}" == "True" ] && [ "${numpy_installed}" == "False" ] \
     && [ "$(check_pypackage_installed numpy)" == "False" ]; then
+    # The testing of NumPy depends on other Python packages
+    # not directly used by CO𝘕CEPT.
+    # If missing, we install these now.
+    if [ "${do_tests}" == "True" ]; then
+        dependencies=(   \
+            "hypothesis" \
+            "pytest"     \
+        )
+        pip_install_pypackage_dependencies "NumPy test" "False"
+    fi
     current_step="installation of NumPy ${numpy_version}"
     heading "Installing NumPy ${numpy_version}"
     set_status "Installing NumPy ${numpy_version}"
@@ -6682,6 +6660,8 @@ if [ "${numpy_install}" == "True" ] && [ "${numpy_installed}" == "False" ] \
     rm -rf "${tmp_pip_dir}" "${tmp_pip_dir}_tmp" || :
     mkdir -p "${tmp_pip_dir}_tmp"
     export TMPDIR="${tmp_pip_dir}_tmp"
+    export TEMP="${TMPDIR}"
+    export TMP="${TMPDIR}"
     pip_download "NumPy" "${numpy_version}"
     cd "${tmp_pip_dir}"
     # It can happen that an archive format different from tar.gz is
@@ -6747,6 +6727,8 @@ runtime_library_dirs = ${blas_dir}/lib
         fi
         export CFLAGS="${CFLAGS} ${cstd}"
         export TMPDIR="${tmp_pip_dir}_tmp"
+        export TEMP="${TMPDIR}"
+        export TMP="${TMPDIR}"
         if [ -d "${blas_dir}" ]; then
             export BLAS="${blas_dir}/lib/libopenblas.a"
             export LAPACK="${blas_dir}/lib/libopenblas.a"
@@ -6828,9 +6810,18 @@ if [ "${scipy_install}" == "True" ] && [ "${scipy_installed}" == "False" ] \
     # As of SciPy 1.4, pybind11 is a required dependency, though this is
     # not automatically installed by pip. If not already installed, we
     # install this Python package now.
-    pybind11_installed=$(check_pypackage_installed pybind11)
-    if [ "${pybind11_installed}" == "False" ]; then
-        pip_install_pypackage "pybind11"
+    dependencies=( \
+        "pybind11" \
+    )
+    pip_install_pypackage_dependencies "SciPy"
+    # The testing of SciPy depends on other Python packages
+    # not directly used by CO𝘕CEPT.
+    # If missing, we install these now.
+    if [ "${do_tests}" == "True" ]; then
+        dependencies=( \
+            "pytest"   \
+        )
+        pip_install_pypackage_dependencies "SciPy test" "False"
     fi
     current_step="installation of SciPy ${scipy_version}"
     heading "Installing SciPy ${scipy_version}"
@@ -6840,6 +6831,8 @@ if [ "${scipy_install}" == "True" ] && [ "${scipy_installed}" == "False" ] \
     rm -rf "${tmp_pip_dir}" "${tmp_pip_dir}_tmp" || :
     mkdir -p "${tmp_pip_dir}_tmp"
     export TMPDIR="${tmp_pip_dir}_tmp"
+    export TEMP="${TMPDIR}"
+    export TMP="${TMPDIR}"
     pip_download "SciPy" "${scipy_version}"
     cd "${tmp_pip_dir}"
     extract "scipy"* "True"
@@ -6893,6 +6886,8 @@ $(cat "${rectangular_lsap}")
         fi
         export CFLAGS="${CFLAGS} ${cstd}"
         export TMPDIR="${tmp_pip_dir}_tmp"
+        export TEMP="${TMPDIR}"
+        export TMP="${TMPDIR}"
         if [ -d "${blas_dir}" ]; then
             export BLAS="${blas_dir}/lib/libopenblas.a"
             export LAPACK="${blas_dir}/lib/libopenblas.a"
@@ -6973,167 +6968,132 @@ fi
 # some hacks are needed).
 if [ "${matplotlib_install}" == "True" ] && [ "${matplotlib_installed}" == "False" ] \
     && [ "$(check_pypackage_installed matplotlib)" == "False" ]; then
+    # Matplotlib depends on other Python packages not directly used by
+    # CO𝘕CEPT. If missing, these will automatically be installed when
+    # installing Matplotlib. However, as we install Matplotlib from
+    # source, these dependencies will only be attempted install from
+    # source as well, which may fail without further hacking. We thus
+    # install the hard dependencies of Matplotlib now, not including
+    # packages which should already have been installed by this script.
+    dependencies=(        \
+        "cycler"          \
+        "python-dateutil" \
+        "kiwisolver"      \
+        "pillow"          \
+        "pyparsing"       \
+    )
+    pip_install_pypackage_dependencies "Matplotlib"
+    # Install Matplotlib
     current_step="installation of Matplotlib ${matplotlib_version}"
     heading "Installing Matplotlib ${matplotlib_version}"
     set_status "Installing Matplotlib ${matplotlib_version}"
     install_success="False"
     for compiler in "${compiler_possibilities_specified_mpi_last[@]}"; do
-        reset_environment
-        "use_${compiler}_compilers" || continue
-        printf "
-Attempting to install Matplotlib with compiler=${compiler}\n\n"
-        # Download matplotlib itself
-        cd "${top_dir}"
-        tmp_pip_dir="${top_dir}/tmp/pip"
-        rm -rf "${tmp_pip_dir}" "${tmp_pip_dir}_tmp" || :
-        mkdir -p "${tmp_pip_dir}_tmp"
-        export TMPDIR="${tmp_pip_dir}_tmp"
-        if [ -d "${libpng_dir}/lib" ]; then
-            export LD_LIBRARY_PATH="${libpng_dir}/lib:${LD_LIBRARY_PATH}"
-        fi
-        if [ -d "${zlib_dir}/lib" ]; then
-            export LD_LIBRARY_PATH="${zlib_dir}/lib:${LD_LIBRARY_PATH}"
-        fi
-        if [ -d "${blas_dir}/lib" ]; then
-            export LD_LIBRARY_PATH="${blas_dir}/lib:${LD_LIBRARY_PATH}"
-        fi
-        pip_download "Matplotlib" "${matplotlib_version}"
-        # Matplotlib depends on other Python packages not directly used
-        # by CO𝘕CEPT. Most often these dependencies are downloaded
-        # automatically by the previous command. In case of failure,
-        # we do it manually.
-        # The version numbers below are tkane from
-        # https://matplotlib.org/3.1.2/users/installing.html
-        # and
-        # https://github.com/matplotlib/matplotlib/blob/v3.1.2/setupext.py
-        matplotlib_numpy_installed=$(check_pypackage_installed "numpy")
-        matplotlib_pyparsing_installed=$(check_pypackage_installed "pyparsing")
-        matplotlib_dateutil_installed=$(check_pypackage_installed "dateutil")
-        matplotlib_cycler_installed=$(check_pypackage_installed "cycler")
-        matplotlib_kiwisolver_installed=$(check_pypackage_installed "kiwisolver")
-        deps=(                \
-            "pyparsing"       \
-            "python-dateutil" \
-            "cycler"          \
-            "kiwisolver"      \
-        )
-        dep_versions=(                        \
-            ">=2.0.1,!=2.0.4,!=2.1.2,!=2.1.6" \
-            ">=2.1"                           \
-            ">=0.10.0"                        \
-            ">=1.0.1"                         \
-        )
-        if [ "${matplotlib_numpy_installed}" == "False" ]; then
-            deps=("numpy" "${deps[@]}")
-            dep_versions=(">=1.11" "${dep_versions[@]}")
-        fi
-        # An illegal version of pyparsing may be downloaded by Matplotlib!
-        pyparsing_downloaded="$(ls "${top_dir}/tmp/pip" | grep -i "pyparsing" || :)"
-        illegal_pyparsings=("2.0.0" "2.0.4" "2.1.2" "2.1.6")
-        for ((i = 0; i < ${#illegal_pyparsings[@]}; i += 1)); do
-            if [[ "${pyparsing_downloaded}" == "pyparsing-${illegal_pyparsings[i]}"* ]]; then
-                # Illegal pyparsing downloaded!
-                rm -rf "${top_dir}/tmp/pip/pyparsing"* || :
-                break
+        for pyuser in "" "--user"; do
+            reset_environment
+            "use_${compiler}_compilers" || continue
+            printf "
+Attempting to install Matplotlib with compiler=${compiler}, pyuser=${pyuser}\n\n"
+            # Download Matplotlib
+            cd "${top_dir}"
+            tmp_pip_dir="${top_dir}/tmp/pip"
+            rm -rf "${tmp_pip_dir}" "${tmp_pip_dir}_tmp" || :
+            mkdir -p "${tmp_pip_dir}_tmp"
+            export TMPDIR="${tmp_pip_dir}_tmp"
+            export TEMP="${TMPDIR}"
+            export TMP="${TMPDIR}"
+            if [ -n "${libpng_dir}" ] && [ -d "${libpng_dir}/lib" ]; then
+                # For compatibility with Matplotlib < 3.3
+                export LD_LIBRARY_PATH="${libpng_dir}/lib:${LD_LIBRARY_PATH}"
             fi
-        done
-        for ((i = 0; i < ${#deps[@]}; i += 1)); do
-            if ! ls "${top_dir}/tmp/pip" | grep -i "${deps[i]}" > /dev/null 2>&1; then
-                pip_download "${deps[i]}" "${dep_versions[i]}"
+            if [ -d "${zlib_dir}/lib" ]; then
+                export LD_LIBRARY_PATH="${zlib_dir}/lib:${LD_LIBRARY_PATH}"
             fi
-        done
-        # Install matplotlib
-        cd "${tmp_pip_dir}"
-        extract "matplotlib"* "True"
-        for f in *; do
-            f_lower="$(echo "${f}" | tr '[:upper:]' '[:lower:]')"
-            if [ -d "${f}" ] && [[ "${f_lower}" == "matplotlib"* ]]; then
-                cd "${f}"
-                break
+            if [ -d "${blas_dir}/lib" ]; then
+                export LD_LIBRARY_PATH="${blas_dir}/lib:${LD_LIBRARY_PATH}"
             fi
-        done
-        cp "setup.cfg.template" "setup.cfg"
-        freetype_include2="$(echo "${freetype_dir}/include/freetype"* | awk '{print $NF}')"
-        libpng_version_majors="${libpng_version%.*}"
-        libpng_version_majors="${libpng_version_majors//./}"
-        basedirlist="${freetype_dir},\
-${freetype_dir}/include,\
-${freetype_include2},\
-${freetype_dir}/lib,\
-${libpng_dir},\
-${libpng_dir}/include,\
-${libpng_dir}/lib,\
-${libpng_dir}/include/libpng${libpng_version_majors},\
-${zlib_dir},\
-${zlib_dir}/include,\
-${zlib_dir}/lib\
-"
-        sed -i "/basedirlist/c\basedirlist = ${basedirlist}" "setup.cfg"
-        cp -r "${freetype_include2}/"* "${freetype_dir}/include/"
-        export CPPFLAGS="-I${freetype_dir}/include                              \
-                         -I${freetype_include2}                                 \
-                         -I${libpng_dir}/include                                \
-                         -I${libpng_dir}/include/libpng${libpng_version_majors} \
-                         -I${zlib_dir}/include ${CPPFLAGS}"
-        export LDFLAGS="-L${freetype_dir}/lib          \
-                        -Wl,-rpath=${freetype_dir}/lib \
-                        -L${libpng_dir}/lib            \
-                        -Wl,-rpath=${libpng_dir}/lib   \
-                        -L${zlib_dir}/lib              \
-                        -Wl,-rpath=${zlib_dir}/lib ${LDFLAGS}"
-        export PATH="${freetype_dir}/bin:${libpng_dir}/bin:${PATH}"
-        export PKG_CONFIG_PATH="${libpng_dir}/lib/pkgconfig:\
+            pip_download "Matplotlib" "${matplotlib_version}"
+            # Install Matplotlib
+            cd "${tmp_pip_dir}"
+            extract "matplotlib"* "True"
+            for f in *; do
+                f_lower="$(echo "${f}" | tr '[:upper:]' '[:lower:]')"
+                if [ -d "${f}" ] && [[ "${f_lower}" == "matplotlib"* ]]; then
+                    cd "${f}"
+                    break
+                fi
+            done
+            cp "setup.cfg.template" "setup.cfg"
+            freetype_include2="$(echo "${freetype_dir}/include/freetype"* | awk '{print $NF}')"
+            basedirlist="${freetype_dir},${freetype_dir}/include,\
+${freetype_include2},${freetype_dir}/lib"
+            CPPFLAGS_libpng=""
+            LDFLAGS_libpng=""
+            PATH_libpng=""
+            PKG_CONFIG_PATH_libpng=""
+            if [ -n "${libpng_dir}" ] && [ -d "${libpng_dir}" ]; then
+                # For compatibility with Matplotlib < 3.3
+                basedirlist="${basedirlist},${libpng_dir},${libpng_dir}/include,${libpng_dir}/lib"
+                CPPFLAGS_libpng="-I${libpng_dir}/include"
+                for d in "${libpng_dir}/include/"*; do
+                    if [ -d "${d}" ]; then
+                        basedirlist="${basedirlist},${d}"
+                        CPPFLAGS_libpng="${CPPFLAGS_libpng} -I${d}"
+                    fi
+                done
+                if [ -d "${libpng_dir}/lib" ]; then
+                    LDFLAGS_libpng="-L${libpng_dir}/lib -Wl,-rpath=${libpng_dir}/lib"
+                fi
+                PATH_libpng="${libpng_dir}/bin:"
+                PKG_CONFIG_PATH_libpng="${libpng_dir}/lib/pkgconfig:"
+            fi
+            basedirlist="${basedirlist},${zlib_dir},${zlib_dir}/include,${zlib_dir}/lib"
+            sed -i "/basedirlist/c\basedirlist = ${basedirlist}" "setup.cfg"
+            cp -r "${freetype_include2}/"* "${freetype_dir}/include/"
+            export CPPFLAGS="-I${freetype_dir}/include \
+                             -I${freetype_include2}    \
+                             ${CPPFLAGS_libpng}        \
+                             -I${zlib_dir}/include ${CPPFLAGS}"
+            export LDFLAGS="-L${freetype_dir}/lib          \
+                            -Wl,-rpath=${freetype_dir}/lib \
+                            ${LDFLAGS_libpng}              \
+                            -L${zlib_dir}/lib              \
+                            -Wl,-rpath=${zlib_dir}/lib ${LDFLAGS}"
+            export PATH="${freetype_dir}/bin:${PATH_libpng}${PATH}"
+            export PKG_CONFIG_PATH="${PKG_CONFIG_PATH_libpng}\
 ${zlib_dir}/lib/pkgconfig:${PKG_CONFIG_PATH}"
-        # After the adoption of PEP 518 (pip 10), some packages require
-        # wheels (not bare source) when building. This can be disabled
-        # by supplying --no-build-isolation. We try both.
-        # Some times the installation process will appear to hang,
-        # but it will eventually get going. When this is the case,
-        # write a soothing message.
-        for extra_pip_arg in "" "--no-build-isolation"; do
-            # Remove matplotlib dependency packages
-            # automatically installed.
-            if [ "${matplotlib_pyparsing_installed}" == "False" ]; then
-                "${python}" -m pip uninstall "pyparsing" -y >/dev/null 2>&1 || :
-            fi
-            if [ "${matplotlib_dateutil_installed}" == "False" ]; then
-                "${python}" -m pip uninstall "dateutil" -y >/dev/null 2>&1 || :
-            fi
-            if [ "${matplotlib_cycler_installed}" == "False" ]; then
-                "${python}" -m pip uninstall "cycler" -y >/dev/null 2>&1 || :
-            fi
-            if [ "${matplotlib_kiwisolver_installed}" == "False" ]; then
-                "${python}" -m pip uninstall "kiwisolver" -y >/dev/null 2>&1 || :
-            fi
-            # Install matplotlib and dependency packages
-            "${python}" -m pip uninstall "matplotlib" -y >/dev/null 2>&1 || :
-            "${python}" -m pip install            \
-                -v                                \
-                ${extra_pip_arg}                  \
-                -b "${top_dir}/tmp/pip/build"     \
-                --no-index                        \
-                --find-links="${top_dir}/tmp/pip" \
-                . 2>&1 & pip_install_pid=$!
-            soothe ${pip_install_pid}
-            pypackage_installed=$(check_pypackage_installed matplotlib)
+            # As usual, various extra pip arguments may be needed
+            for extra_pip_arg in                                      \
+                "--no-cache-dir"                                      \
+                "--no-cache-dir --no-build-isolation"                 \
+                "--no-build-isolation"                                \
+                "--no-cache-dir --no-use-pep517"                      \
+                "--no-cache-dir --no-build-isolation --no-use-pep517" \
+                "--no-build-isolation --no-use-pep517"                \
+                ""                                                    \
+            ; do
+                # Install Matplotlib
+                "${python}" -m pip uninstall "matplotlib" -y >/dev/null 2>&1 || :
+                printf "
+Attempting to install Matplotlib using pip with extra_pip_arg=${extra_pip_arg}\n\n"
+                "${python}" -m pip install            \
+                    ${pyuser}                         \
+                    -v                                \
+                    ${extra_pip_arg}                  \
+                    --no-index                        \
+                    --find-links="${top_dir}/tmp/pip" \
+                    . 2>&1 & pip_install_pid=$!
+                soothe ${pip_install_pid}
+                pypackage_installed=$(check_pypackage_installed matplotlib)
+                if [ "${pypackage_installed}" == "True" ]; then
+                    break
+                fi
+            done
             if [ "${pypackage_installed}" == "True" ]; then
+                install_success="True"
                 break
-            fi
-            # Matplotlib may not seem to be installed correctly due to
-            # CXXABI_1.3.9 required by kiwisolver and not found. Before
-            # giving up on the Matplotlib installation, try reinstalling
-            # kiwisolver.
-            "${python}" -m pip uninstall "kiwisolver" -y >/dev/null 2>&1 || :
-            "${python}" -m pip install "kiwisolver>=1.0.1"
-            pypackage_installed=$(check_pypackage_installed matplotlib)
-            if [ "${pypackage_installed}" == "True" ]; then
-                break
-            fi
-            if [ -z "${extra_pip_arg}" ]; then
-                printf "\nFailed to install matplotlib. Now trying with --no-build-isolation\n\n"
             fi
         done
-        pypackage_installed=$(check_pypackage_installed matplotlib)
         if [ "${pypackage_installed}" == "True" ]; then
             install_success="True"
             break
@@ -7143,7 +7103,7 @@ ${zlib_dir}/lib/pkgconfig:${PKG_CONFIG_PATH}"
     cd "${top_dir}"
     # Exit if installation failed
     if [ "${install_success}" == "False" ]; then
-        error "Could not install matplotlib"
+        error "Could not install Matplotlib"
         exit 1
     fi
     rm -rf "${tmp_pip_dir}" "${tmp_pip_dir}_tmp" || :
@@ -7195,6 +7155,28 @@ Attempting to install H5Py with compiler=${compiler}\n\n"
     if [ "${install_success}" == "False" ]; then
         error "Failed to install H5Py"
         exit 1
+    fi
+    # Implement fixes to the installed H5Py code
+    if [[ "${h5py_version}" == "3."* ]]; then
+        # Starting with H5Py 3.0.0, the shape argument to
+        # _hl.selections.select() erroneously goes unused in some
+        # circumstances, causing wrong behaviour of e.g. read_direct().
+        # The below is probably not the best fix. Relevant issue:
+        #   https://github.com/h5py/h5py/issues/1773
+        h5py_dir="$(                                                 \
+            dirname "$(                                              \
+                "${python}" -B -c                                    \
+                'import inspect, h5py; print(inspect.getfile(h5py))' \
+                || :                                                 \
+            )"                                                       \
+        )"
+        if [ -f "${h5py_dir}/_hl/selections.py" ]; then
+            sed -i                                \
+                "0,/if dataset is not None:/s/if dataset is not None:\
+/if False:  # dataset is not None:/"              \
+                "${h5py_dir}/_hl/selections.py"   \
+                || :
+        fi
     fi
     reset_environment
 fi
@@ -7433,8 +7415,6 @@ Gadget2_dir='${Gadget2_dir}'
 gsl_dir='${gsl_dir}'
 # Directory of HDF5
 hdf5_dir='${hdf5_dir}'
-# Directory of libpng
-libpng_dir='${libpng_dir}'
 # Directories of MPI
 mpi_dir='${mpi_dir}'
 mpi_compilerdir='${mpi_compilerdir}'
@@ -7599,9 +7579,16 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
                 indentation_use=""
             fi
             if [ ${new_line_nr} -eq 0 ]; then
-                new_lines_str="\\${indentation_use}${new_line}"
+                new_lines_str="${indentation_use}${new_line}"
+                if [[ "${new_lines_str}" == " "* ]] || [[ "${new_lines_str}" == "\\n"* ]]; then
+                    new_lines_str="\\${new_lines_str}"
+                fi
             else
-                new_lines_str="${new_lines_str}\n${indentation_use}${new_line}"
+                if [ -n "${new_lines_str}" ]; then
+                    new_lines_str="${new_lines_str}\\n${indentation_use}${new_line}"
+                else
+                    new_lines_str="\\\\n${indentation_use}${new_line}"
+                fi
             fi
             ((new_line_nr += 1))
         done
@@ -8370,6 +8357,7 @@ sys.exit(int(cosmo.get_background()['proper time [Gyr]'][-1]) != 13)
         if [ "${slim}" == "True" ]; then
             (cd "${class_dir}" && make clean) || :
             rm -rf "${class_dir}/doc" || :
+            rm -f "${class_dir}/Makefile_ori" "${class_dir}/python/setup.py_ori" || :
         fi
     }
     install "CLASS" "no_init_install"               \
@@ -8388,6 +8376,7 @@ fi
 #####################################################
 # FFTW 2.x (GADGET2 is incompatible with FFTW 3.x)
 fftw_for_gadget_install_func() {
+    also_single_precision="False"  # Install both double and single precision?
     if [ -z "${enable_shared}" ] && [ -n "${shared}" ]; then
         return 1
     fi
@@ -8404,7 +8393,7 @@ fftw_for_gadget_install_func() {
         export PATH="${perl_dir}/bin:${PATH}"
     fi
     if [ "${extra_optimizations}" == "True" ]; then
-        set_optimizations
+        set_optimizations --no-lto
     fi
     # Intel compilers may link against the NUMA library, which should be
     # placed in /usr/lib64. Add this directory to the LDFLAGS.
@@ -8425,8 +8414,12 @@ fftw_for_gadget_install_func() {
     fi
     export LDFLAGS="${LDFLAGS} -L${numa_symlink_dir}"
     # Double-precision
-    ./configure ${enable_shared} ${enable_mpi} --enable-type-prefix --disable-fortran ${with_pic} \
-        --prefix="${fftw_for_gadget_dir}" 2>&1 || return 1
+    precision_flags=""
+    if [ "${also_single_precision}" == "True" ]; then
+        precision_flags="--enable-type-prefix"
+    fi
+    ./configure ${enable_shared} ${enable_mpi} ${precision_flags} \
+        --disable-fortran ${with_pic} --prefix="${fftw_for_gadget_dir}" 2>&1 || return 1
     make 2>&1 || return 1  # Parallel builds fail on some systems
     if [ "${extra_optimizations}" == "True" ] || [ "${do_tests}" == "True" ]; then
         fftw_for_gadget_test_max_time=3600
@@ -8457,11 +8450,14 @@ fftw_for_gadget_install_func() {
     fi
     make install 2>&1 || return 1  # Parallel builds fail on some systems
     # Single-precision
-    make clean || :
-    ./configure ${enable_shared} ${enable_mpi} --enable-float --enable-type-prefix \
-        --disable-fortran ${with_pic} --prefix="${fftw_for_gadget_dir}" 2>&1 || return 1
-    make         2>&1 || return 1  # Parallel builds fail on some systems
-    make install 2>&1 || return 1  # Parallel builds fail on some systems
+    if [ "${also_single_precision}" == "True" ]; then
+        precision_flags="--enable-float --enable-type-prefix"
+        make clean || :
+        ./configure ${enable_shared} ${enable_mpi} ${precision_flags} \
+            --disable-fortran ${with_pic} --prefix="${fftw_for_gadget_dir}" 2>&1 || return 1
+        make         2>&1 || return 1  # Parallel builds fail on some systems
+        make install 2>&1 || return 1  # Parallel builds fail on some systems
+    fi
     # Cleanup if installing in slim mode
     if [ "${slim}" == "True" ]; then
         rm -rf "${fftw_for_gadget_dir}/info" || :
@@ -8573,7 +8569,7 @@ if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; 
         [ ${PIPESTATUS[0]} -eq 0 ] || concept_test_success="False"
         if  [ "${gadget_install}" == "True" ]; then
             # Run GADGET test
-            # if basic CO𝘕CEPT test finished successfully
+            # if basic CO𝘕CEPT test finished successfully.
             if [ "${concept_test_success}" == "True" ]; then
                 current_step="testing GADGET"
                 heading "Testing GADGET"
@@ -8585,8 +8581,8 @@ if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; 
                     rm -f "${gadget_test_log}" || :
                 fi
             fi
-            # Run complete CO𝘕CEPT test suite if basic CO𝘕CEPT test
-            # finished successfully.
+            # Run complete CO𝘕CEPT test suite
+            # if basic CO𝘕CEPT test finished successfully.
             if [ "${concept_test_success}" == "True" ]; then
                 current_step="testing ${esc_concept}"
                 heading "Testing ${esc_concept}"
@@ -8681,30 +8677,40 @@ rm -rf "${top_dir}/.pytest_cache" || :
 rm -rf "${top_dir}/_configtest"* || :
 rm -f "${top_dir}/gramA" "${top_dir}/gramB" || :
 # Further cleanups when installing in slim mode
+slimdown_python() {
+    # Arguments: Name, directory
+    if get_command "find" >/dev/null; then
+        find "${2}"                    \
+            -type d -a \(              \
+                   -name "__pycache__" \
+                -o -name "idle_test"   \
+                -o -name "test"        \
+                -o -name "tests"       \
+            \)                         \
+            -exec rm -rf '{}' +        \
+            || :
+        find "${2}"                \
+            -type f -a \(          \
+                   -name "*.ipynb" \
+                -o -name "*.pyc"   \
+                -o -name "*.pyo"   \
+            \)                     \
+            -exec rm -f '{}' +     \
+            || :
+    else
+        echo "Could not slim down ${1} as the 'find' command was not found" >&2
+    fi
+}
 if [ "${slim}" == "True" ]; then
-    # Clean Python and Python packages
+    # Slim down Python and Python packages
     if [ "${python_install}" == "True" ] && [ "${python_installed}" == "False" ]; then
-        if get_command "find" >/dev/null; then
-            find "${python_dir}"           \
-                -type d -a \(              \
-                       -name "__pycache__" \
-                    -o -name "idle_test"   \
-                    -o -name "test"        \
-                    -o -name "tests"       \
-                \)                         \
-                -exec rm -rf '{}' +        \
-                || :
-            find "${python_dir}"       \
-                -type f -a \(          \
-                       -name "*.ipynb" \
-                    -o -name "*.pyc"   \
-                    -o -name "*.pyo"   \
-                \)                     \
-                -exec rm -f '{}' +     \
-                || :
-        else
-            echo "Could not slim down Python further as the 'find' command was not found" >&2
-        fi
+        slimdown_python "Python" "${python_dir}"
+        rm -rf "${python_dir}/lib/python${python_version_major}.${python_version_minor}/\
+config-${python_version_major}.${python_version_minor}-"*
+    fi
+    # Slim down the Python component of CLASS
+    if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
+        slimdown_python "CLASS" "${class_dir}"
     fi
     # We may even remove some of the dependencies entirely
     removable_dependencies=("perl" "zlib")
@@ -8741,7 +8747,6 @@ if [ "${install_anything}" == "True" ] && [ "${say_copyright}" != "False" ]; the
     copyright_notice "gadget"            "GADGET"
     copyright_notice "gsl"               "GSL"
     copyright_notice "hdf5"              "HDF5"
-    copyright_notice "libpng"            "libpng"
     copyright_notice "mpi"               "${mpi_formatted}"
     copyright_notice "ncurses"           "ncurses"
     copyright_notice "openssl"           "OpenSSL"
@@ -8755,7 +8760,6 @@ if [ "${install_anything}" == "True" ] && [ "${say_copyright}" != "False" ]; the
     copyright_notice "matplotlib"        "$(printf ${en_quad}%.s {1..4})Matplotlib"
     copyright_notice "mpi4py"            "$(printf ${en_quad}%.s {1..4})MPI4Py"
     copyright_notice "numpy"             "$(printf ${en_quad}%.s {1..4})NumPy"
-    copyright_notice "pytest"            "$(printf ${en_quad}%.s {1..4})pytest"
     copyright_notice "scipy"             "$(printf ${en_quad}%.s {1..4})SciPy"
     copyright_notice "sphinx"            "$(printf ${en_quad}%.s {1..4})Sphinx"
     copyright_notice "sphinx_copybutton" "$(printf ${en_quad}%.s {1..4})Sphinx_copybutton"
@@ -8820,7 +8824,6 @@ erroneous_test_notice "FreeType"
 erroneous_test_notice "GADGET"
 erroneous_test_notice "GSL"
 erroneous_test_notice "HDF5"
-erroneous_test_notice "libpng"
 erroneous_test_notice "MPI"
 erroneous_test_notice "ncurses"
 erroneous_test_notice "NumPy"

@@ -1526,10 +1526,6 @@ for key, val in inferred_params.items():
 # The executation stops when no more exceptions are resolved
 # by definitions further down in the content.
 def exec_params(content, d_in, suppress_exceptions=True):
-    # Ensure that we are working on a proper dict.
-    # If not, f-strings in content may generate mysterious SyntaxError's
-    # when in compiled mode, stating that
-    #   Format strings are only supported in Python 3.6 and greater
     d = dict(d_in)
     # Perform execution
     lines = pyxpp.oneline(content.split('\n'))
@@ -1564,11 +1560,7 @@ def exec_params(content, d_in, suppress_exceptions=True):
             pass
     if not suppress_exceptions:
         # If exceptions should raise an error, we do an extra exec
-        # on the full content. The mysterious SyntaxError's mentioned
-        # before happens at this exec(). Performing I/O operations just
-        # before may alleviate the problem, as it turns out.
-        print(end='', flush=True)
-        sleep(0)
+        # on the full content.
         exec(content, d)
     # Changes should be reflected in the input container
     d_in.update(d)

@@ -44,8 +44,6 @@ Gadget2_dir='/home/jeppe/concept/gadget/Gadget2'
 gsl_dir='/home/jeppe/concept/gsl'
 # Directory of HDF5
 hdf5_dir='/home/jeppe/concept/hdf5'
-# Directory of libpng
-libpng_dir='/home/jeppe/concept/libpng'
 # Directories of MPI
 mpi_dir='/home/jeppe/concept/mpich'
 mpi_compilerdir='/home/jeppe/concept/mpich/bin'
@@ -74,5 +72,5 @@ mpiexec='/home/jeppe/concept/mpich/bin/mpiexec'
 # The file containing paths (this file)
 paths_file='/home/jeppe/concept/.paths'
 # The Python interpreter
-python='/home/jeppe/concept/python/bin/python3.8'
+python='/home/jeppe/concept/python/bin/python3.9'
 

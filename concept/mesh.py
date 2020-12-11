@@ -2330,7 +2330,7 @@ def fourier_loop(
                         if skip_origin:
                             with unswitch(4):
                                 if master:
-                                    _kk_bgn = (_index_ij == 0)
+                                    _kk_bgn = int(_index_ij == 0)
                     # The z DC plane consists of complex conjugate pairs
                     # of points. When looping sparsely we only want to
                     # hit one point from each pair. To do this, we

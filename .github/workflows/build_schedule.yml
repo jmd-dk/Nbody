@@ -35,6 +35,7 @@ jobs:
           - name: 🔧 Install
             run: |
                 rm -f concept/docs/_static/*.pdf
+                echo ".git" >> .dockerignore
                 docker build --pull --no-cache -t concept:latest .
           - name: 🤖 Run test suite
             run: docker run --rm concept:latest concept -t all
