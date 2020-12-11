@@ -1898,10 +1898,12 @@ def get_softened_r3inv(r2, ϵ):
     Jᵢ_ptr='double*',
     deconv_order_global='int',
     dim='int',
+    downstream_description=str,
+    downstream_description_gridsize=str,
+    downstream_description_representation=str,
     factor='double',
     grid_downstream='double[:, :, ::1]',
     gridsize_downstream='Py_ssize_t',
-    gridsize_downstream_description=str,
     group=dict,
     groups=dict,
     index='Py_ssize_t',
@@ -2064,8 +2066,8 @@ def particle_mesh(
     # For each group, obtain downstream potential, compute downstream
     # forces and apply these to the receivers within the group.
     for gridsize_downstream, group in groups.items():
-        gridsize_downstream_description = (
-            f'({gridsize_downstream}) '
+        downstream_description_gridsize = (
+            str(gridsize_downstream)
             if not all_receiver_downstream_gridsizes_equal_global else ''
         )
         # Physical grid spacing of downstream potential grid
@@ -2101,17 +2103,32 @@ def particle_mesh(
         for representation in ('fluid', 'particles'):
             if representation not in group:
                 continue
+            downstream_description_representation = (
+                representation
+                if len(group) == 2 else ''
+            )
             # The slab_downstream is used for both particle and fluid
             # receivers, but as the backward FFT to come is carried out
             # in-place, we need to copy the data in the case where we
             # have both fluid and particle receivers.
             slab_downstream_representation = slab_downstream
-            if not 𝔹[representation == 'particles'] and 'particles' in group:
+            if not 𝔹[representation == 'particles'] and 𝔹['particles' in group]:
                 slab_downstream_representation = get_fftw_slab(
                     gridsize_downstream, 'slab_updownstream_representation',
                 )
                 slab_downstream_representation[...] = slab_downstream
             # Perform downstream deconvolution
+            downstream_description = ', '.join([
+                description
+                for description in (
+                    downstream_description_gridsize,
+                    downstream_description_representation,
+                )
+                if description
+            ])
+            if downstream_description:
+                downstream_description = f'({downstream_description}) '
+            masterprint(f'Transforming to real space potential {downstream_description}...')
             if 𝔹[representation == 'particles'] and deconvolve_downstream:
                 deconvolve_and_interlace(
                     slab_downstream_representation,
@@ -2124,13 +2141,11 @@ def particle_mesh(
                 'grid_updownstream',
                 do_ghost_communication=True,
             )
+            masterprint('done')
             # For each dimension, differentiate the grid to obtain the
             # force and apply this force.
             for dim in range(3):
-                masterprint(
-                    f'Obtaining and applying the '
-                    f'{"xyz"[dim]}-force {gridsize_downstream_description}...'
-                )
+                masterprint(f'Obtaining and applying the {"xyz"[dim]}-force ...')
                 # Differentiate the downstream potential in real space
                 # using finite difference. We need to properly populate
                 # the ghost points in the differentiated grid, as ghost
