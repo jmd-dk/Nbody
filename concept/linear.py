@@ -3900,7 +3900,9 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
         '',
         None,
         gridsize=2,
-        class_species='+'.join([component.class_species for component in components])
+        boltzmann_order=-1,
+        class_species='+'.join([component.class_species for component in components]),
+        boltzmann_closure='class',
     )
     linear_component.name = 'linear power spectrum'
     # Get grid size for linear perturbation computation. In an attempt

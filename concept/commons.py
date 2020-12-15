@@ -3899,7 +3899,7 @@ def correct_float(val_raw):
     while val_new <= val_new_upper:
         if len(str(val_new)) < len(str(val_correct)):
             val_correct = val_new
-        val_new = np.nextafter(val_new, np.inf)
+        val_new = np.nextafter(val_new, ထ)
     return (val_correct if len(str(val_correct)) < len(str(val_raw)) - 2 else val_raw)
 
 # Functions for stripping the left-/right-most end off a string
