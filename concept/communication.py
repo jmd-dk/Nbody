@@ -581,74 +581,81 @@ def communicate_ghosts(grid_or_grids, operation):
 # of subdivisions of the box for each dimension. When all dimensions
 # cannot be equally divided, the x-dimension is subdivided the most,
 # then the y-dimension and lastly the z-dimension.
-@cython.header(# Arguments
-               n='int',
-               basecall='bint',
-               # Locals
-               N_primes='int',
-               f='int',
-               i='int',
-               i_is_prime='bint',
-               len_prime_factors='Py_ssize_t',
-               prime_factors=list,
-               r='int',
-               returns='int[::1]',
-               )
-def cutout_domains(n, basecall=True):
-    """This function works by computing a prime factorization of n
-    and then multiplying the smallest factors until 3 remain.
-    """
-    # Factorize n
-    prime_factors = []
-    while n > 1:
-        for i in range(2, n + 1):
-            if n % i == 0:
-                # Check whether i is prime
-                if i == 2 or i == 3:
-                    i_is_prime = True
-                elif i < 2 or i % 2 == 0:
-                    i_is_prime = False
-                elif i < 9:
-                    i_is_prime = True
-                elif i % 3 == 0:
-                    i_is_prime = False
-                else:
-                    r = int(sqrt(i))
-                    f = 5
-                    while f <= r:
-                        if i % f == 0 or i % (f + 2) == 0:
-                            i_is_prime = False
-                            break
-                        f += 6
-                    else:
-                        i_is_prime = True
-                # If i is prime it is a prime factor of n. If not,
-                # factorize i to get its prime factors.
-                if i_is_prime:
-                    prime_factors.append(i)
-                else:
-                    prime_factors += list(cutout_domains(i, basecall=False))
-                n //= i
-    # The returned list should always consist of 3 values
-    if basecall:
-        N_primes = len(prime_factors)
-        if N_primes < 4:
-            return asarray(
-                sorted(prime_factors + [1]*(3 - N_primes), reverse=True),
-                dtype=C2np['int'],
-            )
-        else:
-            len_prime_factors = len(prime_factors)
-            while len_prime_factors > 3:
-                prime_factors = sorted(prime_factors, reverse=True)
-                prime_factors[len_prime_factors - 2] *= prime_factors[len_prime_factors - 1]
-                prime_factors.pop()
-                len_prime_factors -= 1
-            return asarray(
-                sorted(prime_factors, reverse=True),
-                dtype=C2np['int'],
-            )
-    return asarray(prime_factors, dtype=C2np['int'])
+@cython.header(
+    # Arguments
+    n='int',
+    # Locals
+    elongation='double',
+    elongation_min='double',
+    factor='int',
+    factor_pair=frozenset,
+    factors=list,
+    factors_pairs=set,
+    factors_singles=set,
+    factors_triplet=tuple,
+    factors_triplet_best=tuple,
+    factors_x=tuple,
+    factors_x_mul='int',
+    factors_y=tuple,
+    factors_y_mul='int',
+    factors_yz=list,
+    factors_z_mul='int',
+    i='int',
+    m='int',
+    r_x='int',
+    r_y='int',
+    returns='int[::1]',
+)
+def cutout_domains(n):
+    if n == 1:
+        return ones(3, dtype=C2np['int'])
+    if n < 1:
+        abort(f'Cannot cut the box into {n} domains')
+    # Factorise n into primes
+    factors = []
+    m = n
+    while m%2 == 0:
+        factors.append(2)
+        m //= 2
+    for i in range(3, cast(ceil(sqrt(n)), 'int') + 1, 2):
+        while m%i == 0:
+            factors.append(i)
+            m //= i
+    if m != 1:
+        factors.append(m)
+    # Go through all triplets of factors and find the one resulting in
+    # the least elongation of the domains, i.e. the triplet with the
+    # smallest ratio between the largest and smallest element.
+    factors_singles = set()
+    factors_pairs = set()
+    elongation_min = ထ
+    factors_triplet_best = ()
+    for r_x in range(1, len(factors) + 1):
+        for factors_x in itertools.combinations(factors, r_x):
+            factors_x_mul = np.prod(factors_x)
+            if factors_x_mul in factors_singles:
+                continue
+            factors_singles.add(factors_x_mul)
+            factors_yz = factors.copy()
+            for factor in factors_x:
+                factors_yz.remove(factor)
+            factors_yz.append(1)
+            for r_y in range(1, len(factors_yz) + 1):
+                for factors_y in itertools.combinations(factors_yz, r_y):
+                    factors_y_mul = np.prod(factors_y)
+                    factor_pair = frozenset({factors_x_mul, factors_y_mul})
+                    if factor_pair in factors_pairs:
+                        continue
+                    factors_pairs.add(factor_pair)
+                    factors_z_mul = n//(factors_x_mul*factors_y_mul)
+                    factors_triplet = (factors_x_mul, factors_y_mul, factors_z_mul)
+                    elongation = np.max(factors_triplet)/np.min(factors_triplet)
+                    if elongation < elongation_min:
+                        factors_triplet_best = factors_triplet
+                        elongation_min = elongation
+    if len(factors_triplet_best) != 3 or np.prod(factors_triplet_best) != n:
+        abort('Something went wrong during domain decomposition')
+    return asarray(sorted(factors_triplet_best, reverse=True), dtype=C2np['int'])
 
 # This function takes coordinates as arguments and returns the rank of
 # the process that governs the domain in which the coordinates reside.
