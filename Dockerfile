@@ -55,7 +55,7 @@ RUN : \
     # Remove other caches
     && rm -rf /tmp/* ~/.cache/*
 ENV \
-    PATH="${PATH}:${top_dir}/concept:${top_dir}/python/bin" \
+    PATH="${top_dir}/concept:${top_dir}/concept/utilities:${top_dir}/python/bin:${PATH}" \
     TERM="linux"
 WORKDIR "${top_dir}/concept"
 
