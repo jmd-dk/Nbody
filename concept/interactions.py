@@ -1130,7 +1130,7 @@ tile_pairings_N_cache = malloc(tile_pairings_cache_size*sizeof('Py_ssize_t*'))
     subtile_index3D_s='Py_ssize_t*',
     subtile_pairings_index='Py_ssize_t',
     tile_extent='double[::1]',
-    tile_pair_index='Py_ssize_t',
+    tile_pair_index='int',
     tiles_offset='Py_ssize_t[::1]',
     tiles_offset_i='Py_ssize_t',
     tiles_offset_j='Py_ssize_t',
@@ -1188,7 +1188,9 @@ def get_subtile_pairings(subtiling, forcerange, only_supply):
                     if not only_supply:
                         same_tile = (tiles_offset_i == tiles_offset_j == tiles_offset_k == 0)
                 # Get 1D tile pair index from the 3D offset
-                tile_pair_index = get_neighbourtile_pair_index(tiles_offset_ptr)
+                tile_pair_index = get_neighbourtile_pair_index(
+                    tiles_offset_i, tiles_offset_j, tiles_offset_k,
+                )
                 # Allocate memory for subtile pairings
                 # for this particular tile pair.
                 pairings   = malloc(size*sizeof('Py_ssize_t*'))
@@ -1291,25 +1293,38 @@ subtile_pairings_N_cache = malloc(subtile_pairings_cache_size*sizeof('Py_ssize_t
 # Helper function for the get_subtile_pairings function
 @cython.header(
     # Arguments
-    tiles_offset_ptr='Py_ssize_t*',
+    tiles_offset_i='Py_ssize_t',
+    tiles_offset_j='Py_ssize_t',
+    tiles_offset_k='Py_ssize_t',
     # Locals
-    dim='int',
-    returns='Py_ssize_t',
+    i='int',
+    j='int',
+    k='int',
+    returns='int',
 )
-def get_neighbourtile_pair_index(tiles_offset_ptr):
+def get_neighbourtile_pair_index(tiles_offset_i, tiles_offset_j, tiles_offset_k):
     # The passed tiles_offset is the relative offset between a pair of
     # neighbouring tiles, and so each of its three elements has to be
     # in {-1, 0, +1}. If any element is outside this range, it is due
     # to the periodic boundaries. Fix this now, as we do not care about
     # whether the tile pair is connected through the box boundary.
-    for dim in range(3):
-        if tiles_offset_ptr[dim] > 1:
-            tiles_offset_ptr[dim] = -1
-        elif tiles_offset_ptr[dim] < -1:
-            tiles_offset_ptr[dim] = +1
+    # To avoid jumps we write this out arithmetically.
+    i = (
+        + (tiles_offset_i == 1) - (tiles_offset_i == -1)
+        + (tiles_offset_i < -1) - (tiles_offset_i > 1)
+    )
+    j = (
+        + (tiles_offset_j == 1) - (tiles_offset_j == -1)
+        + (tiles_offset_j < -1) - (tiles_offset_j > 1)
+    )
+    k = (
+        + (tiles_offset_k == 1) - (tiles_offset_k == -1)
+        + (tiles_offset_k < -1) - (tiles_offset_k > 1)
+    )
     # Compute 1D index from a 3×3×3 shape. We add 1 to each element,
-    # as they range from -1 to +1.
-    return ((tiles_offset_ptr[0] + 1)*3 + (tiles_offset_ptr[1] + 1))*3 + (tiles_offset_ptr[2] + 1)
+    # as they range from -1 to +1. The index is then given by
+    # ((i + 1)*3 + (j + 1))*3 + (k + 1), which we write out below.
+    return i*9 + j*3 + k + 13
 
 # Generic function implementing particle-particle pairing.
 # Note that this function returns a generator and so should only be
@@ -1414,7 +1429,7 @@ def particle_particle(
         tile_indices_supplier='Py_ssize_t*',
         tile_indices_supplier_N='Py_ssize_t',
         tile_location_s_dim='double',
-        tile_pair_index='Py_ssize_t',
+        tile_pair_index='int',
         tile_separation='double',
         tiles_contain_particles_r='signed char*',
         tiles_contain_particles_s='signed char*',
@@ -1591,7 +1606,9 @@ def particle_particle(
             periodic_offset_z = periodic_offset_ptr[2]
             # Get the needed subtile pairings for the selected receiver
             # and supplier tiles (which should be neighbour tiles).
-            tile_pair_index = get_neighbourtile_pair_index(tiles_offset_ptr)
+            tile_pair_index = get_neighbourtile_pair_index(
+                tiles_offset_ptr[0], tiles_offset_ptr[1], tiles_offset_ptr[2],
+            )
             subtile_pairings   = all_subtile_pairings  [tile_pair_index]
             subtile_pairings_N = all_subtile_pairings_N[tile_pair_index]
             # Flag specifying whether this is a local interaction

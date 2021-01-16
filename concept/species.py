@@ -752,7 +752,14 @@ class Tiling:
                             *ℝ[1/self.tile_extent[1]], 'Py_ssize_t')
                         k = cast((posz[particle_index] - ℝ[self.location[2]])
                             *ℝ[1/self.tile_extent[2]], 'Py_ssize_t')
-                        tile_index = layout[i, j, k]
+                        # The tile_index is given by layout[i, j, k],
+                        # but as an optimization we
+                        # compute it ourselves.
+                        tile_index = (
+                            + i*ℤ[self.shape[2]*self.shape[1]]
+                            + j*ℤ[self.shape[2]]
+                            + k
+                        )
                 # Get the index of the rung and the jump
                 # for this particle.
                 with unswitch:
@@ -776,16 +783,9 @@ class Tiling:
                 #   3: Particle sits on active rung
                 #      and is flagged to jump.
                 if rung_index < lowest_active_rung:
-                    # This particle sits on an inactive rung
                     contains = 1
-                elif rung_index_jumped < N_rungs:
-                    # This particle sits on an active rung
-                    # and is not flagged to jump.
-                    contains = 2
                 else:
-                    # This particle sits on active rung
-                    # and is flagged to jump.
-                    contains = 3
+                    contains = 2 + (rung_index_jumped >= N_rungs)
                 if contain_particles[tile_index] < contains:
                     contain_particles[tile_index] = contains
 
