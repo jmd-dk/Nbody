@@ -3,7 +3,7 @@ _this_dir = os.path.dirname(paths['params'])
 
 # Input/output
 initial_conditions = _this_dir + '/IC'
-snapshot_type      = 'GADGET2'
+snapshot_type      = 'GADGET-2'
 output_times       = {'snapshot': [a_begin, 0.5]}
 
 # Numerical parameters

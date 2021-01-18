@@ -11,7 +11,7 @@ from snapshot import save
 # actual particle itself.
 N = 8
 mass = ρ_mbar*boxsize**3/N
-component = Component('GADGET halos', 'matter', N=N, mass=mass)
+component = Component('GADGET-2 halos', 'matter', N=N, mass=mass)
 component.populate(asarray([0.26]*4 + [0.74]*4       )*boxsize, 'posx')
 component.populate(asarray([0.25, 0.25, 0.75, 0.75]*2)*boxsize, 'posy')
 component.populate(asarray([0.25, 0.75, 0.75, 0.25]*2)*boxsize, 'posz')

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script performs a drift test of the CO𝘕CEPT code by comparison with
-# GADGET. ICs are generated, containing 4 particles placed symmetrically
+# GADGET-2. ICs are generated, containing 4 particles placed symmetrically
 # in the yz-plane so that no net forces exist (due to mirror images). A
 # initial velocity in the x-direction is given. The particles will pass
 # through the periodic edge of the box during the simulation.
@@ -33,7 +33,7 @@ set -e
 # Run the CO𝘕CEPT code on the generated ICs
 "${concept}" -n 1 -p "${this_dir}/params" --local
 
-# Run the GADGET code on the generated ICs
+# Run the GADGET-2 code on the generated ICs
 Gadget2_local_dir="${this_dir}/Gadget2"
 mkdir -p "${Gadget2_local_dir}"
 cp "${Gadget2_dir}/"* "${Gadget2_local_dir}" 2>/dev/null || :

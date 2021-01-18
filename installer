@@ -417,7 +417,7 @@ set_version "numpy"             "1.19.4"
 set_version "pip"               "20.3.1"
 set_version "scipy"             "1.5.4"
 set_version "setuptools"        "51.0.0"
-set_version "sphinx"            "3.3.1"
+set_version "sphinx"            "3.4.1"
 set_version "sphinx_copybutton" "0.3.1"
 set_version "sphinx_rtd_theme"  "0.5.0"
 set_version "sphinx_tabs"       "1.3.0"
@@ -6423,6 +6423,11 @@ if [ "${pip_install}" == "True" ] && [ "${python_install}" == "True" ]; then
     export TEMP="${TMPDIR}"
     export TMP="${TMPDIR}"
     for package in "pip" "setuptools" "wheel"; do
+        if [ "${python_installed}" == "True" ]; then
+            if [ "$(check_pypackage_installed "${package}")" == "True" ]; then
+                continue
+            fi
+        fi
         current_step="upgrade/install of ${package}"
         heading "Upgrading/installing ${package}"
         set_status "Upgrading/installing ${package}"
@@ -7171,10 +7176,10 @@ Attempting to install H5Py with compiler=${compiler}\n\n"
             )"                                                       \
         )"
         if [ -f "${h5py_dir}/_hl/selections.py" ]; then
-            sed -i                                \
+            sed -i                              \
                 "0,/if dataset is not None:/s/if dataset is not None:\
-/if False:  # dataset is not None:/"              \
-                "${h5py_dir}/_hl/selections.py"   \
+/if False:  # dataset is not None:/"            \
+                "${h5py_dir}/_hl/selections.py" \
                 || :
         fi
     fi
@@ -7190,7 +7195,36 @@ if [ "${sphinx_install}" == "True" ] && [ "${sphinx_installed}" == "False" ] \
     # to install it.
     install_success="True"
     pip_install_pypackage "Sphinx" "${sphinx_version}" || install_success="False"
-    if [ "${install_success}" == "False" ]; then
+    if [ "${install_success}" == "True" ]; then
+        # Fix an error with raw f-strings and Pygments (a dependency
+        # of Sphinx). The issue is described here:
+        #   https://github.com/pygments/pygments/issues/1681
+        # It will probably be fixed in Pygments 2.7.5.
+        pygments_dir="$(                                                     \
+            dirname "$(                                                      \
+                "${python}" -B -c                                            \
+                'import inspect, pygments; print(inspect.getfile(pygments))' \
+                || :                                                         \
+            )"                                                               \
+        )"
+        if ! grep "rfstringescape" "${pygments_dir}/lexers/python.py" >/dev/null 2>&1; then
+            for t in "t" ""; do
+                for DS in "Double" "Single"; do
+                    ds="$(echo "${DS:0:1}" | tr '[:upper:]' '[:lower:]')"
+                    sed -i                                               \
+                        "s/String\.${DS}), '${t}${ds}qf'/String\.${DS}), \
+combined('rfstringescape', '${t}${ds}qf')/"                              \
+                        "${pygments_dir}/lexers/python.py"               \
+                        || :
+                done
+            done
+            pattern="'fstringescape':"
+            linenr=$(awk "\$0 ~ \"${pattern}\" {print NR}" "${pygments_dir}/lexers/python.py" || :)
+            new_line="'rfstringescape': [(r'\\\\{\\\\{', String.Escape), \
+(r'\\\\}\\\\}', String.Escape)],"
+            sed -i "${linenr}i${new_line}" "${pygments_dir}/lexers/python.py" || :
+        fi
+    else
         sphinx_install_success="False"
         error "Failed to install Sphinx. The installation will continue regardless."
         sphinx_install="False"  # Flag as not to be installed

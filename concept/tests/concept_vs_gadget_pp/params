@@ -3,7 +3,7 @@ _this_dir = os.path.dirname(paths['params'])
 
 # Input/output
 initial_conditions = _this_dir + '/IC'
-snapshot_type      = 'GADGET2'
+snapshot_type      = 'GADGET-2'
 output_dirs        = {'snapshot': _this_dir + '/output'}
 output_bases       = {'snapshot': 'snapshot'}
 output_times       = {'snapshot': (0.1, 0.5, 1)}
@@ -26,4 +26,4 @@ select_softening_length = {'matter': '0.03*boxsize/cbrt(N)'}
 class_reuse = False
 
 # Debugging options
-enable_class_background = False  # Use the same simplified Friedmann equation as GADGET
+enable_class_background = False  # Use the same simplified Friedmann equation as GADGET-2

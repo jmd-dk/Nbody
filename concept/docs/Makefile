@@ -50,30 +50,38 @@ sphinx: $(MAKEFILE_LIST)
 html: sphinx
 	@$(call heading)
 	@# Change GitHub button text and link
-	@for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                      \
-	    sed -i 's/Edit on GitHub/Code Repository/g' $${filename} ;                      \
-	    sed -i 's/github\.com\/\/[^"]*/github\.com\/jmd-dk\/concept\//g' $${filename} ; \
+	@for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                       \
+	    sed -i 's/Edit on GitHub/Code Repository/g' "$${filename}";                      \
+	    sed -i 's/github\.com\/\/[^"]*/github\.com\/jmd-dk\/concept\//g' "$${filename}"; \
 	done
 	@# Write the N in CO𝘕CEPT in italics via HTML tags.
 	@# In headings, also insert a small (en) space after N,
 	@# needed due to the heading font.
-	@for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                                         \
-	    for h in 1 2 3 4 5 6; do                                                                           \
-	        sed -i "s/\(<h$${h}>.*\)\(CONCEPT\)\(.*<\/h$${h}>.*\)/\1CO<em>N<\/em> CEPT\3/g" $${filename} ; \
-	    done ;                                                                                             \
-	    sed -i 's/CONCEPT/CO<em>N<\/em>CEPT/g' $${filename} ;                                              \
+	@for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                       \
+	    for h in 1 2 3 4 5 6; do                                                         \
+	        sed                                                                          \
+	            -i                                                                       \
+	            "s/\(<h$${h}>.*\)\(CONCEPT\)\(.*<\/h$${h}>.*\)/\1CO<em>N<\/em> CEPT\3/g" \
+	            "$${filename}"                                                           \
+	        ;                                                                            \
+	    done;                                                                            \
+	    sed -i 's/CONCEPT/CO<em>N<\/em>CEPT/g' "$${filename}";                           \
 	done
 	@# Remove HTML tags from titles
-	@for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                                    \
-	    sed -i '/<title>.*CO<em>N<\/em>CEPT.*<\/title>/ s/CO<em>N<\/em>CEPT/CONCEPT/g' $${filename} ; \
+	@for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                  \
+	    sed                                                                         \
+	        -i                                                                      \
+	        '/<title>.*CO<em>N<\/em>CEPT.*<\/title>/ s/CO<em>N<\/em>CEPT/CONCEPT/g' \
+	        "$${filename}"                                                          \
+	    ;                                                                           \
 	done
 	@# Insert current date in place of |today|
-	@sed -i "s/|today|/$$(date '+%b %d, %Y')/g" $(BUILDDIR)/html/index.html
+	@sed -i "s/|today|/$$(date '+%B %d, %Y')/g" $(BUILDDIR)/html/index.html
 	@# Remove "Next" and "Previous" buttons between chapters
 	@sed -i 's/.*Previous<.*//g' $(BUILDDIR)/html/index.html
 	@sed -i 's/.*>Next .*//g'    $(BUILDDIR)/html/index.html
 	@sed -i 's/.*Previous<.*//g' $(BUILDDIR)/html/tutorial/tutorial.html
-	@sed -i 's/.*>Next .*//g'    $(BUILDDIR)/html/tutorial/utilities.html
+	@sed -i 's/.*>Next .*//g'    $(BUILDDIR)/html/tutorial/gadget.html
 	@sed -i 's/.*Previous<.*//g' $(BUILDDIR)/html/installation.html
 	@sed -i 's/.*>Next .*//g'    $(BUILDDIR)/html/installation.html
 	@sed -i 's/.*Previous<.*//g' $(BUILDDIR)/html/command_line_options.html
@@ -82,8 +90,8 @@ html: sphinx
 	@sed -i 's/.*>Next .*//g'    $(BUILDDIR)/html/parameters/debugging_options.html
 	@sed -i 's/.*Previous<.*//g' $(BUILDDIR)/html/utilities/utilities.html
 	@for filename in $$(find $(BUILDDIR)/html/utilities/ -name '*.html'); do \
-	    sed -i 's/.*Previous<.*//g' $${filename} ;                           \
-	    sed -i 's/.*>Next .*//g' $${filename} ;                              \
+	    sed -i 's/.*Previous<.*//g' "$${filename}";                          \
+	    sed -i 's/.*>Next .*//g' "$${filename}";                             \
 	done
 	@sed -i 's/.*Previous<.*//g' $(BUILDDIR)/html/under_the_hood.html
 	@sed -i 's/.*>Next .*//g'    $(BUILDDIR)/html/under_the_hood.html
@@ -93,7 +101,7 @@ html: sphinx
 	@sed -i 's/.*Previous<.*//g' $(BUILDDIR)/html/publications.html
 	@# Convert all tables in the parameter sections to plain tables
 	@for filename in $$(find $(BUILDDIR)/html/parameters/ -name '*.html'); do \
-	    sed -i 's/<table class="docutils.*"/<table/g' $${filename} ;          \
+	    sed -i 's/<table class="docutils.*"/<table/g' $${filename};           \
 	done
 	@# Remove padding at the bottom of tabs
 	@(                                                                               \
@@ -102,16 +110,29 @@ html: sphinx
 	        sed                                                                      \
 	            -i                                                                   \
 	            "s/<div $${pattern}/<div style=\"padding-bottom: 0;\" $${pattern}/g" \
-	            $${filename}                                                         \
+	            "$${filename}"                                                       \
 	        ;                                                                        \
 	    done                                                                         \
 	)
-	@# Replace "f r" in code blocks with "rf",
-	@# needed as Sphinx sometimes can't parse Python
-	@# string literals prefixed with both 'r' and 'f'.
-	@for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                                                  \
-	    sed -i 's/<span class="n">f<\/span> <span class="sa">r<\/span>/<span class="n">rf<\/span>/g' $${filename} ; \
-	done
+	@# Remove extra newline placed before emphasized code block lines
+	@# (only visible after copying using Sphinx-copybutton).
+	@(                                                                                         \
+	    pattern='span *class=\"hll\"';                                                         \
+	    for filename in $$(find $(BUILDDIR)/html/ -name '*.html'); do                          \
+	        for linenr in $$(awk "\$$0 ~ \"$${pattern}\" {print NR}" "$${filename}" | tac); do \
+	            ((linenr -= 1));                                                               \
+	            line="$$(sed "$${linenr}!d" "$${filename}")";                                  \
+	            if [ -z "$${line}" ]; then                                                     \
+	                sed -i "$${linenr}d" "$${filename}";                                       \
+	                sed -i "$${linenr}i<span> </span>" "$${filename}";                         \
+	            fi;                                                                            \
+	            sed -i "$${linenr}{N;s/\n//;}" "$${filename}";                                 \
+	        done;                                                                              \
+	        for linenr in $$(awk "\$$0 ~ \"$${pattern}\" {print NR}" "$${filename}" | tac); do \
+	            sed -i "$${linenr}{N;s/\n//;}" "$${filename}";                                 \
+	        done                                                                               \
+	    done                                                                                   \
+	)
 .PHONY: html
 
 # HTML ready for publication

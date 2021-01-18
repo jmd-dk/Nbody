@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script performs a kick test of the CO𝘕CEPT (PP) code, by comparison
-# with GADGET (treePM). ICs are generated, containing 8 particles placed
+# with GADGET-2 (TreePM). ICs are generated, containing 8 particles placed
 # symetrically  so that a force only exist in the x-direction. The particles
 # start out with zero velocity.
 

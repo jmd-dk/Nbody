@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script performs a comparison test between the CO𝘕CEPT code's PP implementation
-# and the GADGET code's Tree implementation.
+# and the GADGET-2 code's Tree implementation.
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
@@ -42,7 +42,7 @@ mv "${this_dir}/IC"* "${this_dir}/IC"
 rm -f "${reusables_dir}/ewald/${ewald_gridsize}.hdf5"
 "${concept}" -n 1 -p "${this_dir}/params" --local
 
-# Run the GADGET code on the generated ICs
+# Run the GADGET-2 code on the generated ICs
 Gadget2_local_dir="${this_dir}/Gadget2"
 mkdir -p "${Gadget2_local_dir}"
 cp "${Gadget2_dir}/"* "${Gadget2_local_dir}" 2>/dev/null || :

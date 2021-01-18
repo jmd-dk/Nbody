@@ -129,8 +129,11 @@ plt.semilogx(
     '--k',
     label='CLASS',
 )
+rel_min_plot_indices = asarray([rel_min_index - 2, rel_min_index + 3])
+rel_min_plot_indices[rel_min_plot_indices < 0] = 0
+rel_min_plot_indices[rel_min_plot_indices >= len(ktot)] = len(ktot) - 1
 plt.semilogx(
-    ktot[asarray([rel_min_index - 2, rel_min_index + 3])],
+    ktot[rel_min_plot_indices],
     [100*suppression_linear]*2,
     '-k',
     alpha=0.7,

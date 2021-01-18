@@ -90,8 +90,17 @@ between the simulations. E.g.
 
 .. code-block:: bash
 
-   ./concept -p params/my_params -c "Ωb = 0.049" -c "Ωcdm = 0.270"
-   ./concept -p params/my_params -c "Ωb = 0.048" -c "Ωcdm = 0.271"
+   # First simulation
+   ./concept \
+       -p params/my_params \
+       -c "Ωb = 0.049" \
+       -c "Ωcdm = 0.270"
+
+   # Second simulation
+   ./concept \
+       -p params/my_params \
+       -c "Ωb = 0.048" \
+       -c "Ωcdm = 0.271"
 
 Note that the ``-c`` option may be specified multiple times.
 
@@ -159,7 +168,7 @@ processes distributed over 2 nodes each with 4 CPU cores:
    ./concept -n "2 2*2"
    ./concept -n "1 + 1 : 2**2"
 
-Note that imhomogeneous layouts are not describable. If you leave out the node
+Note that inhomogeneous layouts are not describable. If you leave out the node
 specification (i.e. only supply a single number to ``-n``) and the cluster is
 running Slurm, the specified total number of CPU cores may be distributed in
 any which way between the available nodes. If the cluster is running
@@ -208,9 +217,9 @@ command-line options.
 You can read about the different utilities and their command-line interfaces
 under :doc:`Utilities </utilities/utilities>`.
 
-Note that while some utilies are always run locally, the ones that potentially
+Note that while some utilities are always run locally, the ones that potentially
 involves large computational resources are subject to the same
-:ref:`remote submission behavior <remote_job_submission>` as standard
+:ref:`remote submission behaviour <remote_job_submission>` as standard
 simulations.
 
 
@@ -231,13 +240,13 @@ Remote job submission
 ---------------------
 When running CO\ *N*\ CEPT on a cluster with a job scheduler (Slurm and
 TORQUE/PBS supported), each invocation of ``concept`` submits the work to be
-done as a remote job (unless this behavior is :ref:`overruled <local>`). If
+done as a remote job (unless this behaviour is :ref:`overruled <local>`). If
 running locally, none of these options have any effect.
 
 On top of the :ref:`basic <basics>` options, the options below are used for
 additional resource specification when submitting remote jobs. Note that
 additional possibilities arise for the ``-n`` option when running on a cluster
-with multple compute nodes, as documented
+with multiple compute nodes, as documented
 :ref:`above <specifying_multiple_nodes>`.
 
 
@@ -339,7 +348,7 @@ The effect of this is simply to place the line
 
    #SBATCH \-\-exclusive
 
-in the header of the job script, assuming Slurm, or
+in the header of the job script --- assuming Slurm --- or
 
    #PBS \-\-exclusive
 
@@ -350,7 +359,7 @@ does not mean anything to TORQUE/PBS, though).
    Since the value ``--exclusive`` starts with '``-``', using
    ``-j --exclusive`` or ``-j "--exclusive"`` is not legal as the
    parser registres ``--exclusive`` as a whole new (and non-existent)
-   option.
+   option to the ``concept`` script.
 
 The ``-j`` option may be specified multiple times.
 
@@ -382,7 +391,7 @@ The following options change the mode in which CO\ *N*\ CEPT is built or run.
 With the exception of the :ref:`\\\\-\\\\-local <local>` option, these are
 mostly useful for development.
 
-When invoking the ``concept`` script, the default behavior is to check for
+When invoking the ``concept`` script, the default behaviour is to check for
 changes in the source code since the last build, in which case the code is
 recompiled using the ``Makefile``. With the compiled code ready, the requested
 CO\ *N*\ CEPT run is performed. In addition, when working on a remote
@@ -536,7 +545,7 @@ implements a given test, the name of which equals the directory name. You may
 use this option to run these tests, checking that the code works correctly.
 
 To run e.g. the ``concept_vs_gadget_p3m`` test --- which runs a small
-CO\ *N*\ CEPT P³M simulation and a (supposedly) equivalent GADGET TreePM
+CO\ *N*\ CEPT P³M simulation and a (supposedly) equivalent GADGET-2 TreePM
 simulation, after which it compares the results --- do one of
 
 .. code-block:: bash
@@ -550,8 +559,8 @@ i.e. not submitted as remote jobs even when working on a remote
 cluster/server.
 
 Once a test is complete, it will report either success or failure. Most
-simulations also produce some artifacts within their directory, most notably
-plots. You can clean up these artifacts by running the ``clean`` script within
+simulations also produce some artefacts within their directory, most notably
+plots. You can clean up these artefacts by running the ``clean`` script within
 the corresponding test subdirectory, e.g.
 
 .. code-block:: bash
@@ -599,7 +608,7 @@ As an example, consider the ``hubble.py`` script below:
    :caption: hubble.py
    :name: hubble
 
-   from commons import *  # import everyting from the CO𝘕CEPT commons module
+   from commons import *  # import everything from the CO𝘕CEPT commons module
 
    h = H0/(100*units.km/(units.s*units.Mpc))
    print(f'{h = :g}')
@@ -608,7 +617,9 @@ We can run this script using
 
 .. code-block:: bash
 
-   ./concept -m hubble.py --pure-python
+   ./concept \
+       -m hubble.py \
+       --pure-python
 
 where :ref:`pure Python mode <pure_python>` is needed as the script itself is
 not compiled. To see that this really does hook into the CO\ *N*\ CEPT
@@ -616,7 +627,10 @@ machinery:
 
 .. code-block:: bash
 
-   ./concept -m hubble.py -c "H0 = 72*km/(s*Mpc)" --pure-python
+   ./concept \
+       -m hubble.py \
+       -c "H0 = 72*km/(s*Mpc)" \
+       --pure-python
 
 Using ``-m`` with a script as above is convenient for e.g. making plotting
 scripts which need access to some CO\ *N*\ CEPT functionality. For small
@@ -680,7 +694,7 @@ something like
    >>> dir()
    >>> # I see one called 'G_Newton'
    >>> G_Newton
-   >>> # Its value looks unrecognizable! It must not be given in SI units.
+   >>> # Its value looks unrecognisable! It must not be given in SI units.
    >>> # I see something called 'units'
    >>> units
    >>> units.m

@@ -1420,11 +1420,11 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                 domain_start_k = domain_layout_local_indices[2]*size_k
                 index = 0
                 for i in range(size_i):
-                    xi = (ℝ[domain_start_i + 0.5] + i)*ℝ[boxsize/gridsize]
+                    xi = (ℝ[domain_start_i + 0.5*cell_centered] + i)*ℝ[boxsize/gridsize]
                     for j in range(size_j):
-                        yj = (ℝ[domain_start_j + 0.5] + j)*ℝ[boxsize/gridsize]
+                        yj = (ℝ[domain_start_j + 0.5*cell_centered] + j)*ℝ[boxsize/gridsize]
                         for k in range(size_k):
-                            zk = (ℝ[domain_start_k + 0.5] + k)*ℝ[boxsize/gridsize]
+                            zk = (ℝ[domain_start_k + 0.5*cell_centered] + k)*ℝ[boxsize/gridsize]
                             posx_mv[index] = xi
                             posy_mv[index] = yj
                             posz_mv[index] = zk

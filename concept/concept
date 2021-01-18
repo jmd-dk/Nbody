@@ -1058,7 +1058,7 @@ order = (
     'friedmann',
     'realize',
     'powerspec',
-    # Test of the GADGET installation
+    # Test of the GADGET-2 installation
     'gadget',
     # Tests of the particle implementation
     'drift_nohubble',

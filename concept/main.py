@@ -866,7 +866,7 @@ def update_base_timestep_size(
     if enable_Hubble and Δa_max_increasing > 0:
         Δa_new = scale_factor(universals.t + Δt_new) - universals.a
         if Δa_new > Δa_max_increasing:
-            bottleneck = 'Δa_max_increasing'
+            bottleneck = 'maximum allowed Δa'
             return Δt, bottleneck
     # Accept Δt_new. As the base time step size
     # has been increased, there is no bottleneck.
@@ -2256,7 +2256,7 @@ fac_p3m = 0.14*Δt_base_nonlinear_factor
 # (short-range) acceleration (i.e. its current velocity is not
 # considered). If it does become large enough for this, the particle
 # jumps to the rung just above its current rung.
-# In GADGET2, this same factor is called ErrTolIntAccuracy (or η)
+# In GADGET-2, this same factor is called ErrTolIntAccuracy (or η)
 # and has a value of 0.025.
 fac_softening = 0.025*Δt_rung_factor
 

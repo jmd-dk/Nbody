@@ -67,6 +67,7 @@ powerspec_options = {
         'fluid'    :   _size,
     },
     'interpolation': 'PCS',
+    'k_max'        : '1.5*Nyquist',
 }
 k_modes_per_decade = {
     3e-3/Mpc: 10,

@@ -1,22 +1,20 @@
 Mastering gravity
 -----------------
-The fact that gravity is extremely important for the particle evolution has
+The fact that gravity is extremely important for the cosmic evolution has
 already been demonstrated. We would like our simulation to be able to compute
-gravity in a manner that is both accurate and efficient, but in practice one
-has to sacrifice one for the other. In CO\ *N*\ CEPT, the details of the
-gravitational computation is controlled by a large set of parameters, enabling
-us to tune this tradeoff between accuracy and efficiency to our heart's
-desire.
+gravity in a manner that is both accurate and efficient. In CO\ *N*\ CEPT, the
+details of the gravitational computation is controlled by a large set of
+parameters, enabling us to tune this tradeoff between accuracy and efficiency
+to our heart's desire.
 
 In order to learn how to control gravity within CO\ *N*\ CEPT we shall run
 some sample simulations. The parameter specifications below are very similar
-to the ones encountered in the previous section. Save these in
-``params/tutorial``.
-
+to the ones encountered in the previous section.
 
 .. code-block:: python3
    :caption: params/tutorial
    :name: params-gravity
+   :emphasize-lines: 12-14, 29-32
 
    # Non-parameter helper variable used to control the size of the simulation
    _size = 64
@@ -38,6 +36,7 @@ to the ones encountered in the previous section. Save these in
 
    # Numerical parameters
    boxsize = 256*Mpc
+   potential_options = _size
 
    # Cosmology
    H0      = 67*km/(s*Mpc)
@@ -47,29 +46,43 @@ to the ones encountered in the previous section. Save these in
 
    # Physics
    select_forces = {
-       'matter': 'gravity',
+       'matter': {'gravity': 'pm'},
    }
 
-Now run a simulation using these parameters, by executing
+Save these parameters to e.g. ``params/tutorial``.
+
+.. tip::
+   If the file ``params/tutorial`` already exists due to previous tutorial
+   work, you may safely overwrite the old content. Similarly, it's best to
+   clean up (or remove entirely) the ``output/tutorial`` directory before
+   continuing. If you wish to keep the old content, you can do e.g.
+
+   .. code-block:: bash
+
+      mv output/tutorial output/tutorial_3
+
+   If you wish to store the outputs of each tutorial section separately, you
+   can also name the parameter file(s) something more imaginative than just
+   '``tutorial``'. The output directories are set up to reflect the parameter
+   file name.
+
+Now run a simulation using the :ref:`tutorial <params-gravity>` parameter file
+by executing
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c "_sim = 'A'"
+   ./concept \
+       -p params/tutorial \
+       -c "_sim = 'A'"
 
-and optionally specifying whatever number of CPU cores you'd like with the
+and optionally specifying whatever number of processes you'd like with the
 ``-n`` option.
-
-.. note::
-   Note that a choice of e.g. ``-n 3`` is illegal as
-   :math:`N = 64^3` is not divisible by :math:`3`. More of such
-   restrictions exist. If an illegal number of processes is chosen, this will
-   be detected and a helpful error message is shown.
 
 The ``output_bases`` parameter has been used to specify the base of filenames
 for power spectrum output. This is set up to depend on a helper variable
-``_sim``, which we supply from the command-line. This way we can run multiple
-simulations without having their outputs overwrite each other, by specifying a
-different value of ``_sim`` for each run.
+``_sim``, which we supply from the command-line. We can then run multiple
+simulations without having their outputs overwrite each other, by supplying
+different values for ``_sim``.
 
 The result of the simulation will be a data file
 ``output/tutorial/powerspec_A_a=1.00`` of the matter power spectrum at
@@ -80,55 +93,121 @@ The result of the simulation will be a data file
 
 The PM method
 .............
-Without further specification, CO\ *N*\ CEPT solves gravity using the
-particle-mesh (PM) method. We may also specify this choice explicitly using
+A new parameter appearing in the :ref:`tutorial <params-gravity>` parameter
+file is ``select_forces``, which is set to map ``'matter'`` to the
+gravitational interaction using the particle-mesh (PM) method. This method
+works by solving the gravitational potential on a cubic grid, the size of
+which is set through ``potential_options``. The potential used for our
+first simulation, A, was then a cube of size
+``_size``:math:`\times`\ ``_size``:math:`\times`\ ``_size``
+(i.e. :math:`64\times 64\times 64`), dividing the box into smaller cells.
+
+The potential grid introduces a length scale below which gravity cannot be
+resolved, namely the width of a grid cell, here ``boxsize/_size``. We may
+expect to achieve a more accurate result by lowering this length scale, e.g.
+by doubling the size (resolution) of the potential grid (in each direction).
+To try this out, update ``potential_options`` to
 
 .. code-block:: python3
 
-   select_forces = {
-       'matter': {'gravity': 'pm'},
-   }
+   potential_options = 2*_size
 
-The PM method works by solving for the gravitational potential on a grid. By
-default, the resolution of this grid is set to match the number of particles.
-Again, we may specify this choice explicitly using
-
-.. code-block:: python3
-
-   select_forces = {
-       'matter': {'gravity': ('pm', _size)},
-   }
-
-The potential grid is then a cubic
-``_size``:math:`\times`\ ``_size``:math:`\times`\ ``_size`` mesh, dividing
-the box into smaller cells.
-
-To test whether this really amounts to the default gravitational set-up,
-update ``select_forces`` in ``params/tutorial`` according to the above and run
-a new simulation, this time using
+in ``params/tutorial`` and run a new simulation, this time using
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c "_sim = 'B'"
+   ./concept \
+       -p params/tutorial \
+       -c "_sim = 'B'"
 
 Visually comparing ``powerspec_A_a=1.00.png`` to ``powerspec_B_a=1.00.png``,
-we see that the two simulations were indeed exactly the same.
-
-The potential grid introduces a length scale below which gravity cannot be
-resolved, namely the width of a mesh cell, here ``boxsize/_size``. We may
-expect to achieve a more accurate result by lowering this length scale, e.g.
-by doubling the size (resolution) of the potential grid (in each direction):
+we see that increasing the potential grid size produces a lager power
+spectrum, as we would perhaps expect. To check whether doubling the grid size
+was enough to achieve convergence, let's further run a simulation C with
+triple the grid size, i.e. switch to using
 
 .. code-block:: python3
 
-   select_forces = {
-       'matter': {'gravity': ('pm', 2*_size)},
-   }
+   potential_options = 3*_size
 
-Try this out, using ``-c "_sim = 'C'"``.
+in ``params/tutorial`` and execute
 
-Comparing the plots of simulation B and C, it's clear that the choice of grid
-size affects the result. What isn't clear is which result to trust.
+.. code-block:: bash
+
+   ./concept \
+       -p params/tutorial \
+       -c "_sim = 'C'"
+
+Properly comparing the three individual output plots is not so easy. To better
+compare the results, you should plot the different power spectra together in a
+single plot, using the information in the data files. You may do this using
+your favourite plotting tool, or --- for your convenience --- using the below
+script:
+
+.. code-block:: python3
+   :caption: output/tutorial/plot.py
+   :name: plot-gravity
+
+   import glob, os, re
+   import numpy as np
+   import matplotlib.pyplot as plt
+
+   # Read in data
+   P_sims = {}
+   this_dir = os.path.dirname(os.path.realpath(__file__))
+   for filename in sorted(glob.glob(f'{this_dir}/powerspec*'), key=os.path.getmtime):
+       match = re.search(r'powerspec_(.+)_', filename)
+       if not match or filename.endswith('.png'):
+           continue
+       sim = match.group(1)
+       k, P_sims[sim], P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
+
+   # Plot
+   fig, ax = plt.subplots()
+   linestyles = ['-', '--', ':', '-.']
+   for sim, P_sim in P_sims.items():
+       linestyle = linestyles[
+           sum(np.allclose(line.get_ydata(), P_sim, 5e-2) for line in ax.lines)
+           %len(linestyles)
+       ]
+       ax.loglog(k, P_sim, linestyle, label=f'simulation {sim}')
+   ylim = ax.get_ylim()
+   ax.loglog(k, P_lin, 'k--', label='linear', linewidth=1)
+   ax.set_xlim(k[0], k[-1])
+   ax.set_ylim(ylim)
+   ax.set_xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
+   ax.set_ylabel(r'$P\, [\mathrm{Mpc}^3]$')
+   ax.legend()
+   fig.tight_layout()
+   fig.savefig(f'{this_dir}/plot.png', dpi=150)
+
+Do not feel bad about using this plotting script --- and others to come later
+on in the tutorial --- without studying it in any detail. To run the script,
+save the :ref:`above code <plot-gravity>` to a file in the ``output/tutorial``
+directory, say ``output/tutorial/plot.py``, then do
+
+.. code-block:: bash
+
+   ./concept -m output/tutorial/plot.py
+
+.. note::
+   The ``-m`` command-line option redirects ``concept`` to run the specified
+   Python script, rather than launching a CO\ *N*\ CEPT simulation. In this
+   case, this is almost equivalent to just running the script using Python
+   directly, but using ``./concept -m`` we are guarenteed that the environment
+   is set up correctly, according to the CO\ *N*\ CEPT installation.
+
+The script will produce the output ``output/tutorial/plot.png``. Investigating
+this comparison plot, we see that in fact simulation B --- the one with the
+"in-between" potential grid size --- has the most power. It's then unclear
+which of the three power spectra to trust, if any.
+
+Though inadequate for precision simulations, the PM method remains a valuable
+tool due to its unprecedented efficiency, as sometimes the benefits of rapid
+simulations outweigh the drawbacks from the loss of precision. Also, as we
+shall :doc:`delve into later <beyond_matter_only>`, PM gravity is as accurate
+as can be for fluid (i.e. non-particle) components, used to model species
+different from matter.
 
 
 
@@ -148,110 +227,76 @@ parameter with ``'p3m'``. Let's run a simulation D using
 .. code-block:: python3
 
    select_forces = {
-       'matter': {'gravity': ('p3m', _size)},
+       'matter': {'gravity': 'p3m'},
    }
 
-You will notice that this time, the simulation takes several times longer to
-complete. Studying the text printed to the screen, we see that the work within
+while also resetting ``potential_options`` back to
+
+.. code-block:: python3
+
+   potential_options = _size
+
+You will notice that this time, the simulation takes much longer to complete.
+Studying the text printed to the screen, we see that the work within
 each time step is split into a short-range and a long-range part. From the
 computation times stated in parentheses to the right, it's clear that the
 short-range part is by far the most time-consuming.
 
-Once completed, compare the plot from the P³M simulation D to that of the PM
-simulations B and C. You will find that we now have three different results.
+Once completed, add the P³M (D) result to the comparison plot by rerunning
+:ref:`plot.py <plot-gravity>`. You will see that P³M lies somewhere in-between
+B and C at intermediary scales, while having more power than any of the PM's
+at the smallest scales.
 
-As before, let's now double the grid size, and perform a final simulation, E:
+As before, let's now double the grid size, and perform a final simulation, E.
+You will find that this time, the P³M simulation isn't nearly as slow, as
+the smaller potential cell size means that there is less work to be done for
+the short-range part.
+
+Updating the comparison plot with the latest result, we see some long-awaited
+stability: The two P³M simulations give very nearly identical results, and
+as such these are the ones we should put our trust in.
+
+As changing the size of the potential grid under P³M doesn't really affect
+the output, we are free to optimize it for performance. Generally, using a P³M
+grid twice that of the "particle grid"
+(``potential_options``\ :math:`= 2 \sqrt[3]{N}`) is recommended;
+
+.. code-block:: python3
+
+   potential_options = 2*_size
+
+
+
+.. raw:: html
+
+   <h3>Default parameters</h3>
+
+You may wonder what gravitational method was used back for our previous
+simulations, where we did not explicitly select a method through
+``select_forces``. Here it turns out that CO\ *N*\ CEPT goes with P³M by
+default.
+
+For nested parameters such as ``select_forces``, it's generally fine to not
+write out everything in explicit detail, but instead rely on defaults. Thus,
+specifying gravitational P³M may then be done through either of
 
 .. code-block:: python3
 
    select_forces = {
-       'matter': {'gravity': ('p3m', 2*_size)},
+      'matter': {'gravity', 'p3m'},
    }
 
-You will find that this time, the P³M simulation isn't nearly as slow, as
-the smaller potential cell size leads to less work to be done for the
-short-range part.
+   # or
 
-Comparing the results of simulation D and E, we see that these are very
-similar, implying that the size of the potential grid is largely irrelevant
-regarding the accuracy of the P³M method. To better compare the results of
-simulation A--E, you should plot the different power spectra together in a
-single plot, using the information in the data files. You may do this using
-your favourite plotting program, or --- for your convenience --- using the
-script below:
+   select_forces = {
+      'matter': 'gravity',
+   }
 
-.. code-block:: python3
-   :caption: output/tutorial/plot.py
-   :name: plot
+or by leaving out a specification for ``select_forces`` entirely.
 
-   import glob, os, re
-   import numpy as np
-   import matplotlib.pyplot as plt
-
-   # Read in data
-   P_sims = {}
-   this_dir = os.path.dirname(os.path.realpath(__file__))
-   for filename in sorted(glob.glob(f'{this_dir}/powerspec*'), key=os.path.getmtime):
-       match = re.search(r'powerspec_(.+)_', filename)
-       if not match or filename.endswith('.png'):
-           continue
-       sim = match.group(1)
-       k, P_sims[sim], P_lin = np.loadtxt(filename, usecols=(0, 2, 3), unpack=True)
-
-   # Plot
-   for sim, P_sim in P_sims.items():
-       linestyle, zorder = (':', np.inf) if sim in {'B', 'E'} else ('-', None)
-       plt.loglog(k, P_sim, linestyle, label=f'simulation {sim}', zorder=zorder)
-   plt.loglog(k, P_lin, 'k--', label='linear', linewidth=1, zorder=np.inf)
-   plt.xlim(k[0], k[-1])
-   plt.xlabel(r'$k\, [\mathrm{Mpc}^{-1}]$')
-   plt.ylabel(r'$P\, [\mathrm{Mpc}^3]$')
-   plt.legend()
-   plt.tight_layout()
-   plt.savefig(f'{this_dir}/plot.png', dpi=150)
-
-Do not feel bad about using this plotting script --- and others to come later
-on in the tutorial --- without studying it in any detail. To run the script,
-save the above code to a file in the ``output/tutorial`` directory, say
-``output/tutorial/plot.py``, then do
-
-.. code-block:: bash
-
-   ./concept -m output/tutorial/plot.py
-
-.. note::
-   The ``-m`` command-line option redirects ``concept`` to run the specified
-   Python script, rather than launching a CO\ *N*\ CEPT simulation. In this
-   case, this is almost equivalent to just running the script using Python
-   directly, but using ``./concept -m`` we are guarenteed that the environment
-   is set up correctly, according to the CO\ *N*\ CEPT installation.
-
-The script will produce the output ``output/tutorial/plot.png``.
-
-Studying the collective plot containing all our simulation power spectra, it
-is indeed clear that the P³M simulations agree far better with each other than
-do the PM simulations. We should thus set our trust in the P³M power spectra,
-not the PM ones. Generally, though much slower, the P³M method is then the
-preferred gravitational method to use in CO\ *N*\ CEPT. As we saw, increasing
-the size of the potential grid used can dramatically cut down the computation
-time. In fact, it may well be worth it to increase it even further than what
-was done here, though at the cost of increased memory consumption.
-
-It is remarkable that not only is the PM force not invariant under a change in
-grid size, but the smaller of the two grids actually produced the better
-result, as evident from the collective plot (taking the P³M power spectra to
-be essentially exact).
-
-Though inadequate for precise particle simulations, the PM method is still a
-valuable tool, as sometimes the benefits of rapid simulations outweigh the
-drawbacks from loss of precision. Also, as we shall
-:doc:`delve into later <beyond_matter_only>`, PM gravity is as accurate as
-can be for fluid (i.e. non-particle) components, used to model species
-different from matter. Finally --- though sticking to default values are
-generally recommended --- you should be aware that the details about the PM
-and P³M methods can be further specified using
-:doc:`various parameters </parameters/numerical_parameters>`, affecting the
-performance and accuracy.
+Similarly, the ``potential_options`` parameter is really a nested parameter by
+which various details of the (PM and P³M)
+:doc:`potential can be controlled </parameters/numerical_parameters>`.
 
 
 
@@ -272,11 +317,11 @@ As expected, the PP method may be specified using
        'matter': {'gravity': 'pp'},
    }
 
-If you actually try this out, reduce ``_size`` to *at most* 32, as running a
-PP simulation with :math:`64^3` particles literately takes days. Though
-slightly more accurate than the P³M method, the PP method should never be used
-for running simulations and is only really included in CO\ *N*\ CEPT as it is
-used internally when running tests. Running (well, starting) a small PP
-simulation at least once will help any user of *N*-body codes appreciate the
-enourmous performance gains achieved by the more sophisticated methods.
+If you try this out, reduce ``_size`` to *at most* 32, as running a PP
+simulation with :math:`N = 64^3` particles literately takes days. Though
+slightly more accurate than the P³M method, the PP method should never be
+used for running production simulations and is only included in CO\ *N*\ CEPT
+for use with internal testing. Running (well, starting) a small PP simulation
+at least once will help any user of *N*-body codes appreciate the enourmous
+performance gains achieved by the more sophisticated methods.
 

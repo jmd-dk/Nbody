@@ -34,11 +34,11 @@ blas_dir='/home/jeppe/concept/openblas'
 class_dir='/home/jeppe/concept/class'
 # Directory of FFTW
 fftw_dir='/home/jeppe/concept/fftw'
-# Directory of FFTW2, used by GADGET
+# Directory of FFTW2, used by GADGET-2
 fftw_for_gadget_dir='/home/jeppe/concept/gadget/fftw'
-# Directory of GADGET2
+# Directory of GADGET-2
 gadget_dir='/home/jeppe/concept/gadget'
-# Directory containing the GADGET2 source code
+# Directory containing the GADGET-2 source code
 Gadget2_dir='/home/jeppe/concept/gadget/Gadget2'
 # Directory of GSL
 gsl_dir='/home/jeppe/concept/gsl'

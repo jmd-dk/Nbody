@@ -611,10 +611,10 @@ def info():
             .format('boxsize', correct_float(params['boxsize']), unit_length, alt_str)
         )
         # Print out the cosmological density parameters Ωcdm and Ωb.
-        # These are only present in the standard snapshots. In gadget2
+        # These are only present in the standard snapshots. In GADGET-2
         # snapshots, instead we have ΩΛ and Ωm. We do not print these
         # out here, as these will be printed as part
-        # of the GADGET header.
+        # of the GADGET-2 header.
         if snapshot_type == 'standard':
             masterprint('{:<20} {}'.format(unicode('Ωcdm'), correct_float(params['Ωcdm'])))
             masterprint('{:<20} {}'.format(unicode('Ωb'), correct_float(params['Ωb'])))
@@ -676,9 +676,9 @@ def info():
                                                                                  scientific=True),
                                                             'm☉ {} {}⁻¹'.format(unit_length, unit_time)),
                             indent=4)
-        # Print out GADGET header for GADGET2 snapshots
+        # Print out GADGET-2 header for GADGET-2 snapshots
         if snapshot_type == 'gadget2':
-            masterprint('GADGET header:')
+            masterprint('GADGET-2 header:')
             for key, val in params['header'].items():
                 masterprint('{:<16} {}'.format(key, val), indent=4)
         # End of information

@@ -40,7 +40,7 @@ installation log files for failed tests may then reveal something.
 
 Compilation failed
 ------------------
-Compilation of the CO\ *N*\ CPET code takes place as the last essential step
+Compilation of the CO\ *N*\ CEPT code takes place as the last essential step
 during :ref:`standard installation <standard_installation>`, as well as when
 invoking ``concept`` after changes have been made to the source files. This
 process may fail for several reasons, solutions to some are described in this
@@ -127,7 +127,7 @@ optimizations:
    (source concept && make clean)  # cleanup
    ./concept --no-optimizations --local
 
-If this works, the problem is definately with some of the optimization flags.
+If this works, the problem is definitely with some of the optimization flags.
 You should however not run CO\ *N*\ CEPT simulations with the compiled code in
 a completely unoptimized state, as this reduces performance drastically.
 Instead, experiment with removing individual optimization flags added to the
@@ -139,9 +139,9 @@ Also, remember to clean up the old compilation before attempting anew.
 
 
 
-Terminal color output looks weird
----------------------------------
-CO\ *N*\ CEPT includes a lot of color and other formatting in its terminal
+Terminal colour output looks weird
+----------------------------------
+CO\ *N*\ CEPT includes a lot of colour and other formatting in its terminal
 output. While most modern terminal emulators on Linux (GNOME Terminal,
 Terminator, xterm, etc.) fully support this, the story is different on other
 platforms.
@@ -158,7 +158,7 @@ platforms.
   Docker or remotely via SSH) and the terminal formatting appears suboptimal,
   try using the superior `iTerm2 <https://www.iterm2.com/>`_ terminal emulator.
 
-If you want to disable color and other formatted output alltogether, set
+If you want to disable colour and other formatted output altogether, set
 
 .. code-block:: python3
 
@@ -221,8 +221,8 @@ CO\ *N*\ CEPT in pure Python mode using the ``--pure-python``
 
 
 
-Crashes or other bad behavior
------------------------------
+Crashes or other bad behaviour
+------------------------------
 This entry is concerned with problems encountered when using CO\ *N*\ CEPT
 *locally*. If your problem occurs only for remote jobs, please see the
 '`Problems when running remotely`_' entry instead.
@@ -231,9 +231,9 @@ If you are unable to even compile CO\ *N*\ CEPT, see the
 '`Compilation failed`_' entry.
 
 If you are able to start CO\ *N*\ CEPT runs, but they crash, hang, yield
-obviously wrong results, or exhibit other bad behavior, it may be due to
+obviously wrong results, or exhibit other bad behaviour, it may be due to
 improper installation or a code bug. To inspect the extent of the erroneous
-behavior, try running the full CO\ *N*\ CEPT test suite via
+behaviour, try running the full CO\ *N*\ CEPT test suite via
 
 .. code-block:: bash
 
@@ -245,7 +245,7 @@ a problem with your installation. You can try reinstalling CO\ *N*\ CEPT along
 with all of its dependencies, perhaps using compilers different from the ones
 used the first time around.
 
-If all tests passes despite the observed (and reproducible!) bad behavior,
+If all tests passes despite the observed (and reproducible!) bad behaviour,
 you may have found a bug. Please report this.
 
 
@@ -257,11 +257,11 @@ Problems when running remotely
 This entry is concerned with problems encountered specifically with remote
 CO\ *N*\ CEPT jobs. If you have not tried out CO\ *N*\ CEPT locally, please do
 this first. If you encounter problems here as well, please see the
-'`Crashes or other bad behavior`_' entry.
+'`Crashes or other bad behaviour`_' entry.
 
 Even if CO\ *N*\ CEPT runs fine on the front-end of a cluster (i.e. when
 supplying the ``--local`` option to the ``concept`` script), you may
-experience weird behavior or crashes when running remote jobs. Typically this
+experience weird behaviour or crashes when running remote jobs. Typically this
 is either due to an improper choice of the MPI executor, or the remote nodes
 having different hardware architecture from the front-end. Possible solutions
 to both of these problems are provided below.
@@ -278,7 +278,7 @@ executable used to launch MPI programs.
 
 To see which MPI executor is used when running remotely, check out the
 ``mpi_executor`` variable in the produced ``jobscript`` file. To manually set
-the MPI executor, overwrite the dedicated ``mpi_executor`` varaible in the
+the MPI executor, overwrite the dedicated ``mpi_executor`` variable in the
 ``.env`` file (located one directory level above the ``concept`` directory,
 i.e. at ``/path/to/concept_installation/.env``). Helpful suggestions for the
 choice of MPI executor depends on the job scheduler in use (Slurm or
@@ -311,7 +311,7 @@ TORQUE/PBS).
       in the ``.env`` file. Submit a new job, and you should see the manually
       chosen MPI executor being respected by the ``jobscript``.
 
-      If that did not fix the issue, try specyfing the MPI implementation in
+      If that did not fix the issue, try specifying the MPI implementation in
       use, using the ``--mpi`` option to ``srun``. E.g. for OpenMPI, set
 
       .. code-block:: bash
@@ -503,8 +503,8 @@ to handle the network optimally.
 
 Be sure to install CO\ *N*\ CEPT with
 :ref:`optimal network performance on clusters <optimal_network_performance_on_clusters>`.
-If you are observing bad network behavior even so, you should try changing the
-MPI executor, as described :ref:`here <chosing_an_mpi_executor>`.
+If you are observing bad network behaviour even so, you should try changing
+the MPI executor, as described :ref:`here <chosing_an_mpi_executor>`.
 
 
 

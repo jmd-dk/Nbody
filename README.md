@@ -9,24 +9,27 @@
 
 <img align="right" height="250" src="/concept/docs/_static/render2D.png"/>
 
-CO*N*CEPT (**CO**smological ***N***-body **C**od**E** in **P**y**T**hon)
-is a free and open-source simulation code for cosmological structure
-formation. The code should run on any Linux system, from massively parallel
-computer clusters to laptops. The code is written almost exclusively in
-Python, but achieves C-like performance thanks to Cython.
+CO*N*CEPT (**CO**smological ***N***-body **C**od**E** in **P**y**T**hon) is a
+free and open-source simulation code for cosmological structure formation. The
+code should run on any Linux system, from massively parallel computer clusters
+to laptops. The code is written almost exclusively in Python, but achieves
+C-like performance through code transformation using a custom
+transpiler/optimizer and [Cython].
 
 CO*N*CEPT is capable of simulating matter particles evolving under
-self-gravity in an expanding background. It has multiple gravitational
-solvers to choose from, and has adaptive time integration built in. In
-addition to particles, fluids such as neutrinos are also implemented,
-and can be simulated at various levels of non-linearity. Completely linear
-perturbations in all species and the metric itself are fully supported,
-allowing for simulations consistent with general relativity.
+self-gravity in an expanding background. It has multiple gravitational solvers
+to choose from, and has adaptive time integration built in. In addition to
+particles, the code is further able to evolve fluids at various levels of
+non-linearity, providing the means for the inclusion of more exotic species
+such as massive neutrinos. Completely linear perturbations in density fields
+and the metric itself allows for simulations consistent with general
+relativistic perturbation theory. Various non-standard species &mdash; such as
+decaying cold dark matter &mdash; are fully supported.
 
-CO*N*CEPT comes with a sophisticated initial condition generator built in,
-and can output snapshots, power spectra and several kinds of renders.
+CO*N*CEPT comes with a sophisticated initial condition generator built in, and
+can output snapshots, power spectra and several kinds of renders.
 
-The [CLASS] code is fully integrated into CO*N*CEPT, supplying the needed
+The [CLASS] code is fully integrated into CONCEPT, supplying the needed
 information for e.g. initial condition generation and
 general relativistic corrections.
 
@@ -60,6 +63,7 @@ for further guidance.
 
 
 
+[Cython]: https://cython.org/
 [CLASS]: http://class-code.net/
 [documentation]: https://jmd-dk.github.io/concept/
 [tutorial]: https://jmd-dk.github.io/concept/tutorial/tutorial.html

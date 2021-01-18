@@ -2528,7 +2528,7 @@ def find_critical_times():
             break
         P_ncdm = background[f'(.)p_ncdm[{n}]']
         w_ncdm = P_ncdm/ρ_ncdm
-        ncdm_transitions.append(a[np.argmin(np.abs(w_ncdm - 0.5*1/3))])
+        ncdm_transitions.append(a[np.argmin(np.abs(w_ncdm - 0.5*1./3.))])
     a_criticals += ncdm_transitions
     # Return critical times as a sorted array or unique times
     return np.unique(a_criticals)
@@ -3346,7 +3346,7 @@ def realize(
     # Initialize index0 and index1.
     # The actual values are not important.
     index0 = index1 = 0
-    # When miltiple particle components are to be realized, it is
+    # When multiple particle components are to be realized, it is
     # preferable to not do so "on top of each other", as this leads to
     # large early forces. Below we define particle_shift to be the
     # fraction of a grid cell the current particle component should be
@@ -3569,14 +3569,17 @@ def realize(
                 domain_start_k = domain_layout_local_indices[2]*(uⁱ.shape[2] - ℤ[2*nghosts])
                 index = 0
                 for i in range(ℤ[uⁱ.shape[0] - ℤ[2*nghosts]]):
-                    x_gridpoint = (ℝ[domain_start_i + 0.5 + particle_shift] + i
-                        )*ℝ[boxsize/gridsize]
+                    x_gridpoint = (
+                        ℝ[domain_start_i + 0.5*cell_centered + particle_shift] + i
+                    )*ℝ[boxsize/gridsize]
                     for j in range(ℤ[uⁱ.shape[1] - ℤ[2*nghosts]]):
-                        y_gridpoint = (ℝ[domain_start_j + 0.5 + particle_shift] + j
-                            )*ℝ[boxsize/gridsize]
+                        y_gridpoint = (
+                            ℝ[domain_start_j + 0.5*cell_centered + particle_shift] + j
+                        )*ℝ[boxsize/gridsize]
                         for k in range(ℤ[uⁱ.shape[2] - ℤ[2*nghosts]]):
-                            z_gridpoint = (ℝ[domain_start_k + 0.5 + particle_shift] + k
-                                )*ℝ[boxsize/gridsize]
+                            z_gridpoint = (
+                                ℝ[domain_start_k + 0.5*cell_centered + particle_shift] + k
+                            )*ℝ[boxsize/gridsize]
                             posx[index] = x_gridpoint
                             posy[index] = y_gridpoint
                             posz[index] = z_gridpoint
@@ -3813,7 +3816,7 @@ def generate_primordial_noise(slab):
                         # for both r and θ across simulations,
                         # we draw r even in the case
                         # of fixed amplitude.
-                        r = prng.rayleigh(ℝ[1/sqrt(2)])
+                        r = prng.rayleigh(1/sqrt(2))
                         with unswitch:
                             if primordial_amplitude_fixed:
                                 r = 1

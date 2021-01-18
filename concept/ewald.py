@@ -254,12 +254,12 @@ cython.declare(
 )
 # The values chosen match those listed in the article mentioned in the
 # docstring of the summation function. These are also those used
-# (in effect) in GADGET2.
+# (in effect) in GADGET-2.
 rs = 0.25  # Corresponds to alpha = 2
 maxdist = 3.6
 maxh2 = 10
 # Derived constants
-h_lower = int(-sqrt(maxh2))      # GADGET: -4 (same here for maxh2 = 10)
-h_upper = int(+sqrt(maxh2)) + 1  # GADGET:  5 (same here for maxh2 = 10)
-n_lower = int(-(maxdist + 1))    # GADGET: -4 (same here for maxdist = 3.6)
-n_upper = int(maxdist + 1) + 1   # GADGET:  5 (same here for maxdist = 3.6)
+h_lower = int(-sqrt(maxh2))      # GADGET-2: -4 (same here for maxh2 = 10)
+h_upper = int(+sqrt(maxh2)) + 1  # GADGET-2:  5 (same here for maxh2 = 10)
+n_lower = int(-(maxdist + 1))    # GADGET-2: -4 (same here for maxdist = 3.6)
+n_upper = int(maxdist + 1) + 1   # GADGET-2:  5 (same here for maxdist = 3.6)

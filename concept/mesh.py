@@ -304,11 +304,11 @@ def interpolate_domaingrid_to_particles(grid, component, variable, dim, order, f
             f'interpolate_domaingrid_to_particles() called '
             f'with order = {order} ∉ {{1, 2, 3, 4}}'
         )
-    # Offsets and scalings needed for the interpolation
+    # Offsets needed for the interpolation
     cellsize = domain_size_x/(grid.shape[0] - ℤ[2*nghosts])  # We have cubic grid cells
-    offset_x = domain_start_x - ℝ[(1 + machine_ϵ)*(nghosts - 0.5)*cellsize]
-    offset_y = domain_start_y - ℝ[(1 + machine_ϵ)*(nghosts - 0.5)*cellsize]
-    offset_z = domain_start_z - ℝ[(1 + machine_ϵ)*(nghosts - 0.5)*cellsize]
+    offset_x = domain_start_x - ℝ[(1 + machine_ϵ)*(nghosts - 0.5*cell_centered)*cellsize]
+    offset_y = domain_start_y - ℝ[(1 + machine_ϵ)*(nghosts - 0.5*cell_centered)*cellsize]
+    offset_z = domain_start_z - ℝ[(1 + machine_ϵ)*(nghosts - 0.5*cell_centered)*cellsize]
     # Interpolate onto each particle
     posx = component.posx
     posy = component.posy
@@ -492,9 +492,10 @@ def interpolate_upstream(
             # If interlacing is to be used, the particle interpolation
             # (and subsequent Fourier transformation) needs to be
             # carried out twice; with shift = 0 (standard)
-            # and with shift = 0.5.
+            # and with shift = ±0.5 (+ chosen for cell-centered,
+            # - for cell-vertex).
             for shift_index in range(1 + interlace):
-                shift = 0.5*shift_index
+                shift = ℝ[cell_centered - 0.5]*shift_index
                 # Interpolate particle components onto upstream grid
                 grid_upstream = get_buffer(
                     gridshape_upstream_local, 'grid_updownstream',
@@ -1446,9 +1447,9 @@ def interpolate_particles(component, gridsize, grid, quantity, order, ᔑdt,
     contribution *= contribution_factor
     # Offsets and scalings needed for the interpolation
     cellsize = boxsize/gridsize
-    offset_x = domain_start_x - ℝ[(1 + machine_ϵ)*(nghosts - 0.5 + shift)*cellsize]
-    offset_y = domain_start_y - ℝ[(1 + machine_ϵ)*(nghosts - 0.5 + shift)*cellsize]
-    offset_z = domain_start_z - ℝ[(1 + machine_ϵ)*(nghosts - 0.5 + shift)*cellsize]
+    offset_x = domain_start_x - ℝ[(1 + machine_ϵ)*(nghosts - 0.5*cell_centered + shift)*cellsize]
+    offset_y = domain_start_y - ℝ[(1 + machine_ϵ)*(nghosts - 0.5*cell_centered + shift)*cellsize]
+    offset_z = domain_start_z - ℝ[(1 + machine_ϵ)*(nghosts - 0.5*cell_centered + shift)*cellsize]
     # Interpolate each particle
     posx = component.posx
     posy = component.posy
@@ -2385,8 +2386,15 @@ def fourier_loop(
                                 # non-shifted grid.
                                 # This angle is given by
                                 #   θ = (kx + ky + kz)*Δx/2
-                                #     = (ki + kj + kk)*π/gridsize
-                                θ = ℤ[ℤ[ki + kj] + kk]*ℝ[π/gridsize_corrections]
+                                #     = (ki + kj + kk)*π/gridsize.
+                                # The above is correct for a positive
+                                # shift, as chosen for a cell-centered
+                                # strategy. For cell-vertex, θ should be
+                                # negated.
+                                θ = ℤ[ℤ[ki + kj] + kk]*ℝ[
+                                    π/gridsize_corrections
+                                    *(2*cell_centered - 1)
+                                ]
                         # Yield the needed variables
                         yield index, ki, kj, kk, factor, θ
 
@@ -2804,7 +2812,7 @@ def get_wisdom_filename(gridsize):
     - The FFTW version.
     - The name of the node "owning" the wisdom in the case of
       fftw_wisdom_share being True. Here a node is said to own the
-      wisdom if i hosts the majority of the processes. A more elaborate
+      wisdom if it hosts the majority of the processes. A more elaborate
       key like the complete MPI layout is of no use, as FFTW wisdom is
       really generated on each process, after which the wisdom of one is
       chosen arbitrarily as the wisdom to stick with.

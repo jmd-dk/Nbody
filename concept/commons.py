@@ -1940,20 +1940,23 @@ def to_rgb(value):
         # Could not convert value to color
         return asarray([-1, -1, -1])
     return rgb
-def to_rgbα(value, default_α=1):
+def to_rgbα(value, α=1):
     if isinstance(value, str):
-        return to_rgb(value), default_α
-    value = any2list(value)
-    if len(value) == 1:
-        return to_rgb(value[0]), default_α
-    elif len(value) == 2:
-        return to_rgb(value[0]), value[1]
-    elif len(value) == 3:
-        return to_rgb(value), default_α
-    elif len(value) == 4:
-        return to_rgb(value[:3]), value[3]
-    # Could not convert value to color and α
-    return asarray([-1, -1, -1]), default_α
+        rgb = value
+    else:
+        value = any2list(value)
+        if len(value) == 1:
+            rgb = value[0]
+        elif len(value) == 2:
+            rgb, α = value
+        elif len(value) == 3:
+            rgb = value
+        elif len(value) == 4:
+            rgb, α = value[:3], value[3]
+        else:
+            # Value not understood
+            rgb = asarray([-1, -1, -1])
+    return to_rgb(rgb), α
 cython.declare(
     # Input/output
     initial_conditions=object,  # str or container of str's
@@ -2010,6 +2013,7 @@ cython.declare(
     random_seed=object,  # Python int
     primordial_amplitude_fixed='bint',
     primordial_phase_shift='double',
+    cell_centered='bint',
     fourier_structure_caching=dict,
     fluid_scheme_select=dict,
     fluid_options=dict,
@@ -2404,6 +2408,8 @@ shortrange_params = dict(user_params.get('shortrange_params', {}))
 user_specification_involves_gridsize = collections.defaultdict(bool)
 for force, d in shortrange_params.items():
     gridsize_in_d_vals = False
+    if not isinstance(d, dict):
+        continue
     for val in d.values():
         if not isinstance(val, str):
             continue
@@ -2794,6 +2800,8 @@ primordial_amplitude_fixed = bool(user_params.get('primordial_amplitude_fixed', 
 user_params['primordial_amplitude_fixed'] = primordial_amplitude_fixed
 primordial_phase_shift = np.mod(float(user_params.get('primordial_phase_shift', 0)), 2*π)
 user_params['primordial_phase_shift'] = primordial_phase_shift
+cell_centered = bool(user_params.get('cell_centered', True))
+user_params['cell_centered'] = cell_centered
 fourier_structure_caching = {'primordial': True, 'all': True}
 if user_params.get('fourier_structure_caching'):
     if isinstance(user_params['fourier_structure_caching'], dict):
@@ -4174,7 +4182,7 @@ def is_selected(component_or_components, d, accumulate=False, default=None):
     interaction_name=str,
     param=str,
     # Locals
-    component=object,  # acutally Component, but not allowed in the commons module
+    component=object,  # actually Component, but not allowed in the commons module
     components=list,
     key=tuple,
     val=object,

@@ -23,7 +23,7 @@ for fname in sorted(glob(this_dir + '/output/snapshot_a=*'),
     x_std.append(np.std(posx))
 N_snapshots = len(a)
 
-# Read in data from the GADGET snapshots
+# Read in data from the GADGET-2 snapshots
 x_gadget = []
 x_std_gadget = []
 for fname in sorted(glob(this_dir + '/Gadget2/output/snapshot_*'))[:N_snapshots]:
@@ -49,7 +49,7 @@ plt.savefig(fig_file)
 # There should be no variance on the x positions
 tol = 1e+2*N_snapshots*machine_ϵ
 if sum(x_std_gadget) > tol:
-    abort('Unequal x-positions for the 4 particles in the GADGET snapshots.\n'
+    abort('Unequal x-positions for the 4 particles in the GADGET-2 snapshots.\n'
           'It is no good to compare the CO𝘕CEPT results to these.')
 if sum(x_std) > tol:
     abort('Unequal x-positions for the 4 particles in the snapshots.\n'
@@ -58,7 +58,7 @@ if sum(x_std) > tol:
 # Print out error message for unsuccessful test
 tol = 1e-3
 if max(abs(asarray(x)/asarray(x_gadget) - 1)) > tol:
-    abort('The results from CO𝘕CEPT disagree with those from GADGET.\n'
+    abort('The results from CO𝘕CEPT disagree with those from GADGET-2.\n'
           'See "{}" for a visualization.'.format(fig_file))
 
 # Done analyzing

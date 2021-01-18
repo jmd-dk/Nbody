@@ -27,7 +27,7 @@ for fname in sorted(glob(this_dir + '/output/snapshot_a=*'),
     x1_std.append(np.std(posx[4:])/np.mean(posx[4:]))
 N_snapshots = len(a)
 
-# Read in data from the GADGET snapshots
+# Read in data from the GADGET-2 snapshots
 x0_gadget = []
 x0_std_gadget = []
 x1_gadget = []
@@ -67,7 +67,7 @@ plt.savefig(fig_file)
 # There should be no variance on the x positions
 reltol = 1e-6
 if max(x0_std_gadget) > reltol or max(x1_std_gadget) > reltol:
-    abort('Unequal x-positions for the 2*4 particles in the GADGET snapshots.\n'
+    abort('Unequal x-positions for the 2*4 particles in the GADGET-2 snapshots.\n'
           'It is no good to compare the CO𝘕CEPT results to these.')
 if max(x0_std) > reltol or max(x1_std) > reltol:
     abort('Unequal x-positions for the 2*4 particles in the snapshots.\n'
@@ -77,7 +77,7 @@ if max(x0_std) > reltol or max(x1_std) > reltol:
 reltol = 1e-2
 if (   max(abs(asarray(x0)/asarray(x0_gadget) - 1)) > reltol
     or max(abs(asarray(x1)/asarray(x1_gadget) - 1)) > reltol):
-    abort('The results from CO𝘕CEPT disagree with those from GADGET.\n'
+    abort('The results from CO𝘕CEPT disagree with those from GADGET-2.\n'
           'See "{}" for a visualization.'.format(fig_file))
 
 # Done analyzing

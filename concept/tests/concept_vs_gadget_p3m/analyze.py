@@ -20,7 +20,7 @@ for fname in sorted(glob(this_dir + '/output/snapshot_a=*'),
     components.append(snapshot.components[0])
 N_snapshots = len(a)
 
-# Read in data from the GADGET snapshots
+# Read in data from the GADGET-2 snapshots
 components_gadget = []
 for fname in sorted(glob(this_dir + '/Gadget2/output/snapshot_*'))[:N_snapshots]:
     components_gadget.append(load(fname, compare_params=False, only_components=True)[0])
@@ -29,7 +29,7 @@ for fname in sorted(glob(this_dir + '/Gadget2/output/snapshot_*'))[:N_snapshots]
 masterprint('Analyzing {} data ...'.format(this_test))
 
 # Using the particle order of CO𝘕CEPT as the standard,
-# find the corresponding ID's in the GADGET snapshots
+# find the corresponding ID's in the GADGET-2 snapshots
 # and order these particles accordingly.
 N = components[0].N
 D2 = zeros(N, dtype=float)
@@ -111,7 +111,7 @@ plt.savefig(fig_file)
 # Printout error message for unsuccessful test
 tol = 1.2e-2
 if any(np.mean(d/boxsize) > tol for d in dist):
-    abort('The results from CO𝘕CEPT disagree with those from GADGET.\n'
+    abort('The results from CO𝘕CEPT disagree with those from GADGET-2.\n'
           'See "{}" for a visualization.'.format(fig_file))
 
 # Done analyzing

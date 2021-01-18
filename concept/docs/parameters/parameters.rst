@@ -82,7 +82,7 @@ equidistant in scale factor :math:`a`, from :math:`a = 0.01` to :math:`a = 1`:
 Also readily available for use in parameter files is the special ``paths``
 variable. This is a ``dict`` holding the absolute paths to various useful
 directories and files. In fact, the content of the ``paths`` ``dict`` is
-supplied by the ``.paths`` file. In addtion to all of these paths, the
+supplied by the ``.paths`` file. In addition to all of these paths, the
 ``paths`` ``dict`` also store the absolute path to the parameter file in which
 it is used. A nice way to ensure that the output is dumped into a proper but
 unique location is then to use
@@ -138,14 +138,16 @@ variable:
 
    # Numerical parameters
    boxsize = _size*Mpc
-
-   # Physics
-   select_forces = {
-       'all': {'gravity': ('p3m', 2*_size)},
+   potential_options = {
+       'gridsize': {
+           'gravity': {
+               'p3m': 2*_size,
+           },
+       },
    }
 
-Both the ``boxsize`` and the P³M grid size within ``select_forces`` can now
-be simultaneously updated through the newly introduced ``_size`` variable,
+Both the ``boxsize`` and the P³M grid size within ``potential_options`` can
+now be simultaneously updated through the newly introduced ``_size`` variable,
 which itself is not a parameter. When defined in a parameter file,
 CO\ *N*\ CEPT treats any variable whose name does not begin with an underscore
 '``_``' as a parameter; hence '``_size``' and not '``size``'.

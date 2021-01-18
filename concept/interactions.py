@@ -1852,7 +1852,7 @@ def get_softened_r3inv(r2, ϵ):
     elif 𝔹[softening_kernel == 'spline']:
         # This is the cubic spline kernel of
         # Monaghan & Lattanzio (1985), often used in SPH.
-        # It is the gravitational softening used in GADGET2.
+        # It is the gravitational softening used in GADGET-2.
         #                     ⎧ 1 - 6(r/h)² + 6(r/h)³    0 ≤ r < h/2
         #      W(r) = 8/(πh³) ⎨ 2(1 - r/h)³            h/2 ≤ r < h
         #                     ⎩ 0                        h ≤ r
@@ -1862,8 +1862,8 @@ def get_softened_r3inv(r2, ϵ):
         # where h is the spline softening length "equivalent" to the
         # Plummer softening length ϵ. If we require F⃗(ϵ) for the
         # spline softening to equal F⃗(ϵ) for the Plummer softening,
-        # we get h = 2.7116122709425334ϵ. GADGET2 uses h = 2.8ϵ.
-        # We choose to follow GADGET2.
+        # we get h = 2.7116122709425334ϵ. GADGET-2 uses h = 2.8ϵ.
+        # We choose to follow GADGET-2.
         h = 2.8*ϵ
         r = sqrt(r2)
         if r >= h:

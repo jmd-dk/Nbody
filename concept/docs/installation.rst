@@ -1,14 +1,3 @@
-.. raw:: html
-
-   <style type="text/css">
-     span.bolditalic {
-       font-weight: bold;
-       font-style: italic;
-     }
-   </style>
-
-
-
 Installation
 ============
 This page contains detailed information about how to install CO\ *N*\ CEPT
@@ -160,6 +149,15 @@ release versions, or use ``concept_version=master`` for the absolute newest
    If you encounter this issue, you can supply ``--no-check-certificate`` as a
    further option to ``wget``.
 
+.. tip::
+   If you are installing CO\ *N*\ CEPT on a cluster, you should make sure to
+   obtain
+   :ref:`optimal network performance <optimal_network_performance_on_clusters>`.
+   If you are installing via the cluster's front-end over SSH, you may want to
+   make use of a tool such as `tmux <https://tmux.github.io/>`_ or
+   `Screen <https://www.gnu.org/software/screen/>`_, so that you may close the
+   connection without stopping the installation process.
+
 .. note::
    For the remainder of this page, we shall make us of the shorter
    ``bash installer`` syntax, but here the local file "``installer``" may
@@ -174,10 +172,10 @@ CO\ *N*\ CEPT along with all of the libraries it needs will be installed into
 the chosen installation directory. To completely remove the CO\ *N*\ CEPT
 installation, simply remove this directory.
 
-The installation will take an hour or two on modern hardware and take up
-about 1.5 GB of storage. Should the installation process end prematurely
-(e.g. if you kill it yourself), simply rerun the installation command and it
-will pick up from where it was.
+The installation will take about an hour and a half on modern hardware and
+take up about 1.7 GB of storage. Should the installation process end
+prematurely (e.g. if you kill it yourself), simply rerun the installation
+command and it will pick up from where it was.
 
 
 
@@ -187,7 +185,7 @@ Optimal network performance on clusters
 .......................................
 To install CO\ *N*\ CEPT on a cluster, the standard installation procedure
 above may be used. However, the performance of simulations running on multiple
-processors may be very poor, as the MPI library installed by the ``installer``
+CPUs may be very poor, as the MPI library installed by the ``installer``
 may not be configured optimally regarding the network and accompanying
 software present on the cluster.
 
@@ -326,10 +324,9 @@ installed by the ``installer`` is given below:
 * **ncurses**
 * **libffi**
 * **OpenSSL** (depends on Perl)
-* **libpng** (depends on zlib)
 * **GSL** (depends on BLAS)
 * **HDF5** (depends on zlib)
-* **GADGET** (depends on MPI, GSL, FFTW 2)
+* **GADGET-2** (depends on MPI, GSL, FFTW 2)
 * **Python 3** (depends on zlib)
 
   - **pip** (depends on OpenSSL, libffi), **setuptools** and **wheel**;
@@ -340,19 +337,19 @@ installed by the ``installer`` is given below:
     - **CythonGSL** (depends on Cython, GSL)
     - **NumPy** (depends on BLAS, LAPACK)
     - **SciPy** (depends on BLAS, LAPACK)
-    - **Matplotlib** (depends on libpng, FreeType)
+    - **Matplotlib** (depends on FreeType)
     - **MPI4Py** (depends on MPI, Cython)
     - **H5Py** (depends on HDF5 and MPI)
     - **Sphinx**
     - **Sphinx-copybutton** (depends on Sphinx)
-    - **Sphinx_rtd_theme** (depends on Sphinx)
+    - **Sphinx-rtd-theme** (depends on Sphinx)
     - **Sphinx-tabs** (depends on Sphinx)
 
 * **CLASS** + **classy** (depends on Cython, NumPy)
 
-Finally, CO\ *N*\ CEPT itself depends on MPI, FFTW (3), GADGET, Python,
-Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy,
-Sphinx, sphinx-copybutton, sphinx_rtd_theme, sphinx-tabs.
+Finally, CO\ *N*\ CEPT itself depends on MPI, FFTW (3), GADGET-2, Python,
+Blessings, Cython, CythonGSL, NumPy, SciPy, Matplotlib, MPI4Py, H5Py, classy,
+Sphinx, sphinx-copybutton, sphinx-rtd-theme, sphinx-tabs.
 
 The ``installer`` installs the
 `OpenBLAS <https://github.com/xianyi/OpenBLAS>`_ library (which depends on
@@ -429,7 +426,7 @@ The tests performed on the CO\ *N*\ CEPT code itself are those of
    ./concept -t all
 
 and so may also be run at any time after the installation, whether or not the
-``--tests`` option was used for th installation. See the ``concept``
+``--tests`` option was used for the installation. See the ``concept``
 :ref:`test <test>` option for further details.
 
 .. raw:: html
@@ -460,10 +457,10 @@ dependencies (should any be missing), which require root access.
 
 This produces a trimmed down installation with uncritical content removed,
 both from CO\ *N*\ CEPT itself and its dependency programs. This brings the
-size of the installation down from about 1.5 GB to about 0.5 GB. Though
+size of the installation down from about 1.7 GB to about 0.4 GB. Though
 CO\ *N*\ CEPT itself remains fully functional in such a slim installation,
 some features of the dependency programs will be broken. Debugging any issues
-encountered will also generally be much harder.
+encountered will also generally be harder.
 
 .. note::
 
@@ -528,7 +525,7 @@ use with remote jobs running on multiple nodes, as described
 
 Influential environment variables
 .................................
-The behavior of the ``installer`` is governed by a large set of environment
+The behaviour of the ``installer`` is governed by a large set of environment
 variables. An example is the ``mpi_dir`` variable described in
 ':ref:`optimal network performance on clusters <optimal_network_performance_on_clusters>`',
 through which we can let the ``installer`` make use of a pre-installed MPI
@@ -539,7 +536,7 @@ either directly in the invocation of ``installler``;
 
    mpi_dir=/path/to/mpi bash installer
 
-or defining it as an environmet variable prior to the invocation;
+or defining it as an environment variable prior to the invocation;
 
 .. code-block:: bash
 
@@ -556,9 +553,8 @@ To make the ``installer`` make use of a pre-installed library rather than
 installing it itself, you must set the corresponding ``*_dir`` variable. The
 complete list of such variables is: ``blas_dir``, ``class_dir``,
 ``concept_dir``, ``fftw_dir``, ``fftw_for_gadget_dir``, ``freetype_dir``,
-``gadget_dir``, ``gsl_dir``, ``hdf5_dir``, ``libffi_dir``, ``libpng_dir``,
-``mpi_dir``, ``ncurses_dir``, ``openssl_dir``, ``perl_dir``,
-``python_dir``, ``zlib_dir``.
+``gadget_dir``, ``gsl_dir``, ``hdf5_dir``, ``libffi_dir``, ``mpi_dir``,
+``ncurses_dir``, ``openssl_dir``, ``perl_dir``, ``python_dir``, ``zlib_dir``.
 
 Note that if using a pre-installed Python distribution ---
 ``python_dir=/path/to/python`` --- OpenSSL, libffi and ncurses are assumed to
@@ -579,14 +575,14 @@ through the ``*_version`` variables. As with the ``*_dir`` variables, these
 include ``blas_version``, ``class_version``, ``concept_version``,
 ``fftw_version``, ``fftw_for_gadget_version``, ``freetype_version``,
 ``gadget_version``, ``gsl_version``, ``hdf5_version``, ``libffi_version``,
-``libpng_version``, ``mpi_version``, ``ncurses_version``, ``openssl_version``,
-``perl_version``, ``python_version``, ``zlib_version``. Furthermore, each
-Python package also has a version, speficied by ``blessings_version``,
-``cython_version``, ``cythongsl_version``, ``h5py_version``,
-``matplotlib_version``, ``mpi4py_version``, ``numpy_version``,
-``pip_version``, ``pytest_version``, ``scipy_version``,
-``setuptools_version``, ``sphinx_version``, ``sphinx_copybutton_version``,
-``sphinx_rtd_theme_version``, ``sphinx_tabs_version``, ``wheel_version``.
+``mpi_version``, ``ncurses_version``, ``openssl_version``, ``perl_version``,
+``python_version``, ``zlib_version``. Furthermore, each Python package also
+has a version, specified by ``blessings_version``, ``cython_version``,
+``cythongsl_version``, ``h5py_version``, ``matplotlib_version``,
+``mpi4py_version``, ``numpy_version``, ``pip_version``, ``pytest_version``,
+``scipy_version``, ``setuptools_version``, ``sphinx_version``,
+``sphinx_copybutton_version``, ``sphinx_rtd_theme_version``,
+``sphinx_tabs_version``, ``wheel_version``.
 
 
 
@@ -671,7 +667,7 @@ The ``installer`` script may be used outside the context of CO\ *N*\ CEPT,
 should you be in need of any of the dependencies for some other purpose. Which
 programs to install is governed by ``*_install`` variables. By default,
 ``concept_install=True``, which in turn sets ``*_install=True`` for its
-immidiate dependencies, which in turn sets ``*_install=True`` for their
+immediate dependencies, which in turn sets ``*_install=True`` for their
 dependencies, and so on. If you run the ``installer`` with
 ``concept_install=False``, nothing will be installed.
 
@@ -686,7 +682,7 @@ library (``mpi_dir=...`` or ``mpi_install=True``) to link against. As FFTW
 does not absolutely need MPI, ``mpi_install`` is not set by having
 ``fftw_install=True``.
 
-To install GADGET, use
+To install GADGET-2, use
 
 .. code-block:: bash
 
@@ -719,7 +715,7 @@ You may draw inspiration from the current or older versions of the
 Python dependencies
 ...................
 The CO\ *N*\ CEPT source depends explicitly on
-`Python <https://www.python.org/>`_ version 3.6 or newer, together with the
+`Python <https://www.python.org/>`_ version 3.8 or newer, together with the
 following Python packages (many of which have heavy dependencies of their
 own):
 
@@ -733,7 +729,7 @@ own):
   additional math functions.
 
 * `Matplotlib <https://matplotlib.org/>`_: Provides plotting functionality for
-  2D and 3D figures, as well as color transformations used for colored
+  2D and 3D figures, as well as colour transformations used for coloured
   terminal output.
 
 * `MPI4Py <https://mpi4py.readthedocs.io/>`_: Provides Python bindings for
@@ -753,7 +749,7 @@ own):
 
 In addition, the `Sphinx <http://www.sphinx-doc.org/>`_,
 `sphinx-copybutton <https://sphinx-copybutton.readthedocs.io/>`_,
-`sphinx_rtd_theme <https://sphinx-rtd-theme.readthedocs.io/>`_ and
+`sphinx-rtd-theme <https://sphinx-rtd-theme.readthedocs.io/>`_ and
 `sphinx-tabs <https://github.com/djungelorm/sphinx-tabs/>`_ Python packages
 are needed to build the documentation, but may otherwise be left out.
 
@@ -777,14 +773,14 @@ goes for building HDF5 and installing MPI4Py and H5Py. Also, the MPI library
 has to conform to the MPI-3 (or MPI-3.1) standard.
 
 For testing, CO\ *N*\ CEPT compares itself against
-`GADGET <https://wwwmpa.mpa-garching.mpg.de/gadget/>`_, specifically version
-2.0.7. When installing using the ``installer`` script, GADGET is patched in
+`GADGET-2 <https://wwwmpa.mpa-garching.mpg.de/gadget/>`_, specifically version
+2.0.7. When installing using the ``installer`` script, GADGET-2 is patched in
 order to increase the maximum allowed size of path names and slightly change
 the values of various internal physical constants as to match the values
 adopted by CO\ *N*\ CEPT. If you do not care about running the CO\ *N*\ CEPT
-test suite, you do not have to install GADGET at all.
+test suite, you do not have to install GADGET-2 at all.
 
-The last non-standard depenency of CO\ *N*\ CEPT is the
+The last non-standard dependency of CO\ *N*\ CEPT is the
 `CLASS <http://class-code.net/>`_ code, along with its Python wrapper
 'classy'. When installing using the ``installer`` script, CLASS and classy are
 patched in order to enable larger and new kinds of output, fix bugs and
@@ -881,7 +877,7 @@ below:
 
 In CO\ *N*\ CEPT parameter files, all variables defined in the ``.paths``
 file are available through the ``paths`` ``dict``. Thus, to e.g. get the
-absoute path to the ``output`` directory, you may use
+absolute path to the ``output`` directory, you may use
 
 .. code-block:: python3
 
@@ -956,7 +952,7 @@ whether the ``concatenate`` variable in ``.env`` is set to ``prepend`` or
 
 When using the ``installer``, any such ``PATH``-like environment variables
 present during install time will be placed in a similar array structure.
-Whether these are prepended or appended to the preexisting values of the same
+Whether these are prepended or appended to the pre-existing values of the same
 ``PATH``-like environment variables when building/running CO\ *N*\ CEPT is
 similarly determined by ``concatenate``.
 
@@ -987,7 +983,7 @@ lines to the ``.env`` file yourself.
 
 The ``mpi_executor``
 ~~~~~~~~~~~~~~~~~~~~
-The ``mpi_executor`` variable determines which program is resonsible for
+The ``mpi_executor`` variable determines which program is responsible for
 launching CO\ *N*\ CEPT as an MPI program, when submitted as a job on a remote
 cluster. You may leave this empty or undefined in which case a (hopefully)
 suitable value will be determined by the ``concept`` script.
@@ -1004,7 +1000,7 @@ The ``make_jobs`` environment variable
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The ``make_jobs`` variable is not present in the ``.env`` file by default, but
 may be set in order to specify whether CO\ *N*\ CEPT should be built in
-parallel. The default behavior is to build in parallel when working locally
+parallel. The default behaviour is to build in parallel when working locally
 and serially when working remotely. To overrule this, add one of e.g.
 
 .. code-block:: bash

@@ -8,8 +8,8 @@ server/cluster via ``ssh``, you've so far had to supply the additional
 ``--local`` option to the ``concept`` script. This is because CO\ *N*\ CEPT
 has built-in support for submission of jobs to a job scheduler / queueing system
 / resource manager (specifically Slurm, TORQUE and PBS), and this is the
-default behavior when working remotely. If you are working remotely but do not
-intend to use a job shedular, keep using ``--local`` and skip the rest of this
+default behaviour when working remotely. If you are working remotely but do not
+intend to use a job scheduler, keep using ``--local`` and skip the rest of this
 section.
 
 
@@ -33,7 +33,10 @@ named ``params/tutorial`` using 8 cores then looks like
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -n 8 -q <queue>  # Replace <queue> with queue name
+   ./concept \
+       -p params/tutorial \
+       -n 8 \
+       -q <queue>  # Replace <queue> with queue name
 
 The 8 cores may be distributed over several *(compute) nodes* of the cluster.
 If you wish to control the number of nodes and number of cores per node, use
@@ -59,7 +62,12 @@ A complete CO\ *N*\ CEPT job submission could then look like
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -n 8 -q somequeue --mem 8G -w 1h
+   ./concept \
+       -p params/tutorial \
+       -n 8 \
+       -q <queue> \
+       --mem 8G \
+       -w 1h
 
 .. tip::
    Note that in the above, ``--memory`` is shortened to ``--mem``. Generally,

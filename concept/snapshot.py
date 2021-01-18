@@ -499,43 +499,43 @@ class StandardSnapshot:
         self.units['length'] = unit_length
         self.units['mass']   = unit_mass
 
-# Class storing a GADGET2 snapshot. Besides holding methods for
+# Class storing a GADGET-2 snapshot. Besides holding methods for
 # saving/loading, it stores particle data (positions, momenta, mass)
-# and also Gadget ID's and the Gadget header.
+# and also GADGET-2 ID's and the GADGET-2 header.
 @cython.cclass
 class Gadget2Snapshot:
-    """This class represents snapshots of the "gadget2" type, meaning
-    the second type of snapshot native to GADGET2. Only GADGET2 type 1
+    """This class represents snapshots of the "GADGET-2" type, meaning
+    the second type of snapshot native to GADGET-2. Only GADGET-2 type 1
     (halo) particles, corresponding to cold dark matter particles, are
-    supported. It is possible to save a component with any species as
-    Gadget2Snapshot. When loading a Gadget2Snapshot, a component of
+    supported. It is possible to save a particle component with any species
+    as Gadget2Snapshot. When loading a Gadget2Snapshot, a component of
     species "cold dark matter" is produced.
     As is the case for the standard snapshot class, this class contains
     a list components (the components attribute) and dict of parameters
     (the params attribute). Besides holding the cosmological parameters
     and the boxsize, the params dict also contains a "header" key, the
-    item of which is the GADGET2 header, represented as an ordered dict.
+    item of which is the GADGET-2 header, represented as an ordered dict.
     This class does not have a units attribute, as no global unit system
-    is used by GADGET snapshots.
-    As only a single component (GADGET halos) are supported, the
+    is used by GADGET-2 snapshots.
+    As only a single component (GADGET-2 halos) are supported, the
     components list will always contain this single component only. For
     ease of access, the component attribute is also defined, referring
     directly to this component. Finally, the ID attribute holds the
-    GADGET IDs of particles. When constructing a Gadget2Snapshot
+    GADGET-2 IDs of particles. When constructing a Gadget2Snapshot
     instance by other means than by loading from a snapshot on disk,
     these are generated in a somewhat arbitrary (but consistent)
     fashion.
     """
     # The properly written name of this snapshot type
     # (only used for printing).
-    name = 'GADGET2'
+    name = 'GADGET-2'
     # The filename extension for this type of snapshot
     extension = ''
 
     # Static method for identifying a file to be a snapshot of this type
     @staticmethod
     def is_this_type(filename):
-        # Test for GADGET2 format by checking the existence
+        # Test for GADGET-2 format by checking the existence
         # of the 'HEAD' identifier.
         try:
             with open(filename, 'rb') as f:
@@ -563,14 +563,14 @@ class Gadget2Snapshot:
         # Dict containing all the parameters of the snapshot
         self.params = {}
         # List of Component instances (will only ever hold
-        # self.component, which can only be GADGET halos).
+        # self.component, which can only be GADGET-2 halos).
         self.components = []
         # The actual component data
         self.component = None
         # The ID of each particle (not used by the CO𝘕CEPT code)
         self.ID = None
 
-    # Method for saving a GADGET2 snapshot of type 2 to disk
+    # Method for saving a GADGET-2 snapshot of type 2 to disk
     @cython.pheader(
         # Arguments
         filename=str,
@@ -585,14 +585,14 @@ class Gadget2Snapshot:
     )
     def save(self, filename):
         """The snapshot data (positions and velocities) are stored in
-        single precision. Only GADGET2 type 1 (halo) particles,
+        single precision. Only GADGET-2 type 1 (halo) particles,
         corresponding to cold dark matter particles, are supported.
         """
-        masterprint(f'Saving GADGET2 snapshot "{filename}" ...')
+        masterprint(f'Saving GADGET-2 snapshot "{filename}" ...')
         component = self.component
         if master and component.representation != 'particles':
             abort(
-                f'The GAGDET2 snapshot type can only store particles, '
+                f'The GAGDET-2 snapshot type can only store particles, '
                 f'but {self.component.name} is a {component.representation} component.'
             )
         N = component.N
@@ -711,7 +711,7 @@ class Gadget2Snapshot:
         # Return the filename of the saved file
         return filename
 
-    # Method for loading in a GADGET2 snapshot of type 2 from disk
+    # Method for loading in a GADGET-2 snapshot of type 2 from disk
     @cython.pheader(
         # Arguments
         filename=str,
@@ -732,10 +732,10 @@ class Gadget2Snapshot:
         unit='double',
     )
     def load(self, filename, only_params=False):
-        """It is assumed that the snapshot on the disk is a GADGET2
+        """It is assumed that the snapshot on the disk is a GADGET-2
         snapshot of type 2 and that it uses single precision. The
         Gadget2Snapshot instance stores the data (positions and
-        velocities) in double precision. Only GADGET type 1 (halo)
+        velocities) in double precision. Only GADGET-2 type 1 (halo)
         particles, corresponding to cold dark matter particles,
         are supported.
         """
@@ -743,12 +743,12 @@ class Gadget2Snapshot:
             masterprint(f'Loading parameters of snapshot "{filename}" ...')
         else:
             masterprint(f'Loading snapshot "{filename}" ...')
-        # Only type 1 (halo) particles are supported. Since GADGET
-        # wants Ωm = Ωcdm + Ωb (what GADGET calls Omega0) to be
+        # Only type 1 (halo) particles are supported. Since GADGET-2
+        # wants Ωm = Ωcdm + Ωb (what GADGET-2 calls Omega0) to be
         # accounted for fully by the particles, we should make the
         # species of the particles 'matter', as using 'cold dark matter'
         # would suggest that the baryons are missing.
-        name = 'GADGET halos'
+        name = 'GADGET-2 halos'
         species = 'matter'
         # Read in the snapshot
         offset = 0
@@ -912,10 +912,10 @@ class Gadget2Snapshot:
         self.params['Ωm'] = params.get('Ωm', Ωm)
         ΩΛ = 1 - self.params['Ωm']  # Flat universe with only matter and cosmological constant
         self.params['ΩΛ'] = params.get('ΩΛ', ΩΛ)
-        # Build the GADGET header
+        # Build the GADGET-2 header
         self.update_header()
 
-    # Method for constructing the GADGET header from the other
+    # Method for constructing the GADGET-2 header from the other
     # parameters in the params dict.
     @cython.header(# Locals
                    component='Component',
@@ -928,7 +928,7 @@ class Gadget2Snapshot:
         # Extract variabled
         component = self.component
         params = self.params
-        # The GADGET header is constructed from scratch
+        # The GADGET-2 header is constructed from scratch
         params['header'] = collections.OrderedDict()
         header = params['header']
         # Fill the header

@@ -96,8 +96,8 @@ potential_options = {  # Specifications for potential computations
     'gridsize': {  # Linear potential grid size
         'global': {  # Common, global grid size
             'gravity': {
-                'p3m': 2*_size,
                 'pm' :   _size,
+                'p3m': 2*_size,
             },
         },
         # Component specific upstream and downstream grid sizes
@@ -290,6 +290,7 @@ random_generator = 'PCG64'          # Pseudo-random number generator to use
 random_seed = 0                     # Seed for pseudo-random numbers
 primordial_amplitude_fixed = False  # Replace Gaussian noise with noise of fixed amplitude and uniform random phase?
 primordial_phase_shift = 0          # Phase shift when using fixed amplitude (set to π for paired simulations)
+cell_centered = True                # Use cell center (as opposed to vertex) locations for grid variables?
 fourier_structure_caching = {       # Cache and reuse primordial and component-specific Fourier grids?
     'primordial': True,
     'all'       : True,
