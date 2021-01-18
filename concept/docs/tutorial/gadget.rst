@@ -257,7 +257,7 @@ alleviate by adjusting the CO\ *N*\ CEPT simulation.
 
 .. raw:: html
 
-   <h4>Cell-centered vs. cell-vertex discretisation</h4>
+   <h4>Cell-centred vs. cell-vertex discretisation</h4>
 
 The initial particle distribution, stored within the generated initial
 snapshot file ``ICs/tutorial_a=0.02``, should ideally be close to homogeneous
@@ -421,7 +421,7 @@ As CO\ *N*\ CEPT works in *N*-body gauge, the initial conditions generated for
 this section are in this gauge. As the corresponding *N*-body gauge
 perturbations have not been continually applied to the particles during their
 evolution, these have drifted away from this gauge. As we further did not
-use back-scaling for the initial conditions (CO\ *N*\ CEPT simply realizes
+use back-scaling for the initial conditions (CO\ *N*\ CEPT simply realises
 the :math:`a = a_{\text{begin}}` *N*-body gauge perturbations directly), the
 :math:`a = 1` results deviate slightly from what we would have got,
 starting from back-scaled initial conditions. The simulations ran during this
@@ -435,7 +435,7 @@ back-scaled initial conditions, simply provide such an initial snapshot
 yourself (as back-scaling is not available as an option when generating
 initial conditions with CO\ *N*\ CEPT).
 
-With the above note of warning about the perils of insufficient rigor taken
+With the above note of warning about the perils of insufficient rigour taken
 towards the two techniques of the *N*-body gauge and back-scaling, let it be
 said that the results from the two techniques (and indeed the "mixed"
 technique used by the simulations in this section) differ only slightly

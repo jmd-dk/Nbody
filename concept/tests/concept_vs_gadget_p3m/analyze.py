@@ -26,7 +26,7 @@ for fname in sorted(glob(this_dir + '/Gadget2/output/snapshot_*'))[:N_snapshots]
     components_gadget.append(load(fname, compare_params=False, only_components=True)[0])
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Using the particle order of CO𝘕CEPT as the standard,
 # find the corresponding ID's in the GADGET-2 snapshots
@@ -114,5 +114,5 @@ if any(np.mean(d/boxsize) > tol for d in dist):
     abort('The results from CO𝘕CEPT disagree with those from GADGET-2.\n'
           'See "{}" for a visualization.'.format(fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

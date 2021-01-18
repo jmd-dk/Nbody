@@ -6,7 +6,7 @@ from species import Component
 from snapshot import save
 
 # Create the particles.
-# It is important that no interparticle separation exceeds boxsize/2 in
+# It is important that no inter-particle separation exceeds boxsize/2 in
 # any direction, as the nearest particle image in all cases must be the
 # actual particle itself.
 N = 8

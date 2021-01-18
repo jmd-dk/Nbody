@@ -33,12 +33,12 @@ fluid_components    = [fluid_components[o]    for o in order]
 particle_components = [particle_components[o] for o in order]
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Extract ϱ(x) of fluids and y(x) of particles.
 # To compare ϱ to y, a scaling is needed.
-# Since the x's in ϱ(x) are discretized, but the x's in y(x) are not,
-# we interpolate y to the disretized x-values.
+# Since the x's in ϱ(x) are discretised, but the x's in y(x) are not,
+# we interpolate y to the discretised x-values.
 x_fluid = asarray([boxsize*i/gridsize for i in range(gridsize)])
 ϱ = []
 y = []
@@ -135,5 +135,5 @@ for ϱ_i, y_interp_i, a_i in zip(ϱ, y_interp, a):
               'See "{}" for a visualization.'
               .format(a_i, fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

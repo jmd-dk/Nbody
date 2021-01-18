@@ -49,7 +49,7 @@ cp "${Gadget2_dir}/"* "${Gadget2_local_dir}" 2>/dev/null || :
     && ./Gadget2 params       \
 )
 
-# Analyze the output by comparing the momentum spread
+# Analyse the output by comparing the momentum spread
 # in the beginning and final snapshot.
 info_0="$("${concept}" -u info --stats "${Gadget2_local_dir}/output/snapshot_000" --local)"
 info_1="$("${concept}" -u info --stats "${Gadget2_local_dir}/output/snapshot_001" --local)"

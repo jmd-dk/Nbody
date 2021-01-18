@@ -36,7 +36,7 @@ mv "${this_dir}/output" "${this_dir}/output_without_optimizations"
 "${concept}" -n 4 -p "${this_dir}/params" --local
 mv "${this_dir}/output" "${this_dir}/output_with_optimizations"
 
-# Analyze the output power spectra and 2D renders
+# Analyse the output power spectra and 2D renders
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

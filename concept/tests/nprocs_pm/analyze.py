@@ -26,7 +26,7 @@ for n in nprocs_list:
 N_snapshots = len(a)
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 # Using the particle order of the n=1 snapshot as the standard,
 # find the corresponding ID's in the snapshots and order these
 # particles accordingly.
@@ -116,5 +116,5 @@ if any(np.mean(asarray(d)/boxsize) > tol for d in dist.values()):
     abort('Runs with different numbers of processes yield different results!\n'
           'See "{}" for a visualization.'.format(fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

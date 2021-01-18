@@ -28,10 +28,10 @@ for cp in components.keys():
 N_snapshots = len(a)
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Using the particle order of the cython snapshot as the standard, find the corresponding
-# ID's in the python snapshots and order these particles accoringly.
+# ID's in the python snapshots and order these particles accordingly.
 N = components['cython'][1][0].N
 D2 = zeros(N, dtype=float)
 ID = zeros(N, dtype=int)
@@ -121,5 +121,5 @@ if any(np.mean(asarray(d)/boxsize) > tol for d in dist.values()):
         f'See "{fig_file}" for a visualization.'
     )
 
-# Done analyzing
+# Done analysing
 masterprint('done')

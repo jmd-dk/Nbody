@@ -33,7 +33,7 @@ for kind in ('particles', 'fluid'):
     fluids[kind + ' simulations'] = [fluids[kind + ' simulations'][o] for o in order]
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Plot
 fig_file = this_dir + '/result.png'
@@ -96,5 +96,5 @@ for ϱ_fluid, ϱ_particles, a_i in zip(ϱ['fluid simulations'], ϱ['particles si
               'See "{}" for a visualization.'
               .format(a_i, fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

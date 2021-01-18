@@ -114,7 +114,7 @@ struct fftw_return_struct fftw_setup(
      * - Linear gridsize of dimension 1.
      * - Linear gridsize of dimension 2.
      * - Linear gridsize of dimension 3.
-     * - FFTW planning-rigor, determining the optimization level of
+     * - FFTW planning-rigour, determining the optimization level of
      *   of the wisdom. In order of patience:
      *     "estimate", "measure", "patient", "exhaustive".
      * - Flag specifying whether or not to use pre-existing FFTW wisdom.

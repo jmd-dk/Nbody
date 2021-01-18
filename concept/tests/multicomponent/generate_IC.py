@@ -12,7 +12,7 @@ ncomponents = user_params['_ncomponents']
 
 # Define particle positions
 if subtest == 'domain':
-    # 6 particles placed spherically symmetric around the box center
+    # 6 particles placed spherically symmetric around the box centre
     distance = 0.4*boxsize
     pos = []
     for dim in range(3):

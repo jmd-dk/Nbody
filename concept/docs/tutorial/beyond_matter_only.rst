@@ -407,7 +407,7 @@ That is, we invent a new numerical species, the metric, containing the
 collective non-Newtonian gravitational effects due to all physical species. As
 demonstrated in the paper on
 ":doc:`Fully relativistic treatment of light neutrinos in 𝘕-body simulations </publications>`",
-this metric species might be numerically realized as a (fictitious) linear
+this metric species might be numerically realised as a (fictitious) linear
 energy density field, the *Newtonian* gravity from which implements exactly
 the missing general relativistic corrections.
 
@@ -442,7 +442,7 @@ large scales, agreeing with linear theory to well within 0.1%.
 
 If you've read along in the terminal output during the simulations, you may
 have noticed that the energy density, :math:`\varrho`, of each of the linear
-species are realized in turn. We can save some time and memory by treating all
+species are realised in turn. We can save some time and memory by treating all
 linear species as a single, collective component. To specify this, we would
 normally write e.g.
 
@@ -1193,7 +1193,7 @@ the energy density parameter that dcdm *would* have had, had
 :math:`\Gamma_{\text{dcdm}} = 0` (in which case dcdm and cdm would be
 indistinguishable). Finally, rather than specifying
 :math:`\Omega_{\text{cdm}}` and :math:`\widetilde{\Omega}_{\text{dcdm}}`
-separately, we reparameterise these as the *total* (stable and decaying) cold
+separately, we re-parametrise these as the *total* (stable and decaying) cold
 dark matter energy density
 :math:`(\Omega_{\text{cdm}} + \widetilde{\Omega}_{\text{dcdm}})`, as well as
 the fraction of this which is of the decaying kind;

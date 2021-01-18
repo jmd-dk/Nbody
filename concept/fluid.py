@@ -119,7 +119,7 @@ def kurganov_tadmor(component, ᔑdt, a=-1, rk_order=2, rk_step=0):
 
     It is assumed that all fluid variable grids have correctly
     populated ghost points. Also, it is assumed that the unstarred 𝒫
-    grid contains correctly realized 𝒫 data, regardless of whether or
+    grid contains correctly realised 𝒫 data, regardless of whether or
     not 𝒫 is an actual non-linear variable (that is, whether
     or not the approximation P=wρ is enabled does not matter).
 
@@ -232,7 +232,7 @@ def kurganov_tadmor(component, ᔑdt, a=-1, rk_order=2, rk_step=0):
     ϱˣ = getattr(fluidscalar, viewˣ)
     ϱ_ptr  = cython.address(ϱ [:, :, :])
     ϱˣ_ptr = cython.address(ϱˣ[:, :, :])
-    # Extract pressure 𝒫 grid and pointer, realizing it if 𝒫 is linear
+    # Extract pressure 𝒫 grid and pointer, realising it if 𝒫 is linear
     component.realize_if_linear(2, specific_multi_index='trace', a=a, use_gridˣ=𝔹['ˣ' in view])
     𝒫 = getattr(component.𝒫, view)
     𝒫_ptr = cython.address(𝒫[:, :, :])
@@ -242,7 +242,7 @@ def kurganov_tadmor(component, ᔑdt, a=-1, rk_order=2, rk_step=0):
     Jᵐ_interface = empty(2, dtype=C2np['double'])
     v_interface  = empty(2, dtype=C2np['double'])
     f_interface  = empty(2, dtype=C2np['double'])
-    # Loop over the elements of J, realizing them if J is linear
+    # Loop over the elements of J, realising them if J is linear
     for m in range(3):
         component.realize_if_linear(1, specific_multi_index=m, a=a, use_gridˣ=𝔹['ˣ' in view])
         Jᵐ = getattr(component.J[m], view)
@@ -341,7 +341,7 @@ def kurganov_tadmor(component, ᔑdt, a=-1, rk_order=2, rk_step=0):
             with unswitch(2):
                 if use_ς:
                     if m <= n:
-                        # Realizing element of ς if ς is linear
+                        # Realising element of ς if ς is linear
                         component.realize_if_linear(
                             2, specific_multi_index=(m, n), a=a, use_gridˣ=𝔹['ˣ' in view],
                         )
@@ -425,7 +425,7 @@ def kurganov_tadmor(component, ᔑdt, a=-1, rk_order=2, rk_step=0):
                         # due to the term
                         # -ᔑa**(-3*w_eff)∂ⁿςᵐₙ.
                         # This is handled separately because we want a
-                        # single realization of ςᵐₙ to be used to update
+                        # single realisation of ςᵐₙ to be used to update
                         # both Jᵐ and Jₙ. Here we make use of
                         # the symmetry ςᵐₙ = ςⁿₘ.
                         with unswitch(5):
@@ -462,7 +462,7 @@ def kurganov_tadmor(component, ᔑdt, a=-1, rk_order=2, rk_step=0):
     finalize_rk_step(component, ᔑdt, a_passed, rk_order, rk_step)
 
 # Helper function to the kurganov_tadmor function,
-# which given cell-centered values compute the 4 interface values.
+# which given cell-centred values compute the 4 interface values.
 @cython.header(
     # Arguments
     index_m2='Py_ssize_t',
@@ -483,13 +483,13 @@ def kurganov_tadmor(component, ᔑdt, a=-1, rk_order=2, rk_step=0):
 )
 def at_interface(index_m2, index_m, index_c, index_p, center_ptr, interface, ϕ):
     """The 4 index variables are pointer indices into center_ptr,
-    which point to cell-centered values of some quantity, in the cells
+    which point to cell-centred values of some quantity, in the cells
     {i-2, i-1, i, i+1}. The interface array should be of size 2
     and will be used to store the interface values. These interface
     values will be the left and right values at the interface i-½.
     The slope limiter function to use is given by ϕ.
     """
-    # Lookup centered values
+    # Lookup centred values
     center_m2 = center_ptr[index_m2]
     center_m  = center_ptr[index_m ]
     center_c  = center_ptr[index_c ]
@@ -570,7 +570,7 @@ def finalize_rk_step(component, ᔑdt, a, rk_order, rk_step):
         if rk_order == 1:
             # If doing Euler integration, the time integration is
             # now finished, but the updated fluid grids are the
-            # statted ones. Copy these into the unstarred grids.
+            # starred ones. Copy these into the unstarred grids.
             component.copy_nonlinear_fluid_gridsˣ_to_grids()
         elif rk_order == 2:
             # Now take the second Runge-Kutta step
@@ -751,7 +751,7 @@ def maccormack(component, ᔑdt, a_next=-1):
                # (second MacCormack step).
                maccormack_step(component, ᔑdt, steps, mc_step, a_next)
            # Do vacuum corrections if toggled for this species.
-           # If not, check but du not correct for vacuum.
+           # If not, check but do not correct for vacuum.
            if 𝔹[is_selected(component, fluid_options['maccormack']['vacuum_corrections_select'])]:
                # Nullify the Δ buffers, so that they are ready to
                # be used by the following vacuum correction sweep.
@@ -895,7 +895,7 @@ def maccormack_step(component, ᔑdt, steps, mc_step, a_next=-1):
     # ΔJⁱ = -ᔑa**(3*w_eff - 2)dt ∂ʲ(JⁱJⱼ/(ϱ + c⁻²𝒫))  (momentum flux).
     # As the pressure is not evolved by the MacCormack method,
     # we use the unstarred grid in both MacCormack steps. We could of
-    # course re-realize the pressure from ϱˣ after the first MacCormack
+    # course re-realise the pressure from ϱˣ after the first MacCormack
     # step. It was found that this does not impact the final result,
     # and so is off below.
     masterprint('Computing momentum fluxes in the Euler equation ...')
@@ -944,7 +944,7 @@ def maccormack_step(component, ᔑdt, steps, mc_step, a_next=-1):
 @cython.header(component='Component', mc_step='int')
 def finalize_maccormack_step(component, mc_step):
     # Populate the ghost points of all fluid variable grids with the
-    # updated values. Depedendent on whether we are in the end of the
+    # updated values. Dependent on whether we are in the end of the
     # first or the second MacCormack step (mc_step), the updated grids
     # are really the starred grids (first MacCormack step) or the
     # unstarred grids (second MacCormack step).
@@ -987,7 +987,7 @@ def maccormack_internal_sources(component, ᔑdt, a_next=-1):
     equation for P ≠ wρ.
     A special kind of such internal source arise when
     component.boltzmann_closure == 'class', in which case one additional
-    fluid variable should be realized using CLASS, and then affect its
+    fluid variable should be realised using CLASS, and then affect its
     lower fluid variable (which will then be the highest dynamic fluid
     variable) through the dynamical fluid equations. The coupling
     between two such fluid variables takes the form of a flux,
@@ -1003,13 +1003,13 @@ def maccormack_internal_sources(component, ᔑdt, a_next=-1):
     # Physical grid spacing
     Δx = boxsize/component.gridsize
     # If closure of the Boltzmann hierarchy is achieved by continuously
-    # realizing ς, do this realization now and update J accordingly.
+    # realising ς, do this realisation now and update J accordingly.
     # This source term looks like
     # ΔJᵢ = -ᔑa**(-3*w_eff)dt ∂ʲςⁱⱼ.
     if (    component.boltzmann_order > 1
         or (component.boltzmann_order == 1 and component.boltzmann_closure == 'class')):
         masterprint('Computing the shear term in the Euler equation ...')
-        # Loop over all distinct ςᵢⱼ and realize them as we go
+        # Loop over all distinct ςᵢⱼ and realise them as we go
         for multi_index, ςᵢⱼ in component.ς.iterate(multi_indices=True, a_next=a_next):
             # The potential of the source is
             # -ᔑa**(-3*w_eff)dt ςⁱⱼ.
@@ -1153,10 +1153,10 @@ def correct_vacuum(component, mc_step):
     differently depending on the MacCormack step (the passed mc_step).
     For the first MacCormack step, vacuum is considered imminent if a
     density below the vacuum density, ρ_vacuum, will be reached within
-    'foresight' similiar time steps. For the second MacCormack step,
+    'foresight' similar time steps. For the second MacCormack step,
     vacuum is considered imminent if the density is below the
     vacuum density. The vacuum correction is done by smoothing all fluid
-    variables in the 3x3x3 neighbouring cells souronding the
+    variables in the 3x3x3 neighbouring cells surrounding the
     vacuum cell. The smoothing between each pair of cells,
     call them (i, j), is given by
     ϱi += fac_smoothing*(ϱj - ϱi)/r²,
@@ -1239,7 +1239,7 @@ def correct_vacuum(component, mc_step):
                 # Check for imminent vacuum.
                 # After the first MacCormack step, vacuum is considered
                 # to be imminent if a density below the vacuum density,
-                # ρ_vacuum, will be reached within foresight similiar
+                # ρ_vacuum, will be reached within foresight similar
                 # time steps. That is, vacuum is imminent if
                 # ϱ + foresight*dϱ < ρ_vacuum,
                 # where dϱ is the change in ϱ from the first MacCormack
@@ -1274,10 +1274,10 @@ def correct_vacuum(component, mc_step):
                         fac_time = 0.5*(ϱ_ijk - ϱˣ_ijk)/(ϱ_ijk - ρ_vacuum)
                     else:  # mc_step == 1
                         # The density is already lower
-                        # than the vaccuum density.
+                        # than the vacuum density.
                         fac_time = 1
                     # Loop over all cell pairs (m, n) in the 3x3x3 block
-                    # souronding the vacuum cell and apply smoothing.
+                    # surrounding the vacuum cell and apply smoothing.
                     for m in range(27):
                         # 3D indices of m'th cell
                         mi = i + relative_neighbour_indices_i[m]

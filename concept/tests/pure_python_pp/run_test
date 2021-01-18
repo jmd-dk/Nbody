@@ -70,7 +70,7 @@ mv "${reusables_dir}/ewald/${ewald_gridsize}.hdf5" "${this_dir}/ewald_cython.hdf
              --pure-python --local
 mv "${reusables_dir}/ewald/${ewald_gridsize}.hdf5" "${this_dir}/ewald_python.hdf5"
 
-# Analyze the output snapshots and Ewald grids
+# Analyse the output snapshots and Ewald grids
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

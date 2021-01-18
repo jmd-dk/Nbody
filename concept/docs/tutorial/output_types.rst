@@ -103,7 +103,7 @@ colour, though different colours may be used for different components when
 running such simulations. The brightness of each pixel indicate the local
 energy density.
 
-The colours used (here ``'lime'`` and ``'black'``) may be any colour recognized
+The colours used (here ``'lime'`` and ``'black'``) may be any colour recognised
 by `Matplotlib <https://matplotlib.org/>`_. A list of named colours is
 available `here <https://matplotlib.org/gallery/color/named_colors.html>`_.
 Alternatively, you may pass a 3-tuple of RGB values (e.g.

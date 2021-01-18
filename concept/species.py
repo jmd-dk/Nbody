@@ -68,7 +68,7 @@ class Tensor:
         self.dtype = 'object'
         # Is this tensor really just a scalar in disguise?
         self.disguised_scalar = (self.component.boltzmann_order + 1 == self.varnum)
-        # Should this fluid variable do realizations when iterating
+        # Should this fluid variable do realisations when iterating
         # with the iterate method?
         self.iterative_realizations = (
             self.disguised_scalar and self.component.boltzmann_closure == 'class'
@@ -145,7 +145,7 @@ class Tensor:
     def iterate(self, *attributes, multi_indices=False, a_next=-1):
         """This generator yields all normal elements of the tensor
         (that is, the additional degrees of freedom are not included).
-        For disguised scalars, all logical elements are realized
+        For disguised scalars, all logical elements are realised
         before they are yielded.
         What attribute(s) of the elements (fluidscalars) should be
         yielded is controlled by the attributes argument. For a value of
@@ -391,7 +391,7 @@ class FluidScalar:
                 else:  # operation == '+='
                     grid[i] += gridˣ[i]
 
-    # This method is automaticlly called when a FluidScalar instance
+    # This method is automatically called when a FluidScalar instance
     # is garbage collected. All manually allocated memory is freed.
     def __dealloc__(self):
         free(self.grid)
@@ -789,7 +789,7 @@ class Tiling:
                 if contain_particles[tile_index] < contains:
                     contain_particles[tile_index] = contains
 
-    # This method is automaticlly called when a Tiling instance
+    # This method is automatically called when a Tiling instance
     # is garbage collected. All manually allocated memory is freed.
     def __dealloc__(self):
         cython.declare(
@@ -871,17 +871,17 @@ class Component:
         # is allowed.
         #
         # boltzmann_order = -1, boltzmann_closure = 'class':
-        #     linear ϱ  (Realized continuously, affects other components gravitationally)
+        #     linear ϱ  (Realised continuously, affects other components gravitationally)
         #
         # boltzmann_order = 0, boltzmann_closure = 'truncate':
         #     non-linear ϱ  (Though "non-linear", ϱ is frozen in time as no J exist.
         #                    Also, unlike when boltzmann_order = -1 and
-        #                    boltzmann_closure = 'class', ϱ will only be realized
+        #                    boltzmann_closure = 'class', ϱ will only be realised
         #                    at the beginning of the simulation.)
         #
         # boltzmann_order = 0, boltzmann_closure = 'class':
         #     non-linear ϱ
-        #         linear J  (realized continuously)
+        #         linear J  (realised continuously)
         #         linear 𝒫  (P=wρ approximation enforced)
         #
         # boltzmann_order: 1, boltzmann_closure = 'truncate':
@@ -892,8 +892,8 @@ class Component:
         # boltzmann_order = 1, boltzmann_closure = 'class':
         #     non-linear ϱ
         #     non-linear J
-        #         linear 𝒫  (realized continuously)
-        #         linear ς  (realized continuously)
+        #         linear 𝒫  (realised continuously)
+        #         linear ς  (realised continuously)
         #
         # boltzmann_order = 2, boltzmann_closure = 'truncate':
         #     non-linear ϱ
@@ -901,11 +901,11 @@ class Component:
         #     non-linear 𝒫  (Though "non-linear", 𝒫 is frozen in time since the evolution equation
         #                    for 𝒫 is not implemented.
         #                    Also, unlike when boltzmann_order = 1 and boltzmann_closure = 'class',
-        #                    𝒫 will only be realized at the beginning of the simulation.)
+        #                    𝒫 will only be realised at the beginning of the simulation.)
         #     non-linear ς  (Though "non-linear", ς is frozen in time since the evolution equation
         #                    for ς is not implemented.
         #                    Also, unlike when boltzmann_order = 1 and boltzmann_closure = 'class',
-        #                    ς will only be realized at the beginning of the simulation.)
+        #                    ς will only be realised at the beginning of the simulation.)
         #
         # The triple quoted string below serves as the type declaration
         # for the data attributes of the Component type.
@@ -1219,7 +1219,7 @@ class Component:
                 f'{self.name.capitalize()} was initialized '
                 f'with an unknown Boltzmann closure of "{self.boltzmann_closure}"'
             )
-        # Set realization options
+        # Set realisation options
         if realization_options is None:
             realization_options = {}
         realization_options_selected = is_selected(
@@ -1259,13 +1259,13 @@ class Component:
                     realization_options[varname] = realization_options_varname
                     break
         realization_options_default = {
-            # Linear realization options
+            # Linear realisation options
             'interpolation': realization_options_all.get('interpolation', 'CIC'),
             'backscaling': realization_options_all.get('backscaling', False),
             'velocitiesfromdisplacements': realization_options_all.get(
                 'velocitiesfromdisplacements', False,
             ),
-            # Non-linear realization options
+            # Non-linear realisation options
             'structure'    : realization_options_all.get('structure', 'nonlinear'),
             'compoundorder': realization_options_all.get('compoundorder', 'linear'),
         }
@@ -1291,20 +1291,20 @@ class Component:
             realization_options[asciify(varname)] = realization_options_varname.copy()
             for realization_option_varname in realization_options_varname:
                 if realization_option_varname not in {
-                    # Linear realization options
+                    # Linear realisation options
                     'interpolation',
                     'backscaling',
                     'velocitiesfromdisplacements',
-                    # Non-linear realization options
+                    # Non-linear realisation options
                     'structure',
                     'compoundorder',
                 }:
                     abort(
                         f'Realization option "{realization_option_varname}" '
-                        f'(specified for {self.name}) not recognized.'
+                        f'(specified for {self.name}) not recognised.'
                     )
         if self.representation == 'particles':
-            # None of the non-linear relization options
+            # None of the non-linear realisation options
             # makes sense for particle components.
             for realization_options_varname in realization_options.values():
                 del realization_options_varname['structure']
@@ -1314,7 +1314,7 @@ class Component:
             # for fluid variables.
             for realization_options_varname in realization_options.values():
                 del realization_options_varname['interpolation']
-            # None of the non-linear relization options
+            # None of the non-linear realisation options
             # makes sense for ϱ.
             for realization_options_varname in (
                 realization_options[unicode('ϱ')],
@@ -1326,7 +1326,7 @@ class Component:
             if varname != 'mom':
                 if realization_options_varname['velocitiesfromdisplacements']:
                     masterwarn(
-                        f'The "velocities from displacements" realization option was set to True '
+                        f'The "velocities from displacements" realisation option was set to True '
                         f'for the "{varname}" variable of {self.name}, '
                         f'but this only makes sense for the "mom" variable'
                         + ('' if self.representation == 'particles' else
@@ -1542,7 +1542,7 @@ class Component:
         self.size_noghosts = np.prod(self.shape_noghosts)
         # Components with Boltzmann order -1 cannot received forces but
         # may still take part in interactions as suppliers. Any such
-        # component should not specify a particul method for its forces.
+        # component should not specify a particular method for its forces.
         if self.boltzmann_order == -1:
             self.forces = {key: '' for key in self.forces}
         # Implement species specific restrictions on the forces below
@@ -1577,12 +1577,12 @@ class Component:
         # whether the FluidScalar will be a linear or non-linear
         # variable, where a non-linear variable is one that is updated
         # non-linearly, as opposed to a linear variable which is only
-        # updated through continuous realization. Currently, only ϱ and
+        # updated through continuous realisation. Currently, only ϱ and
         # J is implemented as non-linear variables. It is still allowed
         # to have boltzmann_order == 2, in which case ς (and 𝒫) is also
         # specified as being non-linear, although no non-linear
         # evolution is implemented, meaning that these will then be
-        # constant in time. Note that the 𝒫 fuid variable is
+        # constant in time. Note that the 𝒫 fluid variable is
         # treated specially, as it really lives on the same tensor as
         # the ς fluid scalars. Therefore, the 𝒫 fluid scalar
         # is added later.
@@ -1603,7 +1603,7 @@ class Component:
         # For boltzmann_order == 1, ς is the additional fluid variable.
         # Instantiate the scalar element but disguised as a
         # 3×3×...×3 ((boltzmann_order + 1) times) symmetric tensor.
-        # Importantly, this fluid variabe is always considered linear.
+        # Importantly, this fluid variable is always considered linear.
         if self.boltzmann_closure == 'class':
             disguised_scalar = Tensor(
                 self,
@@ -1650,13 +1650,13 @@ class Component:
         # When the P=wρ approximation is False, the fluid variable 𝒫
         # has to follow the structure of ϱ closely. Otherwise, spurious
         # features will develop in ϱ. Display a warning if the
-        # realization option for 𝒫 is set so that its structure does not
+        # realisation option for 𝒫 is set so that its structure does not
         # match that of ϱ.
         if not self.approximations['P=wρ']:
             if self.realization_options['𝒫']['structure'] == 'primordial':
                 masterwarn(
                     f'It is specified that the 𝒫 fluid variable of {self.name} '
-                    f'should be realized using the primordial structure throughout time. '
+                    f'should be realised using the primordial structure throughout time. '
                     f'This is known to generates spurious features.'
                 )
         # When the P=wρ approximation is True, the 𝒫 fluid variable is
@@ -1707,7 +1707,7 @@ class Component:
                 self.fluid_names[asciify(fluidscalar_name)] = (index, multi_index)
                 self.fluid_names[unicode(fluidscalar_name)] = (index, multi_index)
                 self.fluid_names[index, multi_index       ] = (index, multi_index)
-        # Aditional fluid scalars
+        # Additional fluid scalars
         # due to additional degrees of freedom.
         if len(self.fluidvars) > 2:
             # The 𝒫 fluid scalar. Also, if the ς fluid variable exists
@@ -2079,18 +2079,18 @@ class Component:
         component to realise. Valid formats of this argument can be seen
         in varnames2indices. If no variables argument is passed,
         transfer functions for each variable will be computed via CLASS
-        and all of them will be realized.
+        and all of them will be realised.
         If a specific_multi_index is passed, only the single fluidscalar
         of the variable(s) with the corresponding multi_index
-        will be realized. If no specific_multi_index is passed,
-        all fluidscalars of the variable(s) will be realized.
+        will be realised. If no specific_multi_index is passed,
+        all fluidscalars of the variable(s) will be realised.
         The transfer_spline is a Spline object of the transfer function
         of the variable which should be realised.
         The cosmoresults argument is a linear.CosmoResults object
         containing all results from the CLASS run which produced the
         transfer function, from which further information
         can be obtained.
-        Specify the scale factor a if you want to realize the variables
+        Specify the scale factor a if you want to realise the variables
         at a time different from the present time.
         If neither the transfer_spline nor the cosmoresults argument is
         given, these will be produced by calling CLASS.
@@ -2099,11 +2099,11 @@ class Component:
         arguments unspecified (as you can only pass in a
         single transfer_spline).
         The gauge and options arguments are passed on to
-        linear.compute_transfer and linear.realize, respectively.
+        linear.compute_transfer and linear.realise, respectively.
         See these functions for further detail.
-        The use_gridˣ argument is passed on to linear.relize and
+        The use_gridˣ argument is passed on to linear.realise and
         determines whether the unstarred or starred grids should be used
-        when doing the realization.
+        when doing the realisation.
         """
         if a == -1:
             a = universals.a
@@ -2115,19 +2115,19 @@ class Component:
             (val.lower().replace(' ', '').replace('-', '') if isinstance(val, str) else val)
             for key, val in options.items()
         }
-        # Define the grid size used by the realization (gridsize for
+        # Define the grid size used by the realisation (gridsize for
         # fluid components and ∛N for particle components) and resize
         # the data attributes if needed.
         # Also do some particles-only checks.
         if self.representation == 'particles':
             if self.N%nprocs != 0:
                 abort(
-                    f'Cannot perform realization of {self.name} '
+                    f'Cannot perform realisation of {self.name} '
                     f'with N = {self.N}, as N is not evenly divisible by {nprocs} processes.'
                 )
             if not isint(ℝ[cbrt(self.N)]):
                 abort(
-                    f'Cannot perform realization of {self.name} '
+                    f'Cannot perform realisation of {self.name} '
                     f'with N = {self.N}, as N is not a cubic number.'
                 )
             gridsize = int(round(ℝ[cbrt(self.N)]))
@@ -2137,18 +2137,18 @@ class Component:
             gridsize = self.gridsize
             shape = tuple([gridsize//domain_subdivisions[dim] for dim in range(3)])
             self.resize(shape)
-        # Check that the grid size fulfills the requirements for FFT
-        # and therefore for realizations.
+        # Check that the grid size fulfils the requirements for FFT
+        # and therefore for realisations.
         if gridsize%nprocs != 0:
             abort(
-                f'Cannot perform realization of {self.name} '
+                f'Cannot perform realisation of {self.name} '
                 f'with gridsize = {gridsize}, as gridsize is not '
                 f'evenly divisible by {nprocs} processes.'
             )
         for dim in range(3):
             if gridsize%domain_subdivisions[dim] != 0:
                 abort(
-                    f'Cannot perform realization of {self.name} '
+                    f'Cannot perform realisation of {self.name} '
                     f'with gridsize = {gridsize}, as the global grid of shape '
                     f'({gridsize}, {gridsize}, {gridsize}) cannot be divided '
                     f'according to the domain decomposition ({domain_subdivisions[0]}, '
@@ -2156,41 +2156,41 @@ class Component:
                 )
         # Argument processing
         if transfer_spline is None and cosmoresults is not None:
-            abort('The realize method was called with cosmoresults but no transfer_spline')
+            abort('The realize() method was called with cosmoresults but no transfer_spline')
         if variables is None:
             if transfer_spline is not None:
-                masterwarn('The realize method was called without specifying a variable, '
+                masterwarn('The realize() method was called without specifying a variable, '
                            'though a transfer_spline is passed. '
                            'This transfer_spline will be ignored.')
             if cosmoresults is not None:
-                masterwarn('The realize method was called without specifying a variable, '
+                masterwarn('The realize() method was called without specifying a variable, '
                            'though a cosmoresults is passed. This cosmoresults will be ignored.')
-            # Realize all variables.
+            # Realise all variables.
             # Note that in the case of a completely linear component
             # (Boltzmann order -1), no variables will be set and hence
-            # no realization will be performed.
+            # no realisation will be performed.
             variables = list(arange(self.boltzmann_order + 1))
         else:
-            # Realize one or more variables
+            # Realise one or more variables
             variables = any2list(self.varnames2indices(variables))
             N_vars = len(variables)
             if N_vars > 1:
-                # Realize multiple variables
+                # Realise multiple variables
                 if transfer_spline is not None:
-                    abort(f'The realize method was called with {N_vars} variables '
+                    abort(f'The realize() method was called with {N_vars} variables '
                           'while a transfer_spline was supplied as well')
                 if cosmoresults is not None:
-                    abort(f'The realize method was called with {N_vars} variables '
+                    abort(f'The realize() method was called with {N_vars} variables '
                           'while cosmoresults was supplied as well')
         # In the case of particles,
-        # momenta should be realized before positions.
+        # momenta should be realised before positions.
         if self.representation == 'particles' and variables == [0, 1]:
             variables = [1, 0]
-        # Realize each of the variables in turn
+        # Realise each of the variables in turn
         options_passed = options.copy()
         for variable in variables:
             options = options_passed.copy()
-            # The special "realization" of 𝒫 when using
+            # The special "realisation" of 𝒫 when using
             # the P=wρ approximation.
             if (   self.representation == 'fluid'
                 and variable == 2
@@ -2200,7 +2200,7 @@ class Component:
                 ):
                 self.realize_𝒫(a, use_gridˣ)
                 continue
-            # Normal realization.
+            # Normal realisation.
             # The 'interpolation' option.
             if self.representation == 'particles':
                 interpolation_orders = {'NGP': 1, 'CIC': 2, 'TSC': 3, 'PCS': 4}
@@ -2220,15 +2220,15 @@ class Component:
                     'velocitiesfromdisplacements']
             # For particles, the Boltzmann order is always 1,
             # corresponding to positions and momenta. However, when
-            # velocities are set to be realized from displacements, the
+            # velocities are set to be realised from displacements, the
             # momenta (proportional to the velocity field uⁱ) are
             # constructed from the displacement field ψⁱ (using the
             # linear growth rate f) during the Zel'dovich approximation.
-            # Thus, from a single realization of ψⁱ, both the positions
+            # Thus, from a single realisation of ψⁱ, both the positions
             # and the momenta are constructed. In this case, we need to
-            # pass only the momenta as the variable to be realized (the
-            # realize function will realize both positions and momenta
-            # when velocities are to be realized from displacements),
+            # pass only the momenta as the variable to be realised (the
+            # realise function will realise both positions and momenta
+            # when velocities are to be realised from displacements),
             # along with the transfer function for ψⁱ (δ, i.e. 0).
             variable_transfer = variable
             if self.representation == 'particles' and options['velocitiesfromdisplacements']:
@@ -2251,19 +2251,19 @@ class Component:
                     options['backscaling'] = self.realization_options['ς']['backscaling']
             # Get transfer function if not passed
             if transfer_spline is None:
-                # When realizing using the primordial structure (as
-                # opposed to realizing non-linearly), the realization
+                # When realising using the primordial structure (as
+                # opposed to realising non-linearly), the realisation
                 # looks like
                 # ℱₓ⁻¹[T(k) ζ(k) K(k⃗) ℛ(k⃗)],
                 # with ℛ(k⃗) the primordial noise, T(k) = T(a, k) the
                 # transfer function at the specified a, ζ(k) the
                 # primordial curvature perturbations and K(k⃗) containing
                 # any additional tensor structure. The only time
-                # dependent part of the realiztion is then the transfer
-                # function T(a, k). In the case of linear realization,
-                # i.e. a realization of a field of the same variable
+                # dependent part of the realisation is then the transfer
+                # function T(a, k). In the case of linear realisation,
+                # i.e. a realisation of a field of the same variable
                 # number as the Boltzmann order of the component, we do
-                # not actually care about realizing the exact field, but
+                # not actually care about realising the exact field, but
                 # only about obtaining precise influences from this
                 # field on other, non-linear fields. For each Boltzmann
                 # order, we list below the corresponding linear fluid
@@ -2278,7 +2278,7 @@ class Component:
                 #     𝒫,    ∂ₜJᵐ = -a**(-3*w_eff)∂ᵐ𝒫      + ⋯
                 #     ςᵐₙ,  ∂ₜJᵐ = -a**(-3*w_eff)∂ⁿςᵐₙ    + ⋯
                 # To take Boltzmann order -1 as an example, this means
-                # we should realize a weighted average of ϱ(t, k⃗), with
+                # we should realise a weighted average of ϱ(t, k⃗), with
                 # a weight given by a(t)**(-3*w_eff(t) - 1), i.e.
                 # T(a, k) → 1/(ᔑa(t)**(-3*w_eff(t) - 1) dt)
                 #             *ᔑa(t)**(-3*w_eff(t) - 1)T(a, k) dt,
@@ -2310,7 +2310,7 @@ class Component:
                     gauge,
                     weight=weight,
                 )
-            # Do the realization
+            # Do the realisation
             realize(
                 self,
                 variable,
@@ -2325,7 +2325,7 @@ class Component:
             # function will be computed for the next variable.
             transfer_spline = None
 
-    # Method for realizing a linear fluid scalar
+    # Method for realising a linear fluid scalar
     def realize_if_linear(
         self,
         variable,
@@ -2339,7 +2339,7 @@ class Component:
         use_gridˣ=False,
     ):
         """If the fluid scalar is not linear or does not exist at all,
-        no realization will be performed and no exception will
+        no realisation will be performed and no exception will
         be raised.
         """
         if self.representation == 'particles':
@@ -2356,13 +2356,13 @@ class Component:
                 specific_multi_index = 0
             else:
                 abort(
-                    f'The realize_if_linear function was called with variable = {variable} ≠ 0 '
+                    f'The realize_if_linear() metthod was called with variable = {variable} ≠ 0 '
                     f'but without any specific_multi_index'
                 )
         # Check that the fluid scalar exist
         if specific_multi_index not in self.fluidvars[variable]:
             return
-        # Get the non-linear realization options
+        # Get the non-linear realisation options
         if options is None:
             if variable == 0:
                 options = self.realization_options['ϱ']
@@ -2374,10 +2374,10 @@ class Component:
                 options = self.realization_options['ς']
             else:
                 abort(
-                    f'Do not know how to extract realization options '
+                    f'Do not know how to extract realisation options '
                     f'for fluid variable {variable}[{specific_multi_index}]'
                 )
-        # Do the realization if the passed variable really is linear
+        # Do the realisation if the passed variable really is linear
         if self.is_linear(variable, specific_multi_index):
             self.realize(
                 variable,
@@ -2422,7 +2422,7 @@ class Component:
         # Check the linearity
         return self.fluidvars[variable][specific_multi_index].is_linear
 
-    # Method for realizing 𝒫 when the P=wρ approximation is enabled
+    # Method for realising 𝒫 when the P=wρ approximation is enabled
     @cython.header(
         # Arguments
         a='double',
@@ -2435,7 +2435,7 @@ class Component:
     def realize_𝒫(self, a=-1, use_gridˣ=False):
         """This method applies 𝒫 = c²wϱ if the P=wρ approximation
         is enabled. If not, an exception will be thrown. This method
-        is called from the more general realize method. It is not the
+        is called from the more general realise method. It is not the
         intend that this method should be called from anywhere else.
         """
         if a == -1:
@@ -2454,8 +2454,8 @@ class Component:
                 𝒫_ptr[i] = ϱ_ptr[i]*ℝ[light_speed**2*self.w(a=a)]
         else:
             abort(
-                f'The realize_𝒫 method was called on the {self.name} component wich have P ≠ wρ. '
-                f'You should call the more general realize method instead.'
+                f'The realize_𝒫() method was called on the {self.name} component which have P ≠ wρ. '
+                f'You should call the more general realize() method instead.'
             )
 
     # Method for integrating particle positions/fluid values
@@ -2572,14 +2572,14 @@ class Component:
             momz[i] += Δmomz[i]
 
     # Method for converting momentum updates stored in the Δmom buffers
-    # to acceleration. The convertion is done in-place.
+    # to acceleration. The conversion is done in-place.
     @cython.header(
         # Arguments
         ᔑdt_rungs=dict,
         any_rung_jumps='bint',
         # Locals
-        convertion_factor='double',
-        convertion_factors='double[::1]',
+        conversion_factor='double',
+        conversion_factors='double[::1]',
         dim='int',
         i='Py_ssize_t',
         lowest_active_rung='signed char',
@@ -2595,7 +2595,7 @@ class Component:
     )
     def convert_Δmom_to_acc(self, ᔑdt_rungs, any_rung_jumps=False):
         # The acceleration is only used for the rung assignment,
-        # and so we skip the convertion if this component
+        # and so we skip the conversion if this component
         # does not make use of rungs.
         if not self.use_rungs:
             return
@@ -2613,7 +2613,7 @@ class Component:
         rung_indices_jumped = self.rung_indices_jumped
         lowest_active_rung = self.lowest_active_rung
         w_eff = self.w_eff(a=universals.a)
-        convertion_factors = universals.a**(3*w_eff)/(
+        conversion_factors = universals.a**(3*w_eff)/(
             self.mass*(machine_ϵ + ᔑdt_rungs['a**2'])
         )
         for i in range(self.N_local):
@@ -2625,10 +2625,10 @@ class Component:
                     rung_index_jumped = rung_indices_jumped[i]
                 else:
                     rung_index_jumped = rung_index
-            convertion_factor = convertion_factors[rung_index_jumped]
-            Δmomx[i] *= convertion_factor
-            Δmomy[i] *= convertion_factor
-            Δmomz[i] *= convertion_factor
+            conversion_factor = conversion_factors[rung_index_jumped]
+            Δmomx[i] *= conversion_factor
+            Δmomy[i] *= conversion_factor
+            Δmomz[i] *= conversion_factor
 
     # This method computes the rung that particle i should be on,
     # given the acceleration stored in the Δmom buffers.
@@ -3114,12 +3114,12 @@ class Component:
         # components which nonetheless have non-zero w_eff. This ought
         # to be sorted out, which would require separating the two
         # effects (changing equation of state and decay) so that they
-        # are not both relayed by w_eff. For now we check this explicity
+        # are not both relayed by w_eff. For now we check this explicitly
         # and emit a warning if an inconsistent component is used.
         # Currently the only decaying CLASS species implemented is dcdm.
         # We really should include dr as well, which now gains
-        # mass/energy rather than loose it. It hower has
-        # w_eff = 1/3 != 0 and so we cannot disinguish between changes
+        # mass/energy rather than loose it. It however has
+        # w_eff = 1/3 != 0 and so we cannot distinguish between changes
         # in mass due to decay of dcdm and due to redshifting.
         a = universals.a
         if a_next == -1:
@@ -3187,7 +3187,7 @@ class Component:
             elif scheme == 'kurganovtadmor':
                 # Only the Hubble term in the continuity equation
                 # exist as an internal source term when using
-                # the Kurganov Tadmor scheme.
+                # the Kurganov-Tadmor scheme.
                 if (
                     # The Hubble term
                         self.boltzmann_order > -1
@@ -3240,7 +3240,7 @@ class Component:
             units_dict.pop('t')
             units_dict.pop('a')
         else:
-            abort(f'Did not recognize w type "{self.w_type}"')
+            abort(f'Did not recognise w type "{self.w_type}"')
         # For components with a non-linear evolution of ϱ,
         # we cannot handle w ≤ -1, as (ϱ + c⁻²𝒫) becomes non-positive.
         # This really should not be a problem, but the current fluid
@@ -3302,7 +3302,7 @@ class Component:
             if a == -1:
                 a = scale_factor(t)
             return self.w_eff_spline.eval(a)
-        abort(f'Did not recognize w_eff type "{self.w_eff_type}"')
+        abort(f'Did not recognise w_eff type "{self.w_eff_type}"')
 
     # Method for computing the proper time derivative
     # of the equation of state parameter w
@@ -3346,10 +3346,10 @@ class Component:
             units_dict.pop('t')
             units_dict.pop('a')
             return (w_after - w_before)/(2*Δx)
-        abort(f'Did not recognize w type "{self.w_type}"')
+        abort(f'Did not recognise w type "{self.w_type}"')
 
     # Method for computing the proper time derivative
-    # of the effectice equation of state parameter w_eff
+    # of the effective equation of state parameter w_eff
     # at a certain time t or value of the scale factor a.
     # This has to be a pure Python function,
     # otherwise it cannot be called as ẇ_eff(a=a).
@@ -3370,7 +3370,7 @@ class Component:
             if a == -1:
                 a = scale_factor(t)
             return ȧ(a)*self.w_eff_spline.eval_deriv(a)
-        abort(f'Did not recognize w_eff type "{self.w_type}"')
+        abort(f'Did not recognise w_eff type "{self.w_type}"')
 
     # Method which initializes the equation of state parameter w.
     # Call this before calling the w and ẇ methods.
@@ -3441,7 +3441,7 @@ class Component:
                       'tabulated (t)' or 'tabulated (a)' depending on
                       whether t or a is used.
                       If w is some arbitrary expression,
-                      this should include eather t or a.
+                      this should include either t or a.
                       The w will be stored in self.w_expression and
                       self.w_type will be set to 'expression'.
         - dict      : The dict has to be of the form
@@ -3503,9 +3503,9 @@ class Component:
         elif isinstance(w, str) and w.lower() == 'default':
             # Assign w a constant value based on the species.
             # For combination species, the combined w is a weighted sum
-            # of the invidual w's with the individual background
+            # of the individual w's with the individual background
             # densities as weight, or equivalently, the ratio of the sum
-            # of the invividual background pressures and the sum of the
+            # of the individual background pressures and the sum of the
             # individual background densities. To do it this proper way,
             # w should be passed in as 'class'. For w == 'default',
             # we simply do not handle this case.
@@ -3575,7 +3575,7 @@ class Component:
         elif isinstance(w, str):
             # Some expression for w was passed.
             # Insert '*' between all numbers and letters as well as all
-            # bewteen numbers and opening parentheses and between
+            # between numbers and opening parentheses and between
             # closing parentheses and numbers/letters.
             w_ori = w
             w = w.lower().replace(' ', '').replace('_', '')
@@ -3669,7 +3669,7 @@ class Component:
                     logy = False
                 if self.class_species == 'fld':
                     # The CLASS dark energy fluid (fld) uses
-                    # the {w_0, w_a} parameterization, and so a linear
+                    # the {w_0, w_a} parametrisation, and so a linear
                     # spline should be used.
                     logx, logy = False, False
                 self.w_spline = Spline(self.w_tabulated[0, :], self.w_tabulated[1, :],
@@ -3757,7 +3757,7 @@ class Component:
             logy = False
         if self.class_species == 'fld':
             # The CLASS dark energy fluid (fld) uses
-            # the {w_0, w_a} parameterization. It turns out that the
+            # the {w_0, w_a} parametrisation. It turns out that the
             # best spline is achieved from log(a) but linear w_eff.
             logx, logy = True, False
         # Extrapolate to get the value at a = 1
@@ -4075,7 +4075,7 @@ class Component:
         # resulting in effective freeing via a call to realloc().
         self.resize(1)
 
-    # This method is automaticlly called when a Component instance
+    # This method is automatically called when a Component instance
     # is garbage collected. All manually allocated memory is freed.
     def __dealloc__(self):
         cython.declare(dim='int')
@@ -4764,7 +4764,7 @@ cython.declare(fluidvar_names=tuple)
 fluidvar_names = ('ϱ', 'J', 'ς')
 # Flag specifying whether a warning should be given if multiple
 # components with the same name are instantiated, and a set of names of
-# all instantiated componenets.
+# all instantiated components.
 cython.declare(allow_similarly_named_components='bint', component_names=set)
 allow_similarly_named_components = False
 component_names = set()

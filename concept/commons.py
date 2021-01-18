@@ -60,7 +60,7 @@ import scipy.signal
 import scipy.special
 # Plotting
 import matplotlib
-matplotlib.use('agg')  # Use a matplotlib backend that does not require a running X-server
+matplotlib.use('agg')  # Use a Matplotlib back-end that does not require a running X-server
 import matplotlib.mathtext
 import matplotlib.pyplot as plt
 # MPI
@@ -164,7 +164,7 @@ master_rank = 0
 master = (rank == master_rank)
 # MPI functions for communication.
 # For newer versions of NumPy, we have to pass the dtype of the arrays
-# explicitly when using uppercase communication methods.
+# explicitly when using upper-case communication methods.
 def buf_and_dtype(buf):
     try:
         arr = asarray(buf)
@@ -292,7 +292,7 @@ def sleeping_barrier(sleep_time, mode):
 # the call, while slave processes periodically asks whether their
 # master is done so that they may continue. This period is controlled
 # by sleep_time, given in seconds. While sleeping, the slave processes
-# can be utilized to cary out OpenMP work by their master.
+# can be utilized to carry out OpenMP work by their master.
 def call_openmp_lib(func, *args, sleep_time=0.1, mode='single node', **kwargs):
     """When mode == 'single node', only the master process calls
     the function, while all other processes sleeps. Those processes also
@@ -319,7 +319,7 @@ if master:
 terminal = blessings.Terminal(force_styling=True)
 # Monkey patch internal NumPy functions handling encoding during I/O,
 # replacing the Latin1 encoding by UTF-8. On some systems, this is
-# needed for reading and writing unicode characters in headers of text
+# needed for reading and writing Unicode characters in headers of text
 # files using np.loadtxt and np.savetxt.
 asbytes = lambda s: s if isinstance(s, bytes) else str(s).encode('utf-8')
 asstr = lambda s: s.decode('utf-8') if isinstance(s, bytes) else str(s)
@@ -329,9 +329,9 @@ np.compat.py3k .asunicode = asstr
 np.lib   .npyio.asbytes   = asbytes
 np.lib   .npyio.asstr     = asstr
 np.lib   .npyio.asunicode = asstr
-# Customize matplotlib
+# Customize Matplotlib
 matplotlib.rcParams.update({
-    # Use a nice font that ships with matplotlib
+    # Use a nice font that ships with Matplotlib
     'text.usetex'       : False,
     'font.family'       : 'serif',
     'font.serif'        : 'cmr10',
@@ -343,7 +343,7 @@ matplotlib.rcParams.update({
 })
 # Function used to set the minor tick formatting in log plots
 def fix_minor_tick_labels(fig=None):
-    # In matplotlib 2.x and 3.x, tick labels are automatically placed
+    # In Matplotlib 2.x and 3.x, tick labels are automatically placed
     # at minor ticks in log plots if the axis range is less than a
     # full decade. Here, a \times glyph is used, which is not handled
     # correctly due to it being inclosed in \mathdefault{}, leading to
@@ -355,7 +355,7 @@ def fix_minor_tick_labels(fig=None):
     if fig is None:
         fig = plt.gcf()
     # Force the figure to be drawn, ignoring the warning about \times
-    # not being recognized. Prior to matplotlib 3.1.0, the warning is
+    # not being recognised. Prior to Matplotlib 3.1.0, the warning is
     # emitted through the warnings module, whereas later versions uses
     # the logging module.
     logger = logging.getLogger('matplotlib.mathtext')
@@ -372,7 +372,7 @@ def fix_minor_tick_labels(fig=None):
                 label.get_text().replace(r'\mathdefault', '')
                 for label in getattr(ax, f'get_{xy}minorticklabels')()
             ]
-            # In at least matplotlib 3.3, setting the tick labels can
+            # In at least Matplotlib 3.3, setting the tick labels can
             # throw an erroneous UserWarning:
             #   FixedFormatter should only be used together with FixedLocator
             with warnings.catch_warnings():
@@ -470,9 +470,9 @@ def fancyprint(
     if not args:
         args = ('', )
     args = tuple([str(arg) for arg in args])
-    # Handle indentation due to non-fisnished progress print.
+    # Handle indentation due to non-finished progress print.
     # If indent == -1, no indentation should be used, not even that
-    # due to the non-finished progressprint.
+    # due to the non-finished progress-print.
     is_done_message = (args[0] == 'done')
     leftover_indentation = progressprint['indentation']
     if leftover_indentation:
@@ -506,7 +506,7 @@ def fancyprint(
         if text_length > progressprint['maxintervallength']:
             progressprint['maxintervallength'] = text_length
         # Prepend the text with whitespace so that all future
-        # interval-messages lign up to the right.
+        # interval-messages line up to the right.
         text = ' '*(
             + terminal_width
             - progressprint['length']
@@ -525,7 +525,7 @@ def fancyprint(
         text = sep.join([str(arg) for arg in args])
         # Convert to proper Unicode characters
         text = unicode(text)
-        # Convert any paths in text (recognized by surrounding quotes)
+        # Convert any paths in text (recognised by surrounding quotes)
         # to sensible paths.
         text = re.sub(r'"(.+?)"', lambda m: '"{}"'.format(sensible_path(m.group(1))), text)
         # Add indentation, and also wrap long message if wrap is True
@@ -713,12 +713,12 @@ def masterwarn(*args, **kwargs):
     if master:
         warn(*args, **kwargs)
 
-# Raised exceptions inside cdef functions do not generally propagte
+# Raised exceptions inside cdef functions do not generally propagate
 # out to the caller. In places where exceptions are normally raised
-# manualy, call this function with a descriptive message instead.
-# Also, to ensure correct teardown of the MPI environment before
+# manually, call this function with a descriptive message instead.
+# Also, to ensure correct tear-down of the MPI environment before
 # exiting, call this function with exit_code=0 to shutdown a
-# successfull CO𝘕CEPT run.
+# successful CO𝘕CEPT run.
 def abort(*args, exit_code=1, prefix='Aborting', **kwargs):
     # Print out message on error
     if exit_code != 0:
@@ -781,7 +781,7 @@ if not cython.compiled:
     setattr(cython, 'address', address)
     # C allocation syntax for memory management
     def sizeof(dtype):
-        # Extract number of pointer enferences base datatype
+        # Extract number of pointer references and base datatype
         nstars = dtype.count('*')
         dtype = C2np.get(dtype.rstrip('*'), object)
         # Return both results
@@ -1112,7 +1112,7 @@ unicode_tags = {
 }
 
 # The function below grants the code access to
-# Unicode string literals by undoing the convertion of the
+# Unicode string literals by undoing the conversion of the
 # asciify function above.
 @cython.pheader(s=str, returns=str)
 def unicode(s):
@@ -1174,9 +1174,9 @@ def unformat_unit(unit_str):
     """Example of effect:
     '10¹⁰ m☉' -> '10**(10)*m_sun'
     """
-    # Ensure unicode
+    # Ensure Unicode
     unit_str = unicode(unit_str)
-    # Replace multiple spaces wiht a single space
+    # Replace multiple spaces with a single space
     unit_str = re.sub(r'\s+', ' ', unit_str).strip()
     # Replace spaces with an asterisk
     # if no operator is to be find on either side.
@@ -1200,7 +1200,7 @@ def unformat_unit(unit_str):
         unit_str = unit_str.replace(pat, rep)
     # Convert superscript to power
     unit_str = re.sub(unicode('[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]+'), r'**(\g<0>)', unit_str)
-    # Convert unicode superscript ASCII text
+    # Convert Unicode superscript ASCII text
     for ASCII_char, unicode_superscript in unicode_superscripts.items():
         if unicode_superscript:
             unit_str = unit_str.replace(unicode_superscript, ASCII_char)
@@ -1367,7 +1367,7 @@ machine_ϵ = float(np.finfo(C2np['double']).eps)
 π = float(np.pi)
 ρ_vacuum = float(1e+2*machine_ϵ)
 ထ = float('inf')
-NaN = float('nan')  # Note: nan (all lowercase) conflicts with the nan() function of C's math lib
+NaN = float('nan')  # Note: nan (all lower-case) conflicts with the nan() function of C's math lib
 
 
 
@@ -1379,8 +1379,8 @@ NaN = float('nan')  # Note: nan (all lowercase) conflicts with the nan() functio
 # name for minutes, as this name is already taken by the min function.
 # You may specify units here which shall not be part of the units
 # actually available in the code (this will come later).
-# The specifications here ar purely for the purpose of defining a unit
-# system based on the user input.
+# The specifications here are purely for the purpose of defining
+# a unit system based on the user input.
 unit_relations = {
     'yr':    1,
     'pc':    1,
@@ -1438,8 +1438,8 @@ unit_relations['G_Newton'] = unit_relations['G'] = (                   # Particl
 
 
 # Function which given a function name present both in NumPy and in the
-# Python builtins will produce a function which first calls the NumPy
-# version, and then (on failure) calls the builtin version. This is
+# Python built-in's will produce a function which first calls the NumPy
+# version, and then (on failure) calls the built-in version. This is
 # useful for e.g. generating a 'min' function which works on both a
 # single multi-dimensional array as well as multiple scalar inputs.
 def produce_np_and_builtin_function(funcname):
@@ -1463,7 +1463,7 @@ def construct_user_params_namespace(params_iteration):
         # Include all of NumPy
         **vars(np).copy(),
         # Overwrite the NumPy min and max function with NumPy and
-        # builtin hybrid min and max functions.
+        # built-in hybrid min and max functions.
         'min': produce_np_and_builtin_function('min'),
         'max': produce_np_and_builtin_function('max'),
         # The paths dict
@@ -1522,8 +1522,8 @@ inferred_params = {unicode(key): val for key, val in
 for key, val in inferred_params.items():
     user_params.setdefault(key, val)
 # Function which repeatedly executes the str content in the
-# dictionary-like object d, ignoring any execeptions.
-# The executation stops when no more exceptions are resolved
+# dictionary-like object d, ignoring any exceptions.
+# The execution stops when no more exceptions are resolved
 # by definitions further down in the content.
 def exec_params(content, d_in, suppress_exceptions=True):
     d = dict(d_in)
@@ -1665,7 +1665,7 @@ G_Newton = (
 ################################################################
 # Import all user specified parameters from the parameter file #
 ################################################################
-# Function for converting a non-iterables to lists of one element and
+# Function for converting a non-iterable to lists of one element and
 # iterables to lists. The str and bytes types are treated
 # as non-iterables. If a generator is passed it will be consumed.
 def any2list(val):
@@ -1772,7 +1772,7 @@ def update_class_params(class_params, namespace=None):
 # Subclass the dict to create a dict-like object which keeps track of
 # the number of lookups on each key. This is used to identify unknown
 # (and therefore unused) parameters defined by the user.
-# Transform all keys to unicode during lookups and assignments.
+# Transform all keys to Unicode during lookups and assignments.
 class DictWithCounter(dict):
     def __init__(self, d=None):
         self.counter = collections.defaultdict(int)
@@ -1873,7 +1873,7 @@ inferred_params_set = DictWithCounter({
 })
 # Infer inferrable parameters which have not been explicitly set
 # by the user. To ensure that every key gets looked up in their proper
-# unicode form, we wrap the inferred_params dict in a DictWithCounter.
+# Unicode form, we wrap the inferred_params dict in a DictWithCounter.
 inferred_params = DictWithCounter(inferred_params)
 inferred_params_final = DictWithCounter()
 cython.declare(
@@ -1912,12 +1912,12 @@ exec_params(params_file_content, user_params, suppress_exceptions=False)
 # Backup of originally supplied user parameter names
 user_params_keys_raw = set(user_params.keys())
 # The parameters are now being processed as follows:
-# - All parameters are explicitly casted to their appropriate type.
-# - Parameters which should be integer are rounded before casted.
+# - All parameters are explicitly cast to their appropriate type.
+# - Parameters which should be integer are rounded before being cast.
 # - Parameters not present in the parameter file
 #   will be given default values.
 # - Spaces are removed from the 'snapshot_type' parameter, and all
-#   characters are converted to lowercase.
+#   characters are converted to lower-case.
 # - The 'output_times' are sorted and duplicates (for each type of
 #   output) are removed.
 # - Ellipses used as dictionary values will be replaced by whatever
@@ -1927,7 +1927,7 @@ user_params_keys_raw = set(user_params.keys())
 #   function replace_ellipsis which takes care of this replacement.
 # - Paths below or just one level above the concept directory are made
 #   relative to this directory in order to reduce screen clutter.
-# - Colors are transformed to (r, g, b) arrays. Below is the function
+# - Colours are transformed to (r, g, b) arrays. Below is the function
 #   to_rgb which handles this transformation.
 def to_int(value):
     return int(round(float(value)))
@@ -1937,7 +1937,7 @@ def to_rgb(value):
     try:
         rgb = asarray(matplotlib.colors.ColorConverter().to_rgb(value), dtype=C2np['double'])
     except:
-        # Could not convert value to color
+        # Could not convert value to colour
         return asarray([-1, -1, -1])
     return rgb
 def to_rgbα(value, α=1):
@@ -1999,7 +1999,7 @@ cython.declare(
     select_approximations=dict,
     softening_kernel=str,
     select_softening_length=dict,
-    # Simlation options
+    # Simulation options
     Δt_base_background_factor='double',
     Δt_base_nonlinear_factor='double',
     Δt_rung_factor='double',
@@ -3325,7 +3325,7 @@ units_dict.setdefault(unicode('ထ')        , ထ        )
 for key, val in vars(np).items():
     units_dict.setdefault(key, val)
 # Overwrite the NumPy min and max function with NumPy and
-# builtin hybrid min and max functions.
+# built-in hybrid min and max functions.
 units_dict['min'] = produce_np_and_builtin_function('min')
 units_dict['max'] = produce_np_and_builtin_function('max')
 # Add special functions
@@ -3861,7 +3861,7 @@ def significant_figures(numbers, nfigs, fmt='', incl_zeros=True, scientific=Fals
                 coefficient += '0'*n_missing_zeros
         # Combine
         number_str = coefficient + exponent
-        # The mathtext matplotlib module has a typographical bug;
+        # The mathtext Matplotlib module has a typographical bug;
         # it inserts a space after a decimal point.
         # Prevent this by not letting the decimal point be part
         # of the mathematical expression.
@@ -4129,7 +4129,7 @@ def is_selected(component_or_components, d, accumulate=False, default=None):
             names,
             components,
         )
-    # Ensure lowercase on all str keys
+    # Ensure lower-case on all str keys
     # and transform otherwise iterable keys to sets.
     d_transformed = {}
     for key, val in d.items():
@@ -4370,7 +4370,7 @@ if not enable_terminal_formatting:
     terminal = DummyTerminal()
 
 # Some times, the MPI environment can make erroneous file system
-# operations halt, rather than fail normaly. Here we monkey patch
+# operations halt, rather than fail normally. Here we monkey patch
 # os.makedirs to abort the program on failure.
 def tryexcept_wrapper(func, abort_msg=''):
     def inner(*args, **kwargs):
@@ -4387,15 +4387,15 @@ os.makedirs = tryexcept_wrapper(os.makedirs, 'os.makedirs() failed')
 ##############################################################
 # Sanity checks and corrections/additions to user parameters #
 ##############################################################
-# Abort on unrecognized snapshot_type
+# Abort on unrecognised snapshot_type
 if snapshot_type not in ('standard', 'gadget2'):
-    abort('Unrecognized snapshot type "{}"'.format(user_params['snapshot_type']))
-# Abort on unrecognized output types
+    abort('Unrecognised snapshot type "{}"'.format(user_params['snapshot_type']))
+# Abort on unrecognised output types
 keys = {'snapshot', 'powerspec', 'render2D', 'render3D'}
 for d in output_times.values():
     for key in d:
         if key not in keys:
-            abort(f'Unrecognized output type "{key}"')
+            abort(f'Unrecognised output type "{key}"')
 # Warn about odd force differentiation
 for force, d in potential_options['differentiation'].items():
     for method, order in d.items():
@@ -4407,7 +4407,7 @@ for force, d in potential_options['differentiation'].items():
 # Check format on 'subtiling' values in shortrange_params.
 # Among other things, the refinement period used for automatic subtiling
 # refinement has to at least as big as subtiling_refinement_period_min,
-# as otherwise the implemented subtiling refinement shceme will not
+# as otherwise the implemented subtiling refinement scheme will not
 # function properly. To get the right value of
 # subtiling_refinement_period_min, consult the anticipation_period and
 # judgement_period variables in the interactions module.
@@ -4464,9 +4464,9 @@ if N_rungs == 1 and Δt_rung_factor != 1:
         f'You are running without rungs (N_rungs = 1), but have set '
         f'Δt_rung_factor = {Δt_rung_factor}. This value does not matter.'
     )
-# Abort on illegal FFTW rigor
+# Abort on illegal FFTW rigour
 if fftw_wisdom_rigor not in ('estimate', 'measure', 'patient', 'exhaustive'):
-    abort('Does not recognize FFTW rigor "{}"'.format(user_params['fftw_wisdom_rigor']))
+    abort('Does not recognise FFTW rigour "{}"'.format(user_params['fftw_wisdom_rigor']))
 # Abort on negative random_seed
 if random_seed < 0:
     abort(f'A random_seed of {random_seed} < 0 was specified')
@@ -4537,7 +4537,7 @@ if autosave_interval < 0:
 for d in shortrange_params.values():
     for key, val in d.items():
         if key not in {'scale', 'range', 'tilesize', 'subtiling', 'tablesize'}:
-            masterwarn(f'Unrecognized parameter "{key}" in shortrange_params')
+            masterwarn(f'Unrecognised parameter "{key}" in shortrange_params')
         if key == 'subtiling':
             if isinstance(val, str) and val != 'automatic':
                 abort(f'Failed to interpret subtiling "{val}"')

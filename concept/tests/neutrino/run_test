@@ -2,7 +2,7 @@
 
 # This script performs CO𝘕CEPT runs with matter particles
 # and a massive neutrino fluid, the latter of which is treated
-# both linerly and non-linearly.
+# both linearly and non-linearly.
 # The absolute non-linear neutrino power spectrum is matched
 # against the linear solution at large scales, while the relative
 # total power spectrum (relative to a cosmology with a
@@ -58,7 +58,7 @@ initial_conditions[1]['boltzmann_order'] = +1
 "${concept}" -n 4 -p "${this_dir}/params_${sim}" --local
 mv "${this_dir}/output" "${this_dir}/output_${sim}"
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

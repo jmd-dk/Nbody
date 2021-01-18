@@ -35,7 +35,7 @@ for kind in ('particles', 'fluid'):
 times = snapshot_times['t']
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Plot
 fig_file = this_dir + '/result.png'
@@ -109,5 +109,5 @@ for ϱ_fluid, ϱ_particles, t in zip(ϱ['fluid simulations'], ϱ['particles simu
               'See "{}" for a visualization.'
               .format(t, unit_time, fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

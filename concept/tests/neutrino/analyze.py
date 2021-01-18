@@ -7,7 +7,7 @@ from commons import *
 this_dir  = os.path.dirname(os.path.realpath(__file__))
 this_test = os.path.basename(this_dir)
 
-masterprint(f'Analyzing {this_test} data ...')
+masterprint(f'Analysing {this_test} data ...')
 
 # Read in all power spectra. Note that the neutrino
 # spectra used a different k grid than the matter.
@@ -155,7 +155,7 @@ plt.tight_layout()
 fig_file = f'{this_dir}/result_rel.png'
 plt.savefig(fig_file)
 
-# Check whether the CLASS supression around the non-linear dip
+# Check whether the CLASS suppression around the non-linear dip
 # is about the theoretically predicted value.
 rel_tol = 0.10
 suppression_class_theoretical = -8*Ων/(Ωcdm + Ωb + Ων)
@@ -172,7 +172,7 @@ if not isclose(
         f'See "{fig_file}" for a visualization.'
     )
 
-# Check whether the CO𝘕CEPT supression around the non-linear dip
+# Check whether the CO𝘕CEPT suppression around the non-linear dip
 # is about that found in https://arxiv.org/pdf/0802.3700.pdf .
 rel_tol = 0.11
 suppression_nonlinear_theoretical = -9.8*Ων/(Ωcdm + Ωb + Ων)
@@ -189,7 +189,7 @@ if not isclose(
         f'See "{fig_file}" for a visualization.'
     )
 
-# Check that the supression in the linear and non-linear neutrino
+# Check that the suppression in the linear and non-linear neutrino
 # runs are very similar.
 rel_tol = 0.04
 if not all(isclose(
@@ -203,5 +203,5 @@ if not all(isclose(
         f'See "{fig_file}" for a visualization.'
     )
 
-# Done analyzing relative total power spectra
+# Done analysing relative total power spectra
 masterprint('done')

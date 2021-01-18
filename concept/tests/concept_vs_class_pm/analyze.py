@@ -8,7 +8,7 @@ this_dir  = os.path.dirname(os.path.realpath(__file__))
 this_test = os.path.basename(this_dir)
 
 # Begin analysis
-masterprint(f'Analyzing {this_test} data ...')
+masterprint(f'Analysing {this_test} data ...')
 
 # Read in the power spectra
 spectra = {}
@@ -20,7 +20,7 @@ for fname in sorted(glob(this_dir + '/output/powerspec_a=*')):
     mask = ~np.isnan(P_lin)
     k, P_sim, P_lin = k[mask], P_sim[mask], P_lin[mask]
     spectra[a] = {'P_sim': P_sim, 'P_lin': P_lin}
-# Due to deconvolutions performed on the power, the highest k modes
+# Due to deconvolution performed on the power, the highest k modes
 # of the simulation power spectra will be erroneous.
 # Truncate the data at some k_max after which the difference between the linear
 # and simulation power spectrum is deemed large, using the power spectra
@@ -59,5 +59,5 @@ if any(rel_err_end > rel_tol):
         f'for visualizations.'
     )
 
-# Done analyzing
+# Done analysing
 masterprint('done')

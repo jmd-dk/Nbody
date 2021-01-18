@@ -28,7 +28,7 @@ fluids = [fluids[o] for o in order]
 times = snapshot_times['t']
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Plot
 fig_file = this_dir + '/result.png'
@@ -105,5 +105,5 @@ for ϱ_i, ϱ_snapshot_i, t in zip(ϱ, ϱ_snapshot, times):
               'See "{}" for a visualization.'
               .format(t, unit_time, fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

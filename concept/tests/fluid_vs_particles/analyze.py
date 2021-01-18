@@ -32,7 +32,7 @@ for kind in ('particles', 'fluid'):
     fluids[kind] = [fluids[kind][o] for o in order]
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Load in power spectra
 powerspecs = {'particles': [], 'fluid': []}
@@ -120,7 +120,7 @@ for (a_i,
     indices_particles, r_particles = find_biggest_halo(particles_component)
     # Find the same halo in the fluid simulation.
     # This should be the largest halo as well,
-    # but due to smoothing erros it might not be quite the largest one.
+    # but due to smoothing errors it might not be quite the largest one.
     # Search the N_largest_halos largest halos and use the one closest
     # to the one in the particle simulation.
     indices_fluid = []
@@ -162,5 +162,5 @@ for (a_i,
               'See "{}" and "{}" for a visualization.'
               .format(a_i, fname_particles, fname_fluid))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

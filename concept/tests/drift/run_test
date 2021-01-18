@@ -45,7 +45,7 @@ cp "${Gadget2_dir}/"* "${Gadget2_local_dir}" 2>/dev/null || :
     && ./Gadget2 params       \
 )
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

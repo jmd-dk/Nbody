@@ -112,7 +112,7 @@ def timeloop():
     components_order[:] = [component.name for component in components]
     passive_components[:] = [component for component in components if not component.is_active()]
     components = [component for component in components if component not in passive_components]
-    # Realize all linear fluid variables of all components
+    # Realise all linear fluid variables of all components
     for component in components:
         component.realize_if_linear(0, specific_multi_index=0)        # ϱ
         component.realize_if_linear(1, specific_multi_index=0)        # J
@@ -156,7 +156,7 @@ def timeloop():
     # Populate the global ᔑdt_scalar and ᔑdt_rungs dicts
     # with integrand keys
     get_time_step_integrals(0, 0, components + passive_components)
-    # Construct initial rung populatations by carrying out an initial
+    # Construct initial rung populations by carrying out an initial
     # short kick, but without applying the momentum updates.
     initialize_rung_populations(components, Δt)
     # Mapping from (short-range) interaction names
@@ -208,7 +208,7 @@ def timeloop():
                 # Print out message at the beginning of each time step
                 print_timestep_heading(time_step, Δt,
                     bottleneck if time_step_type == 'init' else '', components)
-            # Analyze and print out debugging information, if required
+            # Analyse and print out debugging information, if required
             with unswitch:
                 if enable_debugging:
                     debug(components)
@@ -226,7 +226,7 @@ def timeloop():
                 # does not count as an actual time step,
                 # the universal time will not be updated.
                 # Apply initial half kick to fluids, initial half
-                # long-range kick to particles and inital half
+                # long-range kick to particles and initial half
                 # application of internal sources.
                 kick_long(components, Δt, sync_time, 'init')
                 # Sort particles in memory so that the order matches
@@ -1033,7 +1033,7 @@ def kick_long(components, Δt, sync_time, step_type):
     if t_start == t_end:
         return
     ᔑdt = get_time_step_integrals(t_start, t_end, components)
-    # Realize all linear fluid scalars which are not components
+    # Realise all linear fluid scalars which are not components
     # of a tensor. This comes down to ϱ and 𝒫.
     a_start = universals.a
     a_end = scale_factor(t_end)
@@ -1339,7 +1339,7 @@ def driftkick_short(components, Δt, sync_time):
     any_kicks = True
     for driftkick_index in range(ℤ[2**(N_rungs - 1)]):
         # For each value of driftkick_index, a drift and a kick should
-        # be performed. The time step integrals needed are contructed
+        # be performed. The time step integrals needed are constructed
         # using index_start and index_end, which index into a
         # (non-existing) array or half sub-steps. That is, an index
         # corresponds to a time via
@@ -1457,7 +1457,7 @@ def driftkick_short(components, Δt, sync_time):
                     ᔑdt_rungs[integrand][rung_index + ℤ[2*N_rungs]] = integral
         # Perform short-range kicks, unless the time step size is zero
         # for all active rungs (i.e. they are all at a sync time),
-        # in wich case we go to the next (drift) sub-step.  We cannot
+        # in which case we go to the next (drift) sub-step.  We cannot
         # just return, as all kicks may still not be at the sync time.
         integrals = ᔑdt_rungs['1']
         if sum(integrals[lowest_active_rung:ℤ[highest_populated_rung + 1]]) == 0:
@@ -1586,7 +1586,7 @@ def dump(components, output_filenames, dump_time, Δt=0):
     time_param = dump_time.time_param
     time_value = {'t': dump_time.t, 'a': dump_time.a}[time_param]
     any_activations = False
-    # Activate or termiante component before dumps
+    # Activate or terminate component before dumps
     for act in 𝕆[life_output_order[:life_output_order.index('dump')]]:
         if time_value in activation_termination_times[time_param]:
             any_activations |= (
@@ -1679,8 +1679,8 @@ def activate_terminate(components, a, Δt, act='activate terminate'):
             if component.life[0] == a
         ]
         if activated_components:
-            # For realization it is important that universals.a matches
-            # the given a exactly. These really ought to be idential,
+            # For realisation it is important that universals.a matches
+            # the given a exactly. These really ought to be identical,
             # but may not be due to floating-point imprecisions.
             universal_a_backup = universals.a
             universals.a = a
@@ -1943,7 +1943,7 @@ def print_timestep_footer(components):
     if 𝔹[print_load_imbalance and nprocs > 1]:
         # Decimals to show (of percentage)
         decimals = 1
-        # Values at which to change color
+        # Values at which to change colour
         value_bad       = 0.3
         value_miserable = 1.0
         # Tally up computation times
@@ -2139,6 +2139,7 @@ def prepare_for_output(components=None):
 DumpTime = collections.namedtuple(
     'DumpTime', ('time_param', 't', 'a'),
 )
+
 
 
 # Here we set various values used for the time integration. These are

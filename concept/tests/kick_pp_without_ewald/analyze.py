@@ -41,7 +41,7 @@ for fname in sorted(glob(this_dir + '/Gadget2/output/snapshot_*'))[:N_snapshots]
     x1_std_gadget.append(np.std(posx_gadget[4:])/np.mean(posx_gadget[4:]))
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Plot
 fig_file = this_dir + '/result.png'
@@ -71,7 +71,7 @@ if max(x0_std_gadget) > reltol or max(x1_std_gadget) > reltol:
           'It is no good to compare the CO𝘕CEPT results to these.')
 if max(x0_std) > reltol or max(x1_std) > reltol:
     abort('Unequal x-positions for the 2*4 particles in the snapshots.\n'
-          'The symmetric initial conditions has produced nonsymmetrical results!')
+          'The symmetric initial conditions has produced non-symmetrical results!')
 
 # Printout error message for unsuccessful test
 reltol = 1e-2
@@ -80,5 +80,5 @@ if (   max(abs(asarray(x0)/asarray(x0_gadget) - 1)) > reltol
     abort('The results from CO𝘕CEPT disagree with those from GADGET-2.\n'
           'See "{}" for a visualization.'.format(fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

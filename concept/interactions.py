@@ -124,7 +124,7 @@ def component_component(
     pairing_level, interaction_extra_args={},
 ):
     """This function takes care of pairings between all receiver and
-    supplier components. It then calls doman_domain.
+    supplier components. It then calls domain_domain.
     """
     # Lookup basic information for this interaction
     interaction_info = interactions_registered[interaction_name]
@@ -224,7 +224,7 @@ def component_component(
             subtiles_computation_times_interaction   [rung_index] = 0
             subtiles_computation_times_sq_interaction[rung_index] = 0
             subtiles_computation_times_N_interaction [rung_index] = 0
-        # Replace the subtilings with slighly refined versions
+        # Replace the subtilings with slightly refined versions
         subtilings_under_tentative_refinement.add(interaction_name)
         tentatively_refine_subtiling(interaction_name)
     # Pair each receiver with all suppliers and let them interact
@@ -330,7 +330,7 @@ def component_component(
 # Containers and array used by the component_component() function.
 # The subtiles_computation_times and subtiles_computation_times_N are
 # used to store total computation times and numbers for performed
-# interations. They are indexed as
+# interactions. They are indexed as
 # subtiles_computation_times[interaction_name][rung_index],
 # resulting in the accumulated computation time for this interaction
 # when the lowest active rung corresponds to rung_index.
@@ -469,7 +469,7 @@ def domain_domain(
         # directly (e.g. mom for gravity), but instead update the
         # corresponding buffers (e.g. Δmom for gravity). The exception
         # is when the interaction is instantaneous, in which case the
-        # affeceted variables should be updated directly, while also
+        # affected variables should be updated directly, while also
         # updating the corresponding buffer for the supplier. The
         # buffers are what will be communicated. Also, Δmom is used to
         # figure out which short-range rung any given particle belongs
@@ -632,7 +632,7 @@ def domain_domain_communication(pairing_level, only_supply):
             ranks_recv[i] = mod(rank - i, nprocs)
         domain_domain_communication_dict[pairing_level, only_supply] = (ranks_send, ranks_recv)
     elif pairing_level == 'tile':
-        # When only_supply is True, each domian should be paired with
+        # When only_supply is True, each domain should be paired with
         # itself and all 26 neighbouring domains. Even though we might
         # have nprocs < 27, meaning that some of the neighbouring
         # domains might be the same, we always include all of them.
@@ -972,7 +972,7 @@ def get_tile_pairings(
                         # For domain_pair_nr == 0, all tiles in the
                         # local domain are paired with all others.
                         # Here we must not take the periodicity into
-                        # account, as such interacions are performed by
+                        # account, as such interactions are performed by
                         # future domain pairings.
                         with unswitch:
                             if domain_pair_nr == 0:
@@ -1207,7 +1207,7 @@ def get_subtile_pairings(subtiling, forcerange, only_supply):
                     for dim in range(3):
                         subtile_index3D_r[dim] = subtile_index3D[dim]
                     # The receiver and supplier subtiles belong to
-                    # (potentially) diffent tiles, with a relative
+                    # (potentially) different tiles, with a relative
                     # offset given by tiles_offset_*, so that the
                     # supplier tile is at the receiver tile location
                     # plus tiles_offset_*. We now subtract this offset
@@ -1237,7 +1237,7 @@ def get_subtile_pairings(subtiling, forcerange, only_supply):
                         r2 = 0
                         for dim in range(3):
                             # Distance between the same point in the two
-                            # subtiles along the dim'th dimenson,
+                            # subtiles along the dim'th dimension,
                             # in subtile grid units.
                             r_dim = abs(subtile_index3D_r[dim] - subtile_index3D_s[dim])
                             if r_dim > 0:
@@ -1526,7 +1526,7 @@ def particle_particle(
     # Some default values to yield
     rung_index_i = 0
     factor_i = 0
-    # Flags specifying whether the force betweeen particle i and j
+    # Flags specifying whether the force between particle i and j
     # should be applied to i and j. If only_supply is True,
     # the values below are correct. Otherwise, other values
     # will be set further down.
@@ -1671,7 +1671,7 @@ def particle_particle(
                         # with all supplier rungs. All inactive
                         # receiver rungs need only to be paired with
                         # the active supplier rungs (i.e. we do not need
-                        # to pair up two inacive rungs).
+                        # to pair up two inactive rungs).
                         # If only_supply is True, the values already set
                         # will be used.
                         rung_index_s_start = lowest_populated_rung_s
@@ -1886,12 +1886,12 @@ def get_softened_r3inv(r2, ϵ):
         # supposedly leading to an even smaller mean integrated
         # squared force error.
         abort('Softening kernel "compensate" not yet implemented')
-    # The speified softening kernel is not implemented
+    # The specified softening kernel is not implemented
     abort(f'Softening kernel "{softening_kernel}" not understood')
     return 0  # To satisfy the compiler
 
 # Generic function implementing particle-mesh interactions
-# for both particle and fluid componenets.
+# for both particle and fluid components.
 @cython.header(
     # Arguments
     receivers=list,
@@ -2109,7 +2109,7 @@ def particle_mesh(
                 # nullified.
                 nullification = 'nyquist'
             else:
-                # Upscaling. Only elements within a cube centered at
+                # Upscaling. Only elements within a cube centred at
                 # the origin and of size gridsize_global will be set.
                 # We then need to nullify all elements beyond this cube.
                 nullification = f'beyond cube of |k| < {gridsize_global//2}'
@@ -2199,7 +2199,7 @@ def particle_mesh(
                         # The source term has the form
                         #   ΔJ ∝ -(ϱ + c⁻²𝒫)*ᐁφ.
                         # The proportionality factor above is something
-                        # liḱe Δt = ᔑdt['1']. Here this integral over
+                        # like Δt = ᔑdt['1']. Here this integral over
                         # the time step is generalised and supplied by
                         # the caller.
                         Jᵢ = receiver.J[dim]
@@ -2309,7 +2309,7 @@ def find_interactions(components, interaction_type='any', instantaneous='both'):
                 # Should never happen
                 abort(f'Falsy method "{method}" registered for force "{force}')
             if method not in methods_implemented:
-                abort(f'Force method "{method}" not recognized')
+                abort(f'Force method "{method}" not recognised')
         for method in methods:
             if not method:
                 # When the method is set to an empty string it signifies
@@ -2317,7 +2317,7 @@ def find_interactions(components, interaction_type='any', instantaneous='both'):
                 # given force, but not receive the force itself.
                 continue
             if method not in methods_implemented:
-                abort(f'Force method "{method}" not recognized')
+                abort(f'Force method "{method}" not recognised')
             if method not in interaction_info.methods:
                 if len(interaction_info.methods) == 1:
                     abort(
@@ -2454,7 +2454,7 @@ Interaction = collections.namedtuple(
     'Interaction', ('force', 'method', 'receivers', 'suppliers')
 )
 
-# Function for registrering interactions
+# Function for registering interactions
 def register(
     force, methods, conjugated_name=None,
     *,
@@ -2463,7 +2463,7 @@ def register(
 ):
     """Every implemented interaction should be registered by a call to
     this function. The order in which interactions are registered will
-    be the order in which they are carried out, with the exeption that
+    be the order in which they are carried out, with the exception that
     short-range instantaneous interactions will be carried out before
     short-range non-instantaneous interactions.
     """
@@ -2652,7 +2652,7 @@ PotentialForceInfo = collections.namedtuple(
 # Implement specific interactions below #
 #########################################
 
-# Gavity
+# Gravity
 cimport('from gravity import *')
 register('gravity', ['ppnonperiodic', 'pp', 'p3m', 'pm'], 'gravitational')
 @cython.pheader(
@@ -2692,7 +2692,7 @@ def gravity(method, receivers, suppliers, ᔑdt, interaction_type, printout):
         # ∂ₜmomⁱ = -mass*∂ⁱφ.
         # In the general case of a changing mass, the current mass is
         # given by mass*a**(-3*w_eff), and so again, a**(-3*w_eff)
-        # shoud be integrated over the time step
+        # should be integrated over the time step
         # in order to obtain Δmomⁱ.
         ᔑdt_key = ('a**(-3*w_eff)', 'component')
     # Compute gravity via one of the following methods
@@ -2835,7 +2835,7 @@ def lapse(method, receivers, suppliers, ᔑdt, interaction_type, printout):
         # gravitational potential, the momentum updates are again
         # proportional to a**(-3*w_eff) integrated over the time step
         # (see the gravity function for a more detailed explanation).
-        # The realized lapse potential is the common lapse potential,
+        # The realised lapse potential is the common lapse potential,
         # independent of the component in question which is to receive
         # momentum updates. The actual lapse potential needed for a
         # given component is obtained by multiplying the common lapse

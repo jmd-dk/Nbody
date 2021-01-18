@@ -17,7 +17,7 @@ for fname in sorted(glob(this_dir + '/output/snapshot_t=*'),
     z = snapshot.components[0].posz[0]
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # The particle should have a position of (0.25, 0.25, 0.25)*boxsize
 if (   not isclose(x, 0.25*boxsize)
@@ -30,5 +30,5 @@ if (   not isclose(x, 0.25*boxsize)
                                          y/boxsize,
                                          z/boxsize))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

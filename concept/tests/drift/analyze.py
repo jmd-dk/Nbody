@@ -32,7 +32,7 @@ for fname in sorted(glob(this_dir + '/Gadget2/output/snapshot_*'))[:N_snapshots]
     x_std_gadget.append(np.std(components_gadget.posx))
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Plot
 fig_file = this_dir + '/result.png'
@@ -61,5 +61,5 @@ if max(abs(asarray(x)/asarray(x_gadget) - 1)) > tol:
     abort('The results from CO𝘕CEPT disagree with those from GADGET-2.\n'
           'See "{}" for a visualization.'.format(fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

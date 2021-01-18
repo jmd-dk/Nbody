@@ -6,7 +6,7 @@ from commons import *
 # Absolute path and name of the directory of this file
 this_dir  = os.path.dirname(os.path.realpath(__file__))
 this_test = os.path.basename(this_dir)
-masterprint(f'Analyzing {this_test} data ...')
+masterprint(f'Analysing {this_test} data ...')
 
 
 
@@ -15,7 +15,7 @@ masterprint(f'Analyzing {this_test} data ...')
 ############################################
 subtest = 'upstream_global'
 subtest_dir = f'{this_dir}/{subtest}'
-masterprint(f'Analyzing {subtest} data ...')
+masterprint(f'Analysing {subtest} data ...')
 # Read in power spectra
 powerspecs = {}
 for f in glob(f'{subtest_dir}/powerspec*'):
@@ -47,7 +47,7 @@ gridsize_middl, data_middl = next(gen)
 gridsize_large, data_large = next(gen)
 check(data_small, data_middl, gridsize_small)
 check(data_middl, data_large, gridsize_middl)
-# Done analyzing this subtest
+# Done analysing this subtest
 masterprint('done')
 
 
@@ -132,7 +132,7 @@ for gridsize, (troughs, peaks) in extrema.items():
             f'See the plot "{plot_file}" along with the 2D renders '
             f'in "{subtest_dir}" for a visualization.'
         )
-# Done analyzing this subtest
+# Done analysing this subtest
 masterprint('done')
 
 

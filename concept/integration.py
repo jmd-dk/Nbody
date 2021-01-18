@@ -260,7 +260,7 @@ class Spline:
                 )
         return x
 
-    # This method is automaticlly called when a Spline instance
+    # This method is automatically called when a Spline instance
     # is garbage collected. All manually allocated memory is freed.
     def __dealloc__(self):
         # Free the accelerator and the spline object
@@ -482,11 +482,12 @@ def hubble(a=-1):
 
 # Function returning the proper time differentiated scale factor,
 # given the value of the scale factor.
-@cython.header(# Argumetns
-               a='double',
-               # Locals
-               returns='double',
-               )
+@cython.header(
+    # Arguments
+    a='double',
+    # Locals
+    returns='double',
+)
 def ȧ(a):
     return a*hubble(a)
 
@@ -494,12 +495,13 @@ def ȧ(a):
 # given the value of the scale factor.
 # This function is intended to be used by the rkf45 function, which is
 # why it takes in both t and a as arguments, even though t is not used.
-@cython.header(# Argumetns
-               t='double',
-               a='double',
-               # Locals
-               returns='double',
-               )
+@cython.header(
+    # Arguments
+    t='double',
+    a='double',
+    # Locals
+    returns='double',
+)
 def ȧ_rkf(t, a):
     return ȧ(a)
 
@@ -533,11 +535,12 @@ def Ḣ(a=-1):
 
 # Function returning the second proper time derivative of the factor,
 # given the value of the scale factor.
-@cython.header(# Argumetns
-               a='double',
-               # Locals
-               returns='double',
-               )
+@cython.header(
+    # Arguments
+    a='double',
+    # Locals
+    returns='double',
+)
 def ä(a):
     return a*(hubble(a)**2 + Ḣ(a))
 
@@ -623,7 +626,7 @@ def cosmic_time(a=-1, a_lower=machine_ϵ, t_lower=machine_ϵ, t_upper=-1):
                 if isclose(t, t_max):
                     # Integration stopped at t == t_max.
                     # Break out so that this function is called
-                    # recursively, this time with a highter t_upper.
+                    # recursively, this time with a higher t_upper.
                     break
                 else:
                     # Integration halted for whatever reason
@@ -689,7 +692,7 @@ def rkf45(ḟ, f_start, t_start, t_end, abs_tol, rel_tol, save_intermediate=Fals
     are given by f_start and t_start. ḟ will be integrated from t_start
     to t_end. That is, the returned value is f(t_end). The absolute and
     relative accuracies are given by abs_tol, rel_tol.
-    If save_intermediate is True, intermediate values optained during
+    If save_intermediate is True, intermediate values obtained during
     the integration will be kept in the global variables t_tab, f_tab.
     """
     global alloc_tab, f_tab, f_tab_mv, integrand_tab, integrand_tab_mv
@@ -924,7 +927,7 @@ def scalefactor_integral(key, t_ini, Δt, all_components):
                             f'is not implemented'
                         )
             else:
-                abort(f'scalefactor_integral(): Invalid lenth ({len(key)}) of key {key}')
+                abort(f'scalefactor_integral(): Invalid length ({len(key)}) of key {key}')
     # Do the integration
     spline = Spline(t_tab_spline[:size], integrand_tab_spline[:size], integrand)
     if enable_class_background:
@@ -972,7 +975,7 @@ def init_time(reinitialize=False):
             cosmo = call_class(class_call_reason='in order to set the cosmic clock')
             background = cosmo.get_background()
             # What we need to store is the cosmic time t and the Hubble
-            # parametert H, both as functions of the scale factor a.
+            # parameter H, both as functions of the scale factor a.
             # Since the time stepping is done in t, we furthermore want
             # the scale factor a as a function of cosmic time t.
             # We do this by defining global Spline objects.
@@ -989,7 +992,7 @@ def init_time(reinitialize=False):
             # a_begin specified
             if 't_begin' in user_params_keys_raw:
                 # t_begin also specified
-                masterwarn('Ignoring t_begin = {}*{} becuase enable_Hubble is True '
+                masterwarn('Ignoring t_begin = {}*{} because enable_Hubble is True '
                            'and a_begin is specified'.format(t_begin, unit_time))
             a_begin_correct = a_begin
             t_begin_correct = cosmic_time(a_begin_correct)

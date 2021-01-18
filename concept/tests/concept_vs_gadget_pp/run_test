@@ -62,7 +62,7 @@ replace_gadget_param "TreeDomainUpdateFrequency" "0"
     && ./Gadget2 params       \
 )
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" \
     --pure-python --local
 

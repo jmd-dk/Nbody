@@ -4,7 +4,7 @@ span.bolditalic {
     font-style: italic;
 }
 
-/* Dark orange theme color */
+/* Dark orange theme colour */
 .wy-side-nav-search, .wy-nav-top {
     background: darkorange;
 }
@@ -15,7 +15,7 @@ code.literal {
     background-color: #fbfbfb !important;
 }
 
-/* Background color of emphasized code block lines */
+/* Background colour of emphasized code block lines */
 .highlight .hll {
     background-color: #fdf6d8;
 }

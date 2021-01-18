@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script performs a comparison test between the CO𝘕CEPT code's
-# P3M implementation and the GADGET-2 code's TreePM implementation.
+# P³M implementation and the GADGET-2 code's TreePM implementation.
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
@@ -61,7 +61,7 @@ replace_gadget_param "TreeDomainUpdateFrequency" "0"
     && ./Gadget2 params       \
 )
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

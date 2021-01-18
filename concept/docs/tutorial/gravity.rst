@@ -4,7 +4,7 @@ The fact that gravity is extremely important for the cosmic evolution has
 already been demonstrated. We would like our simulation to be able to compute
 gravity in a manner that is both accurate and efficient. In CO\ *N*\ CEPT, the
 details of the gravitational computation is controlled by a large set of
-parameters, enabling us to tune this tradeoff between accuracy and efficiency
+parameters, enabling us to tune this trade-off between accuracy and efficiency
 to our heart's desire.
 
 In order to learn how to control gravity within CO\ *N*\ CEPT we shall run
@@ -194,7 +194,7 @@ directory, say ``output/tutorial/plot.py``, then do
    The ``-m`` command-line option redirects ``concept`` to run the specified
    Python script, rather than launching a CO\ *N*\ CEPT simulation. In this
    case, this is almost equivalent to just running the script using Python
-   directly, but using ``./concept -m`` we are guarenteed that the environment
+   directly, but using ``./concept -m`` we are guaranteed that the environment
    is set up correctly, according to the CO\ *N*\ CEPT installation.
 
 The script will produce the output ``output/tutorial/plot.png``. Investigating
@@ -216,8 +216,8 @@ The P³M method
 A different gravitational method is the particle-particle-particle-mesh (P³M)
 method. This method also makes use of a potential grid, but here the grid is
 used only to get the gravitational force between particles separated by a
-distance much greater than the potential cell size, minimizing discretization
-errors. The remaning --- so-called *short-range* --- component of gravity
+distance much greater than the potential cell size, minimizing discretisation
+errors. The remaining --- so-called *short-range* --- component of gravity
 between nearby particles is then computed separately, by directly pairing up
 particles and computing the force between them (no potential grid required).
 
@@ -306,7 +306,7 @@ which various details of the (PM and P³M)
 
 Finally, let it be known that CO\ *N*\ CEPT also supports the bare
 particle-particle (PP) method, which simply performs the naïve pairwise
-force computation between all particles, effecively computing "short"-range
+force computation between all particles, effectively computing "short"-range
 forces as in the P³M method, but now across the entire simulation box.
 
 As expected, the PP method may be specified using
@@ -322,6 +322,6 @@ simulation with :math:`N = 64^3` particles literately takes days. Though
 slightly more accurate than the P³M method, the PP method should never be
 used for running production simulations and is only included in CO\ *N*\ CEPT
 for use with internal testing. Running (well, starting) a small PP simulation
-at least once will help any user of *N*-body codes appreciate the enourmous
+at least once will help any user of *N*-body codes appreciate the enormous
 performance gains achieved by the more sophisticated methods.
 

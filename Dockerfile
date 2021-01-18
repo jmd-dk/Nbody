@@ -41,7 +41,7 @@ RUN : \
     # Set up Bash history search with ↑↓
     && echo "[ ! -t 0 ] || bind '\"\e[A\": history-search-backward'" >> ~/.bashrc \
     && echo "[ ! -t 0 ] || bind '\"\e[B\": history-search-forward'" >> ~/.bashrc \
-    # Set up color prompt
+    # Set up colour prompt
     && echo "[ ! -t 0 ] || PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\\$ '" >> ~/.bashrc \
     && echo "[ ! -t 0 ] || alias ls='ls --color=auto'" >> ~/.bashrc \
     && echo "[ ! -t 0 ] || alias grep='grep --color=auto'" >> ~/.bashrc \

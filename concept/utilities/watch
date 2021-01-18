@@ -174,7 +174,7 @@ elif [ "${resource_manager}" == "torque" ]; then
     # State designating a running job
     state_running="R"
 else
-    colorprint "Error: Unrecognized resource manager \"${resource_manager}\"" "red"
+    colorprint "Error: Unrecognised resource manager \"${resource_manager}\"" "red"
     exit 1
 fi
 
@@ -186,7 +186,7 @@ my_username="${my_username:0:15}"
 
 # Function that update the state variable
 update_job_info(){
-    # Aquire information about submitted jobs.
+    # Acquire information about submitted jobs.
     # Revert the output so that the newest jobs are in the top.
     info="$(get_info | tac)"
     # Reset the state variable
@@ -235,7 +235,7 @@ display(){
 # which were submitted last. If an argument (the jobid) is given,
 # find information about the job.
 if [ "${jobid}" == "__none__" ]; then
-    # Aquire information about all submitted jobs
+    # Acquire information about all submitted jobs
     info="$(get_info)"
     # Find all jobs submitted by the user.
     # Keep only the latest, running job.
@@ -309,7 +309,7 @@ else
     fi
 fi
 
-# Functin for printing changes to the job state
+# Function for printing changes to the job state
 state_last=""
 inform_on_new_state(){
     if [ "${state}" != "${state_last}" ]; then
@@ -325,7 +325,7 @@ inform_on_new_state(){
                 "PD"   ) echo "Job ${jobid} is queued in ${queue}";;
                 "PR"   ) echo "Job ${jobid} terminated due to preemption";;
                 "R"    ) echo "Job ${jobid} is running in ${queue}";;
-                "SE"   ) echo "Job ${jobid} was requeued in a special state";;
+                "SE"   ) echo "Job ${jobid} was re-queued in a special state";;
                 "ST"   ) echo "Job ${jobid} has stopped with the SIGSTOP signal";;
                 "S"    ) echo "Job ${jobid} has been suspended";;
                 "TO"   ) echo "Job ${jobid} was terminated upon reaching its time limit";;
@@ -389,12 +389,12 @@ if [ "${state}" != "${state_running}" ]; then
         check_suddenly_finished
     done
     if [ "${state}" != "${state_running}" ]; then
-        # Wait a small time before requerying the job state
+        # Wait a small time before re-querying the job state
         sleep ${sleep_little}
         check_suddenly_finished
     fi
     while [ "${state}" != "${state_running}" ] ; do
-        # Wait a long time before requerying the job state
+        # Wait a long time before re-querying the job state
         sleep ${sleep_much}
         check_suddenly_finished
     done
@@ -431,12 +431,12 @@ update_job_info
 inform_on_new_state
 slept=0
 if [ "${state}" != "None" ]; then
-    # Wait a small time before requerying the job state
+    # Wait a small time before re-querying the job state
     sleep ${sleep_little}
     update_job_info
     inform_on_new_state
     while [ "${state}" != "None" ]; do
-        # Wait a long time before requerying the job state
+        # Wait a long time before re-querying the job state
         if [ ${slept} -gt ${sleep_much} ]; then
             sleep ${sleep_much}
             ((slept += ${sleep_much}))

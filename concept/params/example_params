@@ -283,14 +283,14 @@ select_softening_length = {  # Gravitational softening length for each component
 Δa_max_increasing = 0.022           # Maximum allowed change in scale factor over a time step
 static_timestepping = None          # File to write/read static time-stepping information to/from
 N_rungs = 10                        # Number of available rungs for adaptive time stepping
-fftw_wisdom_rigor = 'measure'       # Rigor level when acquiring FFTW wisdom
+fftw_wisdom_rigor = 'measure'       # Rigour level when acquiring FFTW wisdom
 fftw_wisdom_reuse = True            # Reuse FFTW wisdom from earlier runs?
 fftw_wisdom_share = False           # Share FFTW wisdom across nodes?
 random_generator = 'PCG64'          # Pseudo-random number generator to use
 random_seed = 0                     # Seed for pseudo-random numbers
 primordial_amplitude_fixed = False  # Replace Gaussian noise with noise of fixed amplitude and uniform random phase?
 primordial_phase_shift = 0          # Phase shift when using fixed amplitude (set to π for paired simulations)
-cell_centered = True                # Use cell center (as opposed to vertex) locations for grid variables?
+cell_centered = True                # Use cell centre (as opposed to vertex) locations for grid variables?
 fourier_structure_caching = {       # Cache and reuse primordial and component-specific Fourier grids?
     'primordial': True,
     'all'       : True,
@@ -327,7 +327,7 @@ class_reuse = True              # Reuse CLASS results from earlier runs?
 
 # Graphics
 terminal_width = 80                # Maximum width of terminal output, in characters
-enable_terminal_formatting = True  # Use formatted terminal output (e.g. colors)
+enable_terminal_formatting = True  # Use formatted terminal output (e.g. colours)
 suppress_output = {                # Suppress terminal output matching these regexes
     'out': (),
     'err': (),
@@ -366,11 +366,11 @@ render2D_options = {  # Specifications of 2D renders for individual and sets of 
         'default': True,
     },
 }
-render3D_colors = {  # Color to use in 3D renders for each component
+render3D_colors = {  # Colour to use in 3D renders for each component
     'matter'   : 'lime',
     'neutrinos': 'r',
 }
-render3D_bgcolor = 'black'  # Background color of 3D renders
+render3D_bgcolor = 'black'  # Background colour of 3D renders
 render3D_resolution = 1080  # The height and width of 3D renders
 
 # System of units

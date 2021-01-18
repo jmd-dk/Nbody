@@ -86,7 +86,7 @@ class StandardSnapshot:
         # Dict containing the base units in str format
         self.units = {}
 
-    # Methd that saves the snapshot to an hdf5 file
+    # Method that saves the snapshot to an hdf5 file
     @cython.pheader(
         # Argument
         filename=str,
@@ -385,7 +385,7 @@ class StandardSnapshot:
                             dest_sel=np.s_[:N_local],
                         )
                     # If the snapshot and the current run uses different
-                    # systems of units, mulitply the component positions
+                    # systems of units, multiply the component positions
                     # and momenta by the snapshot units.
                     if snapshot_unit_length != 1:
                         for i in range(N_local):
@@ -449,7 +449,7 @@ class StandardSnapshot:
                             # domain decomposed fluid grids.
                             domain_decompose(slab, component.fluidvars[index][multi_index].grid_mv)
                     # If the snapshot and the current run uses different
-                    # systems of units, mulitply the fluid data
+                    # systems of units, multiply the fluid data
                     # by the snapshot units.
                     unit_ϱ = snapshot_unit_mass/snapshot_unit_length**3
                     unit_J = snapshot_unit_mass/(snapshot_unit_length**2*snapshot_unit_time)
@@ -481,7 +481,7 @@ class StandardSnapshot:
     def populate(self, components, params=None):
         if params is None:
             params = {}
-        # Pupulate snapshot with the components
+        # Populated snapshot with the components
         self.components = components
         # Populate snapshot with the passed scalefactor
         # and global parameters. If a params dict is passed,
@@ -886,7 +886,7 @@ class Gadget2Snapshot:
         """
         if params is None:
             params = {}
-        # Pupulate snapshot with the GADGTE halos
+        # Populate snapshot with the GADGET halos
         if len(components) > 1:
             abort(
                 f'The GAGDET2 snapshot type can only store a single component, '
@@ -925,7 +925,7 @@ class Gadget2Snapshot:
                    unit='double',
                    )
     def update_header(self):
-        # Extract variabled
+        # Extract variables
         component = self.component
         params = self.params
         # The GADGET-2 header is constructed from scratch
@@ -1012,7 +1012,7 @@ def save(one_or_more_components, filename, params=None, snapshot_type=snapshot_t
     something else, you may pass new parameters as the params argument.
     The components to include in the snapshot files are determined by
     the snapshot_select user parameter. If you wish to overrule this
-    and force every component to be inclued,
+    and force every component to be included,
     set save_all_components to True.
     """
     if not filename:
@@ -1087,7 +1087,7 @@ def load(filename, compare_params=True,
     input_type = get_snapshot_type(filename)
     if master and input_type is None:
         abort(
-            'Cannot recognize "{}" as one of the implemented snapshot types ({})'
+            'Cannot recognise "{}" as one of the implemented snapshot types ({})'
             .format(
                 filename,
                 ', '.join([snapshot_class.name for snapshot_class in snapshot_classes]),
@@ -1140,17 +1140,17 @@ def load(filename, compare_params=True,
 @cython.header(filename=str, returns=str)
 def get_snapshot_type(filename):
     """Call the 'is_this_type' class method of each snapshot class until
-    the file is recognized as a specific snapshot type.
+    the file is recognised as a specific snapshot type.
     The returned name of the snapshot type is in the same format as the
     explicit name of the snapshot class, but with the "Snapshot" suffix
-    removed and all characters are converted to lowercase.
-    If the file is not recognized as any snapshot type at all,
+    removed and all characters are converted to lower-case.
+    If the file is not recognised as any snapshot type at all,
     do not throw an error but simply return None.
     """
     # Return None if the file is not a valid snapshot
     determined_type = None
     # Get the snapshot type by asking each snapshot class whether they
-    # recognize the file. As this is a file operation, only the master
+    # recognise the file. As this is a file operation, only the master
     # does the check.
     if master:
         if not os.path.isfile(filename):
@@ -1161,7 +1161,7 @@ def get_snapshot_type(filename):
                 break
     return bcast(determined_type)
 
-# Function whick takes in a dict of parameters and compare their
+# Function which takes in a dict of parameters and compare their
 # values to those of the current run. If any disagreement is found,
 # write a warning message.
 @cython.header(# Arguments
@@ -1283,7 +1283,7 @@ def get_initial_conditions(do_realization=True):
         return []
     # The initial_conditions parameter should be a list or tuple of
     # initial conditions, each of which can be a str (path to snapshot)
-    # or a dict describing a component to be realized.
+    # or a dict describing a component to be realised.
     # If the initial_conditions parameter itself is a str or dict,
     # wrap it in a list.
     if isinstance(initial_conditions, (str, dict)):
@@ -1298,7 +1298,7 @@ def get_initial_conditions(do_realization=True):
             # Initial condition snapshot is given. Load it.
             components += load(sensible_path(path_or_specifications), only_components=True)
         elif isinstance(path_or_specifications, dict):
-            # A component to realize is given. Remember this.
+            # A component to realise is given. Remember this.
             initial_condition_specifications.append(path_or_specifications.copy())
         else:
             abort(f'Error parsing initial_conditions of type {type(path_or_dict)}')
@@ -1319,7 +1319,7 @@ def get_initial_conditions(do_realization=True):
     # Populate universals_dict['species_present']
     # and universals_dict['class_species_present'].
     update_species_present(components)
-    # Realize all components instantiated from
+    # Realise all components instantiated from
     # initial condition specifications.
     if do_realization:
         for component in components[n_components_from_snapshot:]:

@@ -7,7 +7,7 @@ from commons import *
 this_dir  = os.path.dirname(os.path.realpath(__file__))
 this_test = os.path.basename(this_dir)
 
-# Read in powerspectra
+# Read in power spectra
 powerspecs_all = {'particles': {}, 'fluid': {}}
 for kind in ('particles', 'fluid'):
     for fname in sorted(glob('{}/output_{}/powerspec*'.format(this_dir, kind))):
@@ -18,16 +18,16 @@ k_values = k
 n_values = list(powerspecs_all['particles'].keys())
 
 # Begin analysis
-masterprint(f'Analyzing {this_test} data ...')
+masterprint(f'Analysing {this_test} data ...')
 
-# Plot powerspectra from realized components
+# Plot power spectra from realised components
 fig_file = this_dir + '/result.png'
 fig = plt.figure(figsize=(8, 6))
 for kind, powerspecs in powerspecs_all.items():
     for n, (k, power) in powerspecs.items():
         plt.loglog(k, power, alpha=0.7,
                    label='{}, nprocs = {}'.format(kind, n))
-# Compute and plot powerspectrum from CLASS
+# Compute and plot power spectrum from CLASS
 a = a_begin
 z = 1/a - 1
 class_params_specialized = class_params.copy()
@@ -54,7 +54,7 @@ plt.legend(loc='best').get_frame().set_alpha(0.7)
 plt.tight_layout()
 plt.savefig(fig_file)
 
-# Compare the power spectra of the realizations with
+# Compare the power spectra of the realisations with
 # the power spectrum from CLASS.
 # Ignore the power at the largest scales due to low
 # mode count. For particles, further ignore the power at
@@ -82,10 +82,10 @@ for kind in ('particles', 'fluid'):
         )
         if rel_realisation_noise > rel_tol:
             abort(
-                f'Power spectrum of realized matter {kind} with {n} processes '
+                f'Power spectrum of realised matter {kind} with {n} processes '
                 f'disagree with that of CLASS.\n'
                 f'See "{fig_file}" for a visualization.'
             )
 
-# Done analyzing
+# Done analysing
 masterprint('done')

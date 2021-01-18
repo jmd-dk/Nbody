@@ -42,7 +42,7 @@ the following changes happens to the source code (in the .pyx file):
 - Insert the line 'cimport cython' at the very top,
   though below any __future__ imports.
 - Transform statements written over multiple lines into single lines.
-  The exception is decorator statements, which remain multilined.
+  The exception is decorator statements, which remain multi-lined.
 - Removes pure Python commands between 'if not cython.compiled:' and
   'else:', including these lines themselves. Also removes the triple
   quotes around the Cython statements in the else body. The 'else'
@@ -203,7 +203,7 @@ def oneline(lines, no_optimization=None):
         if (paren_counts['paren'] > 0 or
             paren_counts['brack'] > 0 or
             paren_counts['curly'] > 0) and not multiline:
-            # Multiline statement begins
+            # Multi-line statement begins
             multiline = True
             line_lstripped = line.lstrip()
             if (
@@ -219,25 +219,25 @@ def oneline(lines, no_optimization=None):
                 continue
             if line_lstripped.startswith('#'):
                 # Delete full-line comment
-                # within multiline statement.
+                # within multi-line statement.
                 line = ''
             if line:
                 multiline_statement.append(line.rstrip())
         elif (paren_counts['paren'] > 0 or
               paren_counts['brack'] > 0 or
               paren_counts['curly'] > 0) and multiline:
-            # Multiline statement continues
+            # Multi-line statement continues
             if stay_as_multiline:
                 new_lines.append(line)
                 continue
             if line.lstrip().startswith('#'):
                 # Delete full-line comment
-                # within multiline statement.
+                # within multi-line statement.
                 line = ''
             if line:
                 multiline_statement.append(' ' + line.strip())
         elif multiline:
-            # Multiline statement ends
+            # Multi-line statement ends
             multiline = False
             if stay_as_multiline:
                 stay_as_multiline = False
@@ -349,7 +349,7 @@ def format_pxdhints(lines, no_optimization):
             if line.count('(') == line.count(')'):
                 new_lines.append(re.sub(r'^pxd *\((.*)\)', r'pxd = \g<1>', line))
             else:
-                # Multiline via triple quotes
+                # Multi-line via triple quotes
                 new_lines.append(re.sub(r'^pxd *\(', 'pxd = ', line))
                 quote_type = '"""' if '"""' in line else "'''"
                 quote_ended = False
@@ -447,7 +447,7 @@ def cython_structs(lines, no_optimization):
             # Get assigned names.
             varnames = line[:line.index('=')].replace(' ', '').split(',')
             # Get field names, types and values. These are stored
-            # as triples og strings in struct_content.
+            # as triples of strings in struct_content.
             struct_content = [
                 part.replace('�', '==') for part in
                 line[(line.index('(') + 1):line.rindex(')')].replace('==', '�').split('=')
@@ -855,7 +855,7 @@ def inline_iterators(lines, no_optimization):
         )
         # Replace yield statement with assignment
         iterator_lines[-1] = re.sub(' yield ', f' {assignments_in_for} = ', iterator_lines[-1], 1)
-        # Seperate multi-assignment into many assignments
+        # Separate multi-assignment into many assignments
         names, values = iterator_lines[-1].split('=')
         names  = names .split(',')
         values = values.split(',')
@@ -1286,7 +1286,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                 new_lines.append(line + '\n')
             lines = new_lines
     # Remove the nest lvl on constant expressions at lvl 0
-    # and decrease all other lvls by 1.
+    # and decrease all other lvl's by 1.
     all_lvls = set()
     def replace(m):
         s = m.group()
@@ -1510,7 +1510,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
     # be erroneous in cases where a variable in the expression is only
     # perhaps set on a given line. For example, variables defined within
     # if statements (under the if, the elif or the else) are dangerous
-    # becuase the constant expression should only be defined after the
+    # because the constant expression should only be defined after the
     # end of the loop, at least in the case where the constant
     # expression is not used before the loop has ended.
     # We can fix this issue by placing dummy definitions after the end
@@ -1720,7 +1720,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                 # variable to its attributes used.
                 attributes = {}
                 for v, var in enumerate(variables):
-                    # Variable attributes are not consideres variables
+                    # Variable attributes are not considered variables
                     if '.' in var:
                         dot_index = var.index('.')
                         variables[v] = var[:dot_index]
@@ -1807,7 +1807,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                                     # A "barrier" consists of code with an indentation level smaller
                                     # than that at linenr_where_defined, located somewhere between
                                     # linenr_where_defined and linenr_where_defined_first.
-                                    # If such barriers exist, the defintion to be inserted cannot just
+                                    # If such barriers exist, the definition to be inserted cannot just
                                     # be placed right below linenr_where_defined, but should be
                                     # moved closer down towards where it is used and placed at an
                                     # indentation level equal to that of the barrier with the smallest
@@ -1844,7 +1844,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                     # a function, use the last line inside the function
                     # where the variables are defined, if any. If not,
                     # use the last line where the variables are defined
-                    # in the moduel scope.
+                    # in the module scope.
                     if module_scope:
                         index_max = np.argmax(linenr_where_defined)
                     else:
@@ -1871,7 +1871,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                         break
             if no_blackboard_bold_symbol:
                 break
-        # Find out where the last import statement is. Unrecognized
+        # Find out where the last import statement is. Unrecognised
         # definitions should occur below this line.
         linenr_unrecognized = -1
         for i, line in enumerate(lines):
@@ -1903,7 +1903,7 @@ def constant_expressions(lines, no_optimization, first_call=True):
                 fname = line[4:line.index('(')].lstrip()
             elif line.strip() and line[0] not in (' ', '#'):
                 fname = None
-            # Unrecognized definitions
+            # Unrecognised definitions
             if i == linenr_unrecognized:
                 for e, expression_cython in enumerate(expressions_cython):
                     if declaration_linenrs[e] == -1:
@@ -1991,7 +1991,7 @@ blackboardbolds = {
 
 
 def loop_unswitching(lines, no_optimization):
-    """The following constructs will be recognized
+    """The following constructs will be recognised
     as loop unswitching:
       with unswitch:
           ...
@@ -2001,7 +2001,7 @@ def loop_unswitching(lines, no_optimization):
           ...
     """
     # The strategy of this function is to perform one complete unswitch
-    # at a time. To this end, we first go through the lines nad replace
+    # at a time. To this end, we first go through the lines and replace
     # 'unswitch' with 'unswitch_nr', where 'nr' (0, 1, 2, ...) uniquely
     # identifies the unswitch.
     def extract_n(match):
@@ -2237,11 +2237,11 @@ def loop_unswitching(lines, no_optimization):
                 # but will be compiled away by Cython
                 # and/or the C compiler.
                 new_lines.append(
-                    '    '*(lvl + 1) + 'if False:  # Autoinserted dummy if statement\n'
+                    '    '*(lvl + 1) + 'if False:  # Auto-inserted dummy if statement\n'
                 )
                 skip += 1  # Skip the inner if statement
                 new_lines.append(
-                    '    '*(lvl + 2) + 'pass       # Autoinserted dummy if statement\n'
+                    '    '*(lvl + 2) + 'pass       # Auto-inserted dummy if statement\n'
                 )
                 for line in lines[(i + 2):]:
                     if not line.strip() or line.lstrip().startswith('#'):
@@ -2456,7 +2456,7 @@ def loop_unswitching(lines, no_optimization):
                     # If not specified, this is set to infinity.
                     n = extract_n(match)
                     # If n is zero or negative,
-                    # no loop unswitching shold be performed.
+                    # no loop unswitching should be performed.
                     if n < 1:
                         new_lines += construct_trivial_statement(line)
                         continue
@@ -2584,11 +2584,11 @@ def loop_unswitching(lines, no_optimization):
                         if not empty_else:
                             indentation = '    '*(indentation_lvl + 1)
                             if_headers.append(
-                                f'{indentation}else:  # This is an autoinserted else block\n'
+                                f'{indentation}else:  # This is an auto-inserted else block\n'
                             )
                             if_bodies.append([
                                 f'{indentation}    pass\n',  # If no statement is present above
-                                f'{indentation}    # End of autoinserted else block\n'
+                                f'{indentation}    # End of auto-inserted else block\n'
                             ])
                     # Stitch together the recorded pieces to perform
                     # the loop unswitching.
@@ -2787,7 +2787,7 @@ def cython_decorators(lines, no_optimization):
                 headstart = i
                 headlen = j + 1
                 header = lines[headstart:(headstart + headlen)]
-                # Look for returntype
+                # Look for return type
                 returntype = ''
                 for j, hline in enumerate(header):
                     hline = re.sub('returns *= *', 'returns=', hline)
@@ -2928,7 +2928,7 @@ def fix_addresses(lines, no_optimization):
             # One address corrected
             if line == line_ori:
                 break
-            # Replace the first occurence of cython.address(...) with
+            # Replace the first occurrence of cython.address(...) with
             # a temporary string.
             pattern = r'cython\.address\(.+?\)'
             replacements.append(re.search(pattern, line).group())
@@ -2984,7 +2984,7 @@ def malloc_realloc(lines, no_optimization):
                 new_lines.append(indentation + ' '*4
                                  + "raise MemoryError('Could not "
                                  + alloc + ' ' + LHS + "')\n")
-                # Add prinout on realloc copy
+                # Add printout on realloc copy
                 if check_realloc_copy and alloc == 'realloc':
                     new_lines.append(f'{indentation}if {LHS} != {ptr_old_cp}:\n')
                     line_fmt = line.strip().replace('\'', '\\\'')
@@ -3339,7 +3339,7 @@ def make_pxd(filename, no_optimization):
                                         argtype = argtype.strip()
                                         argtype = argtype.replace('"', '')
                                         argtype = argtype.replace("'", '')
-                                        # Add spaces back to multiword argument types
+                                        # Add spaces back to multi-word argument types
                                         for t in types_with_spaces:
                                             argtype = argtype.replace(t[0], t[1])
                                         function_args[j] = function_args[j].strip()
@@ -3515,7 +3515,7 @@ def make_pxd(filename, no_optimization):
         pxd_lines.pop()
     else:
         pxd_lines.append('\n')
-    # Find declarations of non-builtin types (extension types)
+    # Find declarations of non-built-in types (extension types)
     for vartype, vardeclaration in extension_types.items():
         # Skip declaration if vartype is defined in this module
         if vardeclaration.startswith('from {} cimport '.format(filename[:-4])):
@@ -3554,7 +3554,7 @@ def make_pxd(filename, no_optimization):
     while len(header_lines) > 0 and len(header_lines[0].strip()) == 0:
         header_lines = header_lines[1:]
     if header_lines:
-        header_lines = ['# Non-builtin types'] + header_lines
+        header_lines = ['# Non-built-in types'] + header_lines
     for i in range(len(header_lines)):
         header_lines[i] += '\n'
     total_lines = header_lines

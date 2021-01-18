@@ -386,7 +386,7 @@ def render2D(components, filename):
             components_str = f'{{{components_str}}}'
         masterprint(f'Rendering 2D projection of {components_str} ...')
         # Compute the 2D render. In the case of both normal
-        # and terminal 2D renders, both af these will be computed.
+        # and terminal 2D renders, both of these will be computed.
         # The results are stored in declaration.projections.
         # Only the master process holds the full 2D renders.
         compute_render2D(declaration)
@@ -712,7 +712,7 @@ def project_render2D(grid, projection, axis, extent):
     """The passed 2D projection array will be mutated in-place.
     Only the projection on the master process will be complete.
     """
-    # Get globl grid size of the grid off of the 2D projection array,
+    # Get global grid size of the grid off of the 2D projection array,
     # which is fully allocated on every process.
     gridsize = projection.shape[0]
     # Get global index range into the grids, specifying the chunk
@@ -911,15 +911,15 @@ def enhance_render2D(declaration):
 
     The value for the exponent is chosen such that it leads to a nice
     distribution of the values in the projections. We take this to be
-    the case when the histogram of these values is "centered" at the
+    the case when the histogram of these values is "centred" at the
     value specified by the shifting_factor parameter. A shifting_factor
-    of 0.5 implies that the histogram of the pixel values is "centered"
+    of 0.5 implies that the histogram of the pixel values is "centred"
     in the middle of the axis, with the same distance to the first and
     last bin. For Gaussian data, this require a value of the exponent
     tending to 0. Thus, the shifting factor should be below 0.5.
-    A shifting_factor between 0 and 0.5 shifts the center of the
+    A shifting_factor between 0 and 0.5 shifts the centre of the
     histogram to be at the location of shifting_factor, measured
-    relative to the histogram axis. Here, the center is defined to be
+    relative to the histogram axis. Here, the centre is defined to be
     the point which partitions the histogram into two parts which
     integrate to the same value.
 
@@ -972,9 +972,9 @@ def enhance_render2D(declaration):
             # values in the projection. However, we skip bins[0] since
             # sometimes empty cells results in a large spike there.
             Σbins = size - bins[0]
-            # Find the position of the center of the histogram,
+            # Find the position of the centre of the histogram,
             # defined by the sums of bins being the same on both
-            # sides of this center. We again skip bins[0].
+            # sides of this centre. We again skip bins[0].
             occupation = 0
             for index in range(1, n_bins):
                 occupation += bins[index]
@@ -998,9 +998,9 @@ def enhance_render2D(declaration):
                 # Good choice of exponent found
                 break
             # The current value of the exponent does not place the
-            # "center" of the histogram at the desired location
+            # "centre" of the histogram at the desired location
             # specified by shifting_factor.
-            # Check if the binary seach has (almost) converged on
+            # Check if the binary search has (almost) converged on
             # some other value.
             if index_max >= index_min and index_max - index_min <= 1:
                 break
@@ -1021,17 +1021,17 @@ def enhance_render2D(declaration):
             projection_ptr[index] **= exponent
         bins, bin_edges = np.histogram(projection, n_bins)
         Σbins = size - bins[0]
-        # To further enhance the projected image, we set the color
-        # limits so as to truncate the color space at both ends,
+        # To further enhance the projected image, we set the colour
+        # limits so as to truncate the colour space at both ends,
         # saturating pixels with very little or very high intensity.
-        # The color limits vmin and vmax are determined based on the
+        # The colour limits vmin and vmax are determined based on the
         # color_truncation_factor_* parameters. These specify the
         # accumulated fraction of Σbins at which the histogram should be
         # truncated, for the lower and upper intensity ends.
         # For projections with a lot of structure, the best results are
-        # obtained by giving the lower color truncation quite a large
+        # obtained by giving the lower colour truncation quite a large
         # value (this effectively removes the background), while giving
-        # the higher color truncation a small value,
+        # the higher colour truncation a small value,
         # so that small very overdense regions appear clearly.
         occupation = 0
         for index in range(1, n_bins):
@@ -1045,7 +1045,7 @@ def enhance_render2D(declaration):
             if occupation >= ℤ[color_truncation_factor_upper*Σbins]:
                 vmax = bin_edges[index + 1]
                 break
-        # Apply color limits
+        # Apply colour limits
         for index in range(size):
             value = projection_ptr[index]
             value = pairmax(value, vmin)
@@ -1186,7 +1186,7 @@ def save_render2D_image(declaration, filename, n_dumps):
             '_'.join([component.name.replace(' ', '-') for component in components]),
             '.png',
         )
-    # Save colorized image to disk
+    # Save colourised image to disk
     masterprint(f'Saving image to "{filename}" ...')
     plt.imsave(filename, projection, cmap=colormap, vmin=0, vmax=1)
     masterprint('done')
@@ -1220,7 +1220,7 @@ def augment_filename(filename, text, ext=''):
         basename += ext
     return os.path.join(dirname, basename)
 
-# Function for displaying colorized 2D render directly in the terminal
+# Function for displaying colourised 2D render directly in the terminal
 @cython.header(
     # Arguments
     declaration=object,  # Render2DDeclaration
@@ -1249,19 +1249,19 @@ def display_terminal_render(declaration):
     set_terminal_colormap(colormap)
     # Construct list of strings, each string being a space prepended
     # with an ANSI/VT100 control sequences which sets the background
-    # color. When printed together, these strings produce an ANSI image
+    # colour. When printed together, these strings produce an ANSI image
     # of the terminal projection.
     # We need to map the values between 0 and 1 to the 238 higher
-    # integer color numbers 18–255 (the lowest 18 color numbers are
+    # integer colour numbers 18–255 (the lowest 18 colour numbers are
     # already occupied).
     esc_space = f'{esc_background} '
     terminal_ansi = []
     for     i in range(ℤ[projection.shape[0]]):
         for j in range(ℤ[projection.shape[1]]):
             colornumber = 18 + cast(round(projection[i, j]*237), 'int')
-            # Insert a space with colored background
+            # Insert a space with coloured background
             terminal_ansi.append(esc_space.format(colornumber))
-        # Insert newline with no background color
+        # Insert newline with no background colour
         terminal_ansi.append(f'{esc_normal}\n')
     # Print the ANSI image to the terminal
     masterprint(''.join(terminal_ansi), end='', indent=-1, wrap=False)
@@ -1270,8 +1270,8 @@ def display_terminal_render(declaration):
 def set_terminal_colormap(colormap):
     """This function constructs and apply a terminal colormap with
     256 - (16 + 2) = 238 ANSI/VT100 control sequences, remapping the
-    238 higher color numbers. The 16 + 2 = 18 lowest are left alone in
-    order not to mess with standard terminal coloring and the colors
+    238 higher colour numbers. The 16 + 2 = 18 lowest are left alone in
+    order not to mess with standard terminal colouring and the colours
     used for the CO𝘕CEPT logo at startup.
     We apply the colormap even if the specified colormap is already
     in use, as the resulting log file is easier to parse with every
@@ -1357,9 +1357,9 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
     # first time this function is called.
     if not render3D_dict:
         masterprint('Initializing 3D renders ...')
-        # Make cyclic default colors as when doing multiple plots in
-        # one figure. Make sure that none of the colors are identical
-        # to the background color.
+        # Make cyclic default colours as when doing multiple plots in
+        # one figure. Make sure that none of the colours are identical
+        # to the background colour.
         default_colors = itertools.cycle([
             to_rgb(prop['color'])
             for prop in matplotlib.rcParams['axes.prop_cycle']
@@ -1374,17 +1374,17 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
             dpi = 100  # This only affects the font size relative to the figure
             fig = plt.figure(figname, figsize=[render3D_resolution/dpi]*2, dpi=dpi)
             ax = fig.gca(projection='3d', facecolor=render3D_bgcolor)
-            # The color and α (of a homogeneous column through the
+            # The colour and α (of a homogeneous column through the
             # entire box) of this component.
             if component.name.lower() in render3D_colors:
-                # This component is given a specific color by the user
+                # This component is given a specific colour by the user
                 color, α_homogeneous = render3D_colors[component.name.lower()]
             elif 'all' in render3D_colors:
-                # All components are given the same color by the user
+                # All components are given the same colour by the user
                 color, α_homogeneous = render3D_colors['all']
             else:
-                # No color specified for this particular component.
-                # Assign the next color from the default cyclic colors.
+                # No colour specified for this particular component.
+                # Assign the next colour from the default cyclic colours.
                 color = next(default_colors)
                 α_homogeneous = 0.2
             # The artist for the component
@@ -1450,7 +1450,7 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                 )
                 # The set_facecolors method on the artist can be used
                 # to update the α values on the plot. This function is
-                # called internally by matplotlib with wrong arguments,
+                # called internally by Matplotlib with wrong arguments,
                 # cancelling the α updates. For this reason, we
                 # replace this method with a dummy method, while
                 # keeping the original as _set_facecolors (though we
@@ -1488,7 +1488,7 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
             ax.set_zlim(0, boxsize)
             ax.axis('off')  # Remove panes, gridlines, axes, ticks, etc.
             for spine in ax.spines.values():
-                # Needed due to bug in matplotlib 3.0.0
+                # Needed due to bug in Matplotlib 3.0.0
                 spine.set_visible(False)
             plt.tight_layout(pad=-1)  # Extra tight layout, to prevent white frame
             # Store the figure, axes and the component
@@ -1576,8 +1576,8 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
             if enable_Hubble:
                 a_str = '$a = {}$'.format(significant_figures(universals.a, 4, 'tex'))
                 artists_text['a'].set_text(a_str)
-            # Make the text color black or white,
-            # dependent on the background color.
+            # Make the text colour black or white,
+            # dependent on the background colour.
             for artist_text in artists_text.values():
                 if sum(render3D_bgcolor) < 1:
                     artist_text.set_color('white')
@@ -1627,7 +1627,7 @@ def render3D(components, filename, cleanup=True, tmp_dirname='.renders3D'):
                 # them together into the render3D_image variable.
                 blend(filenames_component_alpha_part)
                 # Save combined 3D render of the j'th component
-                # with transparency. Theese are then later combined into
+                # with transparency. These are then later combined into
                 # a 3D render containing all components.
                 if len(names) > 1:
                     filename_component_alpha = f'{render3D_dir}/{name}_alpha.png'
@@ -1756,7 +1756,7 @@ def alpha_blend(N, α_homogeneous, fig=None):
         α = α_min
     return scatter_size, α
 
-# Function for adding background color to render3D_image
+# Function for adding background colour to render3D_image
 @cython.header(# Locals
                alpha='float',
                i='int',

@@ -265,7 +265,7 @@ class CosmoResults:
         from disk, if possible. The first time this fails, CLASS will be
         called and a cosmo object will be produced.
         All methods of the cosmo object used in the code which have
-        no arguments are here written as attritubes using the magic of
+        no arguments are here written as attributes using the magic of
         the property decorator. Methods with arguments should also be
         defined in such a way that their results are cached.
         If a filename is passed, CLASS data will be read from this file.
@@ -347,7 +347,7 @@ class CosmoResults:
             setattr(self, var_name, construct_func(var_name))
         # Initialize the hdf5 file on disk, if it does not
         # already exist. If it exist, 'params' and 'k_magnitudes' are
-        # guarenteed to be stored there correctly already, as the
+        # guaranteed to be stored there correctly already, as the
         # filename depends on the content of 'params', which also
         # include 'k_magnitudes'.
         if master and not os.path.isfile(self.filename):
@@ -550,7 +550,7 @@ class CosmoResults:
             # background pressure.
             # In principle we could use any background density and
             # pressure. However, it turns out that δρ(k, a) (at least on
-            # large scales) approximately follows the behavior of the
+            # large scales) approximately follows the behaviour of the
             # other species, which simply comes about because the metric
             # is built from all physical species which do not have
             # ρ + P = 0, i.e. all but Λ. Thus, we choose the background
@@ -856,7 +856,7 @@ class CosmoResults:
                 Barrier()
                 # All processes should be aware of the k indices of all
                 # other processes. We have this as the list of arrays
-                # indices_procs on the mater process, but we now store
+                # indices_procs on the master process, but we now store
                 # it as a single array. This array will give the
                 # ordering of the k modes after a call to allgatherv
                 # on the perturbation data.
@@ -1215,7 +1215,7 @@ class CosmoResults:
                 else:
                     ρ_bar += asarray([ρ_bar_spline.eval(a_i) for a_i in a])
                     P_bar += asarray([P_bar_spline.eval(a_i) for a_i in a])
-        # As we have done no unit convertion, the ratio P_bar/ρ_bar
+        # As we have done no unit conversion, the ratio P_bar/ρ_bar
         # gives us the unitless w.
         return P_bar/ρ_bar
     # Method for looking up the linear growth rate f_growth = H⁻¹Ḋ/D
@@ -1229,13 +1229,13 @@ class CosmoResults:
         """You should not call this method unless you have good reason
         to believe that 'element' is not already present in the file,
         as this method will open the file in read/write ('a') mode
-        regardless. This can be dangeous as HDF5 build with MPI is not
+        regardless. This can be dangerous as HDF5 build with MPI is not
         thread-safe, and so if two running instances of CO𝘕CEPT with the
         same params run this method simultaneously, problems
         may arise. From HDF5 1.10 / H5Py 2.5.0, multiple processes can
         read from the same file, as long as it is not opened in write
-        mode by any process. Thus, this complication is only relevent
-        for this method. The open_hdf5 function is ment to alleviate
+        mode by any process. Thus, this complication is only relevant
+        for this method. The open_hdf5 function is meant to alleviate
         this problem, but it has not been thoroughly tested.
         Note that we save regardless of the value of class_reuse.
         """
@@ -1381,7 +1381,7 @@ class CosmoResults:
                         for pattern in self.needed_keys['background'] | class_extra_background
                     ])
                 }
-                # Check that all background quanities in
+                # Check that all background quantities in
                 # class_extra_background were present in the file.
                 background_loaded = set(self._background.keys())
                 backgrounds_missing = {background_missing
@@ -1537,7 +1537,7 @@ class TransferFunction:
         # derivative with respect to the scale factor,
         # at a given k and as a function of a.
         self.data = self.data_local = self.data_deriv = self.data_deriv_local = None
-        # (Maximum) number of intervals into wich the scale factor
+        # (Maximum) number of intervals into which the scale factor
         # values should be subdivided when making the detrended splines.
         # From the manner in which interval_boarders are created in the
         # process method, one can show that the following is the maximum
@@ -2301,7 +2301,7 @@ class TransferFunction:
         make sure to copy the returned array before calling this
         function again.
         If a_next and weight are passed, the transfer function will be
-        averaged over the interval [a, a_next] using the time depedent
+        averaged over the interval [a, a_next] using the time dependent
         function given by weight as weight.
         """
         if self.data is None:
@@ -2784,7 +2784,7 @@ def compute_transfer(
                 for k in range(k_gridsize):
                     transfer[k] += weighted_Γ_3H*transfer_H_Tʹ[k]
     elif var_index == 2 and specific_multi_index == 'trace':
-        # Get th δP transfer function
+        # Get the δP transfer function
         transfer = cosmoresults.δP(a, a_next, component=component, weight=weight)
         # Transform the δP transfer function from synchronous
         # to N-body gauge, if requested.
@@ -2829,7 +2829,7 @@ def compute_transfer(
     # Arguments
     gridsize='Py_ssize_t',
     # Locals
-    cached=object,  # FloatStr
+    cached=object,  # tuple
     k_magnitudes_str=str,
     k_gridsize='Py_ssize_t',
     k_magnitudes='double[::1]',
@@ -2840,7 +2840,7 @@ def compute_transfer(
     logk_max='double',
     logk_min='double',
     nyquist='Py_ssize_t',
-    returns=object,  # FloatStr
+    returns=object,  # tuple
 )
 def get_k_magnitudes(gridsize):
     # Cache lookup
@@ -3024,29 +3024,29 @@ def realize(
     component, variable, transfer_spline, cosmoresults,
     specific_multi_index=None, a=-1, options=None, use_gridˣ=False,
 ):
-    """This function realizes a single variable of a component,
+    """This function realises a single variable of a component,
     given the transfer function as a Spline (using |k⃗| in physical units
     as the independent variable) and the corresponding CosmoResults
     object, which carry additional information from the CLASS run that
     produced the transfer function. If only a single fluidscalar of the
-    fluid variable should be realized, the multi_index of this
-    fluidscalar may be specified. If you want a realization at a time
+    fluid variable should be realised, the multi_index of this
+    fluidscalar may be specified. If you want a realisation at a time
     different from the present you may specify an a.
     If a particle component is given, the Zel'dovich approximation is
     used to distribute the particles and assign momenta.
 
-    Several options has to be specified to define how the realization is
+    Several options has to be specified to define how the realisation is
     to be carried out. These options are contained in the "options"
-    argumen. By default, the options are
+    argument. By default, the options are
     options = {
-        # Linear realization options
+        # Linear realisation options
         'velocities from displacements': False,
-        # Non-linear realization options
+        # Non-linear realisation options
         'structure'     : 'primordial',
         'compound-order': 'linear',
     }
-    which corresponds to linear realization. For particle components
-    (which can not be realized continually) only linear realization is
+    which corresponds to linear realisation. For particle components
+    (which can not be realised continually) only linear realisation is
     possible, and thus only the linear option matters. When
     'velocities from displacements' is True, the particle momenta will
     be set from the same displacement field ψⁱ as is used for the
@@ -3054,14 +3054,14 @@ def realize(
     displacement and velocity. Otherwise, momenta will be constructed
     from their own velocity field uⁱ, using their own transfer function
     but the same (primordial) noise. Note that for particle components
-    you must realize the momenta prior to the positions. If
+    you must realise the momenta prior to the positions. If
     'velocities from displacements' is True, you should call this
     function once with variable = 1 (momenta), but with a
     transfer_spline for ψⁱ (corresponding to variable 0).
     Another linear option 'back-scaling' might be specified, but it is
     not used by this function.
-    Taking Jⁱ as an example of a fluid variable realization,
-    linear realization looks like
+    Taking Jⁱ as an example of a fluid variable realisation,
+    linear realisation looks like
         Jⁱ(x⃗) = a**(1 - 3w_eff)ϱ_bar(1 + w)ℱₓ⁻¹[T_θ(k)ζ(k)K(k⃗)ℛ(k⃗)],
     where ζ(k) is the primordial curvature perturbation, T_θ(k) is the
     passed transfer function for θ, ℛ(k⃗) is a field of primordial noise,
@@ -3070,7 +3070,7 @@ def realize(
     outside the Fourier transform then converts from uⁱ to Jⁱ.
     We can instead choose to use the non-linearly evolved structure
     of ϱ, by using options['structure'] == 'non-linear'. Then the
-    realization looks like
+    realisation looks like
         Jⁱ(x⃗) = a**(1 - 3w_eff)ϱ_bar(1 + w)ℱₓ⁻¹[T_θ(k)/T_δϱ(k)K(k⃗)δϱ(k⃗)],
     where δϱ(k⃗) = ℱₓ[δϱ(x⃗)] is computed from the present ϱ(x⃗) grid,
     and T_δϱ(k) is the (not passed) transfer function of δϱ.
@@ -3092,7 +3092,7 @@ def realize(
         (val.lower().replace(' ', '').replace('-', '') if isinstance(val, str) else val)
         for key, val in options.items()
     }
-    # By default, use linear realization options and do not construct
+    # By default, use linear realisation options and do not construct
     # the velocities directly from the displacements.
     options_linear = {
         # Linear options
@@ -3113,13 +3113,13 @@ def realize(
             'structure',
             'compoundorder',
         }:
-            abort(f'realize() did not understand realization option "{option_key}"')
+            abort(f'realize() did not understand realisation option "{option_key}"')
     if options['structure'] not in {'primordial', 'nonlinear'}:
-        abort(f'Unrecognized value "{options["structure"]}" for options["structure"]')
+        abort(f'Unrecognised value "{options["structure"]}" for options["structure"]')
     if options['compoundorder'] not in {'linear', 'nonlinear'}:
-        abort(f'Unrecognized value "{options["compoundorder"]}" for options["compound-order"]')
+        abort(f'Unrecognised value "{options["compoundorder"]}" for options["compound-order"]')
     options['velocitiesfromdisplacements'] = bool(options['velocitiesfromdisplacements'])
-    # Get the index of the fluid variable to be realized
+    # Get the index of the fluid variable to be realised
     # and print out progress message.
     processed_specific_multi_index = ()
     particle_var_name = 'pos'
@@ -3138,13 +3138,13 @@ def realize(
         # When the 'velocities from displacements' option is enabled,
         # both the positions and the momenta are constructed from the
         # displacement field ψⁱ. It is then illegal to request a position
-        # realization directly.
+        # realisation directly.
         if particle_var_name == 'pos' and options['velocitiesfromdisplacements']:
             abort(
-                f'A realization of particle positions for {component.name} was requested. '
+                f'A realisation of particle positions for {component.name} was requested. '
                 f'As this component is supposed to get its velocities from the displacements, '
                 f'you should only call realize() for the momenta/velocities, which will then '
-                f'realize both positions and momenta.'
+                f'realise both positions and momenta.'
             )
         if component.N > 1 and isint(ℝ[cbrt(component.N)]):
             N_str = str(int(round(ℝ[cbrt(component.N)]))) + '³'
@@ -3152,7 +3152,7 @@ def realize(
             N_str = str(component.N)
         if specific_multi_index is None:
             masterprint(
-                f'Realizing {N_str} particle',
+                f'Realising {N_str} particle',
                 'momenta and positions' if options['velocitiesfromdisplacements']
                     else {'pos': 'positions', 'mom': 'momenta'}[particle_var_name],
                 f'of {component.name} ...'
@@ -3163,20 +3163,20 @@ def realize(
             )
             if options['velocitiesfromdisplacements']:
                 masterprint(
-                    f'Realizing {N_str} particle momenta[{processed_specific_multi_index[0]}] '
+                    f'Realising {N_str} particle momenta[{processed_specific_multi_index[0]}] '
                     f'and positions[{processed_specific_multi_index[0]}] of {component.name} ...'
                 )
             else:
                 masterprint(
-                    f'Realizing {N_str} particle',
+                    f'Realising {N_str} particle',
                     {'pos': 'positions', 'mom': 'momenta'}[particle_var_name]
                         + f'[{processed_specific_multi_index[0]}] '
                     f'of {component.name} ...'
                 )
         # For particles, the Zel'dovich approximation is used for the
-        # realization. For the positions, the displacement field ψⁱ is
-        # really what is realized, while for the momenta, the velocity
-        # field uⁱ is what is really realized. Both of these are vector
+        # realisation. For the positions, the displacement field ψⁱ is
+        # really what is realised, while for the momenta, the velocity
+        # field uⁱ is what is really realised. Both of these are vector
         # fields, and so we have to set fluid_index to 1 so that
         # multi_index takes on vector values ((0, ), (1, ), (2, )).
         fluid_index = 1
@@ -3184,7 +3184,7 @@ def realize(
         fluidvar_name = component.fluid_names['ordered'][fluid_index]
         if specific_multi_index is None:
             masterprint(
-                f'Realizing {fluidvar_name} of {component.name} '
+                f'Realising {fluidvar_name} of {component.name} '
                 f'with grid size {component.gridsize} ...'
             )
         else:
@@ -3192,7 +3192,7 @@ def realize(
                 component.fluidvars[fluid_index].process_multi_index(specific_multi_index)
             )
             masterprint(
-                f'Realizing {fluidvar_name}{{}} of {component.name} '
+                f'Realising {fluidvar_name}{{}} of {component.name} '
                 f'with grid size {component.gridsize} ...'
                 .format(
                     '' if fluid_index == 0 else (
@@ -3207,11 +3207,11 @@ def realize(
                     )
                 )
             )
-    # Determine the grid size of the grid used to do the realization
+    # Determine the grid size of the grid used to do the realisation
     if component.representation == 'particles':
         if not isint(ℝ[cbrt(component.N)]):
             abort(
-                f'Cannot perform realization of {component.name} '
+                f'Cannot perform realisation of {component.name} '
                 f'with N = {component.N}, as N is not a cubic number.'
             )
         gridsize = int(round(ℝ[cbrt(component.N)]))
@@ -3219,17 +3219,17 @@ def realize(
         gridsize = component.gridsize
     if gridsize%nprocs != 0:
         abort(
-            f'The realization uses a gridsize of {gridsize}, '
+            f'The realisation uses a gridsize of {gridsize}, '
             f'which is not evenly divisible by {nprocs} processes.'
         )
     # A compound order of 'nonlinear' only makes a difference for
-    # compound variables; that is, Jⁱ and ςⁱⱼ. If what we are realizing
+    # compound variables; that is, Jⁱ and ςⁱⱼ. If what we are realising
     # is another variable, switch this back to 'linear'.
     if fluid_index == 1:
-        # We are realizing Jⁱ
+        # We are realising Jⁱ
         compound_variable = True
     elif fluid_index == 2 and processed_specific_multi_index != 'trace':
-        # We are realizing ςⁱⱼ
+        # We are realising ςⁱⱼ
         compound_variable = True
     else:
         compound_variable = False
@@ -3237,23 +3237,23 @@ def realize(
         if options['compoundorder'] == 'nonlinear':
             options['compoundorder'] = 'linear'
     # Abort if the non-linear structure option was passed
-    # for a particle component, as these can only be realized
+    # for a particle component, as these can only be realised
     # from primordial noise.
     if (component.representation == 'particles'
         and options['structure'] != options_linear['structure']
     ):
-        abort('Can only do particle realization using primordial noise/structure')
-    # When realizing δ, it only makes sense to realize it linearly
+        abort('Can only do particle realisation using primordial noise/structure')
+    # When realising δ, it only makes sense to realise it linearly
     if fluid_index == 0 and options['structure'] != options_linear['structure']:
-        abort('Can only do linear realization of δ')
+        abort('Can only do linear realisation of δ')
     # Extract various variables
     H = hubble(a)
     w = component.w(a=a)
     w_eff = component.w_eff(a=a)
     ϱ_bar = component.ϱ_bar
-    # Fill 1D array with values used for the realization.
+    # Fill 1D array with values used for the realisation.
     # These values are the k (but not k⃗) dependent values inside the
-    # inverse Fourier transform, not including any additional tenstor
+    # inverse Fourier transform, not including any additional tensor
     # structure (the k factors K(k⃗)).
     nyquist = gridsize//2
     k2_max = 3*(nyquist - 1)**2  # Max |k⃗|² in grid units
@@ -3264,7 +3264,7 @@ def realize(
     )
     if options['structure'] == 'nonlinear':
         # When using the non-linear structure of δϱ to do
-        # the realizations, we need the transfer function of δϱ,
+        # the realisations, we need the transfer function of δϱ,
         # which is just ϱ_bar times the transfer function of δ.
         transfer_spline_δ, cosmoresults_δ = compute_transfer(component, 0, gridsize, a=a)
     for k2 in range(1, k2_max + 1):
@@ -3272,7 +3272,7 @@ def realize(
         transfer = transfer_spline.eval(k_magnitude)
         with unswitch:
             if options['structure'] == 'primordial':
-                # Realize using ℱₓ⁻¹[T(k) ζ(k) K(k⃗) ℛ(k⃗)],
+                # Realise using ℱₓ⁻¹[T(k) ζ(k) K(k⃗) ℛ(k⃗)],
                 # with K(k⃗) capturing any tensor structure.
                 # The k⃗-independent part needed here is T(k)ζ(k),
                 # with T(k) the supplied transfer function and ζ(k) the
@@ -3287,7 +3287,7 @@ def realize(
                     *ℝ[boxsize**(-1.5)]
                 )
             else:  # options['structure'] == 'nonlinear':
-                # Realize using ℱₓ⁻¹[T(k)/T_δϱ(k) K(k⃗) ℱₓ[δϱ(x⃗)]],
+                # Realise using ℱₓ⁻¹[T(k)/T_δϱ(k) K(k⃗) ℱₓ[δϱ(x⃗)]],
                 # with K(k⃗) capturing any tensor structure.
                 # The k⃗-independent part needed here is T(k)/T_δϱ(k),
                 # with T(k) the supplied transfer function and T_δϱ(k)
@@ -3302,7 +3302,7 @@ def realize(
                     ]
                 )
     # At |k⃗| = 0, the power should be zero, corresponding to a
-    # real-space mean value of zero of the realized variable.
+    # real-space mean value of zero of the realised variable.
     sqrt_power_common[0] = 0
     # Fetch a slab decomposed grid for storing the entirety of what is
     # to be inverse Fourier transformed.
@@ -3346,11 +3346,11 @@ def realize(
     # Initialize index0 and index1.
     # The actual values are not important.
     index0 = index1 = 0
-    # When multiple particle components are to be realized, it is
+    # When multiple particle components are to be realised, it is
     # preferable to not do so "on top of each other", as this leads to
     # large early forces. Below we define particle_shift to be the
     # fraction of a grid cell the current particle component should be
-    # shifted relative to the default realization grid, in all
+    # shifted relative to the default realisation grid, in all
     # directions. For a total of 1 particle components, this will be 0.
     # For a total of 2 particle components, this will be -1/4 and +1/4,
     # for the first and second particle component, respectively. For 3
@@ -3371,10 +3371,10 @@ def realize(
         particle_shift = particle_shifts[particle_index]
         if particle_index > 1:
             masterwarn(
-                'You are realizing more than 2 particle components. '
+                'You are realising more than 2 particle components. '
                 'Note that this will lead to anisotropies in the initial conditions.'
             )
-    # The realized field will be interpolated onto the shifted particle
+    # The realised field will be interpolated onto the shifted particle
     # positions, using the interpolation order specified in the options.
     interpolation_order = options['interpolation']
     # Preparations for the Fourier slab loop.
@@ -3393,12 +3393,12 @@ def realize(
         fluidvar.multi_indices if specific_multi_index is None
         else [processed_specific_multi_index]
     ):
-        # Determine rank of the tensor being realized (0 for scalar
+        # Determine rank of the tensor being realised (0 for scalar
         # (i.e. ϱ), 1 for vector (i.e. J), 2 for tensor (i.e. ς)).
         if fluid_index == 0 or isinstance(multi_index, str):
             # If multi_index is a str it is 'trace', which means that
-            # 𝒫 is being realized.
-            # If fluid_index is 0, ϱ is being realized.
+            # 𝒫 is being realised.
+            # If fluid_index is 0, ϱ is being realised.
             tensor_rank = 0
         else:
             # The multi_index is a tuple of indices
@@ -3423,7 +3423,7 @@ def realize(
             # representation and tensor_rank.
             with unswitch(5):
                 if 𝔹[component.representation == 'particles']:
-                    # We are realizing either the displacement field ψⁱ
+                    # We are realising either the displacement field ψⁱ
                     # (for the positions) or the velocity field uⁱ (for
                     # the momenta). These are constructed from the δ and
                     # θ fields, respectively, with the vector k factor
@@ -3436,9 +3436,9 @@ def realize(
                     # between particles and momenta (and hence get the
                     # sign in the k factor correct) we instead make use
                     # of the particle_var_name variable. Also, when
-                    # realizing momenta with
+                    # realising momenta with
                     # 'velocities from displacements' True, we really
-                    # want to realize ψⁱ, and so we need to use the k
+                    # want to realise ψⁱ, and so we need to use the k
                     # factor for positions.
                     k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
                     k_factor = ℝ[
@@ -3453,11 +3453,11 @@ def realize(
                     slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*(-structure_ptr[index + 1])
                     slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*(+structure_ptr[index    ])
                 elif tensor_rank == 0:  # and component.representation == 'fluid'
-                    # Realize δ or δ𝒫
+                    # Realise δ or δ𝒫
                     slab_ptr[index    ] = sqrt_power*structure_ptr[index    ]
                     slab_ptr[index + 1] = sqrt_power*structure_ptr[index + 1]
                 elif tensor_rank == 1:  # and component.representation == 'fluid'
-                    # Realize uⁱ.
+                    # Realise uⁱ.
                     # For vectors we have a k factor of
                     # K(k⃗) = -ikⁱ/k².
                     k_index0 = ℤ[ℤ[ℤ[𝔹[index0 == 1]*kj] or 𝔹[index0 == 0]*ki] or 𝔹[index0 == 2]*kk]
@@ -3465,7 +3465,7 @@ def realize(
                     slab_ptr[index    ] = ℝ[sqrt_power*k_factor]*(-structure_ptr[index + 1])
                     slab_ptr[index + 1] = ℝ[sqrt_power*k_factor]*(+structure_ptr[index    ])
                 else:  # tensor_rank == 2 and component.representation == 'fluid'
-                    # Realize ςⁱⱼ.
+                    # Realise ςⁱⱼ.
                     # For rank 2 tensors we
                     # have a k factor of
                     # K(k⃗) = 3/2(δⁱⱼ/3 - kⁱkⱼ/k²).
@@ -3477,18 +3477,18 @@ def realize(
         # Ensure nullified Nyquist planes and origin
         nullify_modes(slab, 'nyquist, origin')
         # Fourier transform the slabs to coordinate space.
-        # Now the slabs store the realized grid.
+        # Now the slabs store the realised grid.
         fft(slab, 'backward')
         # Populate the fluid grids for fluid components,
         # or create the particles via the Zel'dovich approximation
         # for particles.
         if component.representation == 'fluid':
-            # Communicate the fluid realization stored in the slabs to
+            # Communicate the fluid realisation stored in the slabs to
             # the designated fluid scalar grid. This also populates the
             # ghost points.
             fluidscalar = fluidvar[multi_index]
             domain_decompose(slab, fluidscalar.gridˣ_mv if use_gridˣ else fluidscalar.grid_mv)
-            # Transform the realized fluid variable to the actual
+            # Transform the realised fluid variable to the actual
             # quantity used in the non-linear fluid equations.
             if fluid_index == 0:
                 # δ → ϱ = ϱ_bar(1 + δ).
@@ -3501,7 +3501,7 @@ def realize(
                     ϱ_ptr[i] = ϱ_bar*(1 + ℝ[ϱ_ptr[i]])
                 δ_min = allreduce(δ_min, op=MPI.MIN)
                 if δ_min < -1:
-                    masterwarn(f'The realized ϱ of {component.name} has min(δ) = {δ_min:.4g} < -1')
+                    masterwarn(f'The realised ϱ of {component.name} has min(δ) = {δ_min:.4g} < -1')
             elif fluid_index == 1:
                 Jⁱ_ptr = fluidscalar.gridˣ if use_gridˣ else fluidscalar.grid
                 if options['compoundorder'] == 'nonlinear':
@@ -3538,7 +3538,7 @@ def realize(
                         ςⁱⱼ_ptr[i] *= ℝ[ϱ_bar*(1 + w)]
             # Continue with the next fluidscalar
             continue
-        # Domain-decompose the realized field stored in the slabs.
+        # Domain-decompose the realised field stored in the slabs.
         # This is either the displacement field ψⁱ or the velocity
         # field uⁱ. Importantly, here we have to use a different
         # buffer from the one already used by sqrt_power_common.
@@ -3556,8 +3556,8 @@ def realize(
         dim = multi_index[0]
         if particle_var_name == 'mom':
             if dim == 0:
-                # This is the realization of momx, which should be the
-                # first variable to be realized out of
+                # This is the realisation of momx, which should be the
+                # first variable to be realised out of
                 # {momx, momy, momz, posx, posy, posz}. Position the
                 # particles at the grid points, possibly shifted
                 # in accordance with particle_shift.
@@ -3620,7 +3620,7 @@ def realize(
             # positions. The update is carried out on Δmom[dim],
             # not pos[dim], as this is needed for further interpolation.
             interpolate_domaingrid_to_particles(ψⁱ, component, 'Δmom', dim, interpolation_order)
-            # After posz (dim == 2), the Δmom arays contain the fully
+            # After posz (dim == 2), the Δmom arrays contain the fully
             # displaced positions. Copy these back to the pos arrays.
             if dim == 2:
                 for dim2 in range(3):
@@ -3629,9 +3629,9 @@ def realize(
                     for index in range(component.N_local):
                         # Ensure toroidal boundaries
                         posʲ[index] = mod(Δmomʲ[index], boxsize)
-    # Done realizing this variable
+    # Done realising this variable
     masterprint('done')
-    # After realizing particles, most of them will be on the correct
+    # After realising particles, most of them will be on the correct
     # process in charge of the domain in which they are located. Those
     # near the domain boundaries might however get displaced outside of
     # their original domain, and so we do need to do an exchange.
@@ -3642,7 +3642,7 @@ def realize(
         or (particle_var_name == 'mom' and options['velocitiesfromdisplacements'])
     ):
         exchange(component, reset_buffers=True)
-# Module level variable used by the realize function
+# Module level variable used by the realize() function
 cython.declare(slab_structure_infos=dict)
 slab_structure_infos = {}
 
@@ -3796,7 +3796,7 @@ def generate_primordial_noise(slab):
             #   for kj in range(kj_start, kj_stop, kj_step)
             # but at least in Cython 0.29 such a loop transpiles to
             # unoptimized code (the step value needs to be known at
-            # cythonization time for proper transpilation). Below we
+            # cythonisation time for proper transpilation). Below we
             # write out this loop by manually initializing and
             # incrementing the loop variable.
             kj = kj_start - kj_step
@@ -3941,7 +3941,7 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
         power[i] = (ζ(k_magnitude)*δ)**2
     return power
 
-# The primordial curvature perturbation, parameterised by parameters
+# The primordial curvature perturbation, parametrised by parameters
 # in the primordial_spectrum dict.
 @cython.header(
     # Arguments
@@ -3950,7 +3950,7 @@ def get_linear_powerspec(component_or_components, k_magnitudes, a=-1, gauge='N-b
     returns='double',
 )
 def ζ(k):
-    # The parameterisation looks like
+    # The parametrisation looks like
     # ζ(k) = π*sqrt(2*A_s)*k**(-3/2)*(k/pivot)**((n_s - 1)/2)
     #        *exp(α_s/4*log(k/pivot)**2).
     # See the primordial_analytic_spectrum() function in the CLASS
@@ -3964,7 +3964,7 @@ def ζ(k):
         *exp(ℝ[primordial_spectrum['α_s']/4]*(log(k) - ℝ[log(primordial_spectrum['pivot'])])**2)
     )
 
-# Function for registrering transfer functions / perturbations
+# Function for registering transfer functions / perturbations
 def register(
     name, name_class, name_latex=None, name_ascii=None,
     units_class=1, units_latex='',
@@ -3972,7 +3972,7 @@ def register(
 ):
     if not name.isidentifier():
         abort(
-            f'Transfer function name "{name}" illegal as it is not a valid Python isidentifier'
+            f'Transfer function name "{name}" is illegal as it is not a valid Python identifier'
         )
     if name_latex is None:
         name_latex = rf'\mathrm{{{name_class}}}'.replace('_', ' ')
@@ -4109,7 +4109,7 @@ for class_extra_perturbation in class_extra_perturbations:
         if not perturbation_name:
             abort(
                 f'Failed to generate {esc_concept} name '
-                f'for CLASS peturbation "{class_extra_perturbation}"'
+                f'for CLASS perturbation "{class_extra_perturbation}"'
             )
         transferfunction_info = register(perturbation_name, class_extra_perturbation)
         class_extra_perturbations_class.add(transferfunction_info.name_class)

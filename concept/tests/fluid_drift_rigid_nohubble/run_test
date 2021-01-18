@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script performs a drift test of a fluid with a spatially
-# homogeneus velocity field. Neither gravity nor Hubble expansion is enabled.
+# homogeneous velocity field. Neither gravity nor Hubble expansion is enabled.
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
@@ -33,7 +33,7 @@ set -e
 # Play the 2D terminal renders in the log file as an animation
 "${concept}" -u play
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

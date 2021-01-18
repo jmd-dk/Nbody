@@ -290,7 +290,7 @@ for match in re.finditer(
 # If scale factor stamps are used, all of these should be
 # printed starting from the same column. They should have
 # a minimum distance of 2 towards the cosmic time stamp to
-# the left, and should preferebly lign up with the edge of
+# the left, and should preferably line up with the edge of
 # the terminal image to the right.
 if a_stamps:
     time_stamps = []

@@ -28,7 +28,7 @@ fluids = [fluids[o] for o in order]
 times = snapshot_times['t']
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Extract hidden parameters
 w = user_params['_w']
@@ -99,5 +99,5 @@ for ρ_i, ρ_snapshot_i, t in zip(ρ, ρ_snapshot, times):
               'See "{}" for a visualization.'
               .format(t, unit_time, fig_file))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

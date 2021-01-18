@@ -199,7 +199,7 @@ def interpolate_in_vectorgrid(grid, x, y, z, order):
       0 <= x < grid.shape[0] - 1,
       0 <= y < grid.shape[1] - 1,
       0 <= z < grid.shape[2] - 1.
-    It is assumed that the grid is nonperiodic (that is, the first and
+    It is assumed that the grid is non-periodic (that is, the first and
     the last gridpoint in any dimension are physically distinct). The
     grid is not (necessarily) a domain grid and has no ghost points.
     This means that the interpolation will fail if using a high order
@@ -444,7 +444,7 @@ def interpolate_upstream(
         components/species. For particles we set P = 0, leaving
         Jₓ = a**4*ρ*uₓ. The canonical momentum momₓ and peculiar velocity
         uₓ is related by momₓ = a*(a**(-3*w_eff)*mass)*uₓ, and so from
-        the particleconstruction of ρ above we get that each particle
+        the particle construction of ρ above we get that each particle
         contribute with (gridsize/boxsize)**3*momₓ. As each fluid cell
         already stores Jₓ, they contribute by
         V_cell_fluid/V_cell*Jₓ = (gridsize/gridsize_fluid)**3*Jₓ.
@@ -492,7 +492,7 @@ def interpolate_upstream(
             # If interlacing is to be used, the particle interpolation
             # (and subsequent Fourier transformation) needs to be
             # carried out twice; with shift = 0 (standard)
-            # and with shift = ±0.5 (+ chosen for cell-centered,
+            # and with shift = ±0.5 (+ chosen for cell-centred,
             # - for cell-vertex).
             for shift_index in range(1 + interlace):
                 shift = ℝ[cell_centered - 0.5]*shift_index
@@ -596,7 +596,7 @@ def add_upstream_to_global_slabs(
                 nullification = 'nyquist'
             else:
                 # Global slabs constructed through upscaling of the
-                # upstream slabs. Only elements within a cube centered
+                # upstream slabs. Only elements within a cube centred
                 # at the origin and of size gridsize_upstream will be
                 # set. We then need to nullify all elements beyond
                 # this cube.
@@ -896,7 +896,7 @@ def resize_grid(
 def copy_modes(slab_from, slab_onto, deconv_order=0, interlace_flag=0, operation='='):
     """The Fourier modes of slab_from will be copied into slab_onto.
     Deconvolution will be performed according to deconv_order.
-    Set operation = '+=' to add the modes fom slab_from to slab_onto,
+    Set operation = '+=' to add the modes from slab_from to slab_onto,
     rather than overwriting them. By default no interlacing is
     performed. To carry out interlacing you need to call this function
     twice; once with the non-shifted grid (as slab_from) and
@@ -988,7 +988,7 @@ def copy_modes(slab_from, slab_onto, deconv_order=0, interlace_flag=0, operation
     # sizes calls for interprocess communication. To do this
     # communication, we subdivide both slab_from and slab_onto into
     # subslabs, i.e. thinner (in the y direction only) slabs which
-    # together constite a full slab. For this subslab decomposition to
+    # together constitute a full slab. For this subslab decomposition to
     # be of any use, we require that the Fourier modes within a given
     # subslab of slab_small on p is fully contained within just a single
     # subslab of slab_large on q (which may or may not equal p), and in
@@ -1006,7 +1006,7 @@ def copy_modes(slab_from, slab_onto, deconv_order=0, interlace_flag=0, operation
     # interested in the region corresponding to slab_small, as Fourier
     # modes beyond it cannot be copied between the two slabs. Set i and
     # k ranges. Note that each subslab consists of two i ranges, i.e.
-    # two half subslabs. This is needed as these two halfs are not
+    # two half subslabs. This is needed as these two halves are not
     # contiguous (due to the skipped larger Fourier modes in the large
     # slab and the skipped Nyquist modes in the small slab). Also note
     # that we implicitly have k_bgn = 0.
@@ -1901,7 +1901,7 @@ def prepare_decomposition(domain_grid, slab):
 cython.declare(decomposition_info=dict)
 decomposition_info = {}
 
-# Function for transfering data from slabs to domain grids
+# Function for transferring data from slabs to domain grids
 @cython.pheader(
     # Arguments
     slab='double[:, :, ::1]',
@@ -1995,7 +1995,7 @@ def domain_decompose(slab, grid_or_buffer_name=0, do_ghost_communication=True):
                 source=slabs2domain_sendrecv_ranks[ℓ],
                 mpifun='Recv',
             )
-        # Wait for the non-blockind send to be complete before
+        # Wait for the non-blocking send to be complete before
         # continuing. Otherwise, data in the send buffer - which is
         # still in use by the non-blocking send - might get overwritten
         # by the next (non-blocking) send.
@@ -2005,7 +2005,7 @@ def domain_decompose(slab, grid_or_buffer_name=0, do_ghost_communication=True):
         communicate_ghosts(grid, '=')
     return grid
 
-# Function for transfering data from domain grids to slabs
+# Function for transferring data from domain grids to slabs
 @cython.pheader(
     # Arguments
     grid='double[:, :, ::1]',
@@ -2134,7 +2134,7 @@ def slab_decompose(grid, slab_or_buffer_name='slab_global', prepare_fft=False):
                 source=domain2slabs_recvsend_ranks[ℓ],
                 mpifun='Recv',
             )
-        # Wait for the non-blockind send to be complete before
+        # Wait for the non-blocking send to be complete before
         # continuing. Otherwise, data in the send buffer - which is
         # still in use by the non-blocking send - might get overwritten
         # by the next (non-blocking) send.
@@ -2144,8 +2144,8 @@ def slab_decompose(grid, slab_or_buffer_name='slab_global', prepare_fft=False):
 # Iterator implementing looping over Fourier space slabs.
 # The yielded values are the linear index into the slab, the physical
 # ki, kj, kk (in grid units), the combined factor due to deconvolution
-# and interlacingfactor, as well as the angle by which to rotate a
-# shifted slab for interlacing.
+# and interlacing, as well as the angle by which to rotate a shifted
+# slab for interlacing.
 # The iteration is determined from the passed gridsize. By default the
 # same grid size is used in the computations of deconvolution and
 # interlacing, though this may be specified separately
@@ -2252,7 +2252,7 @@ def fourier_loop(
     _j_global_end = _offset_j + _j_end
     # Begin iterating over slab. As the first and second dimensions
     # are transposed due to the FFT, the j-dimension is first.
-    # We loop through the j-dimension in two chuns, skipping the
+    # We loop through the j-dimension in two chunks, skipping the
     # Nyquist point (kj = -_nyquist ⇒ _j_global = _nyquist) in between.
     for _j_chunk in range(2):
         if _j_chunk == 0:
@@ -2263,7 +2263,7 @@ def fourier_loop(
             _j_global_chunk_bgn = pairmax(_j_global_bgn, ℤ[_nyquist + 1])
             _j_chunk_bgn = _j_global_chunk_bgn - _offset_j
             _j_chunk_end = _j_end
-        # We similarly loop through the i-dimension in two chuns,
+        # We similarly loop through the i-dimension in two chunks,
         # skipping the Nyquist point (ki = -_nyquist ⇒ _i = _nyquist)
         # in between.
         for _i_chunk in range(2):
@@ -2324,7 +2324,7 @@ def fourier_loop(
                     # a value of 0, then this is the first i iteration,
                     # meaning that the origin (with kk = 0) is included
                     # in the upcoming kk iteration. If the origin should
-                    # be skipped, we do so by exclucing kk = 0 from this
+                    # be skipped, we do so by excluding kk = 0 from this
                     # next iteration.
                     _kk_bgn = 0
                     with unswitch(4):
@@ -2388,7 +2388,7 @@ def fourier_loop(
                                 #   θ = (kx + ky + kz)*Δx/2
                                 #     = (ki + kj + kk)*π/gridsize.
                                 # The above is correct for a positive
-                                # shift, as chosen for a cell-centered
+                                # shift, as chosen for a cell-centred
                                 # strategy. For cell-vertex, θ should be
                                 # negated.
                                 θ = ℤ[ℤ[ki + kj] + kk]*ℝ[
@@ -2518,7 +2518,7 @@ def nullify_modes(slab, nullifications):
     - "beyond cube of |k| < num" with num some positive int literal:
         Nullifies everything except points (ki, kj, kk) with at least
         one |kl| < num, leaving an un-nullified cube
-        centered at the origin.
+        centred at the origin.
     """
     if slab is None:
         return
@@ -2775,7 +2775,7 @@ cython.declare(
 fftw_plans_size = 0
 fftw_plans_forward  = malloc(fftw_plans_size*sizeof('fftw_plan'))
 fftw_plans_backward = malloc(fftw_plans_size*sizeof('fftw_plan'))
-# Mapping from memory addreses of slabs to indices in
+# Mapping from memory addresses of slabs to indices in
 # fftw_plans_forward and fftw_plans_backward.
 cython.declare(fftw_plans_mapping=dict)
 fftw_plans_mapping = {}
@@ -2784,7 +2784,7 @@ cython.declare(wisdom_acquired=dict)
 wisdom_acquired = {}
 
 # Helper function for the get_fftw_slab() function,
-# which construct the absolute path to the wisdome file to use.
+# which construct the absolute path to the wisdom file to use.
 @cython.header(
     # Arguments
     gridsize='Py_ssize_t',
@@ -2808,7 +2808,7 @@ def get_wisdom_filename(gridsize):
     """The FFTW wisdom file name is built as a hash of several things:
     - The passed grid size.
     - The total number of processes.
-    - The global FFTW wisdom rigor.
+    - The global FFTW wisdom rigour.
     - The FFTW version.
     - The name of the node "owning" the wisdom in the case of
       fftw_wisdom_share being True. Here a node is said to own the
@@ -2888,7 +2888,7 @@ wisdom_owner = ''
 def fft(slab, direction, apply_forward_normalization=False):
     """Fourier transform the given slab decomposed grid.
     For a forwards transformation from real to Fourier space, supply
-    direction='forward'. By default this is an unnormalized transform,
+    direction='forward'. By default this is an unnormalised transform,
     as defined by FFTW. To do the normalization, divide all elements of
     the slab by gridsize**3, where gridsize is the linear grid size
     of the cubic grid. This will be done if you further set
@@ -2911,7 +2911,7 @@ def fft(slab, direction, apply_forward_normalization=False):
     if not cython.compiled:
         # The pure Python FFT implementation is serial.
         # Every process computes the entire FFT of the temporary
-        # varaible grid_global_pure_python.
+        # variable grid_global_pure_python.
         slab_size_i = slab_size_j = slab.shape[0]
         slab_start_i = slab_size_i*rank
         slab_start_j = slab_size_j*rank
@@ -2956,7 +2956,7 @@ def fft(slab, direction, apply_forward_normalization=False):
             grid_global_pure_python = grid_global_pure_python.transpose([1, 0, 2])
             # Do real inverse transform via NumPy
             grid_global_pure_python = np.fft.irfftn(grid_global_pure_python, s=[gridsize]*3)
-            # Remove the autoscaling provided by NumPy
+            # Undo the auto-scaling provided by NumPy
             grid_global_pure_python *= gridsize**3
             # Add padding on last dimension, as in FFTW
             padding = empty(
@@ -3043,7 +3043,7 @@ def slabs_check_symmetry(
     Two distinct symmetries exist:
     - Bulk inversion through the origin, i.e. grid point
       [ki, kj, kk] should be the complex conjugate of [-ki, -kj, -kk].
-    - Plane inversion through the center of each Nyquist plane,
+    - Plane inversion through the centre of each Nyquist plane,
       e.g. the grid point [-nyquist, kj, kk] should be the complex
       conjugate of [-nyquist, -kj, -kk].
     In the above, {ki, kj, kk} are the components of the physical k
@@ -3057,9 +3057,9 @@ def slabs_check_symmetry(
     y Nyquist planes are not part of the tabulation. The surviving
     Nyquist planes are then the negative x and y and the positive z.
 
-    From the bulk and Nyqist plane inversion symmetries it follows that
+    From the bulk and Nyquist plane inversion symmetries it follows that
     (see the docstring of get_purely_reals() below) the grid point at
-    the origin, grid points at centers of Nyquist planes, at centers of
+    the origin, grid points at centres of Nyquist planes, at centres of
     Nyquist edges and at corners must all be real. This is also checked.
 
     An example of a Nyquist edge could be [-nyquist, kj, nyquist]. Such
@@ -3099,7 +3099,7 @@ def slabs_check_symmetry(
     satisfied — unlike the edge symmetry), this will not be checked
     explicitly. Finally, note that the edge symmetries at kk = +nyquist
     and ki = +nyquist or kj = +nyquist are also guaranteed to be
-    satistied if the bulk symmetry and the corresponding ki = -nyquist
+    satisfied if the bulk symmetry and the corresponding ki = -nyquist
     and kj = -nyquist symmetries are satisfied, and so these two extra
     edge symmetries will also not be explicitly checked.
 
@@ -3130,7 +3130,7 @@ def slabs_check_symmetry(
     will be added.
 
     Note that this function is not written with performance in mind
-    and should not be called during actual simualtion, and never with
+    and should not be called during actual simulation, and never with
     large grids.
     """
     # Get grid size
@@ -3188,9 +3188,9 @@ def slabs_check_symmetry(
         invariant, and applying just e.g. the x Nyquist plane inversions
         leaves [±nyquist, 0, 0] invariant. In total, all possible
         triplets [ki, kj, kk] with ki, kj, kk ∈  {0, ±nyquist} should
-        be purely real. This corresponds to the center or the bulk
-        (the origin), the center of each of the 6 Nyquist faces,
-        the center of each of the 12 Nyquist edges
+        be purely real. This corresponds to the centre or the bulk
+        (the origin), the centre of each of the 6 Nyquist faces,
+        the centre of each of the 12 Nyquist edges
         and the 8 Nyquist corners.
         """
         return set(itertools.product(*[(0, +nyquist, -nyquist)]*3))
@@ -3206,7 +3206,7 @@ def slabs_check_symmetry(
         pairs with both members in the tabulated region are situated
         either in the positive z Nyquist plane (kk == nyquist) or on the
         z DC plane (kk == 0). Both of these planes are symmetric with
-        respect to inversion through their center (and complex
+        respect to inversion through their centre (and complex
         conjugation), with the DC plane inheriting this symmetry from
         the bulk inversion symmetry. To only hit half of the points in
         these planes, we skip points with ki > 0. Furthermore, when
@@ -3277,9 +3277,9 @@ def slabs_check_symmetry(
         c = lookup(ki, kj, kk)
         if np.abs(c.imag) > abs_tol:
             name = {
-                0: 'center of bulk (origin)',
-                1: 'center of face',
-                2: 'center of edge',
+                0: 'centre of bulk (origin)',
+                1: 'centre of face',
+                2: 'centre of edge',
                 3: 'corner',
             }[(np.abs(ki) == nyquist) + (np.abs(kj) == nyquist) + (np.abs(kk) == nyquist)]
             fancyprint(
@@ -3423,53 +3423,53 @@ def slabs_check_symmetry(
         )
     )
     # Symmetry of inverting the negative x Nyquist plane
-    # through its center.
+    # through its centre.
     checks.append(
         generate_check(
             lambda ki, kj, kk: (ki == -nyquist),
             lambda ki, kj, kk: (+ki, -kj, -kk),
-            'inversion through center of ki = -nyquist plane',
+            'inversion through centre of ki = -nyquist plane',
         )
     )
     # Symmetry of inverting the negative y Nyquist plane
-    # through its center.
+    # through its centre.
     checks.append(
         generate_check(
             lambda ki, kj, kk: (kj == -nyquist),
             lambda ki, kj, kk: (-ki, +kj, -kk),
-            'inversion through center of kj = -nyquist plane',
+            'inversion through centre of kj = -nyquist plane',
         )
     )
     # Symmetry of inverting the positive z Nyquist plane
-    # through its center.
+    # through its centre.
     checks.append(
         generate_check(
             lambda ki, kj, kk: (kk == +nyquist),
             lambda ki, kj, kk: (-ki, -kj, +kk),
-            'inversion through center of kk = +nyquist plane',
+            'inversion through centre of kk = +nyquist plane',
         )
     )
     # Symmetry of inverting the negative x, positive z Nyquist edge
-    # through its center.
+    # through its centre.
     checks.append(
         generate_check(
             lambda ki, kj, kk: (ki == -nyquist and kk == +nyquist),
             lambda ki, kj, kk: (+ki, -kj, +kk),
-            'inversion through center of ki = -nyquist, kk = +nyquist edge',
+            'inversion through centre of ki = -nyquist, kk = +nyquist edge',
         )
     )
     # Symmetry of inverting the negative y, positive z Nyquist edge
-    # through its center.
+    # through its centre.
     checks.append(
         generate_check(
             lambda ki, kj, kk: (kj == -nyquist and kk == +nyquist),
             lambda ki, kj, kk: (-ki, +kj, +kk),
-            'inversion through center of kj = -nyquist, kk = +nyquist edge',
+            'inversion through centre of kj = -nyquist, kk = +nyquist edge',
         )
     )
     # Reality of special points
     checks.append(check_reality)
-    # Check symmetries throughoout the small grid
+    # Check symmetries throughout the small grid
     symmetry_broken = False
     for check in checks:
         for ki, kj, kk in visit():
@@ -3881,7 +3881,7 @@ def set_weights_CIC(x, weights):
 )
 def set_weights_TSC(x, weights):
     index = int(x + 0.5)
-    dist = x - index  # Distance between center grid point and x; -0.5 <= dist < 0.5
+    dist = x - index  # Distance between centre grid point and x; -0.5 <= dist < 0.5
     index -= 1
     weights[0] = 0.5*(0.5 - dist)**2
     weights[1] = 0.75 - dist**2

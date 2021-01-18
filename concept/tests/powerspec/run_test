@@ -61,7 +61,7 @@ mv "${this_dir}/powerspec_snapshot.png" "${this_dir}/powerspec_snapshot_half_gri
 mv "${this_dir}/powerspec_snapshot_original"     "${this_dir}/powerspec_snapshot"
 mv "${this_dir}/powerspec_snapshot_original.png" "${this_dir}/powerspec_snapshot.png"
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

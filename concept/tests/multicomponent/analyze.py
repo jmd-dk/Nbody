@@ -116,7 +116,7 @@ for subtest in ('domain', 'tile'):
     ) = load_results(subtest)
 
 # Analyse domain subtest data
-masterprint(f'Analyzing {this_test} data ...')
+masterprint(f'Analysing {this_test} data ...')
 subtest = 'domain'
 abs_tol = 1*softening_length[subtest]
 for ncomponents in ncomponents_values[subtest]:
@@ -183,6 +183,6 @@ for ncomponents in ncomponents_values[subtest]:
                         f'See the renders in "{directory}" for visualizations.'
                     )
 
-# Done analyzing
+# Done analysing
 masterprint('done')
 

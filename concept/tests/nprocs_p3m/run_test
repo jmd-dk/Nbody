@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script runs the same, random initial conditions with different numbers
-# of processes and compares the results. The P3M algorithm is used.
+# of processes and compares the results. The P³M algorithm is used.
 
 # Number of processes to use
 nprocs_list=(1 2 4 8)
@@ -48,7 +48,7 @@ for n in ${nprocs_list[@]}; do
     mv "${this_dir}/output" "${this_dir}/output_${n}"
 done
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

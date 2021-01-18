@@ -54,7 +54,7 @@ cimport('from snapshot import get_initial_conditions, load, save')
 def delegate():
     eval(special_params['special'] + '()')
 
-# Context manager which temporaly sets the
+# Context manager which temporarily sets the
 # allow_similarly_named_components flag in the species module to True,
 # allowing for the initialization of many component instances
 # with the same name.
@@ -156,10 +156,10 @@ def convert():
     # different case.
     names = [component.name for component in snapshot.components]
     names_lower = [name.lower() for name in names]
-    for name in dict(attributes):  # New dict neeed as keys are removed during iteration
+    for name in dict(attributes):  # New dict needed as keys are removed during iteration
         if name not in names:
             # Specified component name not present.
-            # Maybe the problem is due to lower/upper case.
+            # Maybe the problem is due to lower-/upper-case.
             if name.lower() in names_lower:
                 # The component name is written in a different case.
                 # Move specified attributes over to the properly
@@ -202,13 +202,13 @@ def convert():
                 )
             setattr(component, key, val)
         # If both N and gridsize is specified for this component, it
-        # means that particles sould be converted to a fluid (the other
+        # means that particles should be converted to a fluid (the other
         # way around is not supported).
         if component.N > 1 and component.gridsize > 1:
             component.representation = 'fluid'
-        # Apply particles --> fluid convertion, if necessary
+        # Apply particles --> fluid conversion, if necessary
         if original_representation == 'particles' and component.representation == 'fluid':
-            # To do the convertion, the particles need to be
+            # To do the conversion, the particles need to be
             # distributed according to which domain they are in.
             component.representation = 'particles'
             exchange(component)
@@ -252,7 +252,7 @@ def convert():
                         )
             elif 'gridsize' not in attributes[name] and 'mass' not in attributes[name]:
                 # If neither the grid size nor the mass is specified,
-                # the number of gridpoints in the fluid
+                # the number of grid points in the fluid
                 # representation should equal the number of
                 # particles in the particle representation.
                 component.gridsize = int(round(cbrt(component.N)))
@@ -299,7 +299,7 @@ def convert():
             # If the particle number equal the number of grid points
             # and every fluid elements was interpolated to,
             # then (roughly) one grid point corresponds to one particle.
-            # In this case, the convertion from particles to fluid should
+            # In this case, the conversion from particles to fluid should
             # preserve the momentum distribution. For this particular case,
             # warn the user about changes in the
             # standard deviation of the momentum after interpolation.
@@ -725,7 +725,7 @@ def CLASS():
     # being too high, as the components are not used to perform a
     # simulation anyway.
     suppress_output['err'].add('the energy density of the components add up to')
-    # Initialize components, but do not realize them
+    # Initialize components, but do not realise them
     init_time()
     components = get_initial_conditions(do_realization=False)
     # Should we compute and store perturbations (or only background)?
@@ -775,7 +775,7 @@ def CLASS():
             # "class_params" group. If you need to know further
             # parameters used by CLASS (i.e. default values),
             # you should specify these explicitly in the class_params
-            # user parameter. No unit convertion will take place.
+            # user parameter. No unit conversion will take place.
             params_h5 = hdf5_file.require_group('class_params')
             for key, val in cosmoresults.params.items():
                 key = key.replace('/', '__per__')
@@ -843,8 +843,8 @@ def CLASS():
                     key = 'w_fld'
                 else:
                     masterwarn(
-                        f'Unrecognized CLASS background variable "{key}". '
-                        f'Unit convertion could not be carried out.'
+                        f'Unrecognised CLASS background variable "{key}". '
+                        f'Unit conversion could not be carried out.'
                     )
                 dset = background_h5.create_dataset(key, (arr.shape[0],), dtype=C2np['double'])
                 dset[:] = arr

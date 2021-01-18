@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script performs a test of the code's ability to transform
-# transfer functions into 3D realizations. Both fluid and particle
+# transfer functions into 3D realisations. Both fluid and particle
 # components are tested.
 
 # Number of processes to use
@@ -28,7 +28,7 @@ set -e
 # Cleanup from last test run
 "${this_dir}/clean"
 
-# Realize matter particles and compute their powerspectrum
+# Realise matter particles and compute their power spectrum
 for n in ${nprocs_list[@]}; do
     echo "$(cat "${this_dir}/params")
 initial_conditions = {
@@ -43,7 +43,7 @@ output_bases = {'powerspec': 'powerspec_nprocs=${n}'}
                  --local
 done
 
-# Realize matter fluid and compute its powerspectrum
+# Realise matter fluid and compute its power spectrum
 for n in ${nprocs_list[@]}; do
     echo "$(cat "${this_dir}/params")
 initial_conditions = {
@@ -61,7 +61,7 @@ output_bases = {'powerspec': 'powerspec_nprocs=${n}'}
                  --local
 done
 
-# Analyze the output powerspectra
+# Analyse the output power spectra
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

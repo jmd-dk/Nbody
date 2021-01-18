@@ -232,7 +232,7 @@ def exchange(component, reset_buffers=False):
     N_needed = N_local + N_recv_tot
     if component.N_allocated < N_needed:
         component.resize(N_needed)
-        # Reextract position pointers
+        # Re-extract position pointers
         posx = component.posx
         posy = component.posy
         posz = component.posz
@@ -491,7 +491,7 @@ def communicate_ghosts(grid_or_grids, operation):
     grid = grid_or_grids
     if grid is None:
         return
-    # Set the direction of communication dependeing on the operation
+    # Set the direction of communication depending on the operation
     reverse = (operation == '=')
     # Loop over all 26 neighbour domains
     for i in range(-1, 2):
@@ -1043,13 +1043,13 @@ rung_indices_arr = empty(1, dtype=C2np['signed char'])
     mpifun=str,
     operation=str,
     # Local
-    arr_recv=object,  # NumPy aray
-    arr_send=object,  # NumPy aray
+    arr_recv=object,  # np.ndarray
+    arr_send=object,  # np.ndarray
     block_recv_passed_as_scalar='bint',
     contiguous_recv='bint',
     contiguous_send='bint',
-    data_recv=object,  # NumPy aray
-    data_send=object,  # NumPy aray
+    data_recv=object,  # np.ndarray
+    data_send=object,  # np.ndarray
     i='Py_ssize_t',
     index='Py_ssize_t',
     j='Py_ssize_t',
@@ -1065,7 +1065,7 @@ rung_indices_arr = empty(1, dtype=C2np['signed char'])
     reverse_mpifun_mapping=dict,
     sendbuf_mv='double[::1]',
     using_recvbuf='bint',
-    returns=object,  # NumPy array or mpi4py.MPI.Request
+    returns=object,  # np.ndarray or mpi4py.MPI.Request
 )
 def smart_mpi(
     block_send=(), block_recv=(), dest=-1, source=-1, root=master_rank,
@@ -1081,7 +1081,7 @@ def smart_mpi(
     is larger than 1. Though for the sake of performance, always pass
     a fitting block_recv.
     The MPI function to use is specified in the mpifun argument
-    (e.g. mpifun='sendrecv' or mpifun='send'). Uppercase communication
+    (e.g. mpifun='sendrecv' or mpifun='send'). Upper-case communication
     (array communication) is always used, regardless of the case of the
     value of mpifun.
     For some MPI communications a root process should be specified.
@@ -1531,7 +1531,7 @@ def get_buffer(size_or_shape=-1, buffer_name=0, nullify=False):
     if nullify:
         for i in range(size):
             buffer[i] = 0
-    # Return the buffer in the requsted shape
+    # Return the buffer in the requested shape
     return np.reshape(buffer_mv[:size], shape)
 # Function which resizes one of the global buffers
 @cython.header(# Arguments
@@ -1568,7 +1568,7 @@ buffer_mv = cast(buffer, 'double[:1]')
 buffers_mv = collections.OrderedDict()
 buffers_mv[0] = buffer_mv
 
-# Cutout domains at import time
+# Cut out domains at import time
 cython.declare(
     domain_subdivisions='int[::1]',
     domain_layout='int[:, :, ::1]',
@@ -1611,7 +1611,7 @@ cython.declare(
     indices_send_sizes='Py_ssize_t[::1]',
     j='int',
 )
-# This variable stores the number of particles to send to each prcess
+# This variable stores the number of particles to send to each process
 N_send = empty(nprocs, dtype=C2np['Py_ssize_t'])
 # This Py_ssize_t** variable stores the indices of particles to be send
 # to other processes. That is, indices_send[other_rank][i] is the local

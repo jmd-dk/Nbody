@@ -143,8 +143,8 @@ pre-installed component, you can declare its directory path through the
 E.g. to use a pre-installedgsl library:
   gsl_dir=/path/to/gsl /path/to/installer [/path/to/concept] [-t] [-y]
 The set of such environment variables correspond to the program names
-above (using lowercase only), except for MPICH/OpenMPI and OpenBLAS, which are
-just mpi_dir and blas_dir, respectively, as the specific MPI and BLAS
+above (using lower-case only), except for MPICH/OpenMPI and OpenBLAS, which
+are just mpi_dir and blas_dir, respectively, as the specific MPI and BLAS
 implementation does not matter.
 
 When installing CO𝘕CEPT on a cluster, it is often preferable to make use of an
@@ -282,7 +282,7 @@ if [ -z "${mpi}" ]; then
         mpi="mpich"
     fi
 elif [ "${mpi_lower}" != "mpich" ] && [ "${mpi_lower}" != "openmpi" ]; then
-    echo "Specified MPI implementation mpi=\"${mpi}\" not recognized.
+    echo "Specified MPI implementation mpi=\"${mpi}\" not recognised.
 Will use MPICH" >&2
     mpi="mpich"
 fi
@@ -367,7 +367,7 @@ paths_file="__top_dir__/.paths"
 # This function sets the variable "name_version" if not set already.
 # For pre-installed software, set "name_version" to "pre-installed".
 # If a third argument is given, this is the version to fall back to,
-# in case of unsuccessful retrievel of the link to the first version.
+# in case of unsuccessful retrieval of the link to the first version.
 set_version() {
     # Arguments: Program name, version, [fallback version]
     eval "[ -z \"\${${1}_version}\" ] || ${1}_version_specifiedbyuser=\"True\""
@@ -456,7 +456,7 @@ fi
 # we need to use a UTF-8 locale.
 set_locale() {
     # This function will set the locale through the LC_ALL and LANG
-    # evironment variables. We want to use a supported UTF-8 locale.
+    # environment variables. We want to use a supported UTF-8 locale.
     # The preference order is as follows:
     #   en_US.UTF-8
     #   en_*.UTF-8
@@ -505,7 +505,7 @@ else
     esc_concept="${esc_concept//\$\{esc_italic\}/${esc_italic}}"
     esc_concept="${esc_concept//\$\{esc_no_italic\}/${esc_no_italic}}"
 fi
-# Text colors
+# Text colours
 esc_red="${esc}[91m"
 esc_green="${esc}[92m"
 esc_yellow="${esc}[93m"
@@ -529,7 +529,7 @@ if [ "${say_welcome}" != "False" ]; then
 the cosmological ${esc_italic}N${esc_no_italic}-body code in Python${esc_normal}\n"
 fi
 
-# Status control sequenses
+# Status control sequences
 status="initialization"
 status_prefix="__new_status__="
 status_prefix_length=${#status_prefix}
@@ -579,8 +579,8 @@ if [ -z "${top_dir_specified}" ]; then
     top_dir_specified="False"
 fi
 for var in "$@"; do
-    # Strip command-line argument for brackets, which may have been
-    # adeed by users not familiar with this syntax for
+    # Strip command-line argument for brackets, which may have
+    # been added by users not familiar with this syntax for
     # specifying optional arguments.
     var="${var//\[/}"
     var="${var//\]/}"
@@ -723,7 +723,7 @@ convert_to_abs_path() {
 
 # Setup password-less SSH login between nodes (and exit), if requested
 if [ "${fix_ssh}" == "True" ]; then
-    # Move the preexisting ~/.ssh directory into a directory
+    # Move the pre-existing ~/.ssh directory into a directory
     # ~/.ssh_backup/<date>,
     # with <date> the current time.
     if [ -d ~/".ssh" ]; then
@@ -744,7 +744,7 @@ if [ "${fix_ssh}" == "True" ]; then
     # Add public key to the list of keys allowed to log in
     cat ~/".ssh/id_${key_type}.pub" >> ~/".ssh/authorized_keys"
     cat ~/".ssh/id_${key_type}.pub" >> ~/".ssh/authorized_keys2"
-    # Suppress future confirmation dialogs
+    # Suppress future confirmation dialogues
     echo "Host *
   StrictHostKeyChecking no
   UserKnownHostsFile /dev/null
@@ -776,7 +776,7 @@ fi
 # is returned.
 get_command() {
     command_name="${1}"
-    # Use the type builtin to locate the command
+    # Use the type built-in to locate the command
     local path="$(type "${command_name}" 2>/dev/null || :)"
     path="${path##* }"
     if [[ "${path}" == "/"* ]]; then
@@ -943,7 +943,7 @@ fi
 
 # This function should be called before any use of sudo and will cache
 # the root password to the sudo_command variable. After this, instead of
-# invoing sudo, invoke ${sudo_command} (using eval). This way, the root
+# involving sudo, invoke ${sudo_command} (using eval). This way, the root
 # password has to be entered at most once.
 sudo_func_built="False"
 build_sudo_func() {
@@ -1018,7 +1018,7 @@ build_sudo_func() {
             return
         fi
     fi
-    # If we only need to build th sudo command, do so now and return
+    # If we only need to build the sudo command, do so now and return
     if [ "${sudo_command_only}" == "True" ]; then
         if [ "${sudo_exist}" == "True" ]; then
             sudo_command() {
@@ -2065,7 +2065,7 @@ install_any_pypackages="False"
 install_any_software="False"
 install_anything="False"
 assume_preinstalled() {
-    # Arguments: Program name (lowercase)
+    # Arguments: Program name (lower-case)
     eval "name_preinstalled=\"\${${1}_preinstalled}\""
     if [ "${name_preinstalled}" == "False" ]; then
         eval "${1}_preinstalled=\"True\""
@@ -2443,7 +2443,7 @@ set_status "Initialising"
 # In order for the rest of this script to work, these URLs must point
 # to archives containing a single top-level directory.
 
-# Function for checking that a given url actually exists
+# Function for checking that a given URL actually exists
 validate_url() {
     # Arguments: Program name, [exit on error ("True" or "False")]
     progname="$(echo "${1}" | tr '[:upper:]' '[:lower:]')"
@@ -2521,7 +2521,7 @@ validate_url() {
                                 # succeed in correctly reporting the
                                 # existence of the remote file, even
                                 # though it exists. As a last resort,
-                                # try downloading the file completelte,
+                                # try downloading the file completely,
                                 # without using --spider (and throw away
                                 # the downloaded file).
                                 wget                        \
@@ -2555,7 +2555,7 @@ validate_url() {
 }
 
 # Function for letting versions fall back to their secondary,
-# fallback values, in case of unsuccessful retrievel of primary version.
+# fallback values, in case of unsuccessful retrieval of primary version.
 fallback() {
     # Arguments: Program name
     progname="$(echo "${1}" | tr '[:upper:]' '[:lower:]')"
@@ -2635,7 +2635,7 @@ check_progress() {
     # If the program has already been fully installed, a file called
     # .installation_finished will be placed in the program installation
     # directory. Note that some programs share a common installation
-    # directory and thefore also a common .installation_finished file.
+    # directory and therefore also a common .installation_finished file.
     eval "${progname}_installed=\"False\""
     if [ -f "${progdir}/.installation_finished" ]; then
         while read line; do
@@ -2673,7 +2673,7 @@ check_progress() {
                     eval "${progname}_downloaded=\"True\""
                     return
                 fi
-                # Progam already installed but of incorrect version.
+                # Program already installed but of incorrect version.
                 # Count as uninstalled.
                 break
             fi
@@ -2738,7 +2738,7 @@ ${progname_installed_varname}=\"${progname_installed_value}\""
             rm -rf "${progdir}" || :
         fi
     fi
-    # The url to the installation file for this program
+    # The URL to the installation file for this program
     eval "url=\"\${${progname}_url}\""
     # The directory for the downloaded file
     download_dir="${top_dir}/tmp/${progname}"
@@ -4593,7 +4593,7 @@ use_unset_compilers() {
 #################################
 # Function for downloading compressed archives
 download() {
-    # Arguments: Program name, [print_heading], [url]
+    # Arguments: Program name, [print heading], [URL]
     progname_formatted="$1"
     progname="${progname_formatted// /_}"
     progname="$(echo "${progname}" | tr '[:upper:]' '[:lower:]')"
@@ -5016,7 +5016,7 @@ Please be patient ...\n";                                                       
     done                                                                                        \
     ) & soothe_killer_pid=$!
     wait ${soothe_pid} >/dev/null 2>&1 || :
-    kill ${soothe_killer_pid} >/dev/null 2>&1 || :  # No forcefull kill (no -9)
+    kill ${soothe_killer_pid} >/dev/null 2>&1 || :  # No forceful kill (no -9)
     wait ${soothe_killer_pid} >/dev/null 2>&1 || :
 }
 
@@ -5428,7 +5428,7 @@ perl_install_func() {
     fi
     # Sometimes the installation will complain that the Perl libraries
     # should have been compiled statically. Thus, we try with and
-    # witouth the -fPIC C flag.
+    # without the -fPIC C flag.
     if [ -n "${perl_cflags}" ]; then
         perl_config_options="${perl_config_options} -Accflags=${perl_cflags}"
     fi
@@ -5512,7 +5512,7 @@ install "MPI" compiler "${compiler_possibilities_specified_mpi_last[@]}"
 # HDF5
 hdf5_install_func() {
     # Set environment variables and configure options used
-    # when building againts MPI and zlib.
+    # when building against MPI and zlib.
     enable_parallel=""
     if [ -n "${mpi_dir}" ]; then
         export LIBS="-lmpi ${LIBS}"
@@ -5911,8 +5911,8 @@ python_install_func() {
             return 1
         fi
     fi
-    # Build with pip if both openssl and zlib are installed.
-    # For Python >=3.7, a standalone libffi is also required,
+    # Build with pip if both OpenSSL and zlib are installed.
+    # For Python >=3.7, a stand-alone libffi is also required,
     # though we do not check explicitly for this.
     with_ensurepip_install=""
     if [ -n "${openssl_dir}" ] && [ -n "${zlib_dir}" ]; then
@@ -6009,7 +6009,7 @@ python_install_func() {
     # Test
     if [ "${do_tests}" == "True" ]; then
         # On some systems it has been observed that test_threading hangs
-        # indefinately, and so we kill the test process if it has not
+        # indefinitely, and so we kill the test process if it has not
         # completed within ${python_test_max_time} seconds.
         python_test_max_time=7200
         exit_code_filename="${top_dir}/tmp/.exit_code_python"
@@ -6095,7 +6095,7 @@ pip_download() {
     # No second argument, blank second argument or a second argument of
     # "upgrade" means newest version. The second argument can also be a
     # version string that pip understands, e.g. ">=1.4".
-    # The third argument determines how many seconds pip shoul get
+    # The third argument determines how many seconds pip should get
     # to download the package before it is killed. This can be helpful
     # if pip (for whatever reason) decides to run the setup.py file of
     # the package after a successful download, and that process ends
@@ -6145,7 +6145,7 @@ Attempting to download ${1} using pip ${all_pip_args}\n\n"
             # Download Python package
             "${python}" -m pip ${all_pip_args} & pip_download_pid=$!
             # The above command may succeed in retrieving the
-            # package, but then hang indefinately.
+            # package, but then hang indefinitely.
             # Kill the process after ${pip_download_time} seconds.
             soothe ${pip_download_pid} ${pip_download_time}
             # If the archive exists in the tmp/pip dir,
@@ -6223,11 +6223,11 @@ pip_install_pypackage() {
     fi
     for force_recythonization in "False" "True"; do
         if [ "${force_recythonization}" == "True" ]; then
-            # Some Python packages may contain pre-cythonized files as
+            # Some Python packages may contain pre-cythonised files as
             # part of their source code. If this is done with a Cython
             # version that is incompatible with the Python version in
             # use, this can lead to failure. We now try deleting any
-            # such pre-cythonized files, forcing re-cythonization.
+            # such pre-cythonised files, forcing re-cythonisation.
             working_cython=$(check_pypackage_installed cython)
             if [ "${working_cython}" == "False" ]; then
                 continue
@@ -6261,7 +6261,7 @@ pip_install_pypackage() {
                     break
                 fi
             done
-            # Remove pre-cythonized files
+            # Remove pre-cythonised files
             precythonized="$(grep -r -l '^/\* Generated by Cython' .)"
             if [ -z "${precythonized}" ]; then
                 cd "${wd}"
@@ -6283,7 +6283,7 @@ pip_install_pypackage() {
             cd "${wd}"
             rm -rf "${tmp_pip_dir}_cp" || :
             cp -r "${tmp_pip_dir}" "${tmp_pip_dir}_cp"
-            # The re-cythonization should be carried out using the
+            # The re-cythonisation should be carried out using the
             # Cython that is installed on the Python that we work with.
             # It may however be fetched from the PATH, and so we need to
             # ensure that the first Cython ('cython', 'cythonize') on
@@ -8308,9 +8308,9 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
     fi
     # Build CLASS, including the Python wrapper classy. We explicitly
     # specify Python 3 as the language level and replace -O4 with -O3
-    # (which are equivalent on compilers that recognize -O4).
+    # (which are equivalent on compilers that recognise -O4).
     # We try with and without the -ffast-math option, try different
-    # commpilers and various flags for correctly linking to OpenMP.
+    # compilers and various flags for correctly linking to OpenMP.
     # The classy Python wrapper is hard-coded to use gcc in setup.py to
     # test for existence of the mvec library, as well as to get the
     # compiler library directory.
@@ -8340,7 +8340,7 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
         sed -i "s/extra_link_args *=/extra_link_args=\
 '${gomp_in_extra_link_args} ${OMPFLAG}'.split(),  #/" "python/setup.py"
         if [ "${hardcoded_gcc}" == "False" ]; then
-            # Remove hardcoding of gcc
+            # Remove hard-coding of gcc
             linenr_1=$(awk "\$0 ~ \"gcc\" {print NR}" "python/setup.py" \
                 | head -n 1)
             linenr_2=$(awk "\$0 ~ \"mvec\" {print NR}" "python/setup.py" \
@@ -8370,7 +8370,7 @@ if [ "${class_install}" == "True" ] && [ "${class_installed}" == "False" ]; then
             if [ -d "${blas_dir}" ]; then
                 export LD_LIBRARY_PATH="${blas_dir}/lib:${LD_LIBRARY_PATH}"
             fi
-            # We do not use the builtin test_class.py, as this requires
+            # We do not use the built-in test_class.py, as this requires
             # tens of gigabytes of memory and uses the Nose and
             # parameterized Python packages. Instead we perform a simple
             # test of our own, which only does a background computation.
@@ -8408,7 +8408,7 @@ fi
 #####################################################
 # Install GADGET, used for testing the CO𝘕CEPT code #
 #####################################################
-# FFTW 2.x (GADGET2 is incompatible with FFTW 3.x)
+# FFTW 2.x (GADGET-2 is incompatible with FFTW 3.x)
 fftw_for_gadget_install_func() {
     also_single_precision="False"  # Install both double and single precision?
     if [ -z "${enable_shared}" ] && [ -n "${shared}" ]; then
@@ -8610,7 +8610,7 @@ if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; 
                 set_status "Testing GADGET"
                 "${concept}" -t "gadget" 2>&1 | tee "${gadget_test_log}"
                 [ ${PIPESTATUS[0]} -eq 0 ] || gadget_test_success="False"
-                # Clean test_log if test is successfull
+                # Clean test_log if test is successful
                 if [ "${gadget_test_success}" == "True" ]; then
                     rm -f "${gadget_test_log}" || :
                 fi
@@ -8671,7 +8671,7 @@ if [ "${concept_install}" == "True" ] && [ "${concept_installed}" == "False" ]; 
     logo_printed=True "${concept}" --local 2>&1
     # Remove log and parameter copy file generated by the above run
     (source "${concept}" && make clean_logs clean_params_cp) || :
-    # Remove compilation artifacts if installing in slim mode
+    # Remove compilation artefacts if installing in slim mode
     if [ "${slim}" == "True" ]; then
         mkdir so
         mv *.so so/
@@ -8951,7 +8951,7 @@ display_loop() {
                 || [[ "${status}" == "${status_installpid}"* ]] \
             ; then
                 # Display loop complete or print of
-                # internal install pid. Do nothing.
+                # internal install PID. Do nothing.
                 :
             elif [[ "${status}" == "${status_setvar}"* ]]; then
                 # A variable is to be set in the outer scope

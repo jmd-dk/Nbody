@@ -89,7 +89,7 @@ done
 
 
 ###############################################
-# Analyze output snapshots from both subtests #
+# Analyse output snapshots from both subtests #
 ###############################################
 "${concept}" -n 1 -p "${this_dir}/params" -c "_subtest = 'domain'" \
     -c "_ncomponents = 1" -m "${this_dir}/analyze.py" --pure-python --local

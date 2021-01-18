@@ -27,7 +27,7 @@ set -e
 # Run the CO𝘕CEPT code
 "${concept}" -n 2 -p "${this_dir}/params" --local
 
-# Analyze the output power spectra
+# Analyse the output power spectra
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

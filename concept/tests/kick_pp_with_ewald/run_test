@@ -2,7 +2,7 @@
 
 # This script performs a kick test of the CO𝘕CEPT (PP) code, by comparison
 # with GADGET-2 (TreePM). ICs are generated, containing 8 particles placed
-# symetrically  so that a force only exist in the x-direction. The particles
+# symmetrically  so that a force only exist in the x-direction. The particles
 # start out with zero velocity.
 
 # Absolute path and name of the directory of this file
@@ -45,7 +45,7 @@ rm -f "${Gadget2_dir}/ewald_spc_table_64.dat"  # Remove tabulated Ewald grid
     && ./Gadget2 params       \
 )
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Copy the tabulated Ewald corrections to the Gadget2 directory if it does not

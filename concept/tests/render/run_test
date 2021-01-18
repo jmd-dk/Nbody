@@ -83,7 +83,7 @@ mv "${this_dir}/output/render3D_snapshot.png" "${this_dir}/output/render3D_snaps
              -u render3D "${this_dir}/output/subdir" \
              --local
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1                        \
              -p "${this_dir}/params"     \
              -m "${this_dir}/analyze.py" \

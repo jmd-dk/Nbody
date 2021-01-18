@@ -470,7 +470,7 @@ encountered will also generally be harder.
 Below we list the exact changes caused by the ``--slim`` option.
 
 * **Fewer license and acknowledgement files**: During normal installation, all
-  recognized license and acknowledgement files for the various dependencies
+  recognised license and acknowledgement files for the various dependencies
   (and CO\ *N*\ CEPT itself) are copied over to the respective installation
   directories. This is now skipped.
 
@@ -489,7 +489,7 @@ Below we list the exact changes caused by the ``--slim`` option.
 * **No cached Python files**: All bytecode files compiled and cached by Python
   during installation will be removed.
 
-* **No compilation artifacts from CO**\ :bolditalic:`N`\ **CEPT and CLASS**:
+* **No compilation artefacts from CO**\ :bolditalic:`N`\ **CEPT and CLASS**:
   Only the final shared object files (as well as the bare source) resulting
   from compilation of CO\ *N*\ CEPT and CLASS will be present after
   installation.

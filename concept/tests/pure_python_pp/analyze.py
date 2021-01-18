@@ -28,10 +28,10 @@ for cp in components.keys():
 N_snapshots = len(a)
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Using the particle order of the cython snapshot as the standard, find the corresponding
-# ID's in the python snapshots and order these particles accoringly.
+# ID's in the python snapshots and order these particles accordingly.
 N = components['cython'][1][0].N
 D2 = zeros(N, dtype=float)
 ID = zeros(N, dtype=int)
@@ -133,5 +133,5 @@ if not all(np.isclose(ewald_grid['cython'], ewald_grid['python'], ϵ, δ)):
         .format(*[f'{this_dir}/ewald_{cp}.hdf5' for cp in ('cython', 'python')])
     )
 
-# Done analyzing
+# Done analysing
 masterprint('done')

@@ -25,8 +25,8 @@ component = Component('test fluid', 'matter', gridsize=gridsize)
 ϱ = empty([gridsize]*3, dtype=float)
 for i in range(gridsize):
     ϱ[i, :, :] = 2 + sin(2*π*i/gridsize)  # Unitless
-ϱ /= sum(ϱ)                                  # Normalize
-ϱ *= mass_fluid_tot/Vcell                    # Apply units
+ϱ /= sum(ϱ)                               # Normalize
+ϱ *= mass_fluid_tot/Vcell                 # Apply units
 component.populate(ϱ,                                'ϱ'   )
 component.populate(ϱ*speed,                          'J', 0)
 component.populate(zeros([gridsize]*3, dtype=float), 'J', 1)

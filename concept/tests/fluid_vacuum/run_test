@@ -70,7 +70,7 @@ mv "${this_dir}/output/snapshot"* "${this_dir}/output/fluid/"
 # Convert particle snapshots to fluid snapshots
 particles2fluid "${this_dir}/output/particles"
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

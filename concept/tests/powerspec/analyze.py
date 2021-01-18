@@ -16,7 +16,7 @@ posy = component.posy
 posz = component.posz
 
 # Begin analysis
-masterprint(f'Analyzing {this_test} data ...')
+masterprint(f'Analysing {this_test} data ...')
 
 # Volume and linear size of cube with the volume of a sphere
 # with radius powerspec_options['tophat'].
@@ -81,7 +81,7 @@ with open(powerspec_filename, encoding='utf-8') as powespec_file:
 rel_tol = 3e-2
 if not isclose(σ, σ_concept, rel_tol=rel_tol):
     abort('The rms density variation σ = {:.6g} from "{}" do not agree with direct computation '
-           '({:.6g}). The power spectrum from which σ is calulated is plotted in "{}"'
+           '({:.6g}). The power spectrum from which σ is calculated is plotted in "{}"'
            .format(σ_concept, powerspec_filename, σ, powerspec_filename + '.png'))
 
 # Check the scaling of the power spectrum against the boxsize.
@@ -157,5 +157,5 @@ if not all(
         f'"{powerspec_filename_half_gridsize}.png".'
     )
 
-# Done analyzing
+# Done analysing
 masterprint('done')

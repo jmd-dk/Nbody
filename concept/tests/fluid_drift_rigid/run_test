@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script performs a drift test of a fluid with a spatially
-# homogeneus velocity field. Gravity is disabled.
+# homogeneous velocity field. Gravity is disabled.
 
 # Absolute path and name of the directory of this file
 this_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
@@ -30,7 +30,7 @@ set -e
 # Run the CO𝘕CEPT code on the fluid ICs
 "${concept}" -n 1 -p "${this_dir}/params" --local
 
-# Analyze the output snapshots
+# Analyse the output snapshots
 "${concept}" -n 1 -p "${this_dir}/params" -m "${this_dir}/analyze.py" --pure-python --local
 
 # Test ran successfully. Deactivate traps.

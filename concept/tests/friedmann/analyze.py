@@ -28,11 +28,11 @@ compiled = not user_params['_pure_python']
 mode = f'class={enable_class_background}_compiled={compiled}'
 np.savetxt(f'{this_dir}/t_{mode}.dat', cosmic_times)
 
-# If all four data files exist, plot and analyze these
+# If all four data files exist, plot and analyse these
 data_filenames = glob(f'{this_dir}/*.dat')
 if sum([bool(re.search(rf'^{this_dir}/t_class=(True|False)_compiled=(True|False)\.dat$' , fname))
        for fname in data_filenames]) == 4:
-    masterprint('Analyzing {} data ...'.format(this_test))
+    masterprint('Analysing {} data ...'.format(this_test))
     # Load in the data
     all_times = {}
     for filename in data_filenames:
@@ -58,7 +58,7 @@ if sum([bool(re.search(rf'^{this_dir}/t_class=(True|False)_compiled=(True|False)
     plt.xlim(a_begin, 1)
     plt.xlabel('$a$')
     plt.ylabel(rf'$t\,\mathrm{{[{unit_time}]}}$')
-    # Using CLASS or not makes a differnce at early times
+    # Using CLASS or not makes a difference at early times
     # due to the inclusion of e.g. radiation and neutrinos.
     # Find the latest time at which this difference is still important.
     rel_tol = 1e-2
@@ -79,7 +79,7 @@ if sum([bool(re.search(rf'^{this_dir}/t_class=(True|False)_compiled=(True|False)
             # If this time is too late, something is wrong
             a_max_allowed = 0.1
             if a > a_max_allowed:
-                abort(f'A discrepency in t(a) of 1% between CLASS and the built-in '
+                abort(f'A discrepancy in t(a) of 1% between CLASS and the built-in '
                       f'Freedman equation is present as late as a = {a}, '
                       f'which is too extreme to be acceptable.\n'
                       f'See "{fig_file}" for a visualization.'

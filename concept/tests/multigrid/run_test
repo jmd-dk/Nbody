@@ -107,7 +107,7 @@ done
 # This subtest carries out a matter-only simulation twice, using the
 # same and equal upstream and downstream potential grid sizes, but using
 # a global potential grid size either equal to or larger than the
-# upstream/downstram potential grid size. The two simulations should
+# upstream/downstream potential grid size. The two simulations should
 # evolve exactly the same.
 subtest_dir="${this_dir}/upstream_global_downstream"
 size=32
@@ -238,7 +238,7 @@ rm -rf "${this_dir}/output"
 
 
 
-# Analyze the outputs
+# Analyse the outputs
 "${concept}"                    \
     -n 1                        \
     -p "${this_dir}/params"     \

@@ -8,7 +8,7 @@ this_dir  = os.path.dirname(os.path.realpath(__file__))
 this_test = os.path.basename(this_dir)
 
 # Begin analysis
-masterprint('Analyzing {} data ...'.format(this_test))
+masterprint('Analysing {} data ...'.format(this_test))
 
 # Read in the three 3D render images
 render3D_path   = this_dir + '/output/render3D_snapshot.png'
@@ -44,5 +44,5 @@ if not np.any(render3D_0[:, :, :3] < [0.01]*3):
     abort('The scalefactor text do not seem to '
           'be black on 3D render "{}".'.format(render3D_0_path))
 
-# Done analyzing
+# Done analysing
 masterprint('done')

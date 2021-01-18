@@ -210,7 +210,7 @@ def get_powerspec_bins(gridsize, k_max, binsize):
     k2_max = pairmin(k2_max, 3*nyquist**2)
     # Correct k_max
     k_max = ℝ[2*π/boxsize]*sqrt(k2_max)
-    # Get k of bin centers using a running bin size
+    # Get k of bin centres using a running bin size
     # as specified by binsize.
     k_bin_centers = construct_k_bin_centers(k_min, k_max, binsize, gridsize, nyquist)
     # Construct array mapping k2 (grid units) to bin index
@@ -218,7 +218,7 @@ def get_powerspec_bins(gridsize, k_max, binsize):
     k_bin_indices[0] = 0
     for k2 in range(1, k_bin_indices.shape[0]):
         k_magnitude = ℝ[2*π/boxsize]*sqrt(k2)
-        # Find index of closest (in linear distance) bin center
+        # Find index of closest (in linear distance) bin centre
         index = np.searchsorted(k_bin_centers, k_magnitude, 'left')
         if index == ℤ[k_bin_centers.shape[0]]:
             index -= 1
@@ -587,7 +587,7 @@ def save_powerspec(declarations, filename):
     # and possibly another "power" if the linear power spectrum should
     # be outputted as well. The number of rows in a column depends on
     # the grid size, but to make it easier to read back in we make all
-    # columns the same length by appending NaNs as required
+    # columns the same length by appending NaN's as required
     # (zeros for the modes).
     # Get a 2D array with the right size for storing all data.
     for declaration_group in header_info.declaration_groups.values():
@@ -651,7 +651,7 @@ def save_powerspec(declarations, filename):
 # data file, given a list of power spectrum declarations.
 def get_powerspec_header(declarations):
     """Besides the header, this function also returns a list of data
-    format specifiers, the delimter needed between the data columns and
+    format specifiers, the delimiter needed between the data columns and
     a dict mapping power spectrum grid sizes to lists of
     power spectrum declarations.
     Importantly, the supplied list of power spectrum declarations should
@@ -1055,7 +1055,7 @@ def measure(component, quantity, communicate=True):
         # where c*sqrt(w) is an approximation for the local sound speed.
         # For particles we have w = 0 and ẋ = mom/(a**2*m), and so
         # v = mom/(a**2*mass).
-        # In the case of decyaing (matter) particles, the mass at time a
+        # In the case of decaying (matter) particles, the mass at time a
         # is really a**(-3*w_eff)*mass, and so we get
         # v = mom/(a**(2 - 3*w_eff)*mass)
         if component.representation == 'particles':
@@ -1115,7 +1115,7 @@ def measure(component, quantity, communicate=True):
                 if communicate:
                     J_over_ϱ_plus_𝒫_2_max = allreduce(J_over_ϱ_plus_𝒫_2_max, op=MPI.MAX)
                 v_max = a**(3*w_eff - 2)*sqrt(J_over_ϱ_plus_𝒫_2_max)
-                # Add the sound speed. When the P=wρ approxiamation is
+                # Add the sound speed. When the P=wρ approximation is
                 # False, the sound speed is non-global and given by the
                 # square root of δ𝒫/δϱ. However, constructing δ𝒫/δϱ
                 # locally from the ϱ and 𝒫 grids leads to large
@@ -1178,7 +1178,7 @@ def measure(component, quantity, communicate=True):
                 if communicate:
                     ΣJ_over_ϱ_plus_𝒫_2 = allreduce(ΣJ_over_ϱ_plus_𝒫_2, op=MPI.SUM)
                 v_rms = a**(3*w_eff - 2)*sqrt(ΣJ_over_ϱ_plus_𝒫_2/N_elements)
-                # Add the sound speed. When the P=wρ approxiamation is
+                # Add the sound speed. When the P=wρ approximation is
                 # False, the sound speed is non-global and given by the
                 # square root of δ𝒫/δϱ. However, constructing δ𝒫/δϱ
                 # locally from the ϱ and 𝒫 grids leads to large
@@ -1220,7 +1220,7 @@ def measure(component, quantity, communicate=True):
             # J*Vcell = (a**4*(ρ + c⁻²P))*Vcell
             #         = (V_phys*(ρ + c⁻²P))*a*u,
             # which reduces to mass*a*u for pressureless fluids and so
-            # it is in correspondance with the momentum definition
+            # it is in correspondence with the momentum definition
             # for particles.
             for dim, fluidscalar in enumerate(component.J):
                 J_noghosts = asarray(fluidscalar.grid_noghosts)
@@ -1367,7 +1367,7 @@ def measure(component, quantity, communicate=True):
                     diff_max[dim] = diff_max_dim
                 Δdiff_max_list.append(Δdiff_max)
                 # Maximum discontinuity (difference between forward and
-                # backward difference) normalized accoring to
+                # backward difference) normalized according to
                 # the largest slope.
                 Δdiff_max_normalized_list.append(asarray(
                     [
@@ -1405,7 +1405,7 @@ def debug(components):
     component data and print out the results. Warnings will be given for
     obviously erroneous results.
     """
-    # Componentwise analysis
+    # Component-wise analysis
     for component in components:
         w_eff = component.w_eff()
         # sum(momentum) and std(momentum) in each dimension
@@ -1464,7 +1464,7 @@ def debug(components):
                         )
             # Warn if any densities are negative
             if ϱ_min < 0:
-                masterwarn(f'Negative density occured for {component.name}')
+                masterwarn(f'Negative density occurred for {component.name}')
             # Warn if mean(ϱ) differs from the correct, constant result
             if not isclose(ϱ_bar, cast(component.ϱ_bar, 'double'), rel_tol=1e-6):
                 masterwarn(
@@ -1495,8 +1495,8 @@ def debug(components):
                                 component,
                                 Δdiff_max_normalized[dim],
                                 )
-# Dict storing sum of momenta for optained in previous call to the
-# debug function, for all components.
+# Dict storing sum of momenta for obtained in previous call
+# to the debug function, for all components.
 cython.declare(Σmom_prev=dict)
 Σmom_prev = {}
 
