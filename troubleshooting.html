@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>Troubleshooting &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
         <script src="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.js"></script>
@@ -38,16 +48,6 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/tabs.css" type="text/css" />
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Publications" href="publications.html" />
@@ -65,7 +65,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -88,6 +88,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -120,12 +121,7 @@
 <li class="toctree-l3"><a class="reference internal" href="tutorial/beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
@@ -263,11 +259,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -287,6 +283,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -325,7 +322,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Troubleshooting</li>
     
@@ -370,11 +367,11 @@ author at
 <ul class="simple">
 <li><p><a class="reference internal" href="#installation-failed" id="id5">Installation failed</a></p></li>
 <li><p><a class="reference internal" href="#compilation-failed" id="id6">Compilation failed</a></p></li>
-<li><p><a class="reference internal" href="#terminal-color-output-looks-weird" id="id7">Terminal color output looks weird</a></p></li>
+<li><p><a class="reference internal" href="#terminal-colour-output-looks-weird" id="id7">Terminal colour output looks weird</a></p></li>
 <li><p><a class="reference internal" href="#problems-related-to-python-libraries-and-packages" id="id8">Problems related to Python libraries and packages</a></p></li>
 <li><p><a class="reference internal" href="#error-messages-containing-read-1" id="id9">Error messages containing ‘Read -1’</a></p></li>
 <li><p><a class="reference internal" href="#the-simulation-hangs-when-calling-class" id="id10">The simulation hangs when calling CLASS</a></p></li>
-<li><p><a class="reference internal" href="#crashes-or-other-bad-behavior" id="id11">Crashes or other bad behavior</a></p></li>
+<li><p><a class="reference internal" href="#crashes-or-other-bad-behaviour" id="id11">Crashes or other bad behaviour</a></p></li>
 <li><p><a class="reference internal" href="#problems-when-running-remotely" id="id12">Problems when running remotely</a></p></li>
 <li><p><a class="reference internal" href="#bad-performance-when-using-multiple-processes-nodes" id="id13">Bad performance when using multiple processes/nodes</a></p></li>
 <li><p><a class="reference internal" href="#problems-when-using-multiple-nodes" id="id14">Problems when using multiple nodes</a></p></li>
@@ -401,7 +398,7 @@ installation log files for failed tests may then reveal something.</p>
 </div>
 <div class="section" id="compilation-failed">
 <h2><a class="toc-backref" href="#id6">Compilation failed</a><a class="headerlink" href="#compilation-failed" title="Permalink to this headline">¶</a></h2>
-<p>Compilation of the CO<em>N</em>CPET code takes place as the last essential step
+<p>Compilation of the CO<em>N</em>CEPT code takes place as the last essential step
 during <a class="reference internal" href="installation.html#standard-installation"><span class="std std-ref">standard installation</span></a>, as well as when
 invoking <code class="docutils literal notranslate"><span class="pre">concept</span></code> after changes have been made to the source files. This
 process may fail for several reasons, solutions to some are described in this
@@ -468,7 +465,7 @@ optimizations:</p>
 ./concept --no-optimizations --local
 </pre></div>
 </div>
-<p>If this works, the problem is definately with some of the optimization flags.
+<p>If this works, the problem is definitely with some of the optimization flags.
 You should however not run CO<em>N</em>CEPT simulations with the compiled code in
 a completely unoptimized state, as this reduces performance drastically.
 Instead, experiment with removing individual optimization flags added to the
@@ -478,9 +475,9 @@ For each attempt, recompile CO<em>N</em>CEPT with<em>out</em> <code class="docut
 Also, remember to clean up the old compilation before attempting anew.</p>
 </div>
 </div>
-<div class="section" id="terminal-color-output-looks-weird">
-<h2><a class="toc-backref" href="#id7">Terminal color output looks weird</a><a class="headerlink" href="#terminal-color-output-looks-weird" title="Permalink to this headline">¶</a></h2>
-<p>CO<em>N</em>CEPT includes a lot of color and other formatting in its terminal
+<div class="section" id="terminal-colour-output-looks-weird">
+<h2><a class="toc-backref" href="#id7">Terminal colour output looks weird</a><a class="headerlink" href="#terminal-colour-output-looks-weird" title="Permalink to this headline">¶</a></h2>
+<p>CO<em>N</em>CEPT includes a lot of colour and other formatting in its terminal
 output. While most modern terminal emulators on Linux (GNOME Terminal,
 Terminator, xterm, etc.) fully support this, the story is different on other
 platforms.</p>
@@ -496,7 +493,7 @@ remotely via SSH (through e.g. PuTTY), no solution is known.</p>
 Docker or remotely via SSH) and the terminal formatting appears suboptimal,
 try using the superior <a class="reference external" href="https://www.iterm2.com/">iTerm2</a> terminal emulator.</p></li>
 </ul>
-<p>If you want to disable color and other formatted output alltogether, set</p>
+<p>If you want to disable colour and other formatted output altogether, set</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">enable_terminal_formatting</span> <span class="o">=</span> <span class="kc">False</span>
 </pre></div>
 </div>
@@ -546,17 +543,17 @@ than exiting with an error message. To see the CLASS error message, run
 CO<em>N</em>CEPT in pure Python mode using the <code class="docutils literal notranslate"><span class="pre">--pure-python</span></code>
 <a class="reference internal" href="command_line_options.html#pure-python"><span class="std std-ref">command-line option</span></a>.</p>
 </div>
-<div class="section" id="crashes-or-other-bad-behavior">
-<h2><a class="toc-backref" href="#id11">Crashes or other bad behavior</a><a class="headerlink" href="#crashes-or-other-bad-behavior" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="crashes-or-other-bad-behaviour">
+<h2><a class="toc-backref" href="#id11">Crashes or other bad behaviour</a><a class="headerlink" href="#crashes-or-other-bad-behaviour" title="Permalink to this headline">¶</a></h2>
 <p>This entry is concerned with problems encountered when using CO<em>N</em>CEPT
 <em>locally</em>. If your problem occurs only for remote jobs, please see the
 ‘<a class="reference internal" href="#id3">Problems when running remotely</a>’ entry instead.</p>
 <p>If you are unable to even compile CO<em>N</em>CEPT, see the
 ‘<a class="reference internal" href="#compilation-failed">Compilation failed</a>’ entry.</p>
 <p>If you are able to start CO<em>N</em>CEPT runs, but they crash, hang, yield
-obviously wrong results, or exhibit other bad behavior, it may be due to
+obviously wrong results, or exhibit other bad behaviour, it may be due to
 improper installation or a code bug. To inspect the extent of the erroneous
-behavior, try running the full CO<em>N</em>CEPT test suite via</p>
+behaviour, try running the full CO<em>N</em>CEPT test suite via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -t all
 </pre></div>
 </div>
@@ -565,7 +562,7 @@ CO<em>N</em>CEPT (i.e. any release version, not ‘master’), there is most pro
 a problem with your installation. You can try reinstalling CO<em>N</em>CEPT along
 with all of its dependencies, perhaps using compilers different from the ones
 used the first time around.</p>
-<p>If all tests passes despite the observed (and reproducible!) bad behavior,
+<p>If all tests passes despite the observed (and reproducible!) bad behaviour,
 you may have found a bug. Please report this.</p>
 </div>
 <div class="section" id="problems-when-running-remotely">
@@ -573,10 +570,10 @@ you may have found a bug. Please report this.</p>
 <p>This entry is concerned with problems encountered specifically with remote
 CO<em>N</em>CEPT jobs. If you have not tried out CO<em>N</em>CEPT locally, please do
 this first. If you encounter problems here as well, please see the
-‘<a class="reference internal" href="#crashes-or-other-bad-behavior">Crashes or other bad behavior</a>’ entry.</p>
+‘<a class="reference internal" href="#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a>’ entry.</p>
 <p>Even if CO<em>N</em>CEPT runs fine on the front-end of a cluster (i.e. when
 supplying the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script), you may
-experience weird behavior or crashes when running remote jobs. Typically this
+experience weird behaviour or crashes when running remote jobs. Typically this
 is either due to an improper choice of the MPI executor, or the remote nodes
 having different hardware architecture from the front-end. Possible solutions
 to both of these problems are provided below.</p>
@@ -587,7 +584,7 @@ term used for e.g. <code class="docutils literal notranslate"><span class="pre">
 executable used to launch MPI programs.</p>
 <p>To see which MPI executor is used when running remotely, check out the
 <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> variable in the produced <code class="docutils literal notranslate"><span class="pre">jobscript</span></code> file. To manually set
-the MPI executor, overwrite the dedicated <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> varaible in the
+the MPI executor, overwrite the dedicated <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> variable in the
 <code class="docutils literal notranslate"><span class="pre">.env</span></code> file (located one directory level above the <code class="docutils literal notranslate"><span class="pre">concept</span></code> directory,
 i.e. at <code class="docutils literal notranslate"><span class="pre">/path/to/concept_installation/.env</span></code>). Helpful suggestions for the
 choice of MPI executor depends on the job scheduler in use (Slurm or
@@ -627,7 +624,7 @@ thing to try is to leave out <code class="docutils literal notranslate"><span cl
 </div>
 <p>in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file. Submit a new job, and you should see the manually
 chosen MPI executor being respected by the <code class="docutils literal notranslate"><span class="pre">jobscript</span></code>.</p>
-<p>If that did not fix the issue, try specyfing the MPI implementation in
+<p>If that did not fix the issue, try specifying the MPI implementation in
 use, using the <code class="docutils literal notranslate"><span class="pre">--mpi</span></code> option to <code class="docutils literal notranslate"><span class="pre">srun</span></code>. E.g. for OpenMPI, set</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_executor</span><span class="o">=</span><span class="s2">&quot;srun --mpi=openmpi&quot;</span>
 </pre></div>
@@ -799,8 +796,8 @@ processes, the problem is likely that the MPI library used is not configured
 to handle the network optimally.</p>
 <p>Be sure to install CO<em>N</em>CEPT with
 <a class="reference internal" href="installation.html#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance on clusters</span></a>.
-If you are observing bad network behavior even so, you should try changing the
-MPI executor, as described <a class="reference internal" href="#chosing-an-mpi-executor"><span class="std std-ref">here</span></a>.</p>
+If you are observing bad network behaviour even so, you should try changing
+the MPI executor, as described <a class="reference internal" href="#chosing-an-mpi-executor"><span class="std std-ref">here</span></a>.</p>
 </div>
 <div class="section" id="problems-when-using-multiple-nodes">
 <span id="id4"></span><h2><a class="toc-backref" href="#id14">Problems when using multiple nodes</a><a class="headerlink" href="#problems-when-using-multiple-nodes" title="Permalink to this headline">¶</a></h2>
@@ -863,7 +860,6 @@ the new content of <code class="docutils literal notranslate"><span class="pre">
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>5. Other kinds of output &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -36,12 +46,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="6. Working on remote clusters" href="working_remotely.html" />
@@ -59,7 +63,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -82,6 +86,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -114,12 +119,7 @@
 <li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
@@ -257,11 +257,11 @@
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -281,6 +281,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -319,7 +320,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
         
@@ -368,66 +369,29 @@ file:</p>
     <span class="s1">&#39;species&#39;</span><span class="p">:</span> <span class="s1">&#39;matter&#39;</span><span class="p">,</span>
     <span class="s1">&#39;N&#39;</span>      <span class="p">:</span> <span class="n">_size</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span>
 <span class="p">}</span>
-<span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]),</span>
-    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>
-    <span class="s1">&#39;render2D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span>
-    <span class="s1">&#39;render3D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">a_begin</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
-    <span class="s1">&#39;render3D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span>
-    <span class="s1">&#39;render2D&#39;</span> <span class="p">:</span> <span class="n">logspace</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">a_begin</span><span class="p">),</span> <span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">15</span><span class="p">),</span>
-<span class="p">}</span>
-<span class="n">powerspec_select</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-<span class="p">}</span>
-<span class="n">render2D_select</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;terminal image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-<span class="p">}</span>
-
+<span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span><span class="hll">    <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]),</span></span>    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span><span class="hll">    <span class="s1">&#39;render2D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span></span><span class="hll">    <span class="s1">&#39;render3D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span></span><span class="p">}</span>
+<span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span><span class="hll">    <span class="s1">&#39;snapshot&#39;</span> <span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span></span>    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">a_begin</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span><span class="hll">    <span class="s1">&#39;render3D&#39;</span> <span class="p">:</span> <span class="o">...</span><span class="p">,</span></span><span class="hll">    <span class="s1">&#39;render2D&#39;</span> <span class="p">:</span> <span class="n">logspace</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">a_begin</span><span class="p">),</span> <span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">15</span><span class="p">),</span></span><span class="p">}</span><span class="hll"><span class="n">powerspec_select</span> <span class="o">=</span> <span class="p">{</span></span><span class="hll">    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;plot&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span></span><span class="hll"><span class="p">}</span></span><span class="hll"><span class="n">render2D_select</span> <span class="o">=</span> <span class="p">{</span></span><span class="hll">    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;terminal image&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span></span><span class="hll"><span class="p">}</span></span>
 <span class="c1"># Numerical parameters</span>
 <span class="n">boxsize</span> <span class="o">=</span> <span class="mi">128</span><span class="o">*</span><span class="n">Mpc</span>
+<span class="n">potential_options</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span>
 
 <span class="c1"># Cosmology</span>
 <span class="n">H0</span>      <span class="o">=</span> <span class="mi">67</span><span class="o">*</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">Mpc</span><span class="p">)</span>
 <span class="n">Ωcdm</span>    <span class="o">=</span> <span class="mf">0.27</span>
 <span class="n">Ωb</span>      <span class="o">=</span> <span class="mf">0.049</span>
 <span class="n">a_begin</span> <span class="o">=</span> <span class="mf">0.02</span>
-
-<span class="c1"># Physics</span>
-<span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
-<span class="p">}</span>
-
-<span class="c1"># Graphics</span>
-<span class="n">render2D_options</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;gridsize&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="n">_size</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s1">&#39;terminal resolution&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
-    <span class="p">},</span>
-    <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span>
-    <span class="p">},</span>
-<span class="p">}</span>
-<span class="n">render3D_colors</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="n">render3D_bgcolor</span>    <span class="o">=</span> <span class="s1">&#39;black&#39;</span>
-<span class="n">render3D_resolution</span> <span class="o">=</span> <span class="mi">640</span>
-</pre></div>
+<span> </span><span class="hll"><span class="c1"># Graphics</span></span><span class="hll"><span class="n">render2D_options</span> <span class="o">=</span> <span class="p">{</span></span><span class="hll">    <span class="s1">&#39;gridsize&#39;</span><span class="p">:</span> <span class="p">{</span></span><span class="hll">        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="n">_size</span><span class="p">,</span></span><span class="hll">    <span class="p">},</span></span><span class="hll">    <span class="s1">&#39;terminal resolution&#39;</span><span class="p">:</span> <span class="p">{</span></span><span class="hll">        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span></span><span class="hll">    <span class="p">},</span></span><span class="hll">    <span class="s1">&#39;colormap&#39;</span><span class="p">:</span> <span class="p">{</span></span><span class="hll">        <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;inferno&#39;</span><span class="p">,</span></span><span class="hll">    <span class="p">},</span></span><span class="hll"><span class="p">}</span></span><span class="hll"><span class="n">render3D_colors</span> <span class="o">=</span> <span class="p">{</span></span><span class="hll">    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;lime&#39;</span><span class="p">,</span></span><span class="hll"><span class="p">}</span></span><span class="hll"><span class="n">render3D_bgcolor</span>    <span class="o">=</span> <span class="s1">&#39;black&#39;</span></span><span class="hll"><span class="n">render3D_resolution</span> <span class="o">=</span> <span class="mi">640</span></span></pre></div>
 </div>
 </div>
-<p>Run a simulation using these parameters, e.g. by saving them to
-<code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> and executing</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">4</span>
+<p>Run a simulation using the <a class="reference internal" href="#params-output-types"><span class="std std-ref">above</span></a> parameters, e.g.
+by saving them to <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> and executing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -p params/tutorial <span class="se">\</span>
+    -n <span class="m">4</span>
 </pre></div>
 </div>
 <p>This will take a few minutes. You may read along in the meantime.</p>
-<p>We see that besides power spectra, we have <em>snapshots</em> and <em>renders</em>, the
+<p>We see that besides power spectra, we now have <em>snapshots</em> and <em>renders</em>, the
 latter of which comes in a 2D and a 3D version. The ellipses (<code class="docutils literal notranslate"><span class="pre">...</span></code>) used
 above in <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code> indicate that we want all kinds of output to go to
 the same directory.</p>
@@ -437,20 +401,21 @@ above it, i.e. that of <code class="docutils literal notranslate"><span class="p
 outputs spaced logarithmically equidistant between
 <span class="math notranslate nohighlight">\(a = a_{\text{begin}} = 0.02\)</span> and <span class="math notranslate nohighlight">\(a = 1\)</span>.</p>
 <p>Among the new parameters introduced are <code class="docutils literal notranslate"><span class="pre">powerspec_select</span></code>, in which we have
-specified that we only want the data files as output, not plots of this data.</p>
+specified that we only want the data files — also including the linear theory
+spectrum — as output, not plots of this data.</p>
 <div class="section" id="d-renders">
 <h2><span class="section-number">5.1. </span>3D renders<a class="headerlink" href="#d-renders" title="Permalink to this headline">¶</a></h2>
 <p>Looking in the output directory, among other things you’ll find image files
 with names starting with <code class="docutils literal notranslate"><span class="pre">render3D</span></code>. These are — unsurprisingly — the 3D
-renders. The colors are controlled through the <code class="docutils literal notranslate"><span class="pre">render3D_colors</span></code> and
+renders. The colours are controlled through the <code class="docutils literal notranslate"><span class="pre">render3D_colors</span></code> and
 <code class="docutils literal notranslate"><span class="pre">render3D_bgcolor</span></code> parameters, while the (square) size (in pixels) is set by
 <code class="docutils literal notranslate"><span class="pre">render3D_resolution</span></code>. All particles of a given component gets the same
-color, though different colors may be used for different components when
+colour, though different colours may be used for different components when
 running such simulations. The brightness of each pixel indicate the local
 energy density.</p>
-<p>The colors used (here <code class="docutils literal notranslate"><span class="pre">'lime'</span></code> and <code class="docutils literal notranslate"><span class="pre">'black'</span></code>) may be any color recognized
-by <a class="reference external" href="https://matplotlib.org/">matplotlib</a>. A list of named colors is available
-<a class="reference external" href="https://matplotlib.org/gallery/color/named_colors.html">here</a>.
+<p>The colours used (here <code class="docutils literal notranslate"><span class="pre">'lime'</span></code> and <code class="docutils literal notranslate"><span class="pre">'black'</span></code>) may be any colour recognised
+by <a class="reference external" href="https://matplotlib.org/">Matplotlib</a>. A list of named colours is
+available <a class="reference external" href="https://matplotlib.org/gallery/color/named_colors.html">here</a>.
 Alternatively, you may pass a 3-tuple of RGB values (e.g.
 <code class="docutils literal notranslate"><span class="pre">render3D_bgcolor</span> <span class="pre">=</span> <span class="pre">(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></code> makes the background red).</p>
 </div>
@@ -459,25 +424,25 @@ Alternatively, you may pass a 3-tuple of RGB values (e.g.
 <p>The 2D renders show the particle configuration projected along one of the axes
 of the box. These can often be prettier than their 3D counterparts, as a
 colormap is used to visualise the density field, rather than just a single
-color combined with alpha compositing.</p>
+colour combined with alpha compositing.</p>
 <p>In the <code class="docutils literal notranslate"><span class="pre">render2D_select</span></code> parameter we’ve specified that we want images as
 well as terminal images, but no data. Here, <em>images</em> refer to the 2D render
 image files you see in the output directory. <em>Terminal images</em> are rendered
 directly in the terminal as part of the printed output, as you have probably
-noticed. If you turn on the <em>data</em> output, the 2D render data will be stored
-in an HDF5 file.</p>
+noticed. If you turn on the <em>data</em> output, the 2D render data will further be
+stored in an HDF5 file.</p>
 <p>The options for the 2D renders are collected in the <code class="docutils literal notranslate"><span class="pre">render2D_options</span></code>
-parameter. Here <code class="docutils literal notranslate"><span class="pre">gridsize</span></code> sets the resolution of the grid onto which the
-particles are interpolated in order to produce the render. The height and
+parameter. Here <code class="docutils literal notranslate"><span class="pre">gridsize</span></code> sets the resolution of the cubic grid onto which
+the particles are interpolated in order to produce the render. The height and
 width of the image files (in pixels) are then equal to <code class="docutils literal notranslate"><span class="pre">gridsize</span></code>. The
-terminal image is then produced by resizing the interpolation grid to match
-the resolution given in <code class="docutils literal notranslate"><span class="pre">'terminal</span> <span class="pre">resolution'</span></code>. The terminal image is then
+terminal image is produced by resizing the interpolation grid to match the
+resolution given in <code class="docutils literal notranslate"><span class="pre">'terminal</span> <span class="pre">resolution'</span></code>. The terminal image is then
 displayed using one character slot per grid cell, i.e. the terminal render
 will be <code class="docutils literal notranslate"><span class="pre">'terminal</span> <span class="pre">resolution'</span></code> (80) characters wide. Since the terminal
 render is constructed from the original 2D render, this does not show more
 details even though the resolution is higher (80 vs. 64).</p>
 <p>Also available through <code class="docutils literal notranslate"><span class="pre">render2D_options</span></code> is the colormap to use. Check out
-<a class="reference external" href="https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html">this</a>
+<a class="reference external" href="https://matplotlib.org/gallery/color/colormap_reference.html">this</a>
 for a list of available colormaps.</p>
 <h3>The play utility</h3><p>For this next trick, the simulation need to have finished, and we need to know
 its job ID.</p>
@@ -496,22 +461,22 @@ its job ID.</p>
 playing out right in the terminal! The animation is produced from the terminal
 images stored in the log file <code class="docutils literal notranslate"><span class="pre">logs/&lt;ID&gt;</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">-u</span></code> option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script signals CO<em>N</em>CEPT to start up
-a <em>utility</em> rather than running a simulation. These utilities are handy (or
-sometimes goofy) side programs baked into CO<em>N</em>CEPT. Another such utility,
-the <em>info utility</em>, is encountered just below, while a
-<a class="reference internal" href="utilities.html"><span class="doc">complete section</span></a> of this tutorial is dedicated to
-more in-depth investigations of other utilities.</p>
+a <em>utility</em> rather than running a simulation. These utilities are handy (and
+sometimes goofy) side programs baked into CO<em>N</em>CEPT. Another such utility
+— the <em>info utility</em> — is encountered just below, and we will encounter
+others in later sections of the tutorial. For full documentation on each
+available utility, consult <a class="reference internal" href="../utilities/utilities.html"><span class="doc">Utilities</span></a>.</p>
 </div>
 <div class="section" id="snapshots">
 <h2><span class="section-number">5.3. </span>Snapshots<a class="headerlink" href="#snapshots" title="Permalink to this headline">¶</a></h2>
 <p>Snapshots are raw dumps of the total system, in this case the position and
-momenta of all <span class="math notranslate nohighlight">\(64^3\)</span> particles. CO<em>N</em>CEPT uses its own snapshot
+momenta of all <span class="math notranslate nohighlight">\(N = 64^3\)</span> particles. CO<em>N</em>CEPT uses its own snapshot
 format, which is simply a well-structured HDF5 file.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>For a great graphical tool to explore HDF5 files in general, check out
 <a class="reference external" href="https://vitables.org/">ViTables</a>. If you encounter problems viewing HDF5
-files produced by CO<em>N</em>CEPT, try upgrading to ViTables 3.</p>
+files produced by CO<em>N</em>CEPT, check that you are using ViTables 3.</p>
 <p>You can install ViTables as part of the CO<em>N</em>CEPT installation via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span><span class="nb">source</span> concept <span class="o">&amp;&amp;</span> <span class="nv">$python</span> -m pip install vitables<span class="o">)</span>
 </pre></div>
@@ -543,25 +508,32 @@ about the cosmology and numerical setup is stored in the snapshot as well.</p>
 <p>Warnings are shown in red bold text, easily distinguishable from the main
 output text. As warnings (as opposed to errors) results from non-fatal
 issues, CO<em>N</em>CEPT will continue running. A warning emitted during the
-simulation may hint that someting has gone wrong, meaning that the results
+simulation may hint that something has gone wrong, meaning that the results
 perhaps should not be trusted. To make sure that no warnings go unnoticed,
 CO<em>N</em>CEPT will notify you at the end of the simulation. A separate error
 log, <code class="docutils literal notranslate"><span class="pre">logs/&lt;ID&gt;_err</span></code>, containing just warning and error messages, will
 also be present.</p>
 </div>
-<p>To generate a warning and error log file, try wrongly leaving <code class="docutils literal notranslate"><span class="pre">a_begin</span></code> as
-<code class="docutils literal notranslate"><span class="pre">0.02</span></code>, while still initializing the simulation from the snapshot.
-Once the simulation has completed, check out the error log file.</p>
+<p>To generate a warning and error log file, try wrongly specifying e.g.
+<code class="docutils literal notranslate"><span class="pre">Ωb</span> <span class="pre">=</span> <span class="pre">0.05</span></code>. Once the simulation has completed, check out the error
+log file.</p>
 <p>If you intend to run many simulations using the same initial conditions, it’s
 worthwhile to initialize these from a common snapshot, as it saves computation
-time in the beginning of the simulation and also takes up less memory. To
-produce such an initial snapshot, simply set
-<code class="docutils literal notranslate"><span class="pre">output_times</span> <span class="pre">=</span> <span class="pre">{'snapshot':</span> <span class="pre">a_begin}</span></code>, in which case CO<em>N</em>CEPT will
-exit right after the snapshot has been dumped at the initial time, without
-doing any simulation. Also, the whole purpose of having the <code class="docutils literal notranslate"><span class="pre">ICs</span></code> directory
-is to hold such initial condition snapshots. To dump snapshots to this
-directory, set the <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code> entry in <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code> to
-<code class="docutils literal notranslate"><span class="pre">paths['ics_dir']</span></code>.</p>
+time in the beginning of the simulation. To produce such an initial snapshot,
+simply set <code class="docutils literal notranslate"><span class="pre">output_times</span> <span class="pre">=</span> <span class="pre">{'snapshot':</span> <span class="pre">a_begin}</span></code>, in which case
+CO<em>N</em>CEPT will exit right after the snapshot has been dumped at the
+initial time, without doing any simulation. Also, the whole purpose of having
+the <code class="docutils literal notranslate"><span class="pre">ICs</span></code> directory is to hold such initial condition snapshots. To dump
+snapshots to this directory, set the <code class="docutils literal notranslate"><span class="pre">'snapshot'</span></code> entry in <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code>
+to <code class="docutils literal notranslate"><span class="pre">paths['ics_dir']</span></code>. We can achieve both without even altering the
+parameter file:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">concept</span> \
+    <span class="o">-</span><span class="n">p</span> <span class="n">params</span><span class="o">/</span><span class="n">tutorial</span> \
+    <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;output_times = {&#39;snapshot&#39;: a_begin}&quot;</span> \
+    <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;output_dirs = {&#39;snapshot&#39;: paths[&#39;ics_dir&#39;]}&quot;</span> \
+    <span class="o">-</span><span class="n">n</span> <span class="mi">4</span>
+</pre></div>
+</div>
 <p>You may also want to use CO<em>N</em>CEPT purely as an initial condition
 generator, and perform the actual simulation using some other code. If so, the
 standard CO<em>N</em>CEPT snapshot format is of little use. To this end,
@@ -618,7 +590,6 @@ path.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

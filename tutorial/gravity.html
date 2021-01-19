@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>4. Mastering gravity &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -36,12 +46,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="5. Other kinds of output" href="output_types.html" />
@@ -59,7 +63,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -82,6 +86,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -114,12 +119,7 @@
 <li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
@@ -257,11 +257,11 @@
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -281,6 +281,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -319,7 +320,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
         
@@ -355,17 +356,15 @@
             
   <div class="section" id="mastering-gravity">
 <h1><span class="section-number">4. </span>Mastering gravity<a class="headerlink" href="#mastering-gravity" title="Permalink to this headline">¶</a></h1>
-<p>The fact that gravity is extremely important for the particle evolution has
+<p>The fact that gravity is extremely important for the cosmic evolution has
 already been demonstrated. We would like our simulation to be able to compute
-gravity in a manner that is both accurate and efficient, but in practice one
-has to sacrifice one for the other. In CO<em>N</em>CEPT, the details of the
-gravitational computation is controlled by a large set of parameters, enabling
-us to tune this tradeoff between accuracy and efficiency to our heart’s
-desire.</p>
+gravity in a manner that is both accurate and efficient. In CO<em>N</em>CEPT, the
+details of the gravitational computation is controlled by a large set of
+parameters, enabling us to tune this trade-off between accuracy and efficiency
+to our heart’s desire.</p>
 <p>In order to learn how to control gravity within CO<em>N</em>CEPT we shall run
 some sample simulations. The parameter specifications below are very similar
-to the ones encountered in the previous section. Save these in
-<code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code>.</p>
+to the ones encountered in the previous section.</p>
 <div class="literal-block-wrapper docutils container" id="params-gravity">
 <div class="code-block-caption"><span class="caption-text">params/tutorial</span><a class="headerlink" href="#params-gravity" title="Permalink to this code">¶</a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Non-parameter helper variable used to control the size of the simulation</span>
@@ -378,134 +377,100 @@ to the ones encountered in the previous section. Save these in
 <span class="p">}</span>
 <span class="n">output_dirs</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">basename</span><span class="p">(</span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
-<span class="p">}</span>
-<span class="n">output_bases</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;powerspec_</span><span class="si">{</span><span class="n">_sim</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
+<span class="p">}</span><span class="hll"><span class="n">output_bases</span> <span class="o">=</span> <span class="p">{</span></span><span class="hll">    <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;powerspec_</span><span class="si">{</span><span class="n">_sim</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span></span><span class="hll"><span class="p">}</span></span><span class="n">output_times</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;powerspec&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 <span class="p">}</span>
 
 <span class="c1"># Numerical parameters</span>
 <span class="n">boxsize</span> <span class="o">=</span> <span class="mi">256</span><span class="o">*</span><span class="n">Mpc</span>
+<span class="n">potential_options</span> <span class="o">=</span> <span class="n">_size</span>
 
 <span class="c1"># Cosmology</span>
 <span class="n">H0</span>      <span class="o">=</span> <span class="mi">67</span><span class="o">*</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">Mpc</span><span class="p">)</span>
 <span class="n">Ωb</span>      <span class="o">=</span> <span class="mf">0.049</span>
 <span class="n">Ωcdm</span>    <span class="o">=</span> <span class="mf">0.27</span>
 <span class="n">a_begin</span> <span class="o">=</span> <span class="mf">0.02</span>
-
-<span class="c1"># Physics</span>
-<span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
-<span class="p">}</span>
+<span> </span><span class="hll"><span class="c1"># Physics</span></span><span class="hll"><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span></span><span class="hll">    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;pm&#39;</span><span class="p">},</span></span><span class="hll"><span class="p">}</span></span></pre></div>
+</div>
+</div>
+<p>Save these parameters to e.g. <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If the file <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> already exists due to previous tutorial
+work, you may safely overwrite the old content. Similarly, it’s best to
+clean up (or remove entirely) the <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code> directory before
+continuing. If you wish to keep the old content, you can do e.g.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mv output/tutorial output/tutorial_3
 </pre></div>
 </div>
+<p>If you wish to store the outputs of each tutorial section separately, you
+can also name the parameter file(s) something more imaginative than just
+‘<code class="docutils literal notranslate"><span class="pre">tutorial</span></code>’. The output directories are set up to reflect the parameter
+file name.</p>
 </div>
-<p>Now run a simulation using these parameters, by executing</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s2">&quot;_sim = &#39;A&#39;&quot;</span>
+<p>Now run a simulation using the <a class="reference internal" href="#params-gravity"><span class="std std-ref">tutorial</span></a> parameter file
+by executing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -p params/tutorial <span class="se">\</span>
+    -c <span class="s2">&quot;_sim = &#39;A&#39;&quot;</span>
 </pre></div>
 </div>
-<p>and optionally specifying whatever number of CPU cores you’d like with the
+<p>and optionally specifying whatever number of processes you’d like with the
 <code class="docutils literal notranslate"><span class="pre">-n</span></code> option.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Note that a choice of e.g. <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">3</span></code> is illegal as
-<span class="math notranslate nohighlight">\(N = 64^3\)</span> is not divisible by <span class="math notranslate nohighlight">\(3\)</span>. More of such
-restrictions exist. If an illegal number of processes is chosen, this will
-be detected and a helpful error message is shown.</p>
-</div>
 <p>The <code class="docutils literal notranslate"><span class="pre">output_bases</span></code> parameter has been used to specify the base of filenames
 for power spectrum output. This is set up to depend on a helper variable
-<code class="docutils literal notranslate"><span class="pre">_sim</span></code>, which we supply from the command-line. This way we can run multiple
-simulations without having their outputs overwrite each other, by specifying a
-different value of <code class="docutils literal notranslate"><span class="pre">_sim</span></code> for each run.</p>
+<code class="docutils literal notranslate"><span class="pre">_sim</span></code>, which we supply from the command-line. We can then run multiple
+simulations without having their outputs overwrite each other, by supplying
+different values for <code class="docutils literal notranslate"><span class="pre">_sim</span></code>.</p>
 <p>The result of the simulation will be a data file
 <code class="docutils literal notranslate"><span class="pre">output/tutorial/powerspec_A_a=1.00</span></code> of the matter power spectrum at
 <span class="math notranslate nohighlight">\(a = 1\)</span>, along with the corresponding plot
 <code class="docutils literal notranslate"><span class="pre">output/tutorial/powerspec_A_a=1.00.png</span></code>.</p>
 <div class="section" id="the-pm-method">
 <h2><span class="section-number">4.1. </span>The PM method<a class="headerlink" href="#the-pm-method" title="Permalink to this headline">¶</a></h2>
-<p>Without further specification, CO<em>N</em>CEPT solves gravity using the
-particle-mesh (PM) method. We may also specify this choice explicitly using</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;pm&#39;</span><span class="p">},</span>
-<span class="p">}</span>
+<p>A new parameter appearing in the <a class="reference internal" href="#params-gravity"><span class="std std-ref">tutorial</span></a> parameter
+file is <code class="docutils literal notranslate"><span class="pre">select_forces</span></code>, which is set to map <code class="docutils literal notranslate"><span class="pre">'matter'</span></code> to the
+gravitational interaction using the particle-mesh (PM) method. This method
+works by solving the gravitational potential on a cubic grid, the size of
+which is set through <code class="docutils literal notranslate"><span class="pre">potential_options</span></code>. The potential used for our
+first simulation, A, was then a cube of size
+<code class="docutils literal notranslate"><span class="pre">_size</span></code><span class="math notranslate nohighlight">\(\times\)</span><code class="docutils literal notranslate"><span class="pre">_size</span></code><span class="math notranslate nohighlight">\(\times\)</span><code class="docutils literal notranslate"><span class="pre">_size</span></code>
+(i.e. <span class="math notranslate nohighlight">\(64\times 64\times 64\)</span>), dividing the box into smaller cells.</p>
+<p>The potential grid introduces a length scale below which gravity cannot be
+resolved, namely the width of a grid cell, here <code class="docutils literal notranslate"><span class="pre">boxsize/_size</span></code>. We may
+expect to achieve a more accurate result by lowering this length scale, e.g.
+by doubling the size (resolution) of the potential grid (in each direction).
+To try this out, update <code class="docutils literal notranslate"><span class="pre">potential_options</span></code> to</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_options</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span>
 </pre></div>
 </div>
-<p>The PM method works by solving for the gravitational potential on a grid. By
-default, the resolution of this grid is set to match the number of particles.
-Again, we may specify this choice explicitly using</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pm&#39;</span><span class="p">,</span> <span class="n">_size</span><span class="p">)},</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>The potential grid is then a cubic
-<code class="docutils literal notranslate"><span class="pre">_size</span></code><span class="math notranslate nohighlight">\(\times\)</span><code class="docutils literal notranslate"><span class="pre">_size</span></code><span class="math notranslate nohighlight">\(\times\)</span><code class="docutils literal notranslate"><span class="pre">_size</span></code> mesh, dividing
-the box into smaller cells.</p>
-<p>To test whether this really amounts to the default gravitational set-up,
-update <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> in <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> according to the above and run
-a new simulation, this time using</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s2">&quot;_sim = &#39;B&#39;&quot;</span>
+<p>in <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> and run a new simulation, this time using</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -p params/tutorial <span class="se">\</span>
+    -c <span class="s2">&quot;_sim = &#39;B&#39;&quot;</span>
 </pre></div>
 </div>
 <p>Visually comparing <code class="docutils literal notranslate"><span class="pre">powerspec_A_a=1.00.png</span></code> to <code class="docutils literal notranslate"><span class="pre">powerspec_B_a=1.00.png</span></code>,
-we see that the two simulations were indeed exactly the same.</p>
-<p>The potential grid introduces a length scale below which gravity cannot be
-resolved, namely the width of a mesh cell, here <code class="docutils literal notranslate"><span class="pre">boxsize/_size</span></code>. We may
-expect to achieve a more accurate result by lowering this length scale, e.g.
-by doubling the size (resolution) of the potential grid (in each direction):</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;pm&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
-<span class="p">}</span>
+we see that increasing the potential grid size produces a lager power
+spectrum, as we would perhaps expect. To check whether doubling the grid size
+was enough to achieve convergence, let’s further run a simulation C with
+triple the grid size, i.e. switch to using</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_options</span> <span class="o">=</span> <span class="mi">3</span><span class="o">*</span><span class="n">_size</span>
 </pre></div>
 </div>
-<p>Try this out, using <code class="docutils literal notranslate"><span class="pre">-c</span> <span class="pre">&quot;_sim</span> <span class="pre">=</span> <span class="pre">'C'&quot;</span></code>.</p>
-<p>Comparing the plots of simulation B and C, it’s clear that the choice of grid
-size affects the result. What isn’t clear is which result to trust.</p>
-</div>
-<div class="section" id="the-p3m-method">
-<h2><span class="section-number">4.2. </span>The P³M method<a class="headerlink" href="#the-p3m-method" title="Permalink to this headline">¶</a></h2>
-<p>A different gravitational method is the particle-particle-particle-mesh (P³M)
-method. This method also makes use of a potential grid, but here the grid is
-used only to get the gravitational force between particles separated by a
-distance much greater than the potential cell size, minimizing discretization
-errors. The remaning — so-called <em>short-range</em> — component of gravity
-between nearby particles is then computed separately, by directly pairing up
-particles and computing the force between them (no potential grid required).</p>
-<p>To switch out PM for P³M, simply replace <code class="docutils literal notranslate"><span class="pre">'pm'</span></code> in the <code class="docutils literal notranslate"><span class="pre">select_forces</span></code>
-parameter with <code class="docutils literal notranslate"><span class="pre">'p3m'</span></code>. Let’s run a simulation D using</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="n">_size</span><span class="p">)},</span>
-<span class="p">}</span>
+<p>in <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> and execute</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -p params/tutorial <span class="se">\</span>
+    -c <span class="s2">&quot;_sim = &#39;C&#39;&quot;</span>
 </pre></div>
 </div>
-<p>You will notice that this time, the simulation takes several times longer to
-complete. Studying the text printed to the screen, we see that the work within
-each time step is split into a short-range and a long-range part. From the
-computation times stated in parentheses to the right, it’s clear that the
-short-range part is by far the most time-consuming.</p>
-<p>Once completed, compare the plot from the P³M simulation D to that of the PM
-simulations B and C. You will find that we now have three different results.</p>
-<p>As before, let’s now double the grid size, and perform a final simulation, E:</p>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;p3m&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span><span class="p">)},</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>You will find that this time, the P³M simulation isn’t nearly as slow, as
-the smaller potential cell size leads to less work to be done for the
-short-range part.</p>
-<p>Comparing the results of simulation D and E, we see that these are very
-similar, implying that the size of the potential grid is largely irrelevant
-regarding the accuracy of the P³M method. To better compare the results of
-simulation A–E, you should plot the different power spectra together in a
+<p>Properly comparing the three individual output plots is not so easy. To better
+compare the results, you should plot the different power spectra together in a
 single plot, using the information in the data files. You may do this using
-your favourite plotting program, or — for your convenience — using the
-script below:</p>
-<div class="literal-block-wrapper docutils container" id="plot">
-<div class="code-block-caption"><span class="caption-text">output/tutorial/plot.py</span><a class="headerlink" href="#plot" title="Permalink to this code">¶</a></div>
+your favourite plotting tool, or — for your convenience — using the below
+script:</p>
+<div class="literal-block-wrapper docutils container" id="plot-gravity">
+<div class="code-block-caption"><span class="caption-text">output/tutorial/plot.py</span><a class="headerlink" href="#plot-gravity" title="Permalink to this code">¶</a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -521,23 +486,30 @@ script below:</p>
     <span class="n">k</span><span class="p">,</span> <span class="n">P_sims</span><span class="p">[</span><span class="n">sim</span><span class="p">],</span> <span class="n">P_lin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># Plot</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">linestyles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;-.&#39;</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">sim</span><span class="p">,</span> <span class="n">P_sim</span> <span class="ow">in</span> <span class="n">P_sims</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">linestyle</span><span class="p">,</span> <span class="n">zorder</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span> <span class="k">if</span> <span class="n">sim</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">}</span> <span class="k">else</span> <span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">linestyle</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;simulation </span><span class="si">{</span><span class="n">sim</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">zorder</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_lin</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$k\, [\mathrm</span><span class="si">{Mpc}</span><span class="s1">^{-1}]$&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$P\, [\mathrm</span><span class="si">{Mpc}</span><span class="s1">^3]$&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">this_dir</span><span class="si">}</span><span class="s1">/plot.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
+    <span class="n">linestyle</span> <span class="o">=</span> <span class="n">linestyles</span><span class="p">[</span>
+        <span class="nb">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">get_ydata</span><span class="p">(),</span> <span class="n">P_sim</span><span class="p">,</span> <span class="mf">5e-2</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">lines</span><span class="p">)</span>
+        <span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">linestyles</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_sim</span><span class="p">,</span> <span class="n">linestyle</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;simulation </span><span class="si">{</span><span class="n">sim</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">ylim</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">P_lin</span><span class="p">,</span> <span class="s1">&#39;k--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">k</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$k\, [\mathrm</span><span class="si">{Mpc}</span><span class="s1">^{-1}]$&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$P\, [\mathrm</span><span class="si">{Mpc}</span><span class="s1">^3]$&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">this_dir</span><span class="si">}</span><span class="s1">/plot.png&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <p>Do not feel bad about using this plotting script — and others to come later
 on in the tutorial — without studying it in any detail. To run the script,
-save the above code to a file in the <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code> directory, say
-<code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.py</span></code>, then do</p>
+save the <a class="reference internal" href="#plot-gravity"><span class="std std-ref">above code</span></a> to a file in the <code class="docutils literal notranslate"><span class="pre">output/tutorial</span></code>
+directory, say <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.py</span></code>, then do</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -m output/tutorial/plot.py
 </pre></div>
 </div>
@@ -546,35 +518,88 @@ save the above code to a file in the <code class="docutils literal notranslate">
 <p>The <code class="docutils literal notranslate"><span class="pre">-m</span></code> command-line option redirects <code class="docutils literal notranslate"><span class="pre">concept</span></code> to run the specified
 Python script, rather than launching a CO<em>N</em>CEPT simulation. In this
 case, this is almost equivalent to just running the script using Python
-directly, but using <code class="docutils literal notranslate"><span class="pre">./concept</span> <span class="pre">-m</span></code> we are guarenteed that the environment
+directly, but using <code class="docutils literal notranslate"><span class="pre">./concept</span> <span class="pre">-m</span></code> we are guaranteed that the environment
 is set up correctly, according to the CO<em>N</em>CEPT installation.</p>
 </div>
-<p>The script will produce the output <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code>.</p>
-<p>Studying the collective plot containing all our simulation power spectra, it
-is indeed clear that the P³M simulations agree far better with each other than
-do the PM simulations. We should thus set our trust in the P³M power spectra,
-not the PM ones. Generally, though much slower, the P³M method is then the
-preferred gravitational method to use in CO<em>N</em>CEPT. As we saw, increasing
-the size of the potential grid used can dramatically cut down the computation
-time. In fact, it may well be worth it to increase it even further than what
-was done here, though at the cost of increased memory consumption.</p>
-<p>It is remarkable that not only is the PM force not invariant under a change in
-grid size, but the smaller of the two grids actually produced the better
-result, as evident from the collective plot (taking the P³M power spectra to
-be essentially exact).</p>
-<p>Though inadequate for precise particle simulations, the PM method is still a
-valuable tool, as sometimes the benefits of rapid simulations outweigh the
-drawbacks from loss of precision. Also, as we shall
-<a class="reference internal" href="beyond_matter_only.html"><span class="doc">delve into later</span></a>, PM gravity is as accurate as
-can be for fluid (i.e. non-particle) components, used to model species
-different from matter. Finally — though sticking to default values are
-generally recommended — you should be aware that the details about the PM
-and P³M methods can be further specified using
-<a class="reference internal" href="../parameters/numerical_parameters.html"><span class="doc">various parameters</span></a>, affecting the
-performance and accuracy.</p>
+<p>The script will produce the output <code class="docutils literal notranslate"><span class="pre">output/tutorial/plot.png</span></code>. Investigating
+this comparison plot, we see that in fact simulation B — the one with the
+“in-between” potential grid size — has the most power. It’s then unclear
+which of the three power spectra to trust, if any.</p>
+<p>Though inadequate for precision simulations, the PM method remains a valuable
+tool due to its unprecedented efficiency, as sometimes the benefits of rapid
+simulations outweigh the drawbacks from the loss of precision. Also, as we
+shall <a class="reference internal" href="beyond_matter_only.html"><span class="doc">delve into later</span></a>, PM gravity is as accurate
+as can be for fluid (i.e. non-particle) components, used to model species
+different from matter.</p>
+</div>
+<div class="section" id="the-p3m-method">
+<h2><span class="section-number">4.2. </span>The P³M method<a class="headerlink" href="#the-p3m-method" title="Permalink to this headline">¶</a></h2>
+<p>A different gravitational method is the particle-particle-particle-mesh (P³M)
+method. This method also makes use of a potential grid, but here the grid is
+used only to get the gravitational force between particles separated by a
+distance much greater than the potential cell size, minimizing discretisation
+errors. The remaining — so-called <em>short-range</em> — component of gravity
+between nearby particles is then computed separately, by directly pairing up
+particles and computing the force between them (no potential grid required).</p>
+<p>To switch out PM for P³M, simply replace <code class="docutils literal notranslate"><span class="pre">'pm'</span></code> in the <code class="docutils literal notranslate"><span class="pre">select_forces</span></code>
+parameter with <code class="docutils literal notranslate"><span class="pre">'p3m'</span></code>. Let’s run a simulation D using</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">:</span> <span class="s1">&#39;p3m&#39;</span><span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>while also resetting <code class="docutils literal notranslate"><span class="pre">potential_options</span></code> back to</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_options</span> <span class="o">=</span> <span class="n">_size</span>
+</pre></div>
+</div>
+<p>You will notice that this time, the simulation takes much longer to complete.
+Studying the text printed to the screen, we see that the work within
+each time step is split into a short-range and a long-range part. From the
+computation times stated in parentheses to the right, it’s clear that the
+short-range part is by far the most time-consuming.</p>
+<p>Once completed, add the P³M (D) result to the comparison plot by rerunning
+<a class="reference internal" href="#plot-gravity"><span class="std std-ref">plot.py</span></a>. You will see that P³M lies somewhere in-between
+B and C at intermediary scales, while having more power than any of the PM’s
+at the smallest scales.</p>
+<p>As before, let’s now double the grid size, and perform a final simulation, E.
+You will find that this time, the P³M simulation isn’t nearly as slow, as
+the smaller potential cell size means that there is less work to be done for
+the short-range part.</p>
+<p>Updating the comparison plot with the latest result, we see some long-awaited
+stability: The two P³M simulations give very nearly identical results, and
+as such these are the ones we should put our trust in.</p>
+<p>As changing the size of the potential grid under P³M doesn’t really affect
+the output, we are free to optimize it for performance. Generally, using a P³M
+grid twice that of the “particle grid”
+(<code class="docutils literal notranslate"><span class="pre">potential_options</span></code><span class="math notranslate nohighlight">\(= 2 \sqrt[3]{N}\)</span>) is recommended;</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_options</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span>
+</pre></div>
+</div>
+<h3>Default parameters</h3><p>You may wonder what gravitational method was used back for our previous
+simulations, where we did not explicitly select a method through
+<code class="docutils literal notranslate"><span class="pre">select_forces</span></code>. Here it turns out that CO<em>N</em>CEPT goes with P³M by
+default.</p>
+<p>For nested parameters such as <code class="docutils literal notranslate"><span class="pre">select_forces</span></code>, it’s generally fine to not
+write out everything in explicit detail, but instead rely on defaults. Thus,
+specifying gravitational P³M may then be done through either of</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;gravity&#39;</span><span class="p">,</span> <span class="s1">&#39;p3m&#39;</span><span class="p">},</span>
+<span class="p">}</span>
+
+<span class="c1"># or</span>
+
+<span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>or by leaving out a specification for <code class="docutils literal notranslate"><span class="pre">select_forces</span></code> entirely.</p>
+<p>Similarly, the <code class="docutils literal notranslate"><span class="pre">potential_options</span></code> parameter is really a nested parameter by
+which various details of the (PM and P³M)
+<a class="reference internal" href="../parameters/numerical_parameters.html"><span class="doc">potential can be controlled</span></a>.</p>
 <h3>The PP method</h3><p>Finally, let it be known that CO<em>N</em>CEPT also supports the bare
 particle-particle (PP) method, which simply performs the naïve pairwise
-force computation between all particles, effecively computing “short”-range
+force computation between all particles, effectively computing “short”-range
 forces as in the P³M method, but now across the entire simulation box.</p>
 <p>As expected, the PP method may be specified using</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
@@ -582,13 +607,13 @@ forces as in the P³M method, but now across the entire simulation box.</p>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>If you actually try this out, reduce <code class="docutils literal notranslate"><span class="pre">_size</span></code> to <em>at most</em> 32, as running a
-PP simulation with <span class="math notranslate nohighlight">\(64^3\)</span> particles literately takes days. Though
-slightly more accurate than the P³M method, the PP method should never be used
-for running simulations and is only really included in CO<em>N</em>CEPT as it is
-used internally when running tests. Running (well, starting) a small PP
-simulation at least once will help any user of <em>N</em>-body codes appreciate the
-enourmous performance gains achieved by the more sophisticated methods.</p>
+<p>If you try this out, reduce <code class="docutils literal notranslate"><span class="pre">_size</span></code> to <em>at most</em> 32, as running a PP
+simulation with <span class="math notranslate nohighlight">\(N = 64^3\)</span> particles literately takes days. Though
+slightly more accurate than the P³M method, the PP method should never be
+used for running production simulations and is only included in CO<em>N</em>CEPT
+for use with internal testing. Running (well, starting) a small PP simulation
+at least once will help any user of <em>N</em>-body codes appreciate the enormous
+performance gains achieved by the more sophisticated methods.</p>
 </div>
 </div>
 
@@ -625,7 +650,6 @@ enourmous performance gains achieved by the more sophisticated methods.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

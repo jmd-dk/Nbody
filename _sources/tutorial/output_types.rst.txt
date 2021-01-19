@@ -7,6 +7,7 @@ file:
 .. code-block:: python3
    :caption: params/tutorial
    :name: params-output-types
+   :emphasize-lines: 10, 12-13, 16, 18-19, 21-26, 38-54
 
    # Non-parameter variable used to control the size of the simulation
    _size = 64
@@ -24,12 +25,12 @@ file:
    }
    output_times = {
        'snapshot' : 0.1,
-       'powerspec': [a_begin, 1],
+       'powerspec': [a_begin, 0.3, 1],
        'render3D' : ...,
        'render2D' : logspace(log10(a_begin), log10(1), 15),
    }
    powerspec_select = {
-       'matter': {'data': True, 'plot': False},
+       'matter': {'data': True, 'linear': True, 'plot': False},
    }
    render2D_select = {
        'matter': {'data': False, 'image': True, 'terminal image': True},
@@ -37,17 +38,13 @@ file:
 
    # Numerical parameters
    boxsize = 128*Mpc
+   potential_options = 2*_size
 
    # Cosmology
    H0      = 67*km/(s*Mpc)
    Ωcdm    = 0.27
    Ωb      = 0.049
    a_begin = 0.02
-
-   # Physics
-   select_forces = {
-       'matter': {'gravity': ('p3m', 2*_size)},
-   }
 
    # Graphics
    render2D_options = {
@@ -67,16 +64,18 @@ file:
    render3D_bgcolor    = 'black'
    render3D_resolution = 640
 
-Run a simulation using these parameters, e.g. by saving them to
-``params/tutorial`` and executing
+Run a simulation using the :ref:`above <params-output-types>` parameters, e.g.
+by saving them to ``params/tutorial`` and executing
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -n 4
+   ./concept \
+       -p params/tutorial \
+       -n 4
 
 This will take a few minutes. You may read along in the meantime.
 
-We see that besides power spectra, we have *snapshots* and *renders*, the
+We see that besides power spectra, we now have *snapshots* and *renders*, the
 latter of which comes in a 2D and a 3D version. The ellipses (``...``) used
 above in ``output_dirs`` indicate that we want all kinds of output to go to
 the same directory.
@@ -88,7 +87,8 @@ outputs spaced logarithmically equidistant between
 :math:`a = a_{\text{begin}} = 0.02` and :math:`a = 1`.
 
 Among the new parameters introduced are ``powerspec_select``, in which we have
-specified that we only want the data files as output, not plots of this data.
+specified that we only want the data files --- also including the linear theory
+spectrum --- as output, not plots of this data.
 
 
 
@@ -96,16 +96,16 @@ specified that we only want the data files as output, not plots of this data.
 ..........
 Looking in the output directory, among other things you'll find image files
 with names starting with ``render3D``. These are --- unsurprisingly --- the 3D
-renders. The colors are controlled through the ``render3D_colors`` and
+renders. The colours are controlled through the ``render3D_colors`` and
 ``render3D_bgcolor`` parameters, while the (square) size (in pixels) is set by
 ``render3D_resolution``. All particles of a given component gets the same
-color, though different colors may be used for different components when
+colour, though different colours may be used for different components when
 running such simulations. The brightness of each pixel indicate the local
 energy density.
 
-The colors used (here ``'lime'`` and ``'black'``) may be any color recognized
-by `matplotlib <https://matplotlib.org/>`_. A list of named colors is available
-`here <https://matplotlib.org/gallery/color/named_colors.html>`_.
+The colours used (here ``'lime'`` and ``'black'``) may be any colour recognised
+by `Matplotlib <https://matplotlib.org/>`_. A list of named colours is
+available `here <https://matplotlib.org/gallery/color/named_colors.html>`_.
 Alternatively, you may pass a 3-tuple of RGB values (e.g.
 ``render3D_bgcolor = (1, 0, 0)`` makes the background red).
 
@@ -116,28 +116,28 @@ Alternatively, you may pass a 3-tuple of RGB values (e.g.
 The 2D renders show the particle configuration projected along one of the axes
 of the box. These can often be prettier than their 3D counterparts, as a
 colormap is used to visualise the density field, rather than just a single
-color combined with alpha compositing.
+colour combined with alpha compositing.
 
 In the ``render2D_select`` parameter we've specified that we want images as
 well as terminal images, but no data. Here, *images* refer to the 2D render
 image files you see in the output directory. *Terminal images* are rendered
 directly in the terminal as part of the printed output, as you have probably
-noticed. If you turn on the *data* output, the 2D render data will be stored
-in an HDF5 file.
+noticed. If you turn on the *data* output, the 2D render data will further be
+stored in an HDF5 file.
 
 The options for the 2D renders are collected in the ``render2D_options``
-parameter. Here ``gridsize`` sets the resolution of the grid onto which the
-particles are interpolated in order to produce the render. The height and
+parameter. Here ``gridsize`` sets the resolution of the cubic grid onto which
+the particles are interpolated in order to produce the render. The height and
 width of the image files (in pixels) are then equal to ``gridsize``. The
-terminal image is then produced by resizing the interpolation grid to match
-the resolution given in ``'terminal resolution'``. The terminal image is then
+terminal image is produced by resizing the interpolation grid to match the
+resolution given in ``'terminal resolution'``. The terminal image is then
 displayed using one character slot per grid cell, i.e. the terminal render
 will be ``'terminal resolution'`` (80) characters wide. Since the terminal
 render is constructed from the original 2D render, this does not show more
 details even though the resolution is higher (80 vs. 64).
 
 Also available through ``render2D_options`` is the colormap to use. Check out
-`this <https://matplotlib.org/3.1.1/gallery/color/colormap_reference.html>`_
+`this <https://matplotlib.org/gallery/color/colormap_reference.html>`_
 for a list of available colormaps.
 
 
@@ -167,24 +167,24 @@ playing out right in the terminal! The animation is produced from the terminal
 images stored in the log file ``logs/<ID>``.
 
 The ``-u`` option to the ``concept`` script signals CO\ *N*\ CEPT to start up
-a *utility* rather than running a simulation. These utilities are handy (or
-sometimes goofy) side programs baked into CO\ *N*\ CEPT. Another such utility,
-the *info utility*, is encountered just below, while a
-:doc:`complete section </tutorial/utilities>` of this tutorial is dedicated to
-more in-depth investigations of other utilities.
+a *utility* rather than running a simulation. These utilities are handy (and
+sometimes goofy) side programs baked into CO\ *N*\ CEPT. Another such utility
+--- the *info utility* --- is encountered just below, and we will encounter
+others in later sections of the tutorial. For full documentation on each
+available utility, consult :doc:`Utilities </utilities/utilities>`.
 
 
 
 Snapshots
 .........
 Snapshots are raw dumps of the total system, in this case the position and
-momenta of all :math:`64^3` particles. CO\ *N*\ CEPT uses its own snapshot
+momenta of all :math:`N = 64^3` particles. CO\ *N*\ CEPT uses its own snapshot
 format, which is simply a well-structured HDF5 file.
 
 .. tip::
    For a great graphical tool to explore HDF5 files in general, check out
    `ViTables <https://vitables.org/>`_. If you encounter problems viewing HDF5
-   files produced by CO\ *N*\ CEPT, try upgrading to ViTables 3.
+   files produced by CO\ *N*\ CEPT, check that you are using ViTables 3.
 
    You can install ViTables as part of the CO\ *N*\ CEPT installation via
 
@@ -223,26 +223,34 @@ about the cosmology and numerical setup is stored in the snapshot as well.
    Warnings are shown in red bold text, easily distinguishable from the main
    output text. As warnings (as opposed to errors) results from non-fatal
    issues, CO\ *N*\ CEPT will continue running. A warning emitted during the
-   simulation may hint that someting has gone wrong, meaning that the results
+   simulation may hint that something has gone wrong, meaning that the results
    perhaps should not be trusted. To make sure that no warnings go unnoticed,
    CO\ *N*\ CEPT will notify you at the end of the simulation. A separate error
    log, ``logs/<ID>_err``, containing just warning and error messages, will
    also be present.
 
-To generate a warning and error log file, try wrongly leaving ``a_begin`` as
-``0.02``, while still initializing the simulation from the snapshot.
-Once the simulation has completed, check out the error log file.
+To generate a warning and error log file, try wrongly specifying e.g.
+``Ωb = 0.05``. Once the simulation has completed, check out the error
+log file.
 
 If you intend to run many simulations using the same initial conditions, it's
 worthwhile to initialize these from a common snapshot, as it saves computation
-time in the beginning of the simulation and also takes up less memory. To
-produce such an initial snapshot, simply set
-``output_times = {'snapshot': a_begin}``, in which case CO\ *N*\ CEPT will
-exit right after the snapshot has been dumped at the initial time, without
-doing any simulation. Also, the whole purpose of having the ``ICs`` directory
-is to hold such initial condition snapshots. To dump snapshots to this
-directory, set the ``'snapshot'`` entry in ``output_dirs`` to
-``paths['ics_dir']``.
+time in the beginning of the simulation. To produce such an initial snapshot,
+simply set ``output_times = {'snapshot': a_begin}``, in which case
+CO\ *N*\ CEPT will exit right after the snapshot has been dumped at the
+initial time, without doing any simulation. Also, the whole purpose of having
+the ``ICs`` directory is to hold such initial condition snapshots. To dump
+snapshots to this directory, set the ``'snapshot'`` entry in ``output_dirs``
+to ``paths['ics_dir']``. We can achieve both without even altering the
+parameter file:
+
+.. code-block:: python3
+
+   ./concept \
+       -p params/tutorial \
+       -c "output_times = {'snapshot': a_begin}" \
+       -c "output_dirs = {'snapshot': paths['ics_dir']}" \
+       -n 4
 
 You may also want to use CO\ *N*\ CEPT purely as an initial condition
 generator, and perform the actual simulation using some other code. If so, the

@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>3. Working with parameter files &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -36,12 +46,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="4. Mastering gravity" href="gravity.html" />
@@ -59,7 +63,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -82,6 +86,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -114,12 +119,7 @@
 <li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
@@ -257,11 +257,11 @@
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -281,6 +281,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -319,7 +320,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
         
@@ -357,7 +358,7 @@
 <h1><span class="section-number">3. </span>Working with parameter files<a class="headerlink" href="#working-with-parameter-files" title="Permalink to this headline">¶</a></h1>
 <p>Specifying the many parameters to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script via the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option
 quickly becomes tiresome. A better solution is to write all parameters in a
-file, say <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> (the <code class="docutils literal notranslate"><span class="pre">params</span></code> directory already exists).
+text file, say <code class="docutils literal notranslate"><span class="pre">params/tutorial</span></code> (the <code class="docutils literal notranslate"><span class="pre">params</span></code> directory already exists).
 Copy the content below to such a file:</p>
 <div class="literal-block-wrapper docutils container" id="params-parameter-files">
 <div class="code-block-caption"><span class="caption-text">params/tutorial</span><a class="headerlink" href="#params-parameter-files" title="Permalink to this code">¶</a></div>
@@ -378,22 +379,20 @@ Copy the content below to such a file:</p>
 
 <span class="c1"># Numerical parameters</span>
 <span class="n">boxsize</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="n">_size</span><span class="o">*</span><span class="n">Mpc</span><span class="o">/</span><span class="n">h</span>
+<span class="n">potential_options</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">_size</span>
 
 <span class="c1"># Cosmology</span>
 <span class="n">H0</span>      <span class="o">=</span> <span class="mi">67</span><span class="o">*</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">s</span><span class="o">*</span><span class="n">Mpc</span><span class="p">)</span>
 <span class="n">Ωb</span>      <span class="o">=</span> <span class="mf">0.049</span>
 <span class="n">Ωcdm</span>    <span class="o">=</span> <span class="mf">0.27</span>
 <span class="n">a_begin</span> <span class="o">=</span> <span class="mf">0.02</span>
-
-<span class="c1"># Physics</span>
-<span class="n">select_forces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;matter&#39;</span><span class="p">:</span> <span class="s1">&#39;gravity&#39;</span><span class="p">,</span>
-<span class="p">}</span>
 </pre></div>
 </div>
 </div>
-<p>To run CO<em>N</em>CEPT using these parameters, do</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -n <span class="m">4</span>
+<p>To run CO<em>N</em>CEPT using this parameter file, do</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -p params/tutorial <span class="se">\</span>
+    -n <span class="m">4</span>
 </pre></div>
 </div>
 <p>The simulation specified by the above parameters is quite similar to the
@@ -407,10 +406,11 @@ does not matter.</p></li>
 <li><p>Parameter files are glorified Python scripts, and so we may utilize the full
 Python (3) language when defining the parameters. We can also define
 helper variables that are not themselves parameters, like <code class="docutils literal notranslate"><span class="pre">_size</span></code> above,
-which is used to simultaneously adjust the number of particles <code class="docutils literal notranslate"><span class="pre">'N'</span></code> and
-the side length of the simulation box <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>. Though not strictly
-necessary, it is preferable for such helper variables to be named with a
-leading underscore <code class="docutils literal notranslate"><span class="pre">_</span></code>, to separate them from actual parameters.</p></li>
+which here is used to simultaneously adjust the number of particles <code class="docutils literal notranslate"><span class="pre">'N'</span></code>,
+the side length of the simulation box <code class="docutils literal notranslate"><span class="pre">boxsize</span></code> and the size of the
+potential grid. Though not strictly necessary, it is preferable for such
+helper variables to be named with a leading underscore <code class="docutils literal notranslate"><span class="pre">_</span></code>, to separate
+them from actual parameters.</p></li>
 <li><p>We have explicitly specified the directory for power spectra output in the
 <code class="docutils literal notranslate"><span class="pre">output_dirs</span></code> parameter. The value is constructed using the <code class="docutils literal notranslate"><span class="pre">paths</span></code>
 variable, which holds absolute paths specified in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code> file.
@@ -433,9 +433,9 @@ specifying relative paths, these are always with respect to the
 </li>
 <li><p>We’ve specified multiple times at which to dump power spectra in
 <code class="docutils literal notranslate"><span class="pre">output_times</span></code>. Note that we use the parameter <code class="docutils literal notranslate"><span class="pre">a_begin</span></code> (creating a
-power spectrum of the initial conditions), the value of which isn’t set
-before further down. Generally, the order of variable definitions inside
-parameter files is of no importance.</p></li>
+power spectrum of the initial conditions), the value of which is set further
+down. Generally, the order of variable definitions — even when one depends
+on another — is of no importance inside parameter files.</p></li>
 <li><p>The simulation takes place in a cubic box, the side length of which is set
 by <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>. In the parameter specification above, we’ve let <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>
 be proportional to <code class="docutils literal notranslate"><span class="pre">_size</span></code>, which has the effect of keeping the particle
@@ -444,26 +444,30 @@ a factor of 2, <code class="docutils literal notranslate"><span class="pre">boxs
 the simulation volume goes up by a factor of 8, which is compensated by a
 similar increase in the number of particles by a factor <span class="math notranslate nohighlight">\(2^3 = 8\)</span>.</p>
 <p>No default units are ever assumed by CO<em>N</em>CEPT when it reads parameters,
-and so it’s critical that you explicitly tack on units on all parameters
-that are not unitless. For <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>, the extra fancy unit of
-<span class="math notranslate nohighlight">\(\text{Mpc}/h\)</span> is used above, with
+and so it’s critical that you explicitly tack on units on all dimensional
+parameters. For <code class="docutils literal notranslate"><span class="pre">boxsize</span></code>, the extra fancy unit of <span class="math notranslate nohighlight">\(\text{Mpc}/h\)</span> is
+used above, with
 <span class="math notranslate nohighlight">\(h \equiv H_0/(100\, \text{km}\, \text{s}^{-1}\, \text{Mpc}^{-1})\)</span>
 inferred dynamically from the Hubble constant <code class="docutils literal notranslate"><span class="pre">H0</span></code> set further down.</p>
 </li>
-<li><p>The parameters <code class="docutils literal notranslate"><span class="pre">Ωb</span></code> and <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> of course set the amount of baryons and
-cold dark matter, respectively. Together, these otherwise distinct species
-are collectively referred to as just <em>matter</em>. Thus, declaring the species
-to be <code class="docutils literal notranslate"><span class="pre">'matter'</span></code> in the <code class="docutils literal notranslate"><span class="pre">initial_conditions</span></code> implies that these
-particles will represent both the cold dark and the bayonic matter.</p></li>
+<li><p>The parameters <code class="docutils literal notranslate"><span class="pre">Ωb</span></code> and <code class="docutils literal notranslate"><span class="pre">Ωcdm</span></code> of course set the present amount of
+baryons and cold dark matter, respectively. Together, these otherwise
+distinct species are collectively referred to as just <em>matter</em>. Thus,
+declaring the species to be <code class="docutils literal notranslate"><span class="pre">'matter'</span></code> in the <code class="docutils literal notranslate"><span class="pre">initial_conditions</span></code>
+implies that the particles will represent both the baryonic
+and cold dark matter.</p></li>
 </ul>
-<p>The <code class="docutils literal notranslate"><span class="pre">-p</span></code> parameter file option can be mixed with the <code class="docutils literal notranslate"><span class="pre">-c</span></code> command-line
-parameter option. As an example, consider leaving out the definition of
+<p>The <code class="docutils literal notranslate"><span class="pre">-p</span></code> (parameter file) option can be mixed with the <code class="docutils literal notranslate"><span class="pre">-c</span></code> (command-line
+parameter) option. As an example, consider leaving out the definition of
 <code class="docutils literal notranslate"><span class="pre">_size</span></code> from the parameter file and instead supplying it when running the
 code:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/tutorial -c <span class="s2">&quot;_size = 64&quot;</span> -n <span class="m">4</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -p params/tutorial <span class="se">\</span>
+    -c <span class="s2">&quot;_size = 64&quot;</span> <span class="se">\</span>
+    -n <span class="m">4</span>
 </pre></div>
 </div>
-<p>If you forget to specify <code class="docutils literal notranslate"><span class="pre">_size</span></code> — or any other variable used in the
+<p>If you forget to specify <code class="docutils literal notranslate"><span class="pre">_size</span></code> — or any other variable referenced by the
 parameter file — CO<em>N</em>CEPT will exit with an error, letting you know.</p>
 <h3>Log files</h3><p>The printed output of all CO<em>N</em>CEPT runs gets logged in the <code class="docutils literal notranslate"><span class="pre">logs</span></code>
 directory. Each run (or <em>job</em>) gets a unique integer ID, which is also used as
@@ -474,7 +478,7 @@ files.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>To view the logged output of e.g. CO<em>N</em>CEPT run 1 with proper
-coloring, use <code class="docutils literal notranslate"><span class="pre">less</span> <span class="pre">-r</span> <span class="pre">logs/1</span></code>. Arrow keys to navigate, <code class="docutils literal notranslate"><span class="pre">q</span></code> to quit.</p>
+coloring, use <code class="docutils literal notranslate"><span class="pre">less</span> <span class="pre">-rf</span> <span class="pre">logs/1</span></code>. Arrow keys to navigate, <code class="docutils literal notranslate"><span class="pre">q</span></code> to quit.</p>
 </div>
 <h3>Checking previously used parameters</h3><p>Among the first lines of output of any CO<em>N</em>CEPT run is the path to the
 parameter file in use. As this is included in the log file, you can always go
@@ -494,7 +498,9 @@ find the file name of the parameter file copy from the corresponding log file,
 and check that the parameters specified are as you expect. Any command-line
 parameters will be placed at the bottom.</p>
 <p>So far we’ve introduced only the most essential parameters. The remaining
-sections of this tutorial will introduce more as needed.</p>
+sections of this tutorial will introduce further parameters — and expand on
+already encountered ones — as needed. For full documentation on all
+available parameters, consult <a class="reference internal" href="../parameters/parameters.html"><span class="doc">Parameters</span></a>.</p>
 </div>
 
 
@@ -530,7 +536,6 @@ sections of this tutorial will introduce more as needed.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

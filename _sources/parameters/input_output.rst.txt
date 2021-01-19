@@ -41,7 +41,7 @@ ______________________________________________________________________________
                        }]
 
                     Generate initial conditions where baryonic and cold dark
-                    matter particles are realized separately as individual
+                    matter particles are realised separately as individual
                     components, each comprised of :math:`64^3` particles:
 
                     .. code-block:: python3

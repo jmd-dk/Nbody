@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>CONCEPT documentation &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -36,12 +46,6 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tutorial" href="tutorial/tutorial.html" /> 
@@ -58,7 +62,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="#" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -81,6 +85,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -113,12 +118,7 @@
 <li class="toctree-l3"><a class="reference internal" href="tutorial/beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
@@ -256,11 +256,11 @@
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -280,6 +280,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -318,7 +319,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#">Docs</a> &raquo;</li>
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
       <li>CO<em>N</em>CEPT documentation</li>
     
@@ -348,42 +349,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <style type="text/css">
-  span.bolditalic {
-    font-weight: bold;
-    font-style: italic;
-  }
-</style><div class="section" id="concept-documentation">
+  <div class="section" id="concept-documentation">
 <h1>CO<em>N</em> CEPT documentation<a class="headerlink" href="#concept-documentation" title="Permalink to this headline">¶</a></h1>
-<table class="docutils field-list" frame="void" rules="none">
+<table class="docutils field-list" style="font-size:120%">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Jeppe Mosgaard Dakin</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Contact:</th><td class="field-body"><a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Web Site:</th><td class="field-body"><a class="reference external" href="https://github.com/jmd-dk/concept/">https://github.com/jmd-dk/concept/</a></td>
-</tr>
-<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">Jun 15, 2020</td>
-</tr>
+<tr><td class="field-name"><b>Release</b></td><td class="field-body">1.0.0 <i>(still under development)</i></td></tr>
+<tr><td class="field-name"><b>GitHub</b></td><td class="field-body"><a class="reference external" href="https://github.com/jmd-dk/concept/">https://github.com/jmd-dk/concept/</a>&emsp;<img src="https://github.com/jmd-dk/concept/workflows/build/badge.svg"/></td></tr>
+<tr><td class="field-name"><b>Author</b></td><td class="field-body">Jeppe Dakin, Aarhus University&emsp;<a class="reference external" href="mailto:dakin&#37;&#52;&#48;phys&#46;au&#46;dk">dakin<span>&#64;</span>phys<span>&#46;</span>au<span>&#46;</span>dk</a></td></tr>
+<tr class="field-even field"><td class="field-name"><b>Date</b></td><td class="field-body">January 19, 2021</td></tr>
 </tbody>
-</table><p>This is the documentation for CO<em>N</em>CEPT, the <strong>CO</strong>smological
-<span class="bolditalic">N</span>-body <strong>C</strong>od<strong>E</strong> in <strong>P</strong>y<strong>T</strong>hon.</p>
+</table><p><span class="raw-html"><font size="+1">This is the documentation for CO<i>N</i>CEPT, the <b>CO</b>smological <b><i>N</b></i>-body <b>C</b>od<b>E</b> in <b>P</b>y<b>T</b>hon</font></span></p>
 <div class="section" id="abstract">
 <h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h2>
 <p>CO<em>N</em>CEPT is a free and open-source simulation code for cosmological
 structure formation. The code should run on any Linux system, from massively
 parallel computer clusters to laptops. The code is written almost exclusively
-in Python, but achieves C-like performance thanks to
-<a class="reference external" href="https://cython.org/">Cython</a>.</p>
+in Python, but achieves C-like performance through code transformation using a
+custom transpiler/optimizer and <a class="reference external" href="https://cython.org/">Cython</a>.</p>
 <p>CO<em>N</em>CEPT is capable of simulating matter particles evolving under
 self-gravity in an expanding background. It has multiple gravitational solvers
 to choose from, and has adaptive time integration built in. In addition to
-particles, fluids such as neutrinos are also implemented, and can be simulated
-at various levels of non-linearity. Completely linear perturbations in all
-species and the metric itself are fully supported, allowing for simulations
-consistent with general relativity.</p>
+particles, the code is further able to evolve fluids at various levels of
+non-linearity, providing the means for the inclusion of more exotic species
+such as massive neutrinos. Completely linear perturbations in density fields
+and the metric itself allows for simulations consistent with general
+relativistic perturbation theory. Various non-standard
+species — such as decaying cold dark matter — are fully supported.</p>
 <p>CO<em>N</em>CEPT comes with a sophisticated initial condition generator built in,
 and can output snapshots, power spectra and several kinds of renders.</p>
 <p>The <a class="reference external" href="http://class-code.net/">CLASS</a> code is fully integrated into
@@ -406,7 +399,7 @@ taking you on a guided tour through the CO<em>N</em>CEPT universe.</p>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/output_types.html">5. Other kinds of output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/working_remotely.html">6. Working on remote clusters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tutorial/beyond_matter_only.html">7. Beyond matter-only simulations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/utilities.html">8. Using utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
@@ -453,11 +446,11 @@ taking you on a guided tour through the CO<em>N</em>CEPT universe.</p>
 <li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">Troubleshooting</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#installation-failed">Installation failed</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#compilation-failed">Compilation failed</a></li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#bad-performance-when-using-multiple-processes-nodes">Bad performance when using multiple processes/nodes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-using-multiple-nodes">Problems when using multiple nodes</a></li>
@@ -503,7 +496,6 @@ taking you on a guided tour through the CO<em>N</em>CEPT universe.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

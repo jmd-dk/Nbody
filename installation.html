@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>Installation &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
         <script src="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.js"></script>
@@ -38,20 +48,10 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
-  <link rel="stylesheet" href="_static/sphinx_tabs/tabs.css" type="text/css" />
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Command-line options" href="command_line_options.html" />
-    <link rel="prev" title="8. Using utilities" href="tutorial/utilities.html" /> 
+    <link rel="prev" title="8. Comparison with GADGET-2" href="tutorial/gadget.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -65,7 +65,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -88,6 +88,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -120,12 +121,7 @@
 <li class="toctree-l3"><a class="reference internal" href="tutorial/beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
@@ -263,11 +259,11 @@
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -287,6 +283,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -325,7 +322,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Installation</li>
     
@@ -357,12 +354,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <style type="text/css">
-  span.bolditalic {
-    font-weight: bold;
-    font-style: italic;
-  }
-</style><div class="section" id="installation">
+  <div class="section" id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <p>This page contains detailed information about how to install CO<em>N</em>CEPT
 along with its many dependencies. Unless you have some special need, it is
@@ -527,6 +519,16 @@ shell</p>
 If you encounter this issue, you can supply <code class="docutils literal notranslate"><span class="pre">--no-check-certificate</span></code> as a
 further option to <code class="docutils literal notranslate"><span class="pre">wget</span></code>.</p>
 </div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you are installing CO<em>N</em>CEPT on a cluster, you should make sure to
+obtain
+<a class="reference internal" href="#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance</span></a>.
+If you are installing via the cluster’s front-end over SSH, you may want to
+make use of a tool such as <a class="reference external" href="https://tmux.github.io/">tmux</a> or
+<a class="reference external" href="https://www.gnu.org/software/screen/">Screen</a>, so that you may close the
+connection without stopping the installation process.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>For the remainder of this page, we shall make us of the shorter
@@ -540,15 +542,15 @@ software to be installed will be shown.</p>
 <p>CO<em>N</em>CEPT along with all of the libraries it needs will be installed into
 the chosen installation directory. To completely remove the CO<em>N</em>CEPT
 installation, simply remove this directory.</p>
-<p>The installation will take an hour or two on modern hardware and take up
-about 1.5 GB of storage. Should the installation process end prematurely
-(e.g. if you kill it yourself), simply rerun the installation command and it
-will pick up from where it was.</p>
+<p>The installation will take about an hour and a half on modern hardware and
+take up about 1.7 GB of storage. Should the installation process end
+prematurely (e.g. if you kill it yourself), simply rerun the installation
+command and it will pick up from where it was.</p>
 <div class="section" id="optimal-network-performance-on-clusters">
 <span id="id3"></span><h3><a class="toc-backref" href="#id14">Optimal network performance on clusters</a><a class="headerlink" href="#optimal-network-performance-on-clusters" title="Permalink to this headline">¶</a></h3>
 <p>To install CO<em>N</em>CEPT on a cluster, the standard installation procedure
 above may be used. However, the performance of simulations running on multiple
-processors may be very poor, as the MPI library installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code>
+CPUs may be very poor, as the MPI library installed by the <code class="docutils literal notranslate"><span class="pre">installer</span></code>
 may not be configured optimally regarding the network and accompanying
 software present on the cluster.</p>
 <p>To test the network performance of MPI, you may simply run a small simulation
@@ -666,10 +668,9 @@ installed by the <code class="docutils literal notranslate"><span class="pre">in
 <li><p><strong>ncurses</strong></p></li>
 <li><p><strong>libffi</strong></p></li>
 <li><p><strong>OpenSSL</strong> (depends on Perl)</p></li>
-<li><p><strong>libpng</strong> (depends on zlib)</p></li>
 <li><p><strong>GSL</strong> (depends on BLAS)</p></li>
 <li><p><strong>HDF5</strong> (depends on zlib)</p></li>
-<li><p><strong>GADGET</strong> (depends on MPI, GSL, FFTW 2)</p></li>
+<li><p><strong>GADGET-2</strong> (depends on MPI, GSL, FFTW 2)</p></li>
 <li><p><strong>Python 3</strong> (depends on zlib)</p>
 <ul>
 <li><p><strong>pip</strong> (depends on OpenSSL, libffi), <strong>setuptools</strong> and <strong>wheel</strong>;
@@ -680,12 +681,12 @@ needed to install the Python packages below:</p>
 <li><p><strong>CythonGSL</strong> (depends on Cython, GSL)</p></li>
 <li><p><strong>NumPy</strong> (depends on BLAS, LAPACK)</p></li>
 <li><p><strong>SciPy</strong> (depends on BLAS, LAPACK)</p></li>
-<li><p><strong>Matplotlib</strong> (depends on libpng, FreeType)</p></li>
+<li><p><strong>Matplotlib</strong> (depends on FreeType)</p></li>
 <li><p><strong>MPI4Py</strong> (depends on MPI, Cython)</p></li>
 <li><p><strong>H5Py</strong> (depends on HDF5 and MPI)</p></li>
 <li><p><strong>Sphinx</strong></p></li>
 <li><p><strong>Sphinx-copybutton</strong> (depends on Sphinx)</p></li>
-<li><p><strong>Sphinx_rtd_theme</strong> (depends on Sphinx)</p></li>
+<li><p><strong>Sphinx-rtd-theme</strong> (depends on Sphinx)</p></li>
 <li><p><strong>Sphinx-tabs</strong> (depends on Sphinx)</p></li>
 </ul>
 </li>
@@ -693,9 +694,9 @@ needed to install the Python packages below:</p>
 </li>
 <li><p><strong>CLASS</strong> + <strong>classy</strong> (depends on Cython, NumPy)</p></li>
 </ul>
-<p>Finally, CO<em>N</em>CEPT itself depends on MPI, FFTW (3), GADGET, Python,
-Blessings, Cython, CythonGSL, NumPy, SciPy, matplotlib, MPI4Py, H5Py, classy,
-Sphinx, sphinx-copybutton, sphinx_rtd_theme, sphinx-tabs.</p>
+<p>Finally, CO<em>N</em>CEPT itself depends on MPI, FFTW (3), GADGET-2, Python,
+Blessings, Cython, CythonGSL, NumPy, SciPy, Matplotlib, MPI4Py, H5Py, classy,
+Sphinx, sphinx-copybutton, sphinx-rtd-theme, sphinx-tabs.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">installer</span></code> installs the
 <a class="reference external" href="https://github.com/xianyi/OpenBLAS">OpenBLAS</a> library (which depends on
 Perl) in order to provide both BLAS and LAPACK. For MPI,
@@ -750,7 +751,7 @@ is not recommended as it increases the installation time by a couple of hours.</
 </pre></div>
 </div>
 <p>and so may also be run at any time after the installation, whether or not the
-<code class="docutils literal notranslate"><span class="pre">--tests</span></code> option was used for th installation. See the <code class="docutils literal notranslate"><span class="pre">concept</span></code>
+<code class="docutils literal notranslate"><span class="pre">--tests</span></code> option was used for the installation. See the <code class="docutils literal notranslate"><span class="pre">concept</span></code>
 <a class="reference internal" href="command_line_options.html#test"><span class="std std-ref">test</span></a> option for further details.</p>
 <h6>
   Yes to defaults:
@@ -765,24 +766,16 @@ is not recommended as it increases the installation time by a couple of hours.</
 non-interactively. These include system-wide installations of system
 dependencies (should any be missing), which require root access.</p>
 <h6>
-  Native optimizations:
-  <code class="docutils literal notranslate"><span class="pre">
-    --native-optimizations
-  </span></code>
-</h6><p>This passes the
-<a class="reference internal" href="command_line_options.html#native-optimizations"><span class="std std-ref">--native-optimizations flag</span></a> on to the
-CO<em>N</em>CEPT compilation.</p>
-<h6>
   Slim:
   <code class="docutils literal notranslate"><span class="pre">
     --slim
   </span></code>
 </h6><p>This produces a trimmed down installation with uncritical content removed,
 both from CO<em>N</em>CEPT itself and its dependency programs. This brings the
-size of the installation down from about 1.5 GB to about 0.5 GB. Though
+size of the installation down from about 1.7 GB to about 0.4 GB. Though
 CO<em>N</em>CEPT itself remains fully functional in such a slim installation,
 some features of the dependency programs will be broken. Debugging any issues
-encountered will also generally be much harder.</p>
+encountered will also generally be harder.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The provided CO<em>N</em>CEPT <a class="reference internal" href="#supported-platforms"><span class="std std-ref">Docker images</span></a> are
@@ -791,7 +784,7 @@ built using a slim installation</p>
 <p>Below we list the exact changes caused by the <code class="docutils literal notranslate"><span class="pre">--slim</span></code> option.</p>
 <ul class="simple">
 <li><p><strong>Fewer license and acknowledgement files</strong>: During normal installation, all
-recognized license and acknowledgement files for the various dependencies
+recognised license and acknowledgement files for the various dependencies
 (and CO<em>N</em>CEPT itself) are copied over to the respective installation
 directories. This is now skipped.</p></li>
 <li><p><strong>Less documentation</strong>: Most documentation (full-blown documentation,
@@ -805,7 +798,7 @@ correctness, will be removed.</p></li>
 describing the installation of the dependencies will be removed.</p></li>
 <li><p><strong>No cached Python files</strong>: All bytecode files compiled and cached by Python
 during installation will be removed.</p></li>
-<li><p><strong>No compilation artifacts from CO</strong><span class="bolditalic">N</span><strong>CEPT and CLASS</strong>:
+<li><p><strong>No compilation artefacts from CO</strong><span class="bolditalic">N</span><strong>CEPT and CLASS</strong>:
 Only the final shared object files (as well as the bare source) resulting
 from compilation of CO<em>N</em>CEPT and CLASS will be present after
 installation.</p></li>
@@ -832,7 +825,7 @@ use with remote jobs running on multiple nodes, as described
 </div>
 <div class="section" id="influential-environment-variables">
 <span id="id6"></span><h3><a class="toc-backref" href="#id19">Influential environment variables</a><a class="headerlink" href="#influential-environment-variables" title="Permalink to this headline">¶</a></h3>
-<p>The behavior of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> is governed by a large set of environment
+<p>The behaviour of the <code class="docutils literal notranslate"><span class="pre">installer</span></code> is governed by a large set of environment
 variables. An example is the <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code> variable described in
 ‘<a class="reference internal" href="#optimal-network-performance-on-clusters"><span class="std std-ref">optimal network performance on clusters</span></a>’,
 through which we can let the <code class="docutils literal notranslate"><span class="pre">installer</span></code> make use of a pre-installed MPI
@@ -841,7 +834,7 @@ either directly in the invocation of <code class="docutils literal notranslate">
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi bash installer
 </pre></div>
 </div>
-<p>or defining it as an environmet variable prior to the invocation;</p>
+<p>or defining it as an environment variable prior to the invocation;</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">mpi_dir</span><span class="o">=</span>/path/to/mpi  <span class="c1"># Assuming Bash-like shell</span>
 bash installer
 </pre></div>
@@ -853,9 +846,8 @@ bash installer
 installing it itself, you must set the corresponding <code class="docutils literal notranslate"><span class="pre">*_dir</span></code> variable. The
 complete list of such variables is: <code class="docutils literal notranslate"><span class="pre">blas_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">class_dir</span></code>,
 <code class="docutils literal notranslate"><span class="pre">concept_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_for_gadget_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">freetype_dir</span></code>,
-<code class="docutils literal notranslate"><span class="pre">gadget_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">gsl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">libffi_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">libpng_dir</span></code>,
-<code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">ncurses_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">openssl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">perl_dir</span></code>,
-<code class="docutils literal notranslate"><span class="pre">python_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">zlib_dir</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">gadget_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">gsl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">libffi_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">mpi_dir</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ncurses_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">openssl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">perl_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">python_dir</span></code>, <code class="docutils literal notranslate"><span class="pre">zlib_dir</span></code>.</p>
 <p>Note that if using a pre-installed Python distribution —
 <code class="docutils literal notranslate"><span class="pre">python_dir=/path/to/python</span></code> — OpenSSL, libffi and ncurses are assumed to
 be already installed and build into the Python distribution, as these cannot
@@ -872,14 +864,14 @@ through the <code class="docutils literal notranslate"><span class="pre">*_versi
 include <code class="docutils literal notranslate"><span class="pre">blas_version</span></code>, <code class="docutils literal notranslate"><span class="pre">class_version</span></code>, <code class="docutils literal notranslate"><span class="pre">concept_version</span></code>,
 <code class="docutils literal notranslate"><span class="pre">fftw_version</span></code>, <code class="docutils literal notranslate"><span class="pre">fftw_for_gadget_version</span></code>, <code class="docutils literal notranslate"><span class="pre">freetype_version</span></code>,
 <code class="docutils literal notranslate"><span class="pre">gadget_version</span></code>, <code class="docutils literal notranslate"><span class="pre">gsl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">hdf5_version</span></code>, <code class="docutils literal notranslate"><span class="pre">libffi_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">libpng_version</span></code>, <code class="docutils literal notranslate"><span class="pre">mpi_version</span></code>, <code class="docutils literal notranslate"><span class="pre">ncurses_version</span></code>, <code class="docutils literal notranslate"><span class="pre">openssl_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">perl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">python_version</span></code>, <code class="docutils literal notranslate"><span class="pre">zlib_version</span></code>. Furthermore, each
-Python package also has a version, speficied by <code class="docutils literal notranslate"><span class="pre">blessings_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">cython_version</span></code>, <code class="docutils literal notranslate"><span class="pre">cythongsl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">h5py_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">matplotlib_version</span></code>, <code class="docutils literal notranslate"><span class="pre">mpi4py_version</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">pip_version</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest_version</span></code>, <code class="docutils literal notranslate"><span class="pre">scipy_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">setuptools_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_copybutton_version</span></code>,
-<code class="docutils literal notranslate"><span class="pre">sphinx_rtd_theme_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_tabs_version</span></code>, <code class="docutils literal notranslate"><span class="pre">wheel_version</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">mpi_version</span></code>, <code class="docutils literal notranslate"><span class="pre">ncurses_version</span></code>, <code class="docutils literal notranslate"><span class="pre">openssl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">perl_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">python_version</span></code>, <code class="docutils literal notranslate"><span class="pre">zlib_version</span></code>. Furthermore, each Python package also
+has a version, specified by <code class="docutils literal notranslate"><span class="pre">blessings_version</span></code>, <code class="docutils literal notranslate"><span class="pre">cython_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">cythongsl_version</span></code>, <code class="docutils literal notranslate"><span class="pre">h5py_version</span></code>, <code class="docutils literal notranslate"><span class="pre">matplotlib_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">mpi4py_version</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy_version</span></code>, <code class="docutils literal notranslate"><span class="pre">pip_version</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">scipy_version</span></code>, <code class="docutils literal notranslate"><span class="pre">setuptools_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sphinx_copybutton_version</span></code>, <code class="docutils literal notranslate"><span class="pre">sphinx_rtd_theme_version</span></code>,
+<code class="docutils literal notranslate"><span class="pre">sphinx_tabs_version</span></code>, <code class="docutils literal notranslate"><span class="pre">wheel_version</span></code>.</p>
 </div>
 <div class="section" id="choosing-compiler-precedence">
 <h4>Choosing compiler precedence<a class="headerlink" href="#choosing-compiler-precedence" title="Permalink to this headline">¶</a></h4>
@@ -942,7 +934,7 @@ used if installing locally, while serial builds are used if working remotely.</p
 should you be in need of any of the dependencies for some other purpose. Which
 programs to install is governed by <code class="docutils literal notranslate"><span class="pre">*_install</span></code> variables. By default,
 <code class="docutils literal notranslate"><span class="pre">concept_install=True</span></code>, which in turn sets <code class="docutils literal notranslate"><span class="pre">*_install=True</span></code> for its
-immidiate dependencies, which in turn sets <code class="docutils literal notranslate"><span class="pre">*_install=True</span></code> for their
+immediate dependencies, which in turn sets <code class="docutils literal notranslate"><span class="pre">*_install=True</span></code> for their
 dependencies, and so on. If you run the <code class="docutils literal notranslate"><span class="pre">installer</span></code> with
 <code class="docutils literal notranslate"><span class="pre">concept_install=False</span></code>, nothing will be installed.</p>
 <p>To install e.g. just FFTW, use</p>
@@ -953,7 +945,7 @@ dependencies, and so on. If you run the <code class="docutils literal notranslat
 library (<code class="docutils literal notranslate"><span class="pre">mpi_dir=...</span></code> or <code class="docutils literal notranslate"><span class="pre">mpi_install=True</span></code>) to link against. As FFTW
 does not absolutely need MPI, <code class="docutils literal notranslate"><span class="pre">mpi_install</span></code> is not set by having
 <code class="docutils literal notranslate"><span class="pre">fftw_install=True</span></code>.</p>
-<p>To install GADGET, use</p>
+<p>To install GADGET-2, use</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">concept_install</span><span class="o">=</span>False <span class="nv">gadget_install</span><span class="o">=</span>True bash installer
 </pre></div>
 </div>
@@ -978,7 +970,7 @@ You may draw inspiration from the current or older versions of the
 <div class="section" id="python-dependencies">
 <h3><a class="toc-backref" href="#id21">Python dependencies</a><a class="headerlink" href="#python-dependencies" title="Permalink to this headline">¶</a></h3>
 <p>The CO<em>N</em>CEPT source depends explicitly on
-<a class="reference external" href="https://www.python.org/">Python</a> version 3.6 or newer, together with the
+<a class="reference external" href="https://www.python.org/">Python</a> version 3.8 or newer, together with the
 following Python packages (many of which have heavy dependencies of their
 own):</p>
 <ul class="simple">
@@ -989,7 +981,7 @@ representing all primary data, together with various array/math functions.</p></
 <li><p><a class="reference external" href="https://www.scipy.org/">SciPy</a>: Provides various numerical methods and
 additional math functions.</p></li>
 <li><p><a class="reference external" href="https://matplotlib.org/">Matplotlib</a>: Provides plotting functionality for
-2D and 3D figures, as well as color transformations used for colored
+2D and 3D figures, as well as colour transformations used for coloured
 terminal output.</p></li>
 <li><p><a class="reference external" href="https://mpi4py.readthedocs.io/">MPI4Py</a>: Provides Python bindings for
 MPI, used for all inter-process communication.</p></li>
@@ -1005,7 +997,7 @@ formatting.</p></li>
 </ul>
 <p>In addition, the <a class="reference external" href="http://www.sphinx-doc.org/">Sphinx</a>,
 <a class="reference external" href="https://sphinx-copybutton.readthedocs.io/">sphinx-copybutton</a>,
-<a class="reference external" href="https://sphinx-rtd-theme.readthedocs.io/">sphinx_rtd_theme</a> and
+<a class="reference external" href="https://sphinx-rtd-theme.readthedocs.io/">sphinx-rtd-theme</a> and
 <a class="reference external" href="https://github.com/djungelorm/sphinx-tabs/">sphinx-tabs</a> Python packages
 are needed to build the documentation, but may otherwise be left out.</p>
 </div>
@@ -1026,13 +1018,13 @@ CO<em>N</em>CEPT source code.</p>
 goes for building HDF5 and installing MPI4Py and H5Py. Also, the MPI library
 has to conform to the MPI-3 (or MPI-3.1) standard.</p>
 <p>For testing, CO<em>N</em>CEPT compares itself against
-<a class="reference external" href="https://wwwmpa.mpa-garching.mpg.de/gadget/">GADGET</a>, specifically version
-2.0.7. When installing using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script, GADGET is patched in
+<a class="reference external" href="https://wwwmpa.mpa-garching.mpg.de/gadget/">GADGET-2</a>, specifically version
+2.0.7. When installing using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script, GADGET-2 is patched in
 order to increase the maximum allowed size of path names and slightly change
 the values of various internal physical constants as to match the values
 adopted by CO<em>N</em>CEPT. If you do not care about running the CO<em>N</em>CEPT
-test suite, you do not have to install GADGET at all.</p>
-<p>The last non-standard depenency of CO<em>N</em>CEPT is the
+test suite, you do not have to install GADGET-2 at all.</p>
+<p>The last non-standard dependency of CO<em>N</em>CEPT is the
 <a class="reference external" href="http://class-code.net/">CLASS</a> code, along with its Python wrapper
 ‘classy’. When installing using the <code class="docutils literal notranslate"><span class="pre">installer</span></code> script, CLASS and classy are
 patched in order to enable larger and new kinds of output, fix bugs and
@@ -1108,7 +1100,7 @@ set this.</p></li>
 </ul>
 <p>In CO<em>N</em>CEPT parameter files, all variables defined in the <code class="docutils literal notranslate"><span class="pre">.paths</span></code>
 file are available through the <code class="docutils literal notranslate"><span class="pre">paths</span></code> <code class="docutils literal notranslate"><span class="pre">dict</span></code>. Thus, to e.g. get the
-absoute path to the <code class="docutils literal notranslate"><span class="pre">output</span></code> directory, you may use</p>
+absolute path to the <code class="docutils literal notranslate"><span class="pre">output</span></code> directory, you may use</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">paths</span><span class="p">[</span><span class="s1">&#39;output_dir&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
@@ -1167,7 +1159,7 @@ whether the <code class="docutils literal notranslate"><span class="pre">concate
 <code class="docutils literal notranslate"><span class="pre">append</span></code>.</p>
 <p>When using the <code class="docutils literal notranslate"><span class="pre">installer</span></code>, any such <code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables
 present during install time will be placed in a similar array structure.
-Whether these are prepended or appended to the preexisting values of the same
+Whether these are prepended or appended to the pre-existing values of the same
 <code class="docutils literal notranslate"><span class="pre">PATH</span></code>-like environment variables when building/running CO<em>N</em>CEPT is
 similarly determined by <code class="docutils literal notranslate"><span class="pre">concatenate</span></code>.</p>
 </div>
@@ -1190,7 +1182,7 @@ lines to the <code class="docutils literal notranslate"><span class="pre">.env</
 </div>
 <div class="section" id="the-mpi-executor">
 <h4>The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code><a class="headerlink" href="#the-mpi-executor" title="Permalink to this headline">¶</a></h4>
-<p>The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> variable determines which program is resonsible for
+<p>The <code class="docutils literal notranslate"><span class="pre">mpi_executor</span></code> variable determines which program is responsible for
 launching CO<em>N</em>CEPT as an MPI program, when submitted as a job on a remote
 cluster. You may leave this empty or undefined in which case a (hopefully)
 suitable value will be determined by the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script.</p>
@@ -1203,7 +1195,7 @@ details.</p>
 <h4>The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> environment variable<a class="headerlink" href="#the-make-jobs-environment-variable" title="Permalink to this headline">¶</a></h4>
 <p>The <code class="docutils literal notranslate"><span class="pre">make_jobs</span></code> variable is not present in the <code class="docutils literal notranslate"><span class="pre">.env</span></code> file by default, but
 may be set in order to specify whether CO<em>N</em>CEPT should be built in
-parallel. The default behavior is to build in parallel when working locally
+parallel. The default behaviour is to build in parallel when working locally
 and serially when working remotely. To overrule this, add one of e.g.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">make_jobs</span><span class="o">=</span><span class="s2">&quot;-j 1&quot;</span>  <span class="c1"># Always build serially</span>
 <span class="nb">export</span> <span class="nv">make_jobs</span><span class="o">=</span><span class="s2">&quot;-j 2&quot;</span>  <span class="c1"># Always build in parallel, using 2 cores</span>
@@ -1249,7 +1241,6 @@ and serially when working remotely. To overrule this, add one of e.g.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

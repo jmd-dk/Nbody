@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>Command-line options &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -36,12 +46,6 @@
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Parameters" href="parameters/parameters.html" />
@@ -59,7 +63,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -82,6 +86,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -114,12 +119,7 @@
 <li class="toctree-l3"><a class="reference internal" href="tutorial/beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial/utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
@@ -257,11 +257,11 @@
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -281,6 +281,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -319,7 +320,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Command-line options</li>
     
@@ -452,8 +453,17 @@ E.g.</p>
 <p>Often this is used in combination with a parameter file, e.g. if a suite of
 similar simulations is to be run where only a few parameter values change
 between the simulations. E.g.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -p params/my_params -c <span class="s2">&quot;Ωb = 0.049&quot;</span> -c <span class="s2">&quot;Ωcdm = 0.270&quot;</span>
-./concept -p params/my_params -c <span class="s2">&quot;Ωb = 0.048&quot;</span> -c <span class="s2">&quot;Ωcdm = 0.271&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># First simulation</span>
+./concept <span class="se">\</span>
+    -p params/my_params <span class="se">\</span>
+    -c <span class="s2">&quot;Ωb = 0.049&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;Ωcdm = 0.270&quot;</span>
+
+<span class="c1"># Second simulation</span>
+./concept <span class="se">\</span>
+    -p params/my_params <span class="se">\</span>
+    -c <span class="s2">&quot;Ωb = 0.048&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;Ωcdm = 0.271&quot;</span>
 </pre></div>
 </div>
 <p>Note that the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option may be specified multiple times.</p>
@@ -506,7 +516,7 @@ processes distributed over 2 nodes each with 4 CPU cores:</p>
 ./concept -n <span class="s2">&quot;1 + 1 : 2**2&quot;</span>
 </pre></div>
 </div>
-<p>Note that imhomogeneous layouts are not describable. If you leave out the node
+<p>Note that inhomogeneous layouts are not describable. If you leave out the node
 specification (i.e. only supply a single number to <code class="docutils literal notranslate"><span class="pre">-n</span></code>) and the cluster is
 running Slurm, the specified total number of CPU cores may be distributed in
 any which way between the available nodes. If the cluster is running
@@ -545,9 +555,9 @@ as in</p>
 command-line options.</p>
 <p>You can read about the different utilities and their command-line interfaces
 under <a class="reference internal" href="utilities/utilities.html"><span class="doc">Utilities</span></a>.</p>
-<p>Note that while some utilies are always run locally, the ones that potentially
+<p>Note that while some utilities are always run locally, the ones that potentially
 involves large computational resources are subject to the same
-<a class="reference internal" href="#remote-job-submission"><span class="std std-ref">remote submission behavior</span></a> as standard
+<a class="reference internal" href="#remote-job-submission"><span class="std std-ref">remote submission behaviour</span></a> as standard
 simulations.</p>
 </div>
 <div class="section" id="version-v-version">
@@ -562,12 +572,12 @@ simulations.</p>
 <span id="id3"></span><h2><a class="toc-backref" href="#id13">Remote job submission</a><a class="headerlink" href="#remote-job-submission" title="Permalink to this headline">¶</a></h2>
 <p>When running CO<em>N</em>CEPT on a cluster with a job scheduler (Slurm and
 TORQUE/PBS supported), each invocation of <code class="docutils literal notranslate"><span class="pre">concept</span></code> submits the work to be
-done as a remote job (unless this behavior is <a class="reference internal" href="#local"><span class="std std-ref">overruled</span></a>). If
+done as a remote job (unless this behaviour is <a class="reference internal" href="#local"><span class="std std-ref">overruled</span></a>). If
 running locally, none of these options have any effect.</p>
 <p>On top of the <a class="reference internal" href="#basics"><span class="std std-ref">basic</span></a> options, the options below are used for
 additional resource specification when submitting remote jobs. Note that
 additional possibilities arise for the <code class="docutils literal notranslate"><span class="pre">-n</span></code> option when running on a cluster
-with multple compute nodes, as documented
+with multiple compute nodes, as documented
 <a class="reference internal" href="#specifying-multiple-nodes"><span class="std std-ref">above</span></a>.</p>
 <div class="section" id="queue-q-queue">
 <span id="queue"></span><h3><a class="toc-backref" href="#id14">Queue: <code class="docutils literal notranslate"><span class="pre">-q</span></code>, <code class="docutils literal notranslate"><span class="pre">--queue</span></code></a><a class="headerlink" href="#queue-q-queue" title="Permalink to this headline">¶</a></h3>
@@ -576,7 +586,7 @@ remote job is to be submitted:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -q &lt;queue&gt;
 </pre></div>
 </div>
-<p>If using Slurm, you you can specify multiple queues:</p>
+<p>If using Slurm, you can specify multiple queues:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -q &lt;queue1&gt;,&lt;queue2&gt;,&lt;queue3&gt;
 </pre></div>
 </div>
@@ -628,29 +638,29 @@ saved as “job directives” within a job script, which is then submitted to th
 job scheduler. If you desire further fine tuning of system resources, you may
 supply further such directives using this command-line option.</p>
 <p>What job directives are available depend on the job scheduler, as well as the
-local configuration of the cluster and queue. As an example, imagine that the
-cluster/queue makes available both Intel and AMD nodes, and that it is set up
-so that we may request either type using Slurm’s <code class="docutils literal notranslate"><span class="pre">constraint</span></code> directive. To
-select AMD then;</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -j<span class="o">=</span><span class="s2">&quot;--constraint=AMD&quot;</span>
+local configuration of the cluster and queue. As an example, consider</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -j<span class="o">=</span><span class="s2">&quot;--exclusive&quot;</span>
 </pre></div>
 </div>
+<p>which tells Slurm to give the job exclusive access to the allocated nodes, so
+that the nodes will not be shared with other running jobs which could otherwise
+make use of still available resources.</p>
 <p>The effect of this is simply to place the line</p>
 <blockquote>
-<div><p>#SBATCH \-\-constraint=AMD</p>
+<div><p>#SBATCH --exclusive</p>
 </div></blockquote>
-<p>in the header of the job script, assuming Slurm, or</p>
+<p>in the header of the job script — assuming Slurm — or</p>
 <blockquote>
-<div><p>#PBS \-\-constraint=AMD</p>
+<div><p>#PBS --exclusive</p>
 </div></blockquote>
-<p>in the case of TORQUE/PBS (the specific example of <code class="docutils literal notranslate"><span class="pre">--constraint</span></code>
+<p>in the case of TORQUE/PBS (the specific example of <code class="docutils literal notranslate"><span class="pre">--exclusive</span></code>
 does not mean anything to TORQUE/PBS, though).</p>
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
-<p>Since the value <code class="docutils literal notranslate"><span class="pre">--constraint=AMD</span></code> starts with ‘<code class="docutils literal notranslate"><span class="pre">-</span></code>‘, using
-<code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">--constraint=AMD</span></code> or <code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">&quot;--constraint=AMD&quot;</span></code> is not legal as the
-parser registres <code class="docutils literal notranslate"><span class="pre">--constraint=AMD</span></code> as a whole new (and non-existent)
-option.</p>
+<p>Since the value <code class="docutils literal notranslate"><span class="pre">--exclusive</span></code> starts with ‘<code class="docutils literal notranslate"><span class="pre">-</span></code>‘, using
+<code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">--exclusive</span></code> or <code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">&quot;--exclusive&quot;</span></code> is not legal as the
+parser registres <code class="docutils literal notranslate"><span class="pre">--exclusive</span></code> as a whole new (and non-existent)
+option to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script.</p>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">-j</span></code> option may be specified multiple times.</p>
 </div>
@@ -673,7 +683,7 @@ option:</p>
 <p>The following options change the mode in which CO<em>N</em>CEPT is built or run.
 With the exception of the <a class="reference internal" href="#local"><span class="std std-ref">--local</span></a> option, these are
 mostly useful for development.</p>
-<p>When invoking the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script, the default behavior is to check for
+<p>When invoking the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script, the default behaviour is to check for
 changes in the source code since the last build, in which case the code is
 recompiled using the <code class="docutils literal notranslate"><span class="pre">Makefile</span></code>. With the compiled code ready, the requested
 CO<em>N</em>CEPT run is performed. In addition, when working on a remote
@@ -789,7 +799,7 @@ state.</p>
 implements a given test, the name of which equals the directory name. You may
 use this option to run these tests, checking that the code works correctly.</p>
 <p>To run e.g. the <code class="docutils literal notranslate"><span class="pre">concept_vs_gadget_p3m</span></code> test — which runs a small
-CO<em>N</em>CEPT P³M simulation and a (supposedly) equivalent GADGET TreePM
+CO<em>N</em>CEPT P³M simulation and a (supposedly) equivalent GADGET-2 TreePM
 simulation, after which it compares the results — do one of</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -t concept_vs_gadget_p3m
 ./concept -t tests/concept_vs_gadget_p3m
@@ -800,8 +810,8 @@ test by its (relative) path. Note that tests are always performed locally,
 i.e. not submitted as remote jobs even when working on a remote
 cluster/server.</p>
 <p>Once a test is complete, it will report either success or failure. Most
-simulations also produce some artifacts within their directory, most notably
-plots. You can clean up these artifacts by running the <code class="docutils literal notranslate"><span class="pre">clean</span></code> script within
+simulations also produce some artefacts within their directory, most notably
+plots. You can clean up these artefacts by running the <code class="docutils literal notranslate"><span class="pre">clean</span></code> script within
 the corresponding test subdirectory, e.g.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tests/concept_vs_gadget_p3m/clean
 </pre></div>
@@ -834,7 +844,7 @@ entry point.</p>
 <p>As an example, consider the <code class="docutils literal notranslate"><span class="pre">hubble.py</span></code> script below:</p>
 <div class="literal-block-wrapper docutils container" id="hubble">
 <div class="code-block-caption"><span class="caption-text">hubble.py</span><a class="headerlink" href="#hubble" title="Permalink to this code">¶</a></div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">commons</span> <span class="kn">import</span> <span class="o">*</span>  <span class="c1"># import everyting from the CO𝘕CEPT commons module</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">commons</span> <span class="kn">import</span> <span class="o">*</span>  <span class="c1"># import everything from the CO𝘕CEPT commons module</span>
 
 <span class="n">h</span> <span class="o">=</span> <span class="n">H0</span><span class="o">/</span><span class="p">(</span><span class="mi">100</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">km</span><span class="o">/</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">s</span><span class="o">*</span><span class="n">units</span><span class="o">.</span><span class="n">Mpc</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">h</span> <span class="si">= :</span><span class="s1">g</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
@@ -842,13 +852,18 @@ entry point.</p>
 </div>
 </div>
 <p>We can run this script using</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -m hubble.py --pure-python
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -m hubble.py <span class="se">\</span>
+    --pure-python
 </pre></div>
 </div>
 <p>where <a class="reference internal" href="#pure-python"><span class="std std-ref">pure Python mode</span></a> is needed as the script itself is
 not compiled. To see that this really does hook into the CO<em>N</em>CEPT
 machinery:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -m hubble.py -c <span class="s2">&quot;H0 = 72*km/(s*Mpc)&quot;</span> --pure-python
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
+    -m hubble.py <span class="se">\</span>
+    -c <span class="s2">&quot;H0 = 72*km/(s*Mpc)&quot;</span> <span class="se">\</span>
+    --pure-python
 </pre></div>
 </div>
 <p>Using <code class="docutils literal notranslate"><span class="pre">-m</span></code> with a script as above is convenient for e.g. making plotting
@@ -901,7 +916,7 @@ something like</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">dir</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># I see one called &#39;G_Newton&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">G_Newton</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Its value looks unrecognizable! It must not be given in SI units.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Its value looks unrecognisable! It must not be given in SI units.</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># I see something called &#39;units&#39;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">units</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">units</span><span class="o">.</span><span class="n">m</span>
@@ -948,7 +963,6 @@ something like</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

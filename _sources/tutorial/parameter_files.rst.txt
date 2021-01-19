@@ -2,7 +2,7 @@ Working with parameter files
 ----------------------------
 Specifying the many parameters to the ``concept`` script via the ``-c`` option
 quickly becomes tiresome. A better solution is to write all parameters in a
-file, say ``params/tutorial`` (the ``params`` directory already exists).
+text file, say ``params/tutorial`` (the ``params`` directory already exists).
 Copy the content below to such a file:
 
 .. code-block:: python3
@@ -26,6 +26,7 @@ Copy the content below to such a file:
 
    # Numerical parameters
    boxsize = 4*_size*Mpc/h
+   potential_options = 2*_size
 
    # Cosmology
    H0      = 67*km/(s*Mpc)
@@ -33,16 +34,13 @@ Copy the content below to such a file:
    Ωcdm    = 0.27
    a_begin = 0.02
 
-   # Physics
-   select_forces = {
-       'matter': 'gravity',
-   }
-
-To run CO\ *N*\ CEPT using these parameters, do
+To run CO\ *N*\ CEPT using this parameter file, do
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -n 4
+   ./concept \
+       -p params/tutorial \
+       -n 4
 
 The simulation specified by the above parameters is quite similar to the
 simulations of the previous section, though we've now been more explicit about
@@ -56,10 +54,11 @@ specifications. In doing so, we've made use of several helpful tricks:
 * Parameter files are glorified Python scripts, and so we may utilize the full
   Python (3) language when defining the parameters. We can also define
   helper variables that are not themselves parameters, like ``_size`` above,
-  which is used to simultaneously adjust the number of particles ``'N'`` and
-  the side length of the simulation box ``boxsize``. Though not strictly
-  necessary, it is preferable for such helper variables to be named with a
-  leading underscore ``_``, to separate them from actual parameters.
+  which here is used to simultaneously adjust the number of particles ``'N'``,
+  the side length of the simulation box ``boxsize`` and the size of the
+  potential grid. Though not strictly necessary, it is preferable for such
+  helper variables to be named with a leading underscore ``_``, to separate
+  them from actual parameters.
 
 * We have explicitly specified the directory for power spectra output in the
   ``output_dirs`` parameter. The value is constructed using the ``paths``
@@ -85,9 +84,9 @@ specifications. In doing so, we've made use of several helpful tricks:
 
 * We've specified multiple times at which to dump power spectra in
   ``output_times``. Note that we use the parameter ``a_begin`` (creating a
-  power spectrum of the initial conditions), the value of which isn't set
-  before further down. Generally, the order of variable definitions inside
-  parameter files is of no importance.
+  power spectrum of the initial conditions), the value of which is set further
+  down. Generally, the order of variable definitions --- even when one depends
+  on another --- is of no importance inside parameter files.
 
 * The simulation takes place in a cubic box, the side length of which is set
   by ``boxsize``. In the parameter specification above, we've let ``boxsize``
@@ -98,28 +97,32 @@ specifications. In doing so, we've made use of several helpful tricks:
   similar increase in the number of particles by a factor :math:`2^3 = 8`.
 
   No default units are ever assumed by CO\ *N*\ CEPT when it reads parameters,
-  and so it's critical that you explicitly tack on units on all parameters
-  that are not unitless. For ``boxsize``, the extra fancy unit of
-  :math:`\text{Mpc}/h` is used above, with
+  and so it's critical that you explicitly tack on units on all dimensional
+  parameters. For ``boxsize``, the extra fancy unit of :math:`\text{Mpc}/h` is
+  used above, with
   :math:`h \equiv H_0/(100\, \text{km}\, \text{s}^{-1}\, \text{Mpc}^{-1})`
   inferred dynamically from the Hubble constant ``H0`` set further down.
 
-* The parameters ``Ωb`` and ``Ωcdm`` of course set the amount of baryons and
-  cold dark matter, respectively. Together, these otherwise distinct species
-  are collectively referred to as just *matter*. Thus, declaring the species
-  to be ``'matter'`` in the ``initial_conditions`` implies that these
-  particles will represent both the cold dark and the bayonic matter.
+* The parameters ``Ωb`` and ``Ωcdm`` of course set the present amount of
+  baryons and cold dark matter, respectively. Together, these otherwise
+  distinct species are collectively referred to as just *matter*. Thus,
+  declaring the species to be ``'matter'`` in the ``initial_conditions``
+  implies that the particles will represent both the baryonic
+  and cold dark matter.
 
-The ``-p`` parameter file option can be mixed with the ``-c`` command-line
-parameter option. As an example, consider leaving out the definition of
+The ``-p`` (parameter file) option can be mixed with the ``-c`` (command-line
+parameter) option. As an example, consider leaving out the definition of
 ``_size`` from the parameter file and instead supplying it when running the
 code:
 
 .. code-block:: bash
 
-   ./concept -p params/tutorial -c "_size = 64" -n 4
+   ./concept \
+       -p params/tutorial \
+       -c "_size = 64" \
+       -n 4
 
-If you forget to specify ``_size`` --- or any other variable used in the
+If you forget to specify ``_size`` --- or any other variable referenced by the
 parameter file --- CO\ *N*\ CEPT will exit with an error, letting you know.
 
 
@@ -137,7 +140,7 @@ files.
 
 .. tip::
    To view the logged output of e.g. CO\ *N*\ CEPT run 1 with proper
-   coloring, use ``less -r logs/1``. Arrow keys to navigate, ``q`` to quit.
+   coloring, use ``less -rf logs/1``. Arrow keys to navigate, ``q`` to quit.
 
 
 
@@ -166,5 +169,7 @@ and check that the parameters specified are as you expect. Any command-line
 parameters will be placed at the bottom.
 
 So far we've introduced only the most essential parameters. The remaining
-sections of this tutorial will introduce more as needed.
+sections of this tutorial will introduce further parameters --- and expand on
+already encountered ones --- as needed. For full documentation on all
+available parameters, consult :doc:`Parameters </parameters/parameters>`.
 

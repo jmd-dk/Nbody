@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -10,6 +9,16 @@
   
   <title>2. Your first simulations &mdash; CONCEPT Documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/segment.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/menu.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/semantic-ui-2.4.1/tab.min.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/sphinx_tabs/tabs.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
 
   
   
@@ -21,14 +30,15 @@
   
 
   
-  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -36,12 +46,6 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="3. Working with parameter files" href="parameter_files.html" />
@@ -59,7 +63,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> CO<em>N</em>CEPT
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> CO<em>N</em>CEPT
           
 
           
@@ -82,6 +86,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -114,12 +119,7 @@
 <li class="toctree-l3"><a class="reference internal" href="beyond_matter_only.html#non-linear-massive-neutrinos">7.5. Non-linear massive neutrinos</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html">8. Using utilities</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-powerspec-and-render-utilities">8.1. The powerspec and render utilities</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-class-utility">8.2. The CLASS utility</a></li>
-<li class="toctree-l3"><a class="reference internal" href="utilities.html#the-update-utility">8.3. The update utility</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="gadget.html">8. Comparison with GADGET-2</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a><ul>
@@ -257,11 +257,11 @@
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#dangerous-optimizations">Dangerous optimizations</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-color-output-looks-weird">Terminal color output looks weird</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#terminal-colour-output-looks-weird">Terminal colour output looks weird</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-related-to-python-libraries-and-packages">Problems related to Python libraries and packages</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#error-messages-containing-read-1">Error messages containing ‘Read -1’</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#the-simulation-hangs-when-calling-class">The simulation hangs when calling CLASS</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behavior">Crashes or other bad behavior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#crashes-or-other-bad-behaviour">Crashes or other bad behaviour</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../troubleshooting.html#problems-when-running-remotely">Problems when running remotely</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#choosing-an-mpi-executor">Choosing an MPI executor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../troubleshooting.html#different-hardware-architecture-on-front-end-and-remote-node">Different hardware architecture on front-end and remote node</a></li>
@@ -281,6 +281,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -319,7 +320,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="tutorial.html">Tutorial</a> &raquo;</li>
         
@@ -365,14 +366,15 @@ used to launch the code.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept --local
 </pre></div>
 </div>
-<p>This will fire up CO<em>N</em>CEPT, which should display a few lines of colorful
+<p>This will fire up CO<em>N</em>CEPT, which should display a few lines of colourful
 text before shutting back down. The <code class="docutils literal notranslate"><span class="pre">--local</span></code> option specifies that we wish
 to run CO<em>N</em>CEPT on the local machine, as opposed to submitting the
 simulation as a job on a remote cluster. If you <em>are</em> working locally, you may
 omit the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option, just as this tutorial will do from now on. If you
 are working remotely, please add the <code class="docutils literal notranslate"><span class="pre">--local</span></code> option yourself to all future
 invocations of the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script. Later this tutorial covers how to submit
-CO<em>N</em>CEPT jobs when <a class="reference internal" href="working_remotely.html"><span class="doc">working on a cluster</span></a>.</p>
+CO<em>N</em>CEPT jobs to the scheduler when
+<a class="reference internal" href="working_remotely.html"><span class="doc">working on a cluster</span></a>.</p>
 <p>As we did not provide any parameters to CO<em>N</em>CEPT, it shut down
 immediately. We can add parameters using the <code class="docutils literal notranslate"><span class="pre">-c</span></code> option, like so:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
@@ -384,7 +386,8 @@ immediately. We can add parameters using the <code class="docutils literal notra
 <p>A simulation with <span class="math notranslate nohighlight">\(N = 64^3\)</span> matter particles will now be run, with
 initial conditions generated at a scale factor of <span class="math notranslate nohighlight">\(a = 0.02\)</span> and a power
 spectrum produced at <span class="math notranslate nohighlight">\(a = 1\)</span>. Once completed, check the <code class="docutils literal notranslate"><span class="pre">output</span></code>
-directory, where you’ll find the power spectrum data and plot.</p>
+directory, where you’ll find the power spectrum data (a plain text file)
+and plot.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Once a simulation is complete, its total computation time is shown in the
@@ -395,35 +398,45 @@ of the time spent on the actual simulation (time stepping), but rather on the
 generation of initial conditions. The reason for this rapid time stepping is
 that CO<em>N</em>CEPT does not assign interactions implicitly, meaning that no
 gravitational forces were applied during the simulation. This also explains
-the low simulation power spetrum compared to the linear power spectrum (which
-do include the effects of gravity), both of which are shown in
-<code class="docutils literal notranslate"><span class="pre">output/powerspec_a=1.00.png</span></code>.</p>
-<p>Let’s try again, this time explicitly stating that the <code class="docutils literal notranslate"><span class="pre">&quot;matter&quot;</span></code> species
-is under the influence of gravity:</p>
+the low simulation power spectrum compared to the linear power spectrum (which
+do include the effects of gravity), both of which are present in
+<code class="docutils literal notranslate"><span class="pre">output/powerspec_a=1.00</span></code> and <code class="docutils literal notranslate"><span class="pre">output/powerspec_a=1.00.png</span></code>.</p>
+<p>Let’s try again, this time specifying a size for the gravitational potential
+grid:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
     -c <span class="s2">&quot;initial_conditions = {&#39;species&#39;: &#39;matter&#39;, &#39;N&#39;: 64**3}&quot;</span> <span class="se">\</span>
     -c <span class="s2">&quot;a_begin = 0.02&quot;</span> <span class="se">\</span>
     -c <span class="s2">&quot;output_times = {&#39;powerspec&#39;: 1}&quot;</span> <span class="se">\</span>
-    -c <span class="s2">&quot;select_forces = {&#39;matter&#39;: &#39;gravity&#39;}&quot;</span>
+    -c <span class="s2">&quot;potential_options = 128&quot;</span>
 </pre></div>
 </div>
-<p>The simulation time will increase somewhat. Once done, take a look at the
+<p>The simulation time will increase noticeably. Once done, take a look at the
 output <code class="docutils literal notranslate"><span class="pre">output/powerspec_a=1.00.png</span></code> again, and you should see that the
-simulated power spectrum has catched up to the linear one.</p>
-<p>To cut down on the computation time we may make use of multiple CPU cores. To
+simulated power spectrum has caught up to the linear one.</p>
+<p>The role of the potential grid will be discussed in detail
+<a class="reference internal" href="gravity.html"><span class="doc">in a little while</span></a>.</p>
+<h2>Going multi-core</h2><p>To cut down on the computation time we may make use of multiple CPU cores. To
 run with e.g. 4 CPU cores, execute</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept <span class="se">\</span>
     -c <span class="s2">&quot;initial_conditions = {&#39;species&#39;: &#39;matter&#39;, &#39;N&#39;: 64**3}&quot;</span> <span class="se">\</span>
     -c <span class="s2">&quot;a_begin = 0.02&quot;</span> <span class="se">\</span>
     -c <span class="s2">&quot;output_times = {&#39;powerspec&#39;: 1}&quot;</span> <span class="se">\</span>
-    -c <span class="s2">&quot;select_forces = {&#39;matter&#39;: &#39;gravity&#39;}&quot;</span> <span class="se">\</span>
+    -c <span class="s2">&quot;potential_options = 128&quot;</span> <span class="se">\</span>
     -n <span class="m">4</span>
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A choice of e.g. <code class="docutils literal notranslate"><span class="pre">-n</span> <span class="pre">3</span></code> is illegal as <span class="math notranslate nohighlight">\(N = 64^3\)</span> is not divisible
+by <span class="math notranslate nohighlight">\(3\)</span>. Further such restrictions exist. If an illegal number of
+processes is chosen, CO<em>N</em>CEPT exits with a helpful error message.</p>
 </div>
 <p>To see a complete list of possible options to the <code class="docutils literal notranslate"><span class="pre">concept</span></code> script, invoke</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./concept -h
 </pre></div>
 </div>
+<p>For full documentation on each option, consult
+<a class="reference internal" href="../command_line_options.html"><span class="doc">Command-line options</span></a>.</p>
 </div>
 
 
@@ -459,7 +472,6 @@ run with e.g. 4 CPU cores, execute</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
