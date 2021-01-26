@@ -5478,14 +5478,34 @@ install "Perl"                                  \
 
 # MPI
 mpi_install_func() {
-    if [ -z "${mpi_configure_options}" ] || [[ "${mpi_configure_options}" == "+="* ]]; then
-        mpi_configure_options_supplied="${mpi_configure_options/+=/}"
+    mpi_configure_options="${mpi_configure_options_supplied}"
+    if [ -z "${mpi_configure_options}"] || [[ "${mpi_configure_options}" == "+="* ]]; then
+        mpi_configure_options="${mpi_configure_options/+=/}"
         if [ "${mpi}" == "mpich" ]; then
-            mpi_configure_options="--disable-cxx --disable-fortran"
+            mpi_configure_options="--disable-cxx --disable-fortran \
+${mpi_configure_options}"
         elif [ "${mpi}" == "openmpi" ]; then
-            mpi_configure_options="--enable-mpi-cxx=none --enable-mpi-fortran=none"
+            mpi_configure_options="--enable-mpi-cxx=none --enable-mpi-fortran=none \
+${mpi_configure_options}"
         fi
-        mpi_configure_options="${mpi_configure_options} ${mpi_configure_options_supplied}"
+        mpi_configure_options="${mpi_configure_options} ${mpi_configure_options_extra}"
+        mpi_configure_options_trimmed=""
+        mpi_device_set="False"
+        for mpi_configure_option in ${mpi_configure_options}; do
+            include_mpi_configure_option="True"
+            if [[ "${mpi_configure_option}" == "--with-device"* ]]; then
+                include_mpi_configure_option="False"
+                if [ "${mpi_device_set}" == "False" ]; then
+                    include_mpi_configure_option="True"
+                fi
+                mpi_device_set="True"
+            fi
+            if [ "${include_mpi_configure_option}" == "True" ]; then
+                mpi_configure_options_trimmed="${mpi_configure_options_trimmed} \
+${mpi_configure_option}"
+            fi
+        done
+        mpi_configure_options="${mpi_configure_options_trimmed}"
     fi
     # The below works for both MPICH and OpenMPI
     if [ -d "${perl_dir}" ]; then
@@ -5507,7 +5527,18 @@ mpi_install_func() {
         rm -rf "${mpi_dir}/share" || :
     fi
 }
-install "MPI" compiler "${compiler_possibilities_specified_mpi_last[@]}"
+mpi_configure_options_supplied="${mpi_configure_options}"
+if [ "${mpi}" == "mpich" ]; then
+    mpi_configure_options_extras="\
+--with-device=ch4 --with-device=ch3 \
+--with-device=ch4:ofi --with-device=ch4:ucx \
+--with-device=ch3:sock"
+elif [ "${mpi}" == "openmpi" ]; then
+    mpi_configure_options_extras=""
+fi
+install "MPI"                                                          \
+    compiler "${compiler_possibilities_specified_mpi_last[@]}"     ";" \
+    mpi_configure_options_extra "" ${mpi_configure_options_extras} ";" \
 
 # HDF5
 hdf5_install_func() {
@@ -5525,14 +5556,20 @@ hdf5_install_func() {
         export CFLAGS="-I${zlib_dir}/include ${CFLAGS}"
         with_zlib=--with-zlib="${zlib_dir}/include","${zlib_dir}/lib"
     fi
+    # On some systems an explicit architecture must be set
+    # for the compilation to succeed.
+    if [ -n "${hdf5_arch}" ]; then
+        export CFLAGS="${CFLAGS} -march=${hdf5_arch}"
+    fi
     # A bug in HDF5 makes the code crash on certain file systems.
     # A workaround is to set an environment variable as below.
     export HDF5_USE_FILE_LOCKING=FALSE
-    ./configure                \
-        --enable-shared        \
-        ${enable_parallel}     \
-        ${with_zlib}           \
-        --prefix="${hdf5_dir}" \
+    ./configure                          \
+        --enable-build-mode=${buildmode} \
+        --enable-shared                  \
+        ${enable_parallel}               \
+        ${with_zlib}                     \
+        --prefix="${hdf5_dir}"           \
         2>&1 || return 1
     # Newer versions of gcc (e.g. 8.1.0) do not allow attributes to
     # be specified after the declarator in function definitions.
@@ -5638,7 +5675,10 @@ compiler_possibilities_hdf5=("${compiler_possibilities[@]}")
 if [ -n "${mpi_dir}" ]; then
     compiler_possibilities_hdf5=("specified_mpi")
 fi
-install "HDF5" compiler "${compiler_possibilities_hdf5[@]}"
+install "HDF5"                                       \
+    compiler "${compiler_possibilities_hdf5[@]}" ";" \
+    buildmode "production" "debug"               ";" \
+    hdf5_arch "" "x86-64" "native"               ";" \
 
 # FFTW
 fftw_install_func() {
