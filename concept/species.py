@@ -760,12 +760,26 @@ class Tiling:
                             + j*ℤ[self.shape[2]]
                             + k
                         )
-                # Get the index of the rung and the jump
-                # for this particle.
+                # Record particle content within the tile using the
+                # mapping documented in Tiling.__init__.
+                # The possible values are:
+                #   1: Particle sits on an inactive rung.
+                #   2: Particle sits on an active rung
+                #      and is not flagged to jump.
+                #   3: Particle sits on active rung
+                #      and is flagged to jump.
                 with unswitch:
                     if self.component.use_rungs:
-                        rung_index         = rung_indices       [particle_index]
-                        rung_index_jumped  = rung_indices_jumped[particle_index]
+                        rung_index = rung_indices[particle_index]
+                        if 𝔹[rung_index >= lowest_active_rung]:
+                            rung_index_jumped = rung_indices_jumped[particle_index]
+                            contains = 2 + (rung_index_jumped >= N_rungs)
+                        else:
+                            contains = 1
+                    else:
+                        contains = 2
+                if contain_particles[tile_index] < contains:
+                    contain_particles[tile_index] = contains
                 # Resize this rung within the tile, if needed
                 rungs_N = tiles_rungs_N[tile_index]
                 rung_N = rungs_N[rung_index]
@@ -775,19 +789,6 @@ class Tiling:
                 rung = tiles[tile_index][rung_index]
                 rung[rung_N] = particle_index
                 rungs_N[rung_index] += 1
-                # Update tile content using the mapping documented
-                # in Tiling.__init__. The possible values are:
-                #   1: Particle sits on an inactive rung.
-                #   2: Particle sits on an active rung
-                #      and is not flagged to jump.
-                #   3: Particle sits on active rung
-                #      and is flagged to jump.
-                if rung_index < lowest_active_rung:
-                    contains = 1
-                else:
-                    contains = 2 + (rung_index_jumped >= N_rungs)
-                if contain_particles[tile_index] < contains:
-                    contain_particles[tile_index] = contains
 
     # This method is automatically called when a Tiling instance
     # is garbage collected. All manually allocated memory is freed.

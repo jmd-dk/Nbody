@@ -1389,7 +1389,10 @@ def particle_particle(
         rung_N_r='Py_ssize_t',
         rung_N_s='Py_ssize_t',
         rung_index_r='signed char',
-        rung_index_s_start='signed char',
+        rung_index_r_bgn='signed char',
+        rung_index_r_end='signed char',
+        rung_index_s_bgn='signed char',
+        rung_index_s_end='signed char',
         rung_indices_jumped_r='signed char*',
         rung_r='Py_ssize_t*',
         rung_s='Py_ssize_t*',
@@ -1474,6 +1477,7 @@ def particle_particle(
     tile_extent               = cython.address(tiling_r.tile_extent[:])  # The same for receiver and supplier
     tiles_r                   = tiling_r.tiles
     tiles_contain_particles_r = tiling_r.contain_particles
+    # Extract subtiling variables from receiver
     subtiling_r = receiver.tilings[subtiling_name]
     subtiles_r                   = subtiling_r.tiles
     subtiles_contain_particles_r = subtiling_r.contain_particles
@@ -1483,9 +1487,7 @@ def particle_particle(
     tiling_location_s         = cython.address(tiling_s.location[:])
     tiles_s                   = tiling_s.tiles
     tiles_contain_particles_s = tiling_s.contain_particles
-    subtiling_s = supplier.tilings[subtiling_name]
-    subtiles_s                   = subtiling_s.tiles
-    subtiles_contain_particles_s = subtiling_s.contain_particles
+    # Extract subtiling variables from supplier.
     # When the receiver and supplier components are the same
     # and the receiver and supplier domains are also the same,
     # we now have a case where (tiling_r is tiling_s) and
@@ -1500,6 +1502,7 @@ def particle_particle(
     # separate Tiling instance. If however the subtiling in use is the
     # trivial tiling, the re-sorting has no effect, and so we do not
     # have to worry.
+    subtiling_s = supplier.tilings[subtiling_name]
     if 𝔹[receiver.name == supplier.name and rank == rank_supplier and subtiling_name != 'trivial']:
         subtiling_name_2 = f'{interaction_name} (subtiles 2)'
         if subtiling_name_2 not in supplier.tilings:
@@ -1508,8 +1511,8 @@ def particle_particle(
             supplier.tilings[subtiling_name  ] = subtiling_s
             supplier.tilings[subtiling_name_2] = subtiling_s_2
         subtiling_s = supplier.tilings[subtiling_name_2]
-        subtiles_s                   = subtiling_s.tiles
-        subtiles_contain_particles_s = subtiling_s.contain_particles
+    subtiles_s                   = subtiling_s.tiles
+    subtiles_contain_particles_s = subtiling_s.contain_particles
     # Get subtile pairings between each
     # of the 27 possible tile pairings.
     only_supply_communication = (only_supply if receiver.name == supplier.name else True)
@@ -1520,6 +1523,14 @@ def particle_particle(
     )
     all_subtile_pairings = subtile_pairings_cache[subtile_pairings_index]
     all_subtile_pairings_N = subtile_pairings_N_cache[subtile_pairings_index]
+    # Range of receiver and supplier rungs.
+    # Note that rung_index_s_bgn will be set later.
+    if only_supply:
+        rung_index_r_bgn = lowest_active_rung_r
+    else:
+        rung_index_r_bgn = lowest_populated_rung_r
+    rung_index_r_end = highest_populated_rung_r + 1
+    rung_index_s_end = highest_populated_rung_s + 1
     # Local pointer into the global array of particle position offsets
     # due to the periodicity.
     periodic_offset_ptr = cython.address(periodic_offset[:])
@@ -1626,13 +1637,14 @@ def particle_particle(
                     if 𝔹[not only_supply]:
                         if subtile_contain_particles_r == 0:
                             continue
+                        subtile_contain_onlyinactive_r = (subtile_contain_particles_r == 1)
                     else:
                         if subtile_contain_particles_r < 2:
                             continue
-                subtile_contain_onlyinactive_r = (subtile_contain_particles_r == 1)
+                # Set and extract various receiver subtile variables
                 subtile_contain_jumping_r = (subtile_contain_particles_r == 3)
-                subtile_r = subtiles_r[subtile_index_r]
-                rungs_N_r = subtiles_rungs_N_r[subtile_index_r]
+                subtile_r            = subtiles_r        [subtile_index_r]
+                rungs_N_r            = subtiles_rungs_N_r[subtile_index_r]
                 subtile_pairings_r   = subtile_pairings  [subtile_index_r]
                 subtile_pairings_N_r = subtile_pairings_N[subtile_index_r]
                 # Loop over the needed supplier subtiles
@@ -1646,12 +1658,15 @@ def particle_particle(
                     # If both the receiver and supplier subtile contains
                     # particles on inactive rows only, we skip this
                     # subtile pair.
-                    with unswitch(1):
-                        if subtile_contain_onlyinactive_r:
-                            if subtile_contain_particles_s == 1:
-                                continue
+                    with unswitch(4):
+                        if 𝔹[not only_supply]:
+                            with unswitch(1):
+                                if subtile_contain_onlyinactive_r:
+                                    if subtile_contain_particles_s == 1:
+                                        continue
+                    # Set and extract various supplier subtile variables
                     subtile_contain_jumping_s = (subtile_contain_particles_s == 3)
-                    subtile_s = subtiles_s[subtile_index_s]
+                    subtile_s = subtiles_s        [subtile_index_s]
                     rungs_N_s = subtiles_rungs_N_s[subtile_index_s]
                     # Flag specifying whether this is a local interaction
                     local_interaction_flag_1 = (
@@ -1659,10 +1674,7 @@ def particle_particle(
                         and (subtile_index_r == subtile_index_s)
                     )
                     # Loop over all rungs in the receiver subtile
-                    for rung_index_r in range(
-                        ℤ[lowest_active_rung_r if only_supply else lowest_populated_rung_r],
-                        ℤ[highest_populated_rung_r + 1],
-                    ):
+                    for rung_index_r in range(rung_index_r_bgn, rung_index_r_end):
                         rung_N_r = rungs_N_r[rung_index_r]
                         if rung_N_r == 0:
                             continue
@@ -1674,14 +1686,14 @@ def particle_particle(
                         # to pair up two inactive rungs).
                         # If only_supply is True, the values already set
                         # will be used.
-                        rung_index_s_start = lowest_populated_rung_s
+                        rung_index_s_bgn = lowest_populated_rung_s
                         with unswitch(5):
                             if 𝔹[not only_supply]:
                                 if rung_index_r < lowest_active_rung_r:
                                     # Only the supplier should receive
                                     # a kick.
                                     apply_to_i = False
-                                    rung_index_s_start = lowest_active_rung_s
+                                    rung_index_s_bgn = lowest_active_rung_s
                                 else:
                                     # The receiver and the supplier
                                     # should receive a kick.
@@ -1691,12 +1703,10 @@ def particle_particle(
                         # local means that the current components,
                         # domains, tiles and subtiles for the receiver
                         # and supplier are all the same.
-                        if local_interaction_flag_1 and (rung_index_s_start < rung_index_r):
-                            rung_index_s_start = rung_index_r
+                        if local_interaction_flag_1 and (rung_index_s_bgn < rung_index_r):
+                            rung_index_s_bgn = rung_index_r
                         # Loop over the needed supplier rungs
-                        for rung_index_s in range(
-                            rung_index_s_start, ℤ[highest_populated_rung_s + 1]
-                        ):
+                        for rung_index_s in range(rung_index_s_bgn, rung_index_s_end):
                             rung_N_s = rungs_N_s[rung_index_s]
                             if rung_N_s == 0:
                                 continue

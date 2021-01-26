@@ -189,7 +189,7 @@ def timeloop():
                 # Update subtile computation times
                 for component in components:
                     for subtiling_name, subtiling in component.tilings.items():
-                        match = re.search(r'(.*) \(subtiles\)', subtiling_name)
+                        match = re.search(r'(.*) \(subtiles', subtiling_name)
                         if not match:
                             continue
                         subtiling_computation_times[component][match.group(1)
@@ -249,7 +249,7 @@ def timeloop():
                             # respect to the first subtiling
                             # encountered.
                             for subtiling_name in component.tilings:
-                                match = re.search(r'(.*) \(subtiles\)', subtiling_name)
+                                match = re.search(r'(.*) \(subtiles', subtiling_name)
                                 if not match:
                                     continue
                                 interaction_name = match.group(1)
